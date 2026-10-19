@@ -1,4 +1,4 @@
-import type { GateStatus, OrderStatus } from '@durable-jev/contracts'
+import type { GateStatus, HumanTaskStatus, OrderStatus } from '@durable-jev/contracts'
 
 const labels: Record<string, string> = {
   PASS: 'Pass',
@@ -17,9 +17,15 @@ const labels: Record<string, string> = {
   DISPATCHED: 'Dispatched',
   REJECTED: 'Rejected',
   TECHNICAL_FAILURE: 'Technical failure',
+  OPEN: 'Open',
+  APPROVED: 'Approved',
+  COMPLETED: 'Completed',
+  EXPIRED: 'Expired',
+  CANCELLED: 'Cancelled',
+  SUPERSEDED: 'Superseded',
 }
 
-export function StatusBadge({ status }: { status: GateStatus | OrderStatus }) {
+export function StatusBadge({ status }: { status: GateStatus | OrderStatus | HumanTaskStatus }) {
   return (
     <span className={`badge badge-${status.toLowerCase()}`} title={status}>
       {labels[status] ?? status}

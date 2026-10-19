@@ -1,6 +1,7 @@
 import type { HumanTask, Role } from '@durable-jev/contracts'
 import { useState } from 'react'
 import { roleLabels } from './roles.js'
+import { StatusBadge } from './StatusBadge.js'
 
 const dispatchConfirmationRuleId = 'R39-CONFIRM'
 
@@ -36,7 +37,10 @@ export function HumanTaskPanel(props: {
           <ul className="closed-tasks">
             {closedTasks.map((task) => (
               <li key={task.humanTaskId}>
-                {task.ruleId} · {task.status} · {roleLabels[task.requiredRole]}
+                {task.ruleId} <StatusBadge status={task.status} /> {roleLabels[task.requiredRole]}
+                {task.supersededBy && (
+                  <span className="muted small"> · superseded by {task.supersededBy}</span>
+                )}
               </li>
             ))}
           </ul>

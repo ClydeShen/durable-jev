@@ -248,7 +248,9 @@ section {
 
 .badge-pass,
 .badge-dispatched,
-.badge-ready_to_dispatch {
+.badge-ready_to_dispatch,
+.badge-approved,
+.badge-completed {
   color: var(--pass);
 }
 
@@ -261,19 +263,23 @@ section {
 
 .badge-waiting_human,
 .badge-awaiting_human,
-.badge-on_hold {
+.badge-on_hold,
+.badge-open {
   color: var(--wait);
 }
 
 .badge-blocked_dependency,
 .badge-unknown,
+.badge-expired,
+.badge-cancelled,
 .badge-not_applicable,
 .badge-submitted,
 .badge-evaluating {
   color: var(--blocked);
 }
 
-.badge-invalidated {
+.badge-invalidated,
+.badge-superseded {
   color: var(--invalid);
 }
 
