@@ -15,3 +15,5 @@
 | 2026-10-19 | 人工任务状态机放入新包 `packages/human-tasks`（纯函数），不放进 Coordinator，便于 P1 单测与后续服务复用 | design 目录已更新 |
 | 2026-10-19 | Pi Durable 1.3.0 无 `restartLimit`/`retryTask`，`callers` 不区分人工；崩溃上限由 RunBudgetGuard 实现 | T4.4 范围增加重启上限 |
 | 2026-10-19 | Jev 官方限制（位置偏差、注入、无关信息降准、算术不可靠）写入 m0-findings 与 design 8 | B1 增加选项打乱变体 |
+| 2026-10-19 | R39 拆成 `R39-LOAD` + `R39-CONFIRM` 两个单角色人工门槛 | design 6 已更新 |
+| 2026-10-19 | T2.1 规则子集中 R36 暂为 R31 AND R32、R25 暂不依赖 R16、R37 只聚合基础货件检查；T3.1 补全 | 仅影响 P2 纵切面 |

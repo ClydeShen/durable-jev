@@ -133,6 +133,7 @@ type RuleDefinition = {
 - 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。
 - 人工任务由 Coordinator 持有；角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
+- R39 拆为两个人工门槛 `R39-LOAD`（仓库操作员，装载扫码与复核证据）与 `R39-CONFIRM`（调度员确认），R39 为二者 AND。调度员确认在放行事务内记录；R40 不通过则整个事务回滚，确认也不保留。
 
 ## 7. Runtime harness
 
