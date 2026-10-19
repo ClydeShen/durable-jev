@@ -340,8 +340,7 @@ export class CoordinatorService {
       requiredRole: rule.humanGate?.requiredRole ?? 'DISPATCHER',
       target,
       prerequisites: rule.dependsOn,
-      requiredEvidenceFields:
-        rule.humanGate?.taskType === 'OPERATION' ? this.evidenceFieldsFor(rule) : [],
+      requiredEvidenceFields: rule.humanGate?.evidenceFields ?? [],
       createdAt: now as UtcTimestamp,
       expiresAt: minutesFrom(now, this.taskTtlMinutes(rule)) as UtcTimestamp,
     })
@@ -356,10 +355,6 @@ export class CoordinatorService {
       )
     }
     return 'WAITING_HUMAN'
-  }
-
-  private evidenceFieldsFor(rule: RuleDefinition): string[] {
-    return rule.ruleId === 'R39-LOAD' ? ['loadScanRef', 'physicalCheckBy'] : ['evidenceRef']
   }
 
   private taskTtlMinutes(rule: RuleDefinition): number {
