@@ -23,6 +23,7 @@ export type RuleBranch = z.infer<typeof RuleBranch>
 
 export const RuleDefinition = z.object({
   ruleId: RuleId,
+  title: z.string().min(1).optional(),
   version: z.string().min(1),
   scope: RuleScope,
   branch: RuleBranch.optional(),
