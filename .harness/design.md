@@ -67,7 +67,7 @@ var/                      运行时数据与日志，gitignore
 | `pnpm faults` | 跑故障场景 runner，输出报告到 `var/reports/` |
 | `pnpm bench` | 跑 benchmark，输出报告到 `var/reports/` |
 
-`.env.example` 提供 `MODEL_MODE=scripted|live`、`JEV_API_KEY`、`LLM_API_KEY`、`LLM_MODEL_ID`。默认 `scripted`，无 key 可完整演示。
+`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`LLM_API_KEY`、`LLM_MODEL_ID`。默认 `scripted`，无 key 可完整演示。
 
 Web 中的演示控制（仅本地演示模式开启）：选择案例、扮演角色、执行人工审批/现场动作、修改订单触发失效、杀死/重启服务、注入超时、重复提交。
 

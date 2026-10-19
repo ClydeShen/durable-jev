@@ -54,3 +54,26 @@
 - SDK 服务端只提供 Express 适配器（另有 gRPC）。服务统一改用 Express 5，不再使用 Fastify。
 - AgentInterface 必须声明 `protocolVersion: '1.0'`，否则服务端拒绝所有请求。
 - 默认 `InMemoryTaskStore` 重启即丢；SDK 提供基于 Kysely 的 `DatabaseTaskStore`（SQLite 可用），T5.1 再决定是否采用。
+
+## Jev `@typesafe-ai/sdk` 0.7.0
+
+复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。未设置 `TYPESAFE_API_KEY` 时用 recorded 模式（注入 `fetch` 返回录制响应），设置后真实调用。
+
+场景：一次请求同时问 R18（检查备注的风险信号，Choice）和 R10（安全说明与声明是否一致，Noul）。
+
+| 验证项 | 结果 |
+|---|---|
+| 官方 TS SDK | 有：`@typesafe-ai/sdk`，`TypeSafeClient.systemOne()`，答案类型由问题推断 |
+| 接口 | `POST https://api.typesafe.ai/v1/systemone`，Bearer `TYPESAFE_API_KEY` |
+| 版本锁定 | 可固定模型 ID `jev-1.14.0`（另有 `jev-1.13.0`），避免 `jev-latest` 别名 |
+| 字段 | Choice：`choice`、`probabilities`、`confidence`；Noul：只有 `noul`（无 confidence），与 PRD 一致 |
+| 用量 | 返回 `usage.input_tokens`；按输入 token 计费（$0.042 / Mtok），输出免费 |
+| 无 key 运行 | 通过。SDK 支持注入 `fetch`，可做 recorded/scripted 模式 |
+| 真实调用 | **待 key**。质量、延迟、限流行为未验证 |
+
+### 对设计的影响
+
+- `JevJudge` 直接使用官方 SDK；`ScriptedJudge` 通过注入 `fetch` 回放，走同一解析路径。
+- 一次请求可批量问多个问题，同一订单的多个语义判断可以合并成一次调用。
+- SDK 自带重试（默认 2 次，单次超时 10s）。为了让预算守卫准确计数，SDK 重试关掉（`maxRetries: 0`），由 harness 统一管理重试。
+- 环境变量统一用官方名 `TYPESAFE_API_KEY`。
