@@ -11,6 +11,9 @@
       "path": "packages/store"
     },
     {
+      "path": "packages/service-kit"
+    },
+    {
       "path": "packages/human-tasks"
     },
     {
