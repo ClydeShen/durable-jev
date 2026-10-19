@@ -65,6 +65,10 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
 export function createCoordinatorApp(coordinator: CoordinatorService): Express {
   const app = createServiceApp('coordinator')
 
+  app.get('/rules', (_request, response) => {
+    response.json(coordinator.listRules())
+  })
+
   app.get('/cases', (_request, response) => {
     response.json(coordinator.listCases())
   })

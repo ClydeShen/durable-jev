@@ -70,6 +70,11 @@ describe('coordinator HTTP API', () => {
     expect(dispatched).toMatchObject({ status: 200, body: { orderStatus: 'DISPATCHED' } })
   })
 
+  it('lists rules in evaluation order', async () => {
+    const { body } = await call('GET', '/rules')
+    expect(body.rules.at(-1).ruleId).toBe('R40')
+  })
+
   it('rejects malformed shipments and unknown cases', async () => {
     expect((await call('POST', '/cases', { body: { shipment: { caseId: 'x' } } })).status).toBe(400)
     expect((await call('GET', '/cases/CASE-UNKNOWN')).status).toBe(404)

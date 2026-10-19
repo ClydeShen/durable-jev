@@ -115,6 +115,13 @@ export class CoordinatorService {
     }
   }
 
+  listRules(): { ruleSetVersion: string; rules: RuleDefinition[] } {
+    return {
+      ruleSetVersion: this.configuration.ruleSetVersion,
+      rules: this.configuration.rulesInEvaluationOrder,
+    }
+  }
+
   listCases(): StoredCase[] {
     return this.repository.listCases()
   }
