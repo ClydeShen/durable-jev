@@ -57,6 +57,10 @@
       "unknownPolicy": "escalateToHuman",
       "inputPaths": ["cargoItems.description", "cargoItems.declaredCategories"],
       "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "TRANSPORT_PLANNER"
+      },
       "invalidationTriggers": ["cargo", "documents"]
     },
     {
