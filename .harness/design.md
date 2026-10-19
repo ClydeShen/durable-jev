@@ -203,3 +203,17 @@ interface SemanticJudge {
 - 事件写各服务 outbox 表，`observability` 收集器汇入 `var/data/observability.sqlite`；Console 通过查询 API + SSE 读取。
 - 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
 - 业务正确性不依赖观察库。
+
+## 10. 状态机
+
+所有持久化状态用 `contracts` 中的 `defineStateMachine` 定义：状态、允许的转移、初始态；没有出边的状态即终态。任何写状态的代码都经过 `machine.transition(from, to)`，非法转移抛错；同态转移视为 no-op。
+
+| 状态机 | 状态 | 终态 | 谁触发 |
+|---|---|---|---|
+| 订单 `orderStatusMachine` | SUBMITTED → EVALUATING → ON_HOLD / AWAITING_HUMAN / READY_TO_DISPATCH / TECHNICAL_FAILURE（相互可转）→ DISPATCHED（只从 READY_TO_DISPATCH，经放行事务）或 REJECTED | DISPATCHED、REJECTED | Coordinator 求值后派生；放行事务 |
+| 人工任务 `humanTaskMachine` | OPEN → APPROVED / REJECTED / COMPLETED / EXPIRED / CANCELLED / SUPERSEDED；APPROVED / REJECTED / COMPLETED → SUPERSEDED（目标版本变化时） | EXPIRED、CANCELLED、SUPERSEDED | 角色命令、到期、版本变化 |
+| 运输预订 `reservationMachine` | RESERVED → CANCELLED | CANCELLED | 预订 / 取消工具 |
+
+规则门槛状态（GateStatus）不是状态机：它是规则输入、上游结果和人工任务的纯函数，每次求值重算，不做转移校验。
+
+终态订单不再重新求值，也不接受人工任务命令（返回 CONFLICT）。目标版本变化时，旧任务无论处于 OPEN 还是已决定，都转为 SUPERSEDED 并记录 `supersededBy`，旧决定不复用。
