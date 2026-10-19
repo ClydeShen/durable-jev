@@ -22,15 +22,17 @@ pnpm demo:reset    # 另开一个终端：清库并载入预置案例
 | http://127.0.0.1:4100/cases | Coordinator API |
 | http://127.0.0.1:4000/processes | 本地控制端（只监听 127.0.0.1） |
 
-`Ctrl+C` 停止全部进程。数据保存在 `var/data/`，重启后仍在；`pnpm demo:reset` 或工作台的"重置演示"按钮会清空后重新载入。
+`Ctrl+C` 停止全部进程。数据保存在 `var/data/`，重启后仍在；`pnpm demo:reset` 或工作台的 "Reset demo" 按钮会清空后重新载入。
 
 ## 演示 LOG-001：普通货从提交到发运
 
-1. 打开工作台，左侧选择 LOG-001。订单状态为"等待人工"。
-2. 展开规则树：除 R39 外的门槛都已通过；R39-CONFIRM 显示"被 R39-LOAD 阻塞"。
-3. 右上角身份切到"调度员"，在 R39-LOAD 任务上点"提交完成证据"：服务端返回 403，因为装载必须由仓库操作员完成（F11）。
-4. 身份切回"仓库操作员"，填写 `loadScanRef` 和 `physicalCheckBy` 后提交。缺任一字段会被拒绝（F14）。订单变为"可发运"。
-5. 身份切到"调度员"，点"确认发运"。Coordinator 在同一事务内重读当前版本、重新求值 R40，通过后写入"已发运"；不通过则整个事务回滚。
+1. 打开工作台，左侧选择 LOG-001。订单状态为 "Awaiting human"。
+2. 展开 Rule tree：除 R39 外的门槛都已 "Pass"；R39-CONFIRM 显示 "blocked by R39-LOAD"。
+3. 右上角 "Acting as" 切到 "Dispatcher"，在 R39-LOAD 任务上点 "Submit evidence"：服务端返回 403，因为装载必须由仓库操作员完成（F11）。
+4. 切回 "Warehouse operator"，填写 `loadScanRef` 和 `physicalCheckBy` 后提交。缺任一字段会被拒绝（F14）。订单变为 "Ready to dispatch"。
+5. 切到 "Dispatcher"，点 "Confirm dispatch"。Coordinator 在同一事务内重读当前版本、重新求值 R40，通过后写入 "Dispatched"；不通过则整个事务回滚。
+
+界面全部为英文。
 
 ## 进程控制
 
