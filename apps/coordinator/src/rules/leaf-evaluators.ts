@@ -1,6 +1,7 @@
 import type { CheckSubject } from '@durable-jev/contracts'
 import type { LeafOutcome, RuleDefinition } from '@durable-jev/rule-engine'
 import { baseLeafRules } from './base-rules.js'
+import { coldChainLeafRules } from './cold-chain-rules.js'
 import { commercialLeafRules } from './commercial-rules.js'
 import { controlledLeafRules } from './controlled-rules.js'
 import type { EvaluationInputs } from './evaluation-inputs.js'
@@ -15,6 +16,7 @@ const humanGate =
 const leafRulesByRef: Readonly<Record<string, LeafRule>> = {
   ...baseLeafRules,
   ...controlledLeafRules,
+  ...coldChainLeafRules,
   ...transportLeafRules,
   ...commercialLeafRules,
 }
