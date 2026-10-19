@@ -1,0 +1,89 @@
+{
+  "caseId": "CASE-LOG-001",
+  "title": "普通货单段，资料完整",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-001",
+    "shipmentId": "LOG-001",
+    "customerId": "CUST-ACME-RETAIL",
+    "caseRevision": 1,
+    "entityVersions": { "cargo": 1, "route": 1, "carrier": 1, "quote": 1 },
+    "origin": "SHA-WH1",
+    "destination": "HGH-DC2",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-001-ITEM-1",
+        "description": "Boxed kitchen appliances: 24 electric kettles in retail cartons",
+        "declaredCategories": ["GENERAL"],
+        "weightGrams": 96000,
+        "lengthMm": 1200,
+        "widthMm": 1000,
+        "heightMm": 1100
+      },
+      {
+        "cargoItemId": "LOG-001-ITEM-2",
+        "description": "Shrink-wrapped pallet of cotton bath towels",
+        "declaredCategories": ["GENERAL"],
+        "weightGrams": 180000,
+        "lengthMm": 1200,
+        "widthMm": 1000,
+        "heightMm": 1400
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-001-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "HGH-DC2",
+        "carrierId": "CAR-NORTHLINE",
+        "vehicleId": "VEH-NL-BOX-7T",
+        "plannedDepartureAt": "2026-11-03T02:00:00Z",
+        "plannedArrivalAt": "2026-11-03T05:30:00Z"
+      }
+    ],
+    "quote": { "quoteId": "Q-LOG-001-1", "amountCents": 180000, "currency": "CNY" },
+    "customerInstructions": "Deliver to dock 3; call the receiving desk 30 minutes before arrival."
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-001-ITEM-1",
+      "answer": { "type": "noul", "noul": 0.97 }
+    },
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-001-ITEM-2",
+      "answer": { "type": "noul", "noul": 0.95 }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": { "R30": "PASS", "R36": "PASS", "R37": "PASS", "R39-LOAD": "WAITING_HUMAN" },
+        "openHumanTasks": [{ "ruleId": "R39-LOAD", "requiredRole": "WAREHOUSE_OPERATOR" }]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": { "loadScanRef": "SCAN-LOG-001-01", "physicalCheckBy": "warehouse-op-02" },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "gates": { "R39-LOAD": "PASS", "R39-CONFIRM": "WAITING_HUMAN" }
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": { "orderStatus": "DISPATCHED", "gates": { "R40": "PASS" } }
+    }
+  ]
+}
