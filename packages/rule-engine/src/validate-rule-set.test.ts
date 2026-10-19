@@ -94,6 +94,22 @@ describe('validateRuleSet (F16)', () => {
     expect(result.valid).toBe(true)
   })
 
+  it('rejects escalation to a human without a reviewer role', () => {
+    const result = validateRuleSet([rule('R03', { unknownPolicy: 'escalateToHuman' })], parameters)
+    expect(!result.valid && result.issues[0]).toMatchObject({ kind: 'typeMismatch', ruleId: 'R03' })
+
+    const withReviewer = validateRuleSet(
+      [
+        rule('R03', {
+          unknownPolicy: 'escalateToHuman',
+          humanGate: { taskType: 'APPROVAL', requiredRole: 'TRANSPORT_PLANNER' },
+        }),
+      ],
+      parameters,
+    )
+    expect(withReviewer.valid).toBe(true)
+  })
+
   it('rejects a combinator without a combiner and malformed definitions', () => {
     const missingCombiner = validateRuleSet(
       [rule('R40', { evaluator: { kind: 'combinator', ref: 'and' } })],

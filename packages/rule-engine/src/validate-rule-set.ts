@@ -96,6 +96,9 @@ function findTypeMismatches(
   if (rule.evaluator.kind === 'humanGate' && !rule.humanGate) {
     issues.push(mismatch('humanGate evaluator requires a humanGate definition'))
   }
+  if (rule.unknownPolicy === 'escalateToHuman' && !rule.humanGate) {
+    issues.push(mismatch('escalateToHuman requires a humanGate naming the reviewer role'))
+  }
 
   for (const expression of [rule.combiner, rule.appliesWhen]) {
     if (!expression) continue
