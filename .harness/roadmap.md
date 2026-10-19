@@ -36,7 +36,7 @@
 | [x] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | 种子与案例通过 schema 与交叉引用校验；`demo:reset` 载入随 T2.4 接入 | T1.6 |
 | [x] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务 | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
 | [x] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
-| [ ] | T2.5 | `web` 最小版：案例列表、规则树（状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
+| [x] | T2.5 | `web` 最小版：案例列表、规则树（状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
 | [ ] | T2.6 | `docs/getting-started.md` | 新环境照做可演示 | T2.4, T2.5 |
 
 ## P3 完整规则与业务服务
