@@ -23,10 +23,14 @@ describe.each(listCaseIds())('case %s', (caseName) => {
     }
   })
 
-  it('scripts semantic answers only for existing cargo items', () => {
-    const cargoItemIds = shipment.cargoItems.map((item) => item.cargoItemId as string)
+  it('scripts semantic answers only for the order or its existing items and legs', () => {
+    const knownEntities = [
+      'order',
+      ...shipment.cargoItems.map((item) => item.cargoItemId as string),
+      ...shipment.legs.map((leg) => leg.legId as string),
+    ]
     for (const scripted of caseFile.scriptedSemanticAnswers) {
-      expect(cargoItemIds).toContain(scripted.entityId)
+      expect(knownEntities).toContain(scripted.entityId)
     }
   })
 })

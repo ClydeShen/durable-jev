@@ -7,7 +7,12 @@
     "shipmentId": "LOG-001",
     "customerId": "CUST-ACME-RETAIL",
     "caseRevision": 1,
-    "entityVersions": { "cargo": 1, "route": 1, "carrier": 1, "quote": 1 },
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
     "origin": "SHA-WH1",
     "destination": "HGH-DC2",
     "deliveryWindow": {
@@ -46,19 +51,37 @@
         "plannedArrivalAt": "2026-11-03T07:30:00Z"
       }
     ],
-    "quote": { "quoteId": "Q-LOG-001-1", "amountCents": 180000, "currency": "CNY" },
+    "quote": {
+      "quoteId": "Q-LOG-001-1",
+      "amountCents": 180000,
+      "currency": "CNY"
+    },
     "customerInstructions": "Deliver to dock 3; call the receiving desk 30 minutes before arrival."
   },
   "scriptedSemanticAnswers": [
     {
       "ruleId": "R03",
       "entityId": "LOG-001-ITEM-1",
-      "answer": { "type": "noul", "noul": 0.97 }
+      "answer": {
+        "type": "noul",
+        "noul": 0.97
+      }
     },
     {
       "ruleId": "R03",
       "entityId": "LOG-001-ITEM-2",
-      "answer": { "type": "noul", "noul": 0.95 }
+      "answer": {
+        "type": "noul",
+        "noul": 0.95
+      }
+    },
+    {
+      "ruleId": "R27",
+      "entityId": "order",
+      "answer": {
+        "type": "noul",
+        "noul": 0.93
+      }
     }
   ],
   "eventScript": [
@@ -66,24 +89,45 @@
       "step": "submit",
       "expect": {
         "orderStatus": "AWAITING_HUMAN",
-        "gates": { "R30": "PASS", "R36": "PASS", "R37": "PASS", "R39-LOAD": "WAITING_HUMAN" },
-        "openHumanTasks": [{ "ruleId": "R39-LOAD", "requiredRole": "WAREHOUSE_OPERATOR" }]
+        "gates": {
+          "R30": "PASS",
+          "R36": "PASS",
+          "R37": "PASS",
+          "R39-LOAD": "WAITING_HUMAN"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
       }
     },
     {
       "step": "completeHumanTask",
       "ruleId": "R39-LOAD",
       "actor": "WAREHOUSE_OPERATOR",
-      "fields": { "loadScanRef": "SCAN-LOG-001-01", "physicalCheckBy": "warehouse-op-02" },
+      "fields": {
+        "loadScanRef": "SCAN-LOG-001-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
       "expect": {
         "orderStatus": "READY_TO_DISPATCH",
-        "gates": { "R39-LOAD": "PASS", "R39-CONFIRM": "WAITING_HUMAN" }
+        "gates": {
+          "R39-LOAD": "PASS",
+          "R39-CONFIRM": "WAITING_HUMAN"
+        }
       }
     },
     {
       "step": "dispatch",
       "actor": "DISPATCHER",
-      "expect": { "orderStatus": "DISPATCHED", "gates": { "R40": "PASS" } }
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        }
+      }
     }
   ]
 }
