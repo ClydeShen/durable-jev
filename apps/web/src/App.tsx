@@ -117,7 +117,12 @@ export function App() {
               <section>
                 <h2>Rule tree</h2>
                 {catalog ? (
-                  <RuleTree rootRuleId="R40" rules={catalog.rules} checks={selectedCase.checks} />
+                  <RuleTree
+                    rootRuleId="R40"
+                    rules={catalog.rules}
+                    checks={selectedCase.checks}
+                    humanTasks={selectedCase.humanTasks}
+                  />
                 ) : (
                   <p className="muted">Loading rules…</p>
                 )}

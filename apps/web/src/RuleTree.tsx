@@ -1,6 +1,7 @@
-import type { CheckResult } from '@durable-jev/contracts'
+import type { CheckResult, HumanTask } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
-import { upstreamOf } from './rule-graph.js'
+import { roleLabels } from './roles.js'
+import { rootBlockers, upstreamOf } from './rule-graph.js'
 import { StatusBadge } from './StatusBadge.js'
 
 const evaluatorLabels: Record<string, string> = {
@@ -15,35 +16,50 @@ type RuleTreeProps = {
   rootRuleId: string
   rules: RuleDefinition[]
   checks: CheckResult[]
+  humanTasks: HumanTask[]
 }
 
-export function RuleTree({ rootRuleId, rules, checks }: RuleTreeProps) {
-  const rulesById = new Map(rules.map((rule) => [rule.ruleId as string, rule]))
-  const checksByRule = Map.groupBy(checks, (check) => check.ruleId as string)
+type TreeContext = {
+  rulesById: Map<string, RuleDefinition>
+  checksByRule: Map<string, CheckResult[]>
+  openTaskRoleByRule: Map<string, string>
+}
+
+export function RuleTree({ rootRuleId, rules, checks, humanTasks }: RuleTreeProps) {
+  const context: TreeContext = {
+    rulesById: new Map(rules.map((rule) => [rule.ruleId as string, rule])),
+    checksByRule: Map.groupBy(checks, (check) => check.ruleId as string),
+    openTaskRoleByRule: new Map(
+      humanTasks
+        .filter((task) => task.status === 'OPEN')
+        .map((task) => [task.ruleId as string, roleLabels[task.requiredRole]]),
+    ),
+  }
   return (
     <ul className="rule-tree">
-      <RuleNode
-        ruleId={rootRuleId}
-        rulesById={rulesById}
-        checksByRule={checksByRule}
-        ancestors={[]}
-      />
+      <RuleNode ruleId={rootRuleId} context={context} ancestors={[]} />
     </ul>
   )
 }
 
-function RuleNode(props: {
-  ruleId: string
-  rulesById: Map<string, RuleDefinition>
-  checksByRule: Map<string, CheckResult[]>
-  ancestors: string[]
-}) {
-  const { ruleId, rulesById, checksByRule, ancestors } = props
+function describeBlocker(ruleId: string, context: TreeContext): string {
+  const role = context.openTaskRoleByRule.get(ruleId)
+  if (role) return `${ruleId} · ${role}`
+  const statuses = [
+    ...new Set((context.checksByRule.get(ruleId) ?? []).map((check) => check.gateStatus)),
+  ]
+  return statuses.length > 0 ? `${ruleId} (${statuses.join(', ').toLowerCase()})` : ruleId
+}
+
+function RuleNode(props: { ruleId: string; context: TreeContext; ancestors: string[] }) {
+  const { ruleId, context, ancestors } = props
+  const { rulesById, checksByRule } = context
   const rule = rulesById.get(ruleId)
   const checks = checksByRule.get(ruleId) ?? []
   const children = rule ? upstreamOf(rule) : []
   const needsAttention = checks.some((check) => check.gateStatus !== 'PASS')
-  const blockedBy = [...new Set(checks.flatMap((check) => check.blockedBy))]
+  const blockedBy = [...new Set(checks.flatMap((check) => check.blockedBy as string[]))]
+  const waitingOn = rootBlockers(blockedBy, checksByRule)
 
   const summary = (
     <span className="rule-row">
@@ -59,8 +75,10 @@ function RuleNode(props: {
           </span>
         ))}
       </span>
-      {blockedBy.length > 0 && (
-        <span className="muted small">blocked by {blockedBy.join(', ')}</span>
+      {waitingOn.length > 0 && (
+        <span className="muted small">
+          waiting on {waitingOn.map((blocker) => describeBlocker(blocker, context)).join('; ')}
+        </span>
       )}
     </span>
   )
@@ -75,8 +93,7 @@ function RuleNode(props: {
             <RuleNode
               key={childRuleId}
               ruleId={childRuleId}
-              rulesById={rulesById}
-              checksByRule={checksByRule}
+              context={context}
               ancestors={[...ancestors, ruleId]}
             />
           ))}

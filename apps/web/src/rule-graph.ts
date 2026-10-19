@@ -29,3 +29,25 @@ export function upstreamOf(rule: RuleDefinition): string[] {
     ]),
   ]
 }
+
+type BlockingCheck = { ruleId: string; gateStatus: string; blockedBy: readonly string[] }
+
+export function rootBlockers(
+  blockedBy: readonly string[],
+  checksByRule: ReadonlyMap<string, readonly BlockingCheck[]>,
+): string[] {
+  const roots = new Set<string>()
+  const visited = new Set<string>()
+  const pending = [...blockedBy]
+  while (pending.length > 0) {
+    const ruleId = pending.pop() as string
+    if (visited.has(ruleId)) continue
+    visited.add(ruleId)
+    const blockedChecks = (checksByRule.get(ruleId) ?? []).filter(
+      (check) => check.gateStatus === 'BLOCKED_DEPENDENCY' && check.blockedBy.length > 0,
+    )
+    if (blockedChecks.length === 0) roots.add(ruleId)
+    for (const check of blockedChecks) pending.push(...check.blockedBy)
+  }
+  return [...roots]
+}
