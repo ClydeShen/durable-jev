@@ -5,6 +5,7 @@
   "rules": [
     {
       "ruleId": "R01",
+      "title": "Required fields",
       "version": "1",
       "scope": "order",
       "branch": "base",
@@ -29,6 +30,7 @@
     },
     {
       "ruleId": "R02",
+      "title": "Weight and size",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -49,6 +51,7 @@
     },
     {
       "ruleId": "R03",
+      "title": "Declared category",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -68,6 +71,7 @@
     },
     {
       "ruleId": "R04",
+      "title": "Handling branch",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -87,6 +91,7 @@
     },
     {
       "ruleId": "R04-COLD",
+      "title": "Is cold chain",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -102,6 +107,7 @@
     },
     {
       "ruleId": "R04-CONTROLLED",
+      "title": "Is controlled",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -117,6 +123,7 @@
     },
     {
       "ruleId": "R05",
+      "title": "Vehicle capacity",
       "version": "1",
       "scope": "cargoItem",
       "branch": "base",
@@ -138,6 +145,7 @@
     },
     {
       "ruleId": "R06",
+      "title": "Delivery window",
       "version": "1",
       "scope": "order",
       "branch": "base",
@@ -153,6 +161,7 @@
     },
     {
       "ruleId": "R07",
+      "title": "Leg connections",
       "version": "1",
       "scope": "order",
       "branch": "base",
@@ -174,6 +183,7 @@
     },
     {
       "ruleId": "R08",
+      "title": "Version check",
       "version": "1",
       "scope": "order",
       "branch": "base",
@@ -189,6 +199,7 @@
     },
     {
       "ruleId": "R09",
+      "title": "Controlled documents",
       "version": "1",
       "scope": "cargoItem",
       "branch": "controlled",
@@ -208,6 +219,7 @@
     },
     {
       "ruleId": "R10",
+      "title": "Documents match cargo",
       "version": "1",
       "scope": "cargoItem",
       "branch": "controlled",
@@ -231,6 +243,7 @@
     },
     {
       "ruleId": "R11",
+      "title": "Carrier qualification",
       "version": "1",
       "scope": "cargoItem",
       "branch": "controlled",
@@ -250,6 +263,7 @@
     },
     {
       "ruleId": "R12",
+      "title": "Mixing matrix",
       "version": "1",
       "scope": "order",
       "branch": "controlled",
@@ -273,6 +287,7 @@
     },
     {
       "ruleId": "R13",
+      "title": "Compliance sign-off",
       "version": "1",
       "scope": "order",
       "branch": "controlled",
@@ -308,6 +323,7 @@
     },
     {
       "ruleId": "R14",
+      "title": "Controlled ready",
       "version": "1",
       "scope": "cargoItem",
       "branch": "controlled",
@@ -352,6 +368,7 @@
     },
     {
       "ruleId": "R15",
+      "title": "Temperature range",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -371,6 +388,7 @@
     },
     {
       "ruleId": "R16",
+      "title": "Vehicle temperature",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -390,6 +408,7 @@
     },
     {
       "ruleId": "R17",
+      "title": "Sensor record",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -409,6 +428,7 @@
     },
     {
       "ruleId": "R18",
+      "title": "Inspection risk",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -433,6 +453,7 @@
     },
     {
       "ruleId": "R18-RISK",
+      "title": "Risk found",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -452,6 +473,7 @@
     },
     {
       "ruleId": "R19",
+      "title": "Excursion check",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -471,6 +493,7 @@
     },
     {
       "ruleId": "R19-EXCURSION",
+      "title": "Excursion too long",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -490,6 +513,7 @@
     },
     {
       "ruleId": "R20",
+      "title": "Quality disposition",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -514,6 +538,7 @@
     },
     {
       "ruleId": "R20-REWORK",
+      "title": "Rework ordered",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -533,6 +558,7 @@
     },
     {
       "ruleId": "R21-REQUIRED",
+      "title": "Rework needed",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -565,6 +591,7 @@
     },
     {
       "ruleId": "R21",
+      "title": "Warehouse repack",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -589,6 +616,7 @@
     },
     {
       "ruleId": "R22-CAPTURE",
+      "title": "Retest capture",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -613,6 +641,7 @@
     },
     {
       "ruleId": "R22",
+      "title": "Retest in range",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -632,6 +661,7 @@
     },
     {
       "ruleId": "R23",
+      "title": "Cold chain ready",
       "version": "1",
       "scope": "cargoItem",
       "branch": "coldChain",
@@ -688,6 +718,7 @@
     },
     {
       "ruleId": "R24",
+      "title": "Carrier service area",
       "version": "1",
       "scope": "leg",
       "branch": "plan",
@@ -703,6 +734,7 @@
     },
     {
       "ruleId": "R25",
+      "title": "Vehicle equipment",
       "version": "1",
       "scope": "leg",
       "branch": "plan",
@@ -718,6 +750,7 @@
     },
     {
       "ruleId": "R26",
+      "title": "Hub capability",
       "version": "1",
       "scope": "leg",
       "branch": "plan",
@@ -733,6 +766,7 @@
     },
     {
       "ruleId": "R27",
+      "title": "Customer restrictions",
       "version": "1",
       "scope": "order",
       "branch": "plan",
@@ -758,6 +792,7 @@
     },
     {
       "ruleId": "R28",
+      "title": "Alternative plan",
       "version": "1",
       "scope": "order",
       "branch": "plan",
@@ -773,6 +808,7 @@
     },
     {
       "ruleId": "R29",
+      "title": "Carrier reservation",
       "version": "1",
       "scope": "order",
       "branch": "plan",
@@ -794,6 +830,7 @@
     },
     {
       "ruleId": "R30",
+      "title": "Plan valid",
       "version": "1",
       "scope": "order",
       "branch": "plan",
@@ -863,6 +900,7 @@
     },
     {
       "ruleId": "R31",
+      "title": "Account active",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -878,6 +916,7 @@
     },
     {
       "ruleId": "R32",
+      "title": "Within credit",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -893,6 +932,7 @@
     },
     {
       "ruleId": "R33",
+      "title": "Exception within limit",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -915,6 +955,7 @@
     },
     {
       "ruleId": "R34",
+      "title": "Credit exception approval",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -941,6 +982,7 @@
     },
     {
       "ruleId": "R35-REQUIRED",
+      "title": "Extra cost needs approval",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -956,6 +998,7 @@
     },
     {
       "ruleId": "R35",
+      "title": "Extra cost approval",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -979,6 +1022,7 @@
     },
     {
       "ruleId": "R36",
+      "title": "Commercial ready",
       "version": "1",
       "scope": "order",
       "branch": "commercial",
@@ -1029,6 +1073,7 @@
     },
     {
       "ruleId": "R37",
+      "title": "Cargo ready",
       "version": "1",
       "scope": "order",
       "branch": "release",
@@ -1077,6 +1122,7 @@
     },
     {
       "ruleId": "R38",
+      "title": "Pre-load tasks",
       "version": "1",
       "scope": "order",
       "branch": "release",
@@ -1130,6 +1176,7 @@
     },
     {
       "ruleId": "R39-LOAD",
+      "title": "Loading",
       "version": "1",
       "scope": "order",
       "branch": "release",
@@ -1150,6 +1197,7 @@
     },
     {
       "ruleId": "R39-CONFIRM",
+      "title": "Dispatcher confirmation",
       "version": "1",
       "scope": "order",
       "branch": "release",
@@ -1169,6 +1217,7 @@
     },
     {
       "ruleId": "R39",
+      "title": "Loaded and confirmed",
       "version": "1",
       "scope": "order",
       "branch": "release",
@@ -1197,6 +1246,7 @@
     },
     {
       "ruleId": "R40",
+      "title": "Dispatch",
       "version": "1",
       "scope": "order",
       "branch": "release",
