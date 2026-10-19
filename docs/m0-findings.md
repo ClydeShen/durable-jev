@@ -57,7 +57,7 @@
 
 ## Jev `@typesafe-ai/sdk` 0.7.0
 
-复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。未设置 `TYPESAFE_API_KEY` 时用 recorded 模式（注入 `fetch` 返回录制响应），设置后真实调用。
+复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。未设置 `TYPESAFE_API_KEY` 时用 recorded 模式（注入 `fetch` 返回一次真实调用录下的响应），设置后真实调用。
 
 场景：一次请求同时问 R18（检查备注的风险信号，Choice）和 R10（安全说明与声明是否一致，Noul）。
 
@@ -67,9 +67,21 @@
 | 接口 | `POST https://api.typesafe.ai/v1/systemone`，Bearer `TYPESAFE_API_KEY` |
 | 版本锁定 | 可固定模型 ID `jev-1.14.0`（另有 `jev-1.13.0`），避免 `jev-latest` 别名 |
 | 字段 | Choice：`choice`、`probabilities`、`confidence`；Noul：只有 `noul`（无 confidence），与 PRD 一致 |
-| 用量 | 返回 `usage.input_tokens`；按输入 token 计费（$0.042 / Mtok），输出免费 |
+| 用量 | 返回 `usage.input_tokens` 与 `usage.output_tokens`（实测 440 / 77）；官方定价按输入 token 计费（$0.042 / Mtok），输出 token 是否计费未从账单核实 |
 | 无 key 运行 | 通过。SDK 支持注入 `fetch`，可做 recorded/scripted 模式 |
-| 真实调用 | **待 key**。质量、延迟、限流行为未验证 |
+| 真实调用 | 通过（2026-10-19，6 次）。见下表 |
+| 鉴权失败 | 错误 key 抛 `AuthenticationError`（401），可与业务 UNKNOWN 区分为 ERROR |
+
+真实调用结果（同一输入连续 6 次，`jev-1.14.0`）：
+
+| 问题 | 结果 | 稳定性 |
+|---|---|---|
+| R18 `packagingRisk`（Choice） | 6/6 为 `damaged_packaging`；概率 0.84–0.88，`cold_chain_risk` 0.12–0.16，`no_risk` 0；confidence 0.76–0.82 | 判定稳定，概率小幅波动 |
+| R10 `documentMatchesDeclaration`（Noul） | 0.04–0.05（疫苗 vs 锂电池 SDS，正确判为不一致） | 稳定 |
+| 延迟 | 224–319 ms（含 TLS 建连，单次请求两个问题） | |
+| 用量 | 每次 input 440 / output 77 token | 确定 |
+
+未验证：限流（429）行为、大批量问题的延迟、全量样本上的质量（留给 B1）。
 
 ### 对设计的影响
 
@@ -77,6 +89,7 @@
 - 一次请求可批量问多个问题，同一订单的多个语义判断可以合并成一次调用。
 - SDK 自带重试（默认 2 次，单次超时 10s）。为了让预算守卫准确计数，SDK 重试关掉（`maxRetries: 0`），由 harness 统一管理重试。
 - 环境变量统一用官方名 `TYPESAFE_API_KEY`。
+- 同一输入的概率/confidence 有小幅波动，回放与回归测试不能依赖 live 结果，必须走 `ScriptedJudge`；门槛判定应只依赖映射后的离散结论，阈值不要贴近观测到的波动区间。
 
 ## Trace 传播（OpenTelemetry API 1.9.1 / SDK 2.12.0）
 
@@ -116,7 +129,7 @@
 |---|---|---|
 | Pi Durable | 可行 | Experimental；单进程占有存储；`callers` 与 `restartLimit` 尚未验证 |
 | A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
-| Jev | 接口可行 | 真实调用待 key |
+| Jev | 可行（已真实调用） | 概率有小幅波动；限流行为未验证 |
 | OpenTelemetry | 可行 | 无 |
 
 `pnpm spikes` 一次运行全部 spike。

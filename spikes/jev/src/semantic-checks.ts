@@ -9,12 +9,12 @@ const recordedResponse = {
     packagingRisk: {
       type: 'choice',
       choice: 'damaged_packaging',
-      probabilities: { no_risk: 0.04, damaged_packaging: 0.83, cold_chain_risk: 0.13 },
-      confidence: 0.79,
+      confidence: 0.77,
+      probabilities: { no_risk: 0, damaged_packaging: 0.85, cold_chain_risk: 0.15 },
     },
-    documentMatchesDeclaration: { type: 'noul', noul: 0.12 },
+    documentMatchesDeclaration: { type: 'noul', noul: 0.05 },
   },
-  usage: { input_tokens: 412, output_tokens: 0 },
+  usage: { input_tokens: 440, output_tokens: 77 },
 }
 
 async function recordedFetch(url: string, init?: RequestInit): Promise<Response> {
