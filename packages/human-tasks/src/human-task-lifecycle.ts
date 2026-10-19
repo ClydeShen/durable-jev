@@ -2,6 +2,7 @@ import type {
   CaseId,
   EvidenceRef,
   GateStatus,
+  HumanDecision,
   HumanTask,
   HumanTaskId,
   HumanTaskTarget,
@@ -11,6 +12,8 @@ import type {
   UtcTimestamp,
 } from '@durable-jev/contracts'
 import { humanTaskMachine } from '@durable-jev/contracts'
+
+export type DecisionCondition = NonNullable<HumanDecision['conditions']>[number]
 
 export type NewHumanTask = {
   humanTaskId: HumanTaskId
@@ -34,7 +37,7 @@ function moveTo(task: HumanTask, status: HumanTask['status'], changes: Partial<H
 }
 
 export type HumanTaskCommand =
-  | { kind: 'approve'; actor: Role; reason?: string }
+  | { kind: 'approve'; actor: Role; reason?: string; conditions?: DecisionCondition[] }
   | { kind: 'reject'; actor: Role; reason: string }
   | {
       kind: 'complete'
@@ -98,6 +101,9 @@ export function applyHumanTaskCommand(
         decidedBy: command.actor,
         decidedAt: context.now,
         ...(command.reason === undefined ? {} : { reason: command.reason }),
+        ...(command.kind === 'approve' && command.conditions?.length
+          ? { conditions: command.conditions }
+          : {}),
       },
     }),
   )

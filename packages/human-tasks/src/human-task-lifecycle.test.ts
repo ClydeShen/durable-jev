@@ -62,6 +62,15 @@ describe('human task commands', () => {
     expect(result).toMatchObject({ accepted: true, task: { status: 'APPROVED' } })
   })
 
+  it('records approval conditions such as required rework', () => {
+    const result = applyHumanTaskCommand(
+      complianceApproval,
+      { kind: 'approve', actor: 'COMPLIANCE_REVIEWER', conditions: ['REWORK_REQUIRED'] },
+      current,
+    )
+    expect(result).toMatchObject({ task: { decision: { conditions: ['REWORK_REQUIRED'] } } })
+  })
+
   it('refuses an approval from another role (F11)', () => {
     const result = applyHumanTaskCommand(
       complianceApproval,
