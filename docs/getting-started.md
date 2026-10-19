@@ -1,63 +1,61 @@
 # Getting started
 
-## 环境
+## Requirements
 
 - Node 22+
 - pnpm 10+
-- 无需任何 API key：默认 `MODEL_MODE=scripted`，语义判断使用案例文件中的脚本化答案。
+- No API key needed: the default `MODEL_MODE=scripted` answers semantic questions from scripted answers in the case files.
 
-## 三步跑起来
+## Run it in three steps
 
 ```bash
-pnpm bootstrap     # 安装依赖并编译
-pnpm start         # 启动 Coordinator、工作台和本地控制端
-pnpm demo:reset    # 另开一个终端：清库并载入预置案例
+pnpm bootstrap     # install dependencies and build
+pnpm start         # start the coordinator, the workbench and the local control server
+pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 ```
 
-`pnpm start` 启动后打印：
+`pnpm start` prints:
 
-| 地址 | 内容 |
+| URL | What |
 |---|---|
-| http://127.0.0.1:5173/ | 工作台 |
+| http://127.0.0.1:5173/ | Workbench |
 | http://127.0.0.1:4100/cases | Coordinator API |
-| http://127.0.0.1:4000/processes | 本地控制端（只监听 127.0.0.1） |
+| http://127.0.0.1:4000/processes | Local control server (listens on 127.0.0.1 only) |
 
-`Ctrl+C` 停止全部进程。数据保存在 `var/data/`，重启后仍在；`pnpm demo:reset` 或工作台的 "Reset demo" 按钮会清空后重新载入。
+`Ctrl+C` stops every process. Data lives in `var/data/` and survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
 
-## 演示 LOG-001：普通货从提交到发运
+## Walkthrough: LOG-001, general cargo from submission to dispatch
 
-1. 打开工作台，左侧选择 LOG-001。订单状态为 "Awaiting human"。
-2. 展开 Rule tree：除 R39 外的门槛都已 "Pass"；R39-CONFIRM 显示 "blocked by R39-LOAD"。
-3. 右上角 "Acting as" 切到 "Dispatcher"，在 R39-LOAD 任务上点 "Submit evidence"：服务端返回 403，因为装载必须由仓库操作员完成（F11）。
-4. 切回 "Warehouse operator"，填写 `loadScanRef` 和 `physicalCheckBy` 后提交。缺任一字段会被拒绝（F14）。订单变为 "Ready to dispatch"。
-5. 切到 "Dispatcher"，点 "Confirm dispatch"。Coordinator 在同一事务内重读当前版本、重新求值 R40，通过后写入 "Dispatched"；不通过则整个事务回滚。
+1. Open the workbench and select LOG-001 on the left. The order is "Awaiting human".
+2. Expand the rule tree: every gate except R39 shows "Pass"; R39-CONFIRM shows "blocked by R39-LOAD".
+3. Switch "Acting as" to "Dispatcher" and click "Submit evidence" on the R39-LOAD task. The server answers 403 because loading must be done by a warehouse operator (F11).
+4. Switch back to "Warehouse operator", fill in `loadScanRef` and `physicalCheckBy`, and submit. Leaving either field empty is rejected (F14). The order becomes "Ready to dispatch".
+5. Switch to "Dispatcher" and click "Confirm dispatch". In one transaction the coordinator re-reads the current revision and re-evaluates R40; only if it passes is the order written as "Dispatched". Otherwise the whole transaction rolls back.
 
-界面全部为英文。
+## Process control
 
-## 进程控制
-
-本地控制端供演示使用（后续阶段由工作台调用）：
+The local control server is for demos (the workbench will call it in later phases):
 
 ```bash
-curl -X POST http://127.0.0.1:4000/processes/coordinator/kill      # 模拟崩溃
-curl -X POST http://127.0.0.1:4000/processes/coordinator/start     # 重启，数据仍在
-curl http://127.0.0.1:4000/processes                               # 查看进程状态
+curl -X POST http://127.0.0.1:4000/processes/coordinator/kill      # simulate a crash
+curl -X POST http://127.0.0.1:4000/processes/coordinator/start     # restart; data is kept
+curl http://127.0.0.1:4000/processes                               # process status
 ```
 
-## 其他命令
+## Other commands
 
-| 命令 | 作用 |
+| Command | What |
 |---|---|
-| `pnpm test` | 运行单元测试 |
-| `pnpm lint` | 检查格式与 lint |
-| `pnpm spikes` | 运行 M0 技术预检 spike，结论见 [m0-findings.md](m0-findings.md) |
+| `pnpm test` | Run unit tests |
+| `pnpm lint` | Check formatting and lint |
+| `pnpm spikes` | Run the M0 technical spikes; findings in [m0-findings.md](m0-findings.md) |
 
-## 模型模式与 API 额度
+## Model mode and API quota
 
-复制 `.env.example` 为 `.env`。默认 `MODEL_MODE=scripted`，所有测试、spike 与演示都不发真实请求。
-只有显式设置 `MODEL_MODE=live` 并提供 `TYPESAFE_API_KEY` 时才调用 Jev；Jev 额度有限，只在关键的完整测试中使用。
+Copy `.env.example` to `.env`. The default `MODEL_MODE=scripted` means tests, spikes and the demo never send real requests.
+Jev is only called when you explicitly set `MODEL_MODE=live` and provide `TYPESAFE_API_KEY`. Jev quota is limited, so live mode is reserved for key end-to-end tests.
 
-## 常见问题
+## Troubleshooting
 
-- 端口被占用：确认 4000、4100、5173 没有其他进程，或先 `Ctrl+C` 停掉上一次的 `pnpm start`。
-- `pnpm demo:reset` 提示连接失败：需要先在另一个终端运行 `pnpm start`。
+- Port already in use: make sure nothing else is on 4000, 4100 or 5173, or stop the previous `pnpm start` with `Ctrl+C`.
+- `pnpm demo:reset` cannot connect: run `pnpm start` in another terminal first.
