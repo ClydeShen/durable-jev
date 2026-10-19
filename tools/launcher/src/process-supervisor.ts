@@ -4,6 +4,7 @@ export type ManagedProcessDefinition = {
   name: string
   command: string
   args: string[]
+  cwd?: string
   env?: Record<string, string>
   healthUrl?: string
 }
@@ -46,6 +47,7 @@ export class ProcessSupervisor {
     if (managed.state === 'running') return
     const { definition } = managed
     const child = spawn(definition.command, definition.args, {
+      ...(definition.cwd === undefined ? {} : { cwd: definition.cwd }),
       env: { ...process.env, ...definition.env },
       stdio: ['ignore', 'pipe', 'pipe'],
     })

@@ -8,9 +8,8 @@ await supervisor.startAll()
 const controlServer = createControlApp(supervisor).listen(ports.launcher, '127.0.0.1', () => {
   console.log('')
   console.log('durable-jev is running')
-  for (const status of supervisor.status()) {
-    console.log(`  ${status.name.padEnd(12)} ${status.healthUrl?.replace('/health', '')}`)
-  }
+  console.log(`  ${'workbench'.padEnd(12)} http://127.0.0.1:${ports.web}/`)
+  console.log(`  ${'coordinator'.padEnd(12)} http://127.0.0.1:${ports.coordinator}/cases`)
   console.log(`  ${'control'.padEnd(12)} http://127.0.0.1:${ports.launcher}/processes`)
   console.log('')
   console.log('Load demo cases with: pnpm demo:reset')
