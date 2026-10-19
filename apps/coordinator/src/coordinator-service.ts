@@ -197,6 +197,16 @@ export class CoordinatorService {
       if (task.ruleId === dispatchConfirmationRuleId) {
         throw new CoordinatorError('CONFLICT', 'dispatcher confirmation goes through dispatch')
       }
+      const allowedConditions = this.requireRule(task.ruleId).humanGate?.decisionConditions ?? []
+      const unexpected = (action.kind === 'approve' ? (action.conditions ?? []) : []).filter(
+        (condition) => !allowedConditions.includes(condition),
+      )
+      if (unexpected.length > 0) {
+        throw new CoordinatorError(
+          'UNPROCESSABLE',
+          `${task.ruleId} does not accept ${unexpected.join(', ')}`,
+        )
+      }
       const updated = this.applyCommand(task, { ...action, actor } as HumanTaskCommand)
       this.evaluateAndPersist(task.caseId)
       return updated

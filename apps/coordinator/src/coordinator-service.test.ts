@@ -97,6 +97,26 @@ describe('coordinator guards', () => {
     expect(coordinator.getCase(logOne.caseId).orderStatus).toBe('AWAITING_HUMAN')
   })
 
+  it('rejects decision conditions the gate does not declare', () => {
+    const { coordinator } = startCoordinator()
+    const [firstAnswer, ...otherAnswers] = logOne.scriptedSemanticAnswers
+    const view = coordinator.submitCase({
+      shipment: logOne.shipment,
+      scriptedSemanticAnswers: [
+        { ...firstAnswer, answer: { type: 'noul', noul: 0.5 } },
+        ...otherAnswers,
+      ],
+    })
+    const reviewTask = openTaskFor(view, 'R03')?.humanTaskId ?? ''
+    expectCoordinatorError(
+      () =>
+        coordinator.approveHumanTask(reviewTask, 'TRANSPORT_PLANNER', undefined, [
+          'REWORK_REQUIRED',
+        ]),
+      'UNPROCESSABLE',
+    )
+  })
+
   it('refuses to dispatch before loading is complete', () => {
     const { coordinator, submitLogOne } = startCoordinator()
     submitLogOne()
