@@ -1,0 +1,453 @@
+{
+  "ruleSetVersion": "log-001-subset-1",
+  "policyVersion": "policy-v1",
+  "reviewStatus": "draft",
+  "rules": [
+    {
+      "ruleId": "R01",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "requiredFieldsPresent"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "shipmentId",
+        "customerId",
+        "origin",
+        "destination",
+        "deliveryWindow",
+        "cargoItems",
+        "legs",
+        "quote"
+      ],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route", "quote"]
+    },
+    {
+      "ruleId": "R02",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "weightAndDimensionsValid"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "cargoItems.weightGrams",
+        "cargoItems.lengthMm",
+        "cargoItems.widthMm",
+        "cargoItems.heightMm"
+      ],
+      "parameters": ["maxCargoItemWeightGrams", "maxCargoItemDimensionMm"],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
+      "ruleId": "R03",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "declaredCategoryMatchesDescription"
+      },
+      "unknownPolicy": "escalateToHuman",
+      "inputPaths": ["cargoItems.description", "cargoItems.declaredCategories"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "documents"]
+    },
+    {
+      "ruleId": "R04",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R02", "R03"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "cargoBranchDetermined"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "cargoItems.declaredCategories",
+        "cargoItems.temperatureRange",
+        "cargoItems.controlledClass"
+      ],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
+      "ruleId": "R05",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R02"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "fitsVehicleCapacity"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "cargoItems.weightGrams",
+        "cargoItems.lengthMm",
+        "cargoItems.widthMm",
+        "cargoItems.heightMm",
+        "legs.vehicleId"
+      ],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "vehicle"]
+    },
+    {
+      "ruleId": "R06",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "arrivalWithinDeliveryWindow"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["deliveryWindow", "legs.plannedArrivalAt"],
+      "parameters": ["deliveryWindowToleranceMinutes"],
+      "invalidationTriggers": ["route"]
+    },
+    {
+      "ruleId": "R07",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "legSequenceConnects"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "legs.sequence",
+        "legs.fromLocation",
+        "legs.toLocation",
+        "legs.plannedDepartureAt",
+        "legs.plannedArrivalAt"
+      ],
+      "parameters": ["minLegConnectionMinutes"],
+      "invalidationTriggers": ["route"]
+    },
+    {
+      "ruleId": "R08",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "noVersionConflict"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["caseRevision", "entityVersions"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route", "carrier", "vehicle", "quote"]
+    },
+    {
+      "ruleId": "R24",
+      "version": "1",
+      "scope": "leg",
+      "dependsOn": ["R07"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "carrierServesLeg"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.carrierId", "legs.fromLocation", "legs.toLocation"],
+      "parameters": [],
+      "invalidationTriggers": ["route", "carrier"]
+    },
+    {
+      "ruleId": "R25",
+      "version": "1",
+      "scope": "leg",
+      "dependsOn": ["R05"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "vehicleFitsLeg"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.vehicleId"],
+      "parameters": [],
+      "invalidationTriggers": ["vehicle", "cargo"]
+    },
+    {
+      "ruleId": "R29",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": ["R06", "R24", "R25"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "activeReservationForPlan"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.carrierId", "legs.vehicleId", "entityVersions.route"],
+      "parameters": [],
+      "invalidationTriggers": ["route", "carrier", "vehicle", "reservation"]
+    },
+    {
+      "ruleId": "R30",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R06"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R07"
+          },
+          {
+            "kind": "allOf",
+            "scope": "leg",
+            "expression": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "ref",
+                  "ruleId": "R24"
+                },
+                {
+                  "kind": "ref",
+                  "ruleId": "R25"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R29"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R31",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "customerAccountActive"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["customerId"],
+      "parameters": [],
+      "invalidationTriggers": ["customer"]
+    },
+    {
+      "ruleId": "R32",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "quoteWithinCredit"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["customerId", "quote.amountCents"],
+      "parameters": [],
+      "invalidationTriggers": ["customer", "quote"]
+    },
+    {
+      "ruleId": "R36",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R31"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R32"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R37",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "allOf",
+        "scope": "cargoItem",
+        "expression": {
+          "kind": "and",
+          "operands": [
+            {
+              "kind": "ref",
+              "ruleId": "R02"
+            },
+            {
+              "kind": "ref",
+              "ruleId": "R03"
+            },
+            {
+              "kind": "ref",
+              "ruleId": "R04"
+            },
+            {
+              "kind": "ref",
+              "ruleId": "R05"
+            }
+          ]
+        }
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R38",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "preloadHumanTasksValid"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["humanTask"]
+    },
+    {
+      "ruleId": "R39-LOAD",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": ["R30", "R36", "R37", "R38"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "loadScanCompleted"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["entityVersions"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "OPERATION",
+        "requiredRole": "WAREHOUSE_OPERATOR"
+      },
+      "invalidationTriggers": ["cargo", "route", "vehicle", "loading"]
+    },
+    {
+      "ruleId": "R39-CONFIRM",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": ["R39-LOAD"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "dispatcherConfirmed"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["entityVersions"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "DISPATCHER"
+      },
+      "invalidationTriggers": ["cargo", "route", "vehicle", "loading"]
+    },
+    {
+      "ruleId": "R39",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R39-LOAD"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R39-CONFIRM"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R40",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R08"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R30"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R36"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R37"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R38"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R39"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    }
+  ]
+}
