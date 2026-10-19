@@ -13,5 +13,8 @@
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
     "zod": "4.6.7"
+  },
+  "scripts": {
+    "policy:render": "node dist/render-policy.js"
   }
 }
