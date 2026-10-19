@@ -27,6 +27,7 @@ export const RuleDefinition = z.object({
       taskType: z.enum(['APPROVAL', 'OPERATION']),
       requiredRole: Role,
       evidenceFields: z.array(z.string().min(1)).default([]),
+      decisionConditions: z.array(z.enum(['REWORK_REQUIRED'])).default([]),
     })
     .optional(),
   invalidationTriggers: z.array(z.string()),
