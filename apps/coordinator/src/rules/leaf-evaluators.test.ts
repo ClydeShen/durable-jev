@@ -35,7 +35,6 @@ function inputsFor(
     humanGateStatus: () => 'WAITING_HUMAN',
     humanDecisionFor: () => undefined,
     completedOperationFieldsFor: () => undefined,
-    preloadHumanTasksStatus: () => 'PASS',
     ensurePlanReservation: () => true,
     ...overrides,
   }

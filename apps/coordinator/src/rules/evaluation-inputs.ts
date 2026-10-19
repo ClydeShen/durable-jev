@@ -27,6 +27,5 @@ export type EvaluationInputs = {
   humanGateStatus(rule: RuleDefinition, subject: CheckSubject): GateStatus
   humanDecisionFor(ruleId: string, entityId: string): HumanDecision | undefined
   completedOperationFieldsFor(ruleId: string, entityId: string): Record<string, string> | undefined
-  preloadHumanTasksStatus(): GateStatus
   ensurePlanReservation(): boolean
 }

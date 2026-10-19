@@ -62,7 +62,6 @@ type HumanTaskAction =
   | { kind: 'reject'; reason: string }
   | { kind: 'complete'; fields: Record<string, string>; evidenceRefs: EvidenceRef[] }
 
-const preloadGateRuleIds = new Set(['R13', 'R20', 'R21', 'R22', 'R34', 'R35'])
 const minutesFrom = (timestamp: string, minutes: number) =>
   new Date(Date.parse(timestamp) + minutes * 60_000).toISOString()
 
@@ -284,12 +283,6 @@ export class CoordinatorService {
         this.currentTasksFor(stored, ruleId, entityId).findLast(
           (task) => task.status === 'COMPLETED',
         )?.actionEvidence?.fields,
-      preloadHumanTasksStatus: () =>
-        this.repository
-          .listHumanTasks({ caseId, status: 'OPEN' })
-          .some((task) => preloadGateRuleIds.has(task.ruleId))
-          ? 'WAITING_HUMAN'
-          : 'PASS',
       ensurePlanReservation: () => {
         const routeVersion = shipment.entityVersions.route
         executeOnce(

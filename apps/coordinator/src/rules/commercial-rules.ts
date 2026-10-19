@@ -54,13 +54,9 @@ const extraCostApprovalRequired: LeafRule = (_subject, inputs) => {
   return conditionHolds(extraCents > thresholdCents, { extraCents, thresholdCents })
 }
 
-const preloadHumanTasksValid: LeafRule = (_subject, inputs) =>
-  outcome(inputs.preloadHumanTasksStatus())
-
 export const commercialLeafRules: Readonly<Record<string, LeafRule>> = {
   customerAccountActive,
   quoteWithinCredit,
   creditExceptionWithinLimit,
   extraCostApprovalRequired,
-  preloadHumanTasksValid,
 }
