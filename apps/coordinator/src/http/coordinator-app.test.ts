@@ -20,6 +20,7 @@ beforeAll(async () => {
     configuration: buildRuleConfiguration(
       readJson('rules.json'),
       readJson('mock-policy-parameters.json'),
+      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
     ),
     referenceData: readJson('mock-data/reference-data.json'),
   })

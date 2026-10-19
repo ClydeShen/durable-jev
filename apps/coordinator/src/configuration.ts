@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { ReferenceData } from '@durable-jev/contracts'
 import { type ConfigIssue, type RuleDefinition, validateRuleSet } from '@durable-jev/rule-engine'
+import { type DecisionTables, MixingMatrix } from './rules/decision-tables.js'
 import type { PolicyParameters } from './rules/evaluation-inputs.js'
 import { knownLeafRefs } from './rules/leaf-evaluators.js'
 
@@ -8,6 +9,7 @@ export type RuleConfiguration = {
   ruleSetVersion: string
   rulesInEvaluationOrder: RuleDefinition[]
   policy: PolicyParameters
+  decisionTables: DecisionTables
 }
 
 export class InvalidRuleConfigurationError extends Error {
@@ -21,6 +23,7 @@ export class InvalidRuleConfigurationError extends Error {
 export function buildRuleConfiguration(
   ruleSetFile: { ruleSetVersion: string; rules: unknown },
   policy: PolicyParameters,
+  decisionTables: { mixingMatrix: unknown },
 ): RuleConfiguration {
   const validation = validateRuleSet(ruleSetFile.rules, policy)
   if (!validation.valid) throw new InvalidRuleConfigurationError(validation.issues)
@@ -39,6 +42,7 @@ export function buildRuleConfiguration(
       (ruleId) => rulesById.get(ruleId) as RuleDefinition,
     ),
     policy,
+    decisionTables: { mixingMatrix: MixingMatrix.parse(decisionTables.mixingMatrix) },
   }
 }
 
@@ -47,10 +51,12 @@ const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'
 export function loadRuleConfiguration(paths: {
   rulesPath: string
   policyPath: string
+  mixingMatrixPath: string
 }): RuleConfiguration {
   return buildRuleConfiguration(
     readJson(paths.rulesPath) as { ruleSetVersion: string; rules: unknown },
     readJson(paths.policyPath) as PolicyParameters,
+    { mixingMatrix: readJson(paths.mixingMatrixPath) },
   )
 }
 

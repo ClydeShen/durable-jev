@@ -21,6 +21,7 @@ const coordinator = new CoordinatorService({
   configuration: loadRuleConfiguration({
     rulesPath: resolve(materialsDirectory, 'rules.json'),
     policyPath: resolve(materialsDirectory, 'mock-policy-parameters.json'),
+    mixingMatrixPath: resolve(materialsDirectory, 'decision-tables/mixing-matrix.json'),
   }),
   referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
 })

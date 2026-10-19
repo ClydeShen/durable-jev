@@ -250,6 +250,8 @@ export class CoordinatorService {
     const { caseId, shipment } = stored
     return {
       shipment,
+      evidence: stored.evidence,
+      decisionTables: this.configuration.decisionTables,
       storedVersions: {
         caseRevision: shipment.caseRevision,
         entityVersions: shipment.entityVersions,
@@ -259,6 +261,12 @@ export class CoordinatorService {
       semanticAnswerFor: (ruleId, entityId) =>
         this.repository.findSemanticAnswer(caseId, ruleId, entityId),
       humanGateStatus: (rule, subject) => this.resolveHumanGate(stored, rule, subject, now),
+      humanDecisionFor: (ruleId, entityId) =>
+        this.currentTasksFor(stored, ruleId, entityId).findLast((task) => task.decision)?.decision,
+      completedOperationFieldsFor: (ruleId, entityId) =>
+        this.currentTasksFor(stored, ruleId, entityId).findLast(
+          (task) => task.status === 'COMPLETED',
+        )?.actionEvidence?.fields,
       preloadHumanTasksStatus: () =>
         this.repository
           .listHumanTasks({ caseId, status: 'OPEN' })
@@ -282,6 +290,13 @@ export class CoordinatorService {
         return this.repository.countReservations(caseId, routeVersion) === shipment.legs.length
       },
     }
+  }
+
+  private currentTasksFor(stored: StoredCase, ruleId: string, entityId: string): HumanTask[] {
+    const target = this.targetFor(this.requireRule(ruleId), stored.shipment)
+    return this.repository
+      .listHumanTasksForGate(stored.caseId, ruleId, entityId)
+      .filter((task) => targetsMatch(task.target, target))
   }
 
   private evaluateLeafOrEscalate(

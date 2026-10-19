@@ -19,6 +19,8 @@ function inputsFor(
 ): EvaluationInputs {
   return {
     shipment,
+    evidence: { documents: [], temperatureLogs: [], inspectionNotes: [] },
+    decisionTables: { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
     storedVersions: {
       caseRevision: shipment.caseRevision,
       entityVersions: shipment.entityVersions,
@@ -31,6 +33,8 @@ function inputsFor(
           scripted.ruleId === ruleId && scripted.entityId === entityId,
       )?.answer,
     humanGateStatus: () => 'WAITING_HUMAN',
+    humanDecisionFor: () => undefined,
+    completedOperationFieldsFor: () => undefined,
     preloadHumanTasksStatus: () => 'PASS',
     ensurePlanReservation: () => true,
     ...overrides,
