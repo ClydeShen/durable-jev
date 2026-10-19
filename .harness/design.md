@@ -30,6 +30,7 @@ packages/
   contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
   rule-engine/            纯函数：配置校验、组合器、求值、失效计算
   store/                  SQLite 连接、迁移、幂等操作表、outbox
+  human-tasks/            人工任务纯状态机：角色校验、过期、版本绑定、替代、人工门槛状态
   observability/          事件 schema、logger、trace 上下文
   model-providers/        SemanticJudge 接口：jev、structured-output、scripted
   agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
@@ -46,7 +47,7 @@ docs/                     用户文档
 var/                      运行时数据与日志，gitignore
 ```
 
-依赖方向：`apps → packages`；`rule-engine` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
+依赖方向：`apps → packages`；`rule-engine`、`human-tasks` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
 
 ## 3. 工程约定
 
