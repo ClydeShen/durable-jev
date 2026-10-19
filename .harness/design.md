@@ -1,0 +1,191 @@
+# Design
+
+## 1. 技术栈
+
+| 项 | 选择 |
+|---|---|
+| 运行时 | Node 22，TypeScript strict，ESM |
+| 包管理 | pnpm workspace，`save-exact=true`，提交 lockfile，不用 Turborepo/Nx |
+| 构建 | `tsc -b`（project references）；web 用 Vite |
+| HTTP | Fastify 5 |
+| 契约/校验 | Zod |
+| 存储 | better-sqlite3，每个服务一个 SQLite 文件，位于 `var/data/` |
+| 测试 | Vitest |
+| 日志 | pino，JSON |
+| Lint/格式 | Biome |
+| 追踪 | `@opentelemetry/api` + W3C traceparent，SDK 在 P0 确认 |
+| 前端 | Vite + React，单页包含工作台、`/console`、演示控制 |
+| 外部依赖候选 | `@earendil-works/pi-durable`、`@earendil-works/pi-ai`、`@a2a-js/sdk`，版本在 P0 锁定；Jev TS 客户端在 P0 确认（可能自写 HTTP 客户端） |
+
+## 2. 目录
+
+```
+apps/
+  coordinator/            订单版本、规则图调度、人工任务、整单状态、放行事务
+  cargo-assurance/        货件规则 + Jev 判断
+  transport-planning/     运输段规则 + 调查 Agent
+  commercial-control/     授信与费用规则
+  web/                    工作台 + Console + 演示控制
+packages/
+  contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
+  rule-engine/            纯函数：配置校验、组合器、求值、失效计算
+  store/                  SQLite 连接、迁移、幂等操作表、outbox
+  observability/          事件 schema、logger、trace 上下文
+  model-providers/        SemanticJudge 接口：jev、structured-output、scripted
+  agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
+  a2a-adapter/            业务任务 ↔ A2A Task 映射，server/client 封装
+  service-kit/            服务启动样板：Fastify、健康检查、本地控制端点
+tools/
+  launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
+spikes/                   P0 一次性验证，不被正式代码依赖
+eval/
+  materials/              policy-v1.md、rules.json、cases/、mock-data/、event-scripts
+  blind/                  盲测标准答案，仅 runner 读取
+  runner/                 回放、故障注入、benchmark
+docs/                     用户文档
+var/                      运行时数据与日志，gitignore
+```
+
+依赖方向：`apps → packages`；`rule-engine` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
+
+## 3. 工程约定
+
+- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写。
+- 不写解释性注释；需要解释的逻辑拆成命名良好的函数。
+- 函数小、纯函数优先；IO 集中在 app 边界。
+- 测试轻量：每个包挑关键语义写少量 Vitest，不追求覆盖率。
+- 所有时间 UTC，金额整数分，重量克，温度 0.1°C 整数。
+
+## 4. 一键体验
+
+| 命令 | 作用 |
+|---|---|
+| `pnpm bootstrap` | install + build 全部 |
+| `pnpm start` | launcher 启动 4 个服务 + web，打印访问地址 |
+| `pnpm demo:reset` | 清库并载入 LOG-001 ~ LOG-008 |
+| `pnpm test` | 全部 unit test |
+| `pnpm faults` | 跑故障场景 runner，输出报告到 `var/reports/` |
+| `pnpm bench` | 跑 benchmark，输出报告到 `var/reports/` |
+
+`.env.example` 提供 `MODEL_MODE=scripted|live`、`JEV_API_KEY`、`LLM_API_KEY`、`LLM_MODEL_ID`。默认 `scripted`，无 key 可完整演示。
+
+Web 中的演示控制（仅本地演示模式开启）：选择案例、扮演角色、执行人工审批/现场动作、修改订单触发失效、杀死/重启服务、注入超时、重复提交。
+
+## 5. 规则引擎语义
+
+### 5.1 状态
+
+`PASS | FAIL | UNKNOWN | NOT_APPLICABLE | ERROR | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`
+
+每个 check 同时保存 `observedValue`（事实，如"存在越界"）和 `gateStatus`（门槛结论），二者不混用。
+
+### 5.2 规则定义
+
+```ts
+type RuleDefinition = {
+  ruleId: string
+  version: string
+  scope: 'order' | 'cargoItem' | 'leg'
+  appliesWhen?: Expression
+  dependsOn: string[]
+  evaluator: { kind: 'code' | 'decisionTable' | 'semantic' | 'humanGate' | 'combinator'; ref: string }
+  combiner?: Expression
+  unknownPolicy: 'block' | 'escalateToHuman'
+  inputPaths: string[]
+  humanGate?: { taskType: 'APPROVAL' | 'OPERATION'; requiredRole: Role }
+  invalidationTriggers: string[]
+}
+```
+
+`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树。
+
+### 5.3 组合语义
+
+把非终态统一称为 pending：`UNKNOWN | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`。
+
+| 组合器 | 规则 |
+|---|---|
+| `and` | 有 FAIL → FAIL；否则有 ERROR → ERROR；否则有 pending → 最先出现的 pending；否则全 PASS → PASS。NOT_APPLICABLE 子项忽略；忽略后为空 → NOT_APPLICABLE |
+| `or` | 有 PASS → PASS；否则有 pending/ERROR → 该状态；全 FAIL → FAIL |
+| `not` | PASS ↔ FAIL，其余原样（UNKNOWN 不能变成 PASS） |
+| `ifThen(c, t)` | c 为 FAIL/NOT_APPLICABLE → NOT_APPLICABLE；c 为 PASS → t；c 为 pending → BLOCKED_DEPENDENCY |
+| `allOf(scope, e)` | 集合为空 → UNKNOWN（不默认合格）；否则对成员 `and` |
+| `anyOf(scope, e)` | 集合为空 → UNKNOWN；否则对成员 `or` |
+
+依赖未完成时规则本身为 BLOCKED_DEPENDENCY，并记录 `blockedBy`。
+
+### 5.4 配置校验
+
+启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`。失败则服务拒绝发起放行。
+
+### 5.5 失效与增量重算
+
+- 每个 check 记录 `inputFingerprint = hash(inputPaths 的值 + 实体版本 + 上游结果 id)`。
+- 实体变更 → 由 `invalidationTriggers` 找到直接受影响规则 → 沿依赖图向下游传递 → 标记 INVALIDATED → 只重算这部分。
+- 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
+- 晚到结果的指纹与当前不符时只归档。
+
+## 6. 服务与流程
+
+- Coordinator 拥有订单版本和整单规则图（R01–R40 的聚合层），通过各服务接口获取分支结果；依赖调度是确定性状态机。
+- 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。
+- 人工任务由 Coordinator 持有；角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
+- 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
+
+## 7. Runtime harness
+
+### 7.1 接口
+
+```ts
+interface AgentRuntime {
+  open(sessionKey: SessionKey): Promise<AgentSession>
+}
+interface AgentSession {
+  submit(request: { requestId: string; input: InvestigationInput }): Promise<RunHandle>
+  resume(): Promise<void>
+  events(): AsyncIterable<AgentEvent>
+  close(): Promise<void>
+}
+type ToolDefinition = {
+  name: string
+  access: 'read' | 'write'
+  replayPolicy: 'replaySafe' | 'verifyByOperationId'
+  allowedCallers: ('agent' | 'system')[]
+  inputSchema: ZodType
+  execute(input, context: ToolContext): Promise<ToolResult>
+}
+```
+
+实现：`InMemoryAgentRuntime`（B3 的 A 组）、`PiDurableAgentRuntime`（B 组）。
+
+### 7.2 控制点
+
+| 控制 | 落点 |
+|---|---|
+| 工具白名单与调用方限制 | `ToolRegistry`，按服务注册；审批、现场动作、应用计划、发运不注册给 agent |
+| 预算 | `RunBudgetGuard`：工具调用 10、模型重试 3、自动补资料 2 轮、30s 目标、60s 硬停 |
+| 写操作幂等 | `ToolContext.operationIdFor(logicalActionId)` 由服务端生成；业务库唯一约束 |
+| 崩溃后不重放副作用 | `replayPolicy=verifyByOperationId`：恢复时先查 `get_operation_status` |
+| 输入通道隔离 | `ContextAssembler`：政策/系统指令与资料文本分区，资料只作为数据 |
+| 输出无权限 | agent 只能 `submit_investigation_result`；结论由规则引擎和人工门槛决定 |
+| 版本绑定 | 结果携带 `caseRevision` 与指纹，提交时校验 |
+| 循环/反复崩溃 | 预算守卫 + 重启上限，超限转人工 |
+| 可追溯 | 每个 run、tool、model 调用发出 `observability` 事件 |
+
+每一行在 `docs/runtime-controls.md` 对应一个证据测试或故障场景。
+
+## 8. 模型适配
+
+```ts
+interface SemanticJudge {
+  ask(question: SemanticQuestion, state: SemanticState): Promise<SemanticAnswer>
+}
+```
+
+实现：`JevJudge`、`StructuredOutputJudge`、`ScriptedJudge`（按 questionId + 输入哈希回放）。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+
+## 9. 可观测性
+
+- 事件写各服务 outbox 表，`observability` 收集器汇入 `var/data/observability.sqlite`；Console 通过查询 API + SSE 读取。
+- 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
+- 业务正确性不依赖观察库。
