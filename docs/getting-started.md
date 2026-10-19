@@ -26,11 +26,12 @@ pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
-1. Open the workbench and select LOG-001 on the left. The order is "Awaiting human".
-2. Expand the rule tree: every gate except R39 shows "Pass". Only the human gate R39-LOAD is "Awaiting human"; everything that depends on it (R39-CONFIRM, R39, R40) is "Blocked" and shows "waiting on R39-LOAD · Warehouse operator".
-3. Switch "Acting as" to "Dispatcher" and click "Submit evidence" on the R39-LOAD task. The server answers 403 because loading must be done by a warehouse operator (F11).
-4. Switch back to "Warehouse operator", fill in `loadScanRef` and `physicalCheckBy`, and submit. Leaving either field empty is rejected (F14). The order becomes "Ready to dispatch".
-5. Switch to "Dispatcher" and click "Confirm dispatch". In one transaction the coordinator re-reads the current revision and re-evaluates R40; only if it passes is the order written as "Dispatched". Otherwise the whole transaction rolls back.
+1. Open the workbench and select LOG-001. The order is "Awaiting human".
+2. The flow diagram shows the order from left to right: base checks, the branches that apply, loading, dispatcher confirmation and dispatch. Green dashed lines flow where a step has passed; an amber line stops where the order waits for a person; grey dotted lines are blocked upstream; red lines failed. Branches that do not apply (here: controlled goods and cold chain) are hidden unless you tick "show not applicable".
+3. Click a branch to see its rules, or "All rules" for the whole graph; click a rule to see its result for each cargo item or leg. The "Rule tree" tab shows the same results as an expandable tree.
+4. Switch "Acting as" to "Dispatcher" and click "Submit evidence" on the R39-LOAD task. The server answers 403 because loading must be done by a warehouse operator (F11).
+5. Switch back to "Warehouse operator", fill in `loadScanRef` and `physicalCheckBy`, and submit. Leaving either field empty is rejected (F14). The order becomes "Ready to dispatch" and the line now stops at the dispatcher.
+6. Switch to "Dispatcher" and click "Confirm dispatch". In one transaction the coordinator re-reads the current revision and re-evaluates R40; only if it passes is the order written as "Dispatched", and every line in the diagram flows. Otherwise the whole transaction rolls back.
 
 ## Process control
 
