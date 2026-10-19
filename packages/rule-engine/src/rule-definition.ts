@@ -11,10 +11,21 @@ export const EvaluatorKind = z.enum([
 ])
 export type EvaluatorKind = z.infer<typeof EvaluatorKind>
 
+export const RuleBranch = z.enum([
+  'base',
+  'controlled',
+  'coldChain',
+  'plan',
+  'commercial',
+  'release',
+])
+export type RuleBranch = z.infer<typeof RuleBranch>
+
 export const RuleDefinition = z.object({
   ruleId: RuleId,
   version: z.string().min(1),
   scope: RuleScope,
+  branch: RuleBranch.optional(),
   appliesWhen: Expression.optional(),
   dependsOn: z.array(RuleId),
   evaluator: z.object({ kind: EvaluatorKind, ref: z.string().min(1) }),
