@@ -123,9 +123,20 @@ type RuleDefinition = {
 - 没有上游可等的 pending（如 `allOf` 空集合的 UNKNOWN）保持原状态，不伪装成被阻塞。
 - 上表的组合语义只用于表达式内部求值；界面沿 `blockedBy` 追溯到根因（等待中的人工门槛或 UNKNOWN 规则），并显示需要的角色。
 
+### 5.3.1 规则建模约定（T3.1）
+
+- **条件规则**（ID 带后缀，如 `R04-COLD`、`R04-CONTROLLED`、`R18-RISK`、`R19-EXCURSION`、`R21-REQUIRED`、`R32-OVER`、`R35-REQUIRED`）：情况成立为 PASS，不成立为 NOT_APPLICABLE，从不 FAIL。只供 `appliesWhen` 引用。
+- **事实 vs 门槛**：R18、R19 的 gateStatus 表示"检查已完成"，异常事实放 observedValue；是否触发后续流程由条件规则决定。
+- **人工门槛拆分**：一个门槛一个角色。R39 = `R39-LOAD` + `R39-CONFIRM`；R22 = `R22-CAPTURE`（仓库采集复测读数）+ R22（代码判定读数在温区内）；R35 = `R35-REQUIRED`（代码）+ R35（商务主管审批）。
+- **R20 处置**：批准时可带 `conditions: ['REWORK_REQUIRED']`；`R20-REWORK` 读取该条件。
+- **R38**：组合规则，聚合装载前人工门槛（R13、R20、R21、R22-CAPTURE、R34、R35），NOT_APPLICABLE 忽略；没有任何装载前任务时为 NOT_APPLICABLE。
+- **不确定转人工**：`unknownPolicy: 'escalateToHuman'` 必须带 `humanGate`（复核角色）。语义判断 UNKNOWN 时 Coordinator 创建该角色的复核任务：批准 → PASS，拒绝 → FAIL。
+- **证据**：`CaseEvidence`（资料、温控记录、检查备注）与 `Shipment` 分开提交与存储。
+- **决策表**：混装兼容矩阵 `decision-tables/mixing-matrix.json`；中转能力取 reference data 的 hubs。
+
 ### 5.4 配置校验
 
-启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`。失败则服务拒绝发起放行。
+启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`、`escalateToHuman` 必须带 `humanGate`。失败则服务拒绝发起放行。
 
 ### 5.5 失效与增量重算
 
