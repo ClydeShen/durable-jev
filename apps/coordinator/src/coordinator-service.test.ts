@@ -163,3 +163,23 @@ describe('order state machine', () => {
     expect(coordinator.dispatch(logOne.caseId, 'DISPATCHER').orderStatus).toBe('DISPATCHED')
   })
 })
+
+describe('uncertain semantic answers', () => {
+  it('creates a review task for the configured role and passes once it is approved', () => {
+    const { coordinator } = startCoordinator()
+    const [firstAnswer, ...otherAnswers] = logOne.scriptedSemanticAnswers
+    const view = coordinator.submitCase({
+      shipment: logOne.shipment,
+      scriptedSemanticAnswers: [
+        { ...firstAnswer, answer: { type: 'noul', noul: 0.5 } },
+        ...otherAnswers,
+      ],
+    })
+    const reviewTask = openTaskFor(view, 'R03')
+    expect(reviewTask?.requiredRole).toBe('TRANSPORT_PLANNER')
+    expect(openTaskFor(view, 'R39-LOAD')).toBeUndefined()
+
+    coordinator.approveHumanTask(reviewTask?.humanTaskId ?? '', 'TRANSPORT_PLANNER')
+    expect(openTaskFor(coordinator.getCase(logOne.caseId), 'R39-LOAD')).toBeDefined()
+  })
+})

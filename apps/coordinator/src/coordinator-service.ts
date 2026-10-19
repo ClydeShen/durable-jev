@@ -229,7 +229,7 @@ export class CoordinatorService {
         cargoItem: shipment.cargoItems.map((item) => item.cargoItemId),
         leg: shipment.legs.map((leg) => leg.legId),
       },
-      evaluateLeaf: (rule, subject) => evaluateLeafRule(rule, subject, inputs),
+      evaluateLeaf: (rule, subject) => this.evaluateLeafOrEscalate(rule, subject, inputs),
     })
 
     this.repository.replaceCheckResults(caseId, this.toCheckResults(stored, graph.evaluations, now))
@@ -277,6 +277,26 @@ export class CoordinatorService {
             ),
         )
         return this.repository.countReservations(caseId, routeVersion) === shipment.legs.length
+      },
+    }
+  }
+
+  private evaluateLeafOrEscalate(
+    rule: RuleDefinition,
+    subject: CheckSubject,
+    inputs: EvaluationInputs,
+  ) {
+    const outcome = evaluateLeafRule(rule, subject, inputs)
+    const escalates =
+      outcome.gateStatus === 'UNKNOWN' &&
+      rule.unknownPolicy === 'escalateToHuman' &&
+      rule.evaluator.kind !== 'humanGate'
+    if (!escalates) return outcome
+    return {
+      gateStatus: inputs.humanGateStatus(rule, subject),
+      observedValue: {
+        automated: outcome.observedValue ?? null,
+        escalatedTo: rule.humanGate?.requiredRole,
       },
     }
   }
