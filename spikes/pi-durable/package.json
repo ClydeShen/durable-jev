@@ -1,0 +1,14 @@
+{
+  "name": "@durable-jev/spike-pi-durable",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@earendil-works/chord": "1.3.0",
+    "@earendil-works/pi-ai": "1.3.0",
+    "@earendil-works/pi-durable": "1.3.0"
+  },
+  "scripts": {
+    "crash-recovery": "rm -rf var && (tsx src/crash-recovery.ts start || true) && tsx src/crash-recovery.ts resume"
+  }
+}

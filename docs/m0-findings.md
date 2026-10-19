@@ -1,0 +1,35 @@
+# M0 技术预检结论
+
+每个 spike 可在本仓库复现。结论只针对锁定版本。
+
+## Pi Durable 1.3.0
+
+复现：`pnpm --filter @durable-jev/spike-pi-durable crash-recovery`（脚本化模型，无需 key）
+
+场景：调查 agent 依次调用只读工具 `get_vehicle`、人工专属工具 `approve_compliance`、写工具 `reserve_transport`。写工具在业务账本落库后、结果提交前杀进程（对应 F02），再重启。
+
+| 验证项 | 结果 |
+|---|---|
+| 重启后恢复同一任务 | 通过。同一 `requestId` 返回同一 submission，从检查点继续直到完成 |
+| 已完成的只读工具不重跑 | 通过。结果从存储读出 |
+| 写工具不重放 | 通过。未声明 `replay: "safe"` 的工具在重启后得到 `interrupted` 错误，不再执行 |
+| 不确定状态的处理路径 | 通过。模型收到 `interrupted` 后调用 `get_operation_status` 核对为已生效；业务账本只有 1 条 |
+| 人工专属工具拦截 | 通过。`beforeTool` hook 返回 block，模型得到 `blocked` 错误结果 |
+| 用量记录 | 通过。`harness.usage()` 按 provider/model 汇总，含失败尝试 |
+| 无 key 运行 | 通过。pi-ai 自带 faux provider，可脚本化模型响应 |
+
+尚未验证：`callers` / `modelTools` 不向模型暴露工具、`restartLimit` 崩溃循环保护。
+
+### 对设计的影响
+
+- `replayPolicy: verifyByOperationId` 可直接映射为 Pi 的默认（非 replay-safe）行为，再配合业务端 `get_operation_status`。
+- Pi 的 `requestId` 只保证"提交"幂等，业务副作用幂等仍由我们的 operationId 和业务库唯一约束负责。
+- 人工专属工具优先"不注册给 agent"，hook 拦截作为第二道防线。
+- faux provider 可作为 `ScriptedJudge` / 脚本化调查模型的底座。
+
+### 限制
+
+- API 标为 Experimental；版本锁定为 1.3.0。
+- 一个存储只能被一个进程拥有，无跨进程锁。
+- SQLite 存储依赖 Node 内置 `node:sqlite`（运行时打印 ExperimentalWarning）。
+- 断电或主机故障可能丢最新一次提交（`synchronous = NORMAL`），与 PRD 只承诺进程崩溃恢复一致。
