@@ -7,7 +7,7 @@ export function CaseList(props: {
   onSelect: (caseId: string) => void
 }) {
   if (props.cases.length === 0) {
-    return <p className="muted">还没有案例。点击"重置演示"载入预置订单。</p>
+    return <p className="muted">No cases yet. Click "Reset demo" to load the demo orders.</p>
   }
   return (
     <ul className="case-list">

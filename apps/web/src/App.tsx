@@ -28,7 +28,7 @@ export function App() {
         setSelectedCase(await api.getCase(caseId))
       }
     } catch (error) {
-      setMessage({ kind: 'error', text: `无法连接 Coordinator：${String(error)}` })
+      setMessage({ kind: 'error', text: `Cannot reach the coordinator: ${String(error)}` })
     }
   }, [selectedCaseId])
 
@@ -45,10 +45,10 @@ export function App() {
   const run = async (description: string, action: () => Promise<unknown>) => {
     try {
       await action()
-      setMessage({ kind: 'info', text: `${description}：成功` })
+      setMessage({ kind: 'info', text: `${description}: done` })
     } catch (error) {
       const text = error instanceof ApiError ? `${error.status} ${error.message}` : String(error)
-      setMessage({ kind: 'error', text: `${description}：${text}` })
+      setMessage({ kind: 'error', text: `${description}: ${text}` })
     }
     await refresh()
   }
@@ -56,12 +56,12 @@ export function App() {
   const caseId = selectedCase?.caseId ?? ''
   const taskActions = {
     approve: (task: HumanTask) =>
-      run(`批准 ${task.ruleId}`, () => api.approve(task.humanTaskId, actingRole)),
+      run(`Approve ${task.ruleId}`, () => api.approve(task.humanTaskId, actingRole)),
     reject: (task: HumanTask, reason: string) =>
-      run(`拒绝 ${task.ruleId}`, () => api.reject(task.humanTaskId, actingRole, reason)),
+      run(`Reject ${task.ruleId}`, () => api.reject(task.humanTaskId, actingRole, reason)),
     complete: (task: HumanTask, fields: Record<string, string>) =>
-      run(`完成 ${task.ruleId}`, () => api.complete(task.humanTaskId, actingRole, fields)),
-    dispatch: () => run('确认发运', () => api.dispatch(caseId, actingRole)),
+      run(`Complete ${task.ruleId}`, () => api.complete(task.humanTaskId, actingRole, fields)),
+    dispatch: () => run('Confirm dispatch', () => api.dispatch(caseId, actingRole)),
   }
 
   return (
@@ -69,7 +69,7 @@ export function App() {
       <header className="topbar">
         <h1>Dispatch Workbench</h1>
         <label>
-          当前身份
+          Acting as
           <select
             value={actingRole}
             onChange={(event) => setActingRole(event.target.value as Role)}
@@ -84,13 +84,13 @@ export function App() {
         <button
           type="button"
           onClick={() =>
-            run('重置演示', async () => {
+            run('Reset demo', async () => {
               setSelectedCaseId(undefined)
               await api.resetDemo()
             })
           }
         >
-          重置演示
+          Reset demo
         </button>
       </header>
 
@@ -101,7 +101,7 @@ export function App() {
       )}
 
       <aside className="sidebar">
-        <h2>案例</h2>
+        <h2>Cases</h2>
         <CaseList cases={cases} selectedCaseId={selectedCaseId} onSelect={setSelectedCaseId} />
       </aside>
 
@@ -115,11 +115,11 @@ export function App() {
             </div>
             <div className="columns">
               <section>
-                <h2>规则树</h2>
+                <h2>Rule tree</h2>
                 {catalog ? (
                   <RuleTree rootRuleId="R40" rules={catalog.rules} checks={selectedCase.checks} />
                 ) : (
-                  <p className="muted">加载规则…</p>
+                  <p className="muted">Loading rules…</p>
                 )}
               </section>
               <div>
@@ -133,7 +133,7 @@ export function App() {
             </div>
           </>
         ) : (
-          <p className="muted">选择左侧案例。</p>
+          <p className="muted">Select a case on the left.</p>
         )}
       </main>
     </div>

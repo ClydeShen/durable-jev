@@ -20,8 +20,8 @@ export function HumanTaskPanel(props: {
   const closedTasks = props.tasks.filter((task) => task.status !== 'OPEN')
   return (
     <section>
-      <h2>人工任务</h2>
-      {openTasks.length === 0 && <p className="muted">当前没有待处理的人工任务。</p>}
+      <h2>Human tasks</h2>
+      {openTasks.length === 0 && <p className="muted">No open human tasks.</p>}
       {openTasks.map((task) => (
         <OpenTaskCard
           key={task.humanTaskId}
@@ -32,7 +32,7 @@ export function HumanTaskPanel(props: {
       ))}
       {closedTasks.length > 0 && (
         <details>
-          <summary className="muted">已关闭 {closedTasks.length} 个</summary>
+          <summary className="muted">{closedTasks.length} closed</summary>
           <ul className="closed-tasks">
             {closedTasks.map((task) => (
               <li key={task.humanTaskId}>
@@ -56,19 +56,22 @@ function OpenTaskCard(props: { task: HumanTask; actingRole: Role; actions: Human
     <article className="task-card">
       <header>
         <strong>{task.ruleId}</strong>
-        <span className="tag">{task.taskType === 'APPROVAL' ? '审批' : '现场操作'}</span>
-        <span className="muted small">需要：{roleLabels[task.requiredRole]}</span>
+        <span className="tag">{task.taskType === 'APPROVAL' ? 'approval' : 'operation'}</span>
+        <span className="muted small">requires {roleLabels[task.requiredRole]}</span>
       </header>
       <p className="muted small">
-        绑定版本 r{task.target.caseRevision} · 截止 {new Date(task.expiresAt).toLocaleString()}
+        bound to r{task.target.caseRevision} · due{' '}
+        {new Date(task.expiresAt).toLocaleString('en-GB')}
       </p>
       {roleMismatch && (
-        <p className="warning small">当前身份是{roleLabels[actingRole]}，服务端会拒绝此操作。</p>
+        <p className="warning small">
+          You are acting as {roleLabels[actingRole]}; the server will reject this action.
+        </p>
       )}
 
       {task.ruleId === dispatchConfirmationRuleId ? (
         <button type="button" className="primary" onClick={() => actions.dispatch()}>
-          确认发运
+          Confirm dispatch
         </button>
       ) : task.taskType === 'OPERATION' ? (
         <form
@@ -87,21 +90,21 @@ function OpenTaskCard(props: { task: HumanTask; actingRole: Role; actions: Human
             </label>
           ))}
           <button type="submit" className="primary">
-            提交完成证据
+            Submit evidence
           </button>
         </form>
       ) : (
         <div className="row">
           <button type="button" className="primary" onClick={() => actions.approve(task)}>
-            批准
+            Approve
           </button>
           <input
-            placeholder="拒绝原因"
+            placeholder="Rejection reason"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
           />
           <button type="button" disabled={!reason} onClick={() => actions.reject(task, reason)}>
-            拒绝
+            Reject
           </button>
         </div>
       )}

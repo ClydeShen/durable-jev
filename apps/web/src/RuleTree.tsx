@@ -4,11 +4,11 @@ import { upstreamOf } from './rule-graph.js'
 import { StatusBadge } from './StatusBadge.js'
 
 const evaluatorLabels: Record<string, string> = {
-  code: '代码',
-  decisionTable: '决策表',
+  code: 'code',
+  decisionTable: 'table',
   semantic: 'Jev',
-  humanGate: '人工',
-  combinator: '组合',
+  humanGate: 'human',
+  combinator: 'combinator',
 }
 
 type RuleTreeProps = {
@@ -59,7 +59,9 @@ function RuleNode(props: {
           </span>
         ))}
       </span>
-      {blockedBy.length > 0 && <span className="muted small">被 {blockedBy.join('、')} 阻塞</span>}
+      {blockedBy.length > 0 && (
+        <span className="muted small">blocked by {blockedBy.join(', ')}</span>
+      )}
     </span>
   )
 

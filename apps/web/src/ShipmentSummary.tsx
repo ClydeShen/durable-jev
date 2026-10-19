@@ -1,21 +1,21 @@
 import type { Shipment } from '@durable-jev/contracts'
 
-const kilograms = (grams: number) => `${(grams / 1000).toLocaleString()} kg`
+const kilograms = (grams: number) => `${(grams / 1000).toLocaleString('en-US')} kg`
 const money = (cents: number, currency: string) =>
-  `${(cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} ${currency}`
+  `${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${currency}`
 
 export function ShipmentSummary({ shipment }: { shipment: Shipment }) {
   return (
     <section className="shipment">
       <dl>
-        <dt>客户</dt>
+        <dt>Customer</dt>
         <dd>{shipment.customerId}</dd>
-        <dt>报价</dt>
+        <dt>Quote</dt>
         <dd>{money(shipment.quote.amountCents, shipment.quote.currency)}</dd>
-        <dt>版本</dt>
+        <dt>Revision</dt>
         <dd>r{shipment.caseRevision}</dd>
       </dl>
-      <h3>货件</h3>
+      <h3>Cargo items</h3>
       <ul>
         {shipment.cargoItems.map((item) => (
           <li key={item.cargoItemId}>
@@ -24,7 +24,7 @@ export function ShipmentSummary({ shipment }: { shipment: Shipment }) {
           </li>
         ))}
       </ul>
-      <h3>运输段</h3>
+      <h3>Legs</h3>
       <ul>
         {shipment.legs.map((leg) => (
           <li key={leg.legId}>
