@@ -16,11 +16,12 @@ import type {
 import { orderStatusMachine } from '@durable-jev/contracts'
 import {
   applyHumanTaskCommand,
+  canBeSuperseded,
   createHumanTask,
   expireIfDue,
   type HumanTaskCommand,
   humanGateStatus,
-  supersedeForNewTarget,
+  supersedeTask,
   targetsMatch,
 } from '@durable-jev/human-tasks'
 import {
@@ -293,31 +294,26 @@ export class CoordinatorService {
     const status = humanGateStatus(tasks, target, now as UtcTimestamp)
     if (status !== 'UNKNOWN') return status
 
-    const staleOpenTask = tasks.find(
-      (task) => task.status === 'OPEN' && !targetsMatch(task.target, target),
-    )
-    const replacementFields = {
+    const replacement = createHumanTask({
       humanTaskId: this.nextHumanTaskId(stored.caseId, rule.ruleId),
+      caseId: stored.caseId as never,
+      ruleId: rule.ruleId,
+      taskType: rule.humanGate?.taskType ?? 'APPROVAL',
+      requiredRole: rule.humanGate?.requiredRole ?? 'DISPATCHER',
       target,
+      prerequisites: rule.dependsOn,
+      requiredEvidenceFields:
+        rule.humanGate?.taskType === 'OPERATION' ? this.evidenceFieldsFor(rule) : [],
       createdAt: now as UtcTimestamp,
       expiresAt: minutesFrom(now, this.taskTtlMinutes(rule)) as UtcTimestamp,
-    }
-    if (staleOpenTask) {
-      const { superseded, replacement } = supersedeForNewTarget(staleOpenTask, replacementFields)
-      this.repository.saveHumanTask(superseded, subject.entityId)
-      this.repository.saveHumanTask(replacement, subject.entityId)
-    } else {
+    })
+    this.repository.saveHumanTask(replacement, subject.entityId)
+    const staleTasks = tasks.filter(
+      (task) => !targetsMatch(task.target, target) && canBeSuperseded(task),
+    )
+    for (const staleTask of staleTasks) {
       this.repository.saveHumanTask(
-        createHumanTask({
-          ...replacementFields,
-          caseId: stored.caseId as never,
-          ruleId: rule.ruleId,
-          taskType: rule.humanGate?.taskType ?? 'APPROVAL',
-          requiredRole: rule.humanGate?.requiredRole ?? 'DISPATCHER',
-          prerequisites: rule.dependsOn,
-          requiredEvidenceFields:
-            rule.humanGate?.taskType === 'OPERATION' ? this.evidenceFieldsFor(rule) : [],
-        }),
+        supersedeTask(staleTask, replacement.humanTaskId),
         subject.entityId,
       )
     }
