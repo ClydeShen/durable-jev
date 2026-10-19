@@ -10,6 +10,7 @@ import type {
   RuleId,
   UtcTimestamp,
 } from '@durable-jev/contracts'
+import { humanTaskMachine } from '@durable-jev/contracts'
 
 export type NewHumanTask = {
   humanTaskId: HumanTaskId
@@ -25,7 +26,11 @@ export type NewHumanTask = {
 }
 
 export function createHumanTask(task: NewHumanTask): HumanTask {
-  return { ...task, status: 'OPEN' }
+  return { ...task, status: humanTaskMachine.initial }
+}
+
+function moveTo(task: HumanTask, status: HumanTask['status'], changes: Partial<HumanTask> = {}) {
+  return { ...task, ...changes, status: humanTaskMachine.transition(task.status, status) }
 }
 
 export type HumanTaskCommand =
@@ -62,9 +67,9 @@ export function applyHumanTaskCommand(
   context: HumanTaskCommandContext,
 ): HumanTaskCommandResult {
   if (task.status !== 'OPEN') return rejected(task, 'TASK_NOT_OPEN')
-  if (command.kind === 'cancel') return accepted({ ...task, status: 'CANCELLED' })
+  if (command.kind === 'cancel') return accepted(moveTo(task, 'CANCELLED'))
 
-  if (isExpired(task, context.now)) return rejected({ ...task, status: 'EXPIRED' }, 'EXPIRED')
+  if (isExpired(task, context.now)) return rejected(moveTo(task, 'EXPIRED'), 'EXPIRED')
   if (command.actor !== task.requiredRole) return rejected(task, 'UNAUTHORIZED_ROLE')
   if (!targetsMatch(task.target, context.currentTarget)) return rejected(task, 'STALE_TARGET')
 
@@ -72,34 +77,42 @@ export function applyHumanTaskCommand(
     if (task.taskType !== 'OPERATION') return rejected(task, 'WRONG_TASK_TYPE')
     const missingField = task.requiredEvidenceFields.some((field) => !command.fields[field]?.trim())
     if (missingField) return rejected(task, 'MISSING_EVIDENCE')
-    return accepted({
-      ...task,
-      status: 'COMPLETED',
-      actionEvidence: {
-        completedBy: command.actor,
-        completedAt: context.now,
-        fields: command.fields,
-        evidenceRefs: command.evidenceRefs,
-      },
-    })
+    return accepted(
+      moveTo(task, 'COMPLETED', {
+        actionEvidence: {
+          completedBy: command.actor,
+          completedAt: context.now,
+          fields: command.fields,
+          evidenceRefs: command.evidenceRefs,
+        },
+      }),
+    )
   }
 
   if (task.taskType !== 'APPROVAL') return rejected(task, 'WRONG_TASK_TYPE')
   const outcome = command.kind === 'approve' ? 'APPROVED' : 'REJECTED'
-  return accepted({
-    ...task,
-    status: outcome,
-    decision: {
-      outcome,
-      decidedBy: command.actor,
-      decidedAt: context.now,
-      ...(command.reason === undefined ? {} : { reason: command.reason }),
-    },
-  })
+  return accepted(
+    moveTo(task, outcome, {
+      decision: {
+        outcome,
+        decidedBy: command.actor,
+        decidedAt: context.now,
+        ...(command.reason === undefined ? {} : { reason: command.reason }),
+      },
+    }),
+  )
 }
 
 export function expireIfDue(task: HumanTask, now: UtcTimestamp): HumanTask {
-  return task.status === 'OPEN' && isExpired(task, now) ? { ...task, status: 'EXPIRED' } : task
+  return task.status === 'OPEN' && isExpired(task, now) ? moveTo(task, 'EXPIRED') : task
+}
+
+export function canBeSuperseded(task: HumanTask): boolean {
+  return task.status !== 'SUPERSEDED' && humanTaskMachine.canTransition(task.status, 'SUPERSEDED')
+}
+
+export function supersedeTask(task: HumanTask, replacementId: HumanTaskId): HumanTask {
+  return moveTo(task, 'SUPERSEDED', { supersededBy: replacementId })
 }
 
 export function supersedeForNewTarget(
@@ -107,7 +120,7 @@ export function supersedeForNewTarget(
   replacement: Pick<NewHumanTask, 'humanTaskId' | 'target' | 'createdAt' | 'expiresAt'>,
 ): { superseded: HumanTask; replacement: HumanTask } {
   return {
-    superseded: { ...task, status: 'SUPERSEDED', supersededBy: replacement.humanTaskId },
+    superseded: supersedeTask(task, replacement.humanTaskId),
     replacement: createHumanTask({
       humanTaskId: replacement.humanTaskId,
       caseId: task.caseId,

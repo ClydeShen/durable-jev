@@ -8,9 +8,11 @@ import type {
 import { describe, expect, it } from 'vitest'
 import {
   applyHumanTaskCommand,
+  canBeSuperseded,
   createHumanTask,
   humanGateStatus,
   supersedeForNewTarget,
+  supersedeTask,
 } from './human-task-lifecycle.js'
 
 const target: HumanTaskTarget = {
@@ -158,6 +160,23 @@ describe('humanGateStatus', () => {
     expect(humanGateStatus([superseded, replacement], rerouted, beforeDeadline)).toBe(
       'WAITING_HUMAN',
     )
+  })
+
+  it('supersedes an already approved task but never an expired one', () => {
+    const approved = applyHumanTaskCommand(
+      complianceApproval,
+      { kind: 'approve', actor: 'COMPLIANCE_REVIEWER' },
+      current,
+    ).task
+    expect(canBeSuperseded(approved)).toBe(true)
+    expect(supersedeTask(approved, 'HT-9' as HumanTaskId)).toMatchObject({
+      status: 'SUPERSEDED',
+      supersededBy: 'HT-9',
+      decision: { outcome: 'APPROVED' },
+    })
+    const expired = { ...complianceApproval, status: 'EXPIRED' as const }
+    expect(canBeSuperseded(expired)).toBe(false)
+    expect(() => supersedeTask(expired, 'HT-9' as HumanTaskId)).toThrow()
   })
 
   it('treats an expired open task as no valid approval', () => {
