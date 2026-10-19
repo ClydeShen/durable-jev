@@ -55,8 +55,8 @@ export function App() {
 
   const caseId = selectedCase?.caseId ?? ''
   const taskActions = {
-    approve: (task: HumanTask) =>
-      run(`Approve ${task.ruleId}`, () => api.approve(task.humanTaskId, actingRole)),
+    approve: (task: HumanTask, conditions?: string[]) =>
+      run(`Approve ${task.ruleId}`, () => api.approve(task.humanTaskId, actingRole, conditions)),
     reject: (task: HumanTask, reason: string) =>
       run(`Reject ${task.ruleId}`, () => api.reject(task.humanTaskId, actingRole, reason)),
     complete: (task: HumanTask, fields: Record<string, string>) =>
@@ -132,6 +132,14 @@ export function App() {
                   tasks={selectedCase.humanTasks}
                   actingRole={actingRole}
                   actions={taskActions}
+                  decisionConditionsByRule={
+                    new Map(
+                      (catalog?.rules ?? []).map((rule) => [
+                        rule.ruleId as string,
+                        rule.humanGate?.decisionConditions ?? [],
+                      ]),
+                    )
+                  }
                 />
                 <ShipmentSummary shipment={selectedCase.shipment} />
               </div>

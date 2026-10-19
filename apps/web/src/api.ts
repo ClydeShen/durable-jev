@@ -40,11 +40,11 @@ export const api = {
   listCases: () => request<CaseSummary[]>('/api/cases'),
   getCase: (caseId: string) => request<CaseView>(`/api/cases/${caseId}`),
   listRules: () => request<RuleCatalog>('/api/rules'),
-  approve: (humanTaskId: string, role: Role, reason?: string) =>
+  approve: (humanTaskId: string, role: Role, conditions: string[] = []) =>
     request<HumanTask>(`/api/human-tasks/${humanTaskId}/approve`, {
       method: 'POST',
       role,
-      body: JSON.stringify({ reason }),
+      body: JSON.stringify({ conditions }),
     }),
   reject: (humanTaskId: string, role: Role, reason: string) =>
     request<HumanTask>(`/api/human-tasks/${humanTaskId}/reject`, {

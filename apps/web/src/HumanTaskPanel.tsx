@@ -5,8 +5,10 @@ import { StatusBadge } from './StatusBadge.js'
 
 const dispatchConfirmationRuleId = 'R39-CONFIRM'
 
+const conditionLabels: Record<string, string> = { REWORK_REQUIRED: 'rework required' }
+
 export type HumanTaskActions = {
-  approve: (task: HumanTask) => Promise<void>
+  approve: (task: HumanTask, conditions?: string[]) => Promise<void>
   reject: (task: HumanTask, reason: string) => Promise<void>
   complete: (task: HumanTask, fields: Record<string, string>) => Promise<void>
   dispatch: () => Promise<void>
@@ -16,6 +18,7 @@ export function HumanTaskPanel(props: {
   tasks: HumanTask[]
   actingRole: Role
   actions: HumanTaskActions
+  decisionConditionsByRule: ReadonlyMap<string, readonly string[]>
 }) {
   const openTasks = props.tasks.filter((task) => task.status === 'OPEN')
   const closedTasks = props.tasks.filter((task) => task.status !== 'OPEN')
@@ -29,6 +32,7 @@ export function HumanTaskPanel(props: {
           task={task}
           actingRole={props.actingRole}
           actions={props.actions}
+          decisionConditions={props.decisionConditionsByRule.get(task.ruleId) ?? []}
         />
       ))}
       {closedTasks.length > 0 && (
@@ -50,8 +54,13 @@ export function HumanTaskPanel(props: {
   )
 }
 
-function OpenTaskCard(props: { task: HumanTask; actingRole: Role; actions: HumanTaskActions }) {
-  const { task, actingRole, actions } = props
+function OpenTaskCard(props: {
+  task: HumanTask
+  actingRole: Role
+  actions: HumanTaskActions
+  decisionConditions: readonly string[]
+}) {
+  const { task, actingRole, actions, decisionConditions } = props
   const [fields, setFields] = useState<Record<string, string>>({})
   const [reason, setReason] = useState('')
   const roleMismatch = actingRole !== task.requiredRole
@@ -102,6 +111,15 @@ function OpenTaskCard(props: { task: HumanTask; actingRole: Role; actions: Human
           <button type="button" className="primary" onClick={() => actions.approve(task)}>
             Approve
           </button>
+          {decisionConditions.map((condition) => (
+            <button
+              key={condition}
+              type="button"
+              onClick={() => actions.approve(task, [condition])}
+            >
+              Approve · {conditionLabels[condition] ?? condition}
+            </button>
+          ))}
           <input
             placeholder="Rejection reason"
             value={reason}
