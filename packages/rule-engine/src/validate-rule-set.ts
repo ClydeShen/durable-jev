@@ -96,6 +96,9 @@ function findTypeMismatches(
   if (rule.evaluator.kind === 'humanGate' && !rule.humanGate) {
     issues.push(mismatch('humanGate evaluator requires a humanGate definition'))
   }
+  if (rule.humanGate?.taskType === 'OPERATION' && rule.humanGate.evidenceFields.length === 0) {
+    issues.push(mismatch('an OPERATION gate must list the evidence fields it requires'))
+  }
   if (rule.unknownPolicy === 'escalateToHuman' && !rule.humanGate) {
     issues.push(mismatch('escalateToHuman requires a humanGate naming the reviewer role'))
   }

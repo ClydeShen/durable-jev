@@ -110,6 +110,19 @@ describe('validateRuleSet (F16)', () => {
     expect(withReviewer.valid).toBe(true)
   })
 
+  it('rejects an operation gate that does not say which evidence it needs', () => {
+    const result = validateRuleSet(
+      [
+        rule('R21', {
+          evaluator: { kind: 'humanGate', ref: 'repack' },
+          humanGate: { taskType: 'OPERATION', requiredRole: 'WAREHOUSE_OPERATOR' },
+        }),
+      ],
+      parameters,
+    )
+    expect(!result.valid && result.issues[0]).toMatchObject({ kind: 'typeMismatch', ruleId: 'R21' })
+  })
+
   it('rejects a combinator without a combiner and malformed definitions', () => {
     const missingCombiner = validateRuleSet(
       [rule('R40', { evaluator: { kind: 'combinator', ref: 'and' } })],
