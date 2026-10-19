@@ -137,6 +137,13 @@ export class CoordinatorRepository {
     return row && JSON.parse(row.task_json)
   }
 
+  findHumanTaskEntityId(humanTaskId: string): string | undefined {
+    const row = this.database
+      .prepare('SELECT entity_id FROM human_tasks WHERE human_task_id = ?')
+      .get(humanTaskId) as { entity_id: string } | undefined
+    return row?.entity_id
+  }
+
   listHumanTasksForGate(caseId: string, ruleId: string, entityId: string): HumanTask[] {
     const rows = this.database
       .prepare(
