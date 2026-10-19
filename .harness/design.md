@@ -116,6 +116,13 @@ type RuleDefinition = {
 
 依赖未完成时规则本身为 BLOCKED_DEPENDENCY，并记录 `blockedBy`。
 
+规则层的阻塞语义（按现实操作常识）：
+
+- WAITING_HUMAN 只属于人工门槛本身。任何直接依赖或在组合中嵌套引用它的规则，状态是 BLOCKED_DEPENDENCY，不是 WAITING_HUMAN。
+- 组合规则（combinator）的表达式求值结果若为 pending，且存在未决的上游，规则状态为 BLOCKED_DEPENDENCY，`blockedBy` 记录直接上游。
+- 没有上游可等的 pending（如 `allOf` 空集合的 UNKNOWN）保持原状态，不伪装成被阻塞。
+- 上表的组合语义只用于表达式内部求值；界面沿 `blockedBy` 追溯到根因（等待中的人工门槛或 UNKNOWN 规则），并显示需要的角色。
+
 ### 5.4 配置校验
 
 启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`。失败则服务拒绝发起放行。
