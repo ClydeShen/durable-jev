@@ -1,10 +1,10 @@
 # durable-jev
 
-持久化业务 Agent POC：运输订单放行与异常处置工作台。
+Durable business agent POC: a dispatch-release and exception-handling workbench for transport orders.
 
 ```bash
 pnpm bootstrap
 pnpm start
 ```
 
-详细说明见 [docs/getting-started.md](docs/getting-started.md)。
+See [docs/getting-started.md](docs/getting-started.md) for details.
