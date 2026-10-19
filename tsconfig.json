@@ -6,6 +6,9 @@
     },
     {
       "path": "packages/rule-engine"
+    },
+    {
+      "path": "packages/store"
     }
   ]
 }
