@@ -46,13 +46,20 @@ describe('evaluateRuleGraph', () => {
     expect(graph.statusOf('R40' as RuleId)).toBe('FAIL')
   })
 
-  it('treats an order without cargo items as UNKNOWN, not PASS', () => {
+  it('treats an order without cargo items as UNKNOWN, not PASS, and blocks the order on it', () => {
     const graph = evaluateRuleGraph({
       rulesInEvaluationOrder: cargoRules,
       subjects: { cargoItem: [], leg: [] },
       evaluateLeaf: leafStatuses({}),
     })
-    expect(graph.statusOf('R40' as RuleId)).toBe('UNKNOWN')
+    expect(graph.evaluations.find((evaluation) => evaluation.ruleId === 'R37')).toMatchObject({
+      gateStatus: 'UNKNOWN',
+      blockedBy: [],
+    })
+    expect(graph.evaluations.at(-1)).toMatchObject({
+      gateStatus: 'BLOCKED_DEPENDENCY',
+      blockedBy: ['R37'],
+    })
   })
 
   it('blocks rules whose dependency has not passed and names the blocker', () => {
@@ -63,7 +70,7 @@ describe('evaluateRuleGraph', () => {
     })
     const blocked = graph.evaluations.find((evaluation) => evaluation.ruleId === 'R02')
     expect(blocked).toMatchObject({ gateStatus: 'BLOCKED_DEPENDENCY', blockedBy: ['R01'] })
-    expect(graph.statusOf('R40' as RuleId)).toBe('UNKNOWN')
+    expect(graph.statusOf('R40' as RuleId)).toBe('BLOCKED_DEPENDENCY')
   })
 
   it('marks a rule NOT_APPLICABLE per item when its applicability fails', () => {
@@ -125,8 +132,33 @@ describe('evaluateRuleGraph', () => {
       evaluateLeaf: leafStatuses({ R32: 'FAIL', R34: 'WAITING_HUMAN' }),
     })
     expect(graph.evaluations.at(-1)).toMatchObject({
-      gateStatus: 'WAITING_HUMAN',
+      gateStatus: 'BLOCKED_DEPENDENCY',
       blockedBy: ['R34'],
+    })
+  })
+
+  it('keeps WAITING_HUMAN on the human gate and blocks every rule nested above it', () => {
+    const rules = [
+      rule('R30'),
+      rule('R39-LOAD', { dependsOn: ['R30' as RuleId] }),
+      rule('R39-CONFIRM', { dependsOn: ['R39-LOAD' as RuleId] }),
+      rule('R39', { combiner: { kind: 'and', operands: [ref('R39-LOAD'), ref('R39-CONFIRM')] } }),
+      rule('R40', { combiner: { kind: 'and', operands: [ref('R30'), ref('R39')] } }),
+    ]
+    const graph = evaluateRuleGraph({
+      rulesInEvaluationOrder: rules,
+      subjects: { cargoItem: [], leg: [] },
+      evaluateLeaf: leafStatuses({ 'R39-LOAD': 'WAITING_HUMAN' }),
+    })
+    const statuses = Object.fromEntries(
+      graph.evaluations.map((evaluation) => [evaluation.ruleId, evaluation.gateStatus]),
+    )
+    expect(statuses).toEqual({
+      R30: 'PASS',
+      'R39-LOAD': 'WAITING_HUMAN',
+      'R39-CONFIRM': 'BLOCKED_DEPENDENCY',
+      R39: 'BLOCKED_DEPENDENCY',
+      R40: 'BLOCKED_DEPENDENCY',
     })
   })
 })

@@ -58,9 +58,19 @@ export function evaluateRuleGraph(input: {
   const storedStatus = (ruleId: RuleId, subject: CheckSubject): GateStatus =>
     results.get(subjectKey(ruleId, subject))?.gateStatus ?? 'UNKNOWN'
 
+  const hasSubjects = (ruleId: RuleId): boolean => {
+    const scope = rulesById.get(ruleId)?.scope
+    return scope === undefined || scope === 'order' || subjects[scope].length > 0
+  }
+
   for (const rule of rulesInEvaluationOrder) {
     for (const subject of subjectsInScope(rule, subjects)) {
-      const evaluation = evaluateRule(rule, subject, { statusOf, subjects, evaluateLeaf })
+      const evaluation = evaluateRule(rule, subject, {
+        statusOf,
+        hasSubjects,
+        subjects,
+        evaluateLeaf,
+      })
       results.set(subjectKey(rule.ruleId, subject), evaluation)
     }
   }
@@ -75,6 +85,7 @@ function subjectsInScope(rule: RuleDefinition, subjects: GraphSubjects): CheckSu
 
 type RuleEvaluationDependencies = {
   statusOf(ruleId: RuleId, subject: CheckSubject): GateStatus
+  hasSubjects(ruleId: RuleId): boolean
   subjects: GraphSubjects
   evaluateLeaf: LeafEvaluator
 }
@@ -84,14 +95,14 @@ function evaluateRule(
   subject: CheckSubject,
   dependencies: RuleEvaluationDependencies,
 ): RuleEvaluation {
-  const { statusOf, subjects, evaluateLeaf } = dependencies
+  const { statusOf, hasSubjects, subjects, evaluateLeaf } = dependencies
   const expressionContext: ExpressionContext = {
     subject,
     statusOf,
     membersOf: (scope) => subjects[scope],
   }
   const unsettledAmong = (ruleIds: readonly RuleId[], isSettled: (status: GateStatus) => boolean) =>
-    ruleIds.filter((ruleId) => !isSettled(statusOf(ruleId, subject)))
+    ruleIds.filter((ruleId) => hasSubjects(ruleId) && !isSettled(statusOf(ruleId, subject)))
   const result = (gateStatus: GateStatus, blockedBy: RuleId[] = [], observedValue?: unknown) => ({
     ruleId: rule.ruleId,
     subject,
@@ -112,11 +123,10 @@ function evaluateRule(
   }
 
   if (rule.combiner) {
-    const gateStatus = evaluateExpression(rule.combiner, expressionContext)
-    const blockers = isPendingGateStatus(gateStatus)
-      ? unsettledAmong(referencedRuleIds(rule.combiner), isDecided)
-      : []
-    return result(gateStatus, blockers)
+    const combined = evaluateExpression(rule.combiner, expressionContext)
+    if (!isPendingGateStatus(combined)) return result(combined)
+    const blockers = unsettledAmong(referencedRuleIds(rule.combiner), isDecided)
+    return blockers.length > 0 ? result('BLOCKED_DEPENDENCY', blockers) : result(combined)
   }
 
   const unmetDependencies = unsettledAmong(rule.dependsOn, isSatisfied)
