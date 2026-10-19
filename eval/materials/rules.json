@@ -7,6 +7,7 @@
       "ruleId": "R01",
       "version": "1",
       "scope": "order",
+      "branch": "base",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -30,6 +31,7 @@
       "ruleId": "R02",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R01"],
       "evaluator": {
         "kind": "code",
@@ -49,6 +51,7 @@
       "ruleId": "R03",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R01"],
       "evaluator": {
         "kind": "semantic",
@@ -67,6 +70,7 @@
       "ruleId": "R04",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R02", "R03"],
       "evaluator": {
         "kind": "code",
@@ -85,6 +89,7 @@
       "ruleId": "R04-COLD",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R04"],
       "evaluator": {
         "kind": "code",
@@ -99,6 +104,7 @@
       "ruleId": "R04-CONTROLLED",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R04"],
       "evaluator": {
         "kind": "code",
@@ -113,6 +119,7 @@
       "ruleId": "R05",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "base",
       "dependsOn": ["R02"],
       "evaluator": {
         "kind": "code",
@@ -133,6 +140,7 @@
       "ruleId": "R06",
       "version": "1",
       "scope": "order",
+      "branch": "base",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -147,6 +155,7 @@
       "ruleId": "R07",
       "version": "1",
       "scope": "order",
+      "branch": "base",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -167,6 +176,7 @@
       "ruleId": "R08",
       "version": "1",
       "scope": "order",
+      "branch": "base",
       "dependsOn": ["R01"],
       "evaluator": {
         "kind": "code",
@@ -181,6 +191,7 @@
       "ruleId": "R09",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-CONTROLLED"
@@ -199,6 +210,7 @@
       "ruleId": "R10",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-CONTROLLED"
@@ -221,6 +233,7 @@
       "ruleId": "R11",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-CONTROLLED"
@@ -239,6 +252,7 @@
       "ruleId": "R12",
       "version": "1",
       "scope": "order",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "anyOf",
         "scope": "cargoItem",
@@ -261,6 +275,7 @@
       "ruleId": "R13",
       "version": "1",
       "scope": "order",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "anyOf",
         "scope": "cargoItem",
@@ -295,6 +310,7 @@
       "ruleId": "R14",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "controlled",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-CONTROLLED"
@@ -338,6 +354,7 @@
       "ruleId": "R15",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -356,6 +373,7 @@
       "ruleId": "R16",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -374,6 +392,7 @@
       "ruleId": "R17",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -392,6 +411,7 @@
       "ruleId": "R18",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -415,6 +435,7 @@
       "ruleId": "R18-RISK",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -433,6 +454,7 @@
       "ruleId": "R19",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -451,6 +473,7 @@
       "ruleId": "R19-EXCURSION",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -469,6 +492,7 @@
       "ruleId": "R20",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R19-EXCURSION"
@@ -492,6 +516,7 @@
       "ruleId": "R20-REWORK",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -510,6 +535,7 @@
       "ruleId": "R21-REQUIRED",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -541,6 +567,7 @@
       "ruleId": "R21",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R21-REQUIRED"
@@ -564,6 +591,7 @@
       "ruleId": "R22-CAPTURE",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R21-REQUIRED"
@@ -587,6 +615,7 @@
       "ruleId": "R22",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R21-REQUIRED"
@@ -605,6 +634,7 @@
       "ruleId": "R23",
       "version": "1",
       "scope": "cargoItem",
+      "branch": "coldChain",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R04-COLD"
@@ -660,6 +690,7 @@
       "ruleId": "R24",
       "version": "1",
       "scope": "leg",
+      "branch": "plan",
       "dependsOn": ["R07"],
       "evaluator": {
         "kind": "code",
@@ -674,6 +705,7 @@
       "ruleId": "R25",
       "version": "1",
       "scope": "leg",
+      "branch": "plan",
       "dependsOn": ["R05", "R16"],
       "evaluator": {
         "kind": "code",
@@ -688,6 +720,7 @@
       "ruleId": "R26",
       "version": "1",
       "scope": "leg",
+      "branch": "plan",
       "dependsOn": ["R04", "R07"],
       "evaluator": {
         "kind": "decisionTable",
@@ -702,6 +735,7 @@
       "ruleId": "R27",
       "version": "1",
       "scope": "order",
+      "branch": "plan",
       "dependsOn": [],
       "evaluator": {
         "kind": "semantic",
@@ -726,6 +760,7 @@
       "ruleId": "R28",
       "version": "1",
       "scope": "order",
+      "branch": "plan",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -740,6 +775,7 @@
       "ruleId": "R29",
       "version": "1",
       "scope": "order",
+      "branch": "plan",
       "dependsOn": ["R06", "R11", "R24", "R25", "R26", "R27"],
       "evaluator": {
         "kind": "code",
@@ -760,6 +796,7 @@
       "ruleId": "R30",
       "version": "1",
       "scope": "order",
+      "branch": "plan",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
@@ -828,6 +865,7 @@
       "ruleId": "R31",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -842,6 +880,7 @@
       "ruleId": "R32",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -856,6 +895,7 @@
       "ruleId": "R33",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "appliesWhen": {
         "kind": "not",
         "operand": {
@@ -877,6 +917,7 @@
       "ruleId": "R34",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "appliesWhen": {
         "kind": "not",
         "operand": {
@@ -902,6 +943,7 @@
       "ruleId": "R35-REQUIRED",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "dependsOn": [],
       "evaluator": {
         "kind": "code",
@@ -916,6 +958,7 @@
       "ruleId": "R35",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "appliesWhen": {
         "kind": "ref",
         "ruleId": "R35-REQUIRED"
@@ -938,6 +981,7 @@
       "ruleId": "R36",
       "version": "1",
       "scope": "order",
+      "branch": "commercial",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
@@ -987,6 +1031,7 @@
       "ruleId": "R37",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
@@ -1034,6 +1079,7 @@
       "ruleId": "R38",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
@@ -1086,6 +1132,7 @@
       "ruleId": "R39-LOAD",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": ["R30", "R36", "R37", "R38"],
       "evaluator": {
         "kind": "humanGate",
@@ -1105,6 +1152,7 @@
       "ruleId": "R39-CONFIRM",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": ["R39-LOAD"],
       "evaluator": {
         "kind": "humanGate",
@@ -1123,6 +1171,7 @@
       "ruleId": "R39",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
@@ -1150,6 +1199,7 @@
       "ruleId": "R40",
       "version": "1",
       "scope": "order",
+      "branch": "release",
       "dependsOn": [],
       "evaluator": {
         "kind": "combinator",
