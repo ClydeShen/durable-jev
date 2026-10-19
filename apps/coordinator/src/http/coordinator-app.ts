@@ -25,7 +25,10 @@ const SubmitCaseBody = z.object({
     )
     .optional(),
 })
-const ApproveBody = z.object({ reason: z.string().optional() })
+const ApproveBody = z.object({
+  reason: z.string().optional(),
+  conditions: z.array(z.enum(['REWORK_REQUIRED'])).optional(),
+})
 const RejectBody = z.object({ reason: z.string().min(1) })
 const CompleteBody = z.object({
   fields: z.record(z.string(), z.string()),
@@ -93,9 +96,14 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
   })
 
   app.post('/human-tasks/:humanTaskId/approve', (request, response) => {
-    const { reason } = ApproveBody.parse(request.body ?? {})
+    const { reason, conditions } = ApproveBody.parse(request.body ?? {})
     response.json(
-      coordinator.approveHumanTask(request.params.humanTaskId, demoRoleOf(request), reason),
+      coordinator.approveHumanTask(
+        request.params.humanTaskId,
+        demoRoleOf(request),
+        reason,
+        conditions,
+      ),
     )
   })
 

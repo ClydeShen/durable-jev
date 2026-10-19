@@ -19,6 +19,7 @@ import {
   applyHumanTaskCommand,
   canBeSuperseded,
   createHumanTask,
+  type DecisionCondition,
   expireIfDue,
   type HumanTaskCommand,
   humanGateStatus,
@@ -57,7 +58,7 @@ export type SubmitCaseRequest = {
 export type CaseView = StoredCase & { checks: CheckResult[]; humanTasks: HumanTask[] }
 
 type HumanTaskAction =
-  | { kind: 'approve'; reason?: string }
+  | { kind: 'approve'; reason?: string; conditions?: DecisionCondition[] }
   | { kind: 'reject'; reason: string }
   | { kind: 'complete'; fields: Record<string, string>; evidenceRefs: EvidenceRef[] }
 
@@ -138,10 +139,16 @@ export class CoordinatorService {
       .filter((task) => !role || task.requiredRole === role)
   }
 
-  approveHumanTask(humanTaskId: string, actor: Role, reason?: string): HumanTask {
+  approveHumanTask(
+    humanTaskId: string,
+    actor: Role,
+    reason?: string,
+    conditions?: DecisionCondition[],
+  ): HumanTask {
     return this.actOnHumanTask(humanTaskId, actor, {
       kind: 'approve',
       ...(reason === undefined ? {} : { reason }),
+      ...(conditions === undefined ? {} : { conditions }),
     })
   }
 
