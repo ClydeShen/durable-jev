@@ -1,6 +1,6 @@
 {
   "caseId": "CASE-LOG-001",
-  "title": "普通货单段，资料完整",
+  "title": "General cargo, single leg, complete documents",
   "reviewStatus": "draft",
   "shipment": {
     "caseId": "CASE-LOG-001",
