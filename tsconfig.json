@@ -12,6 +12,9 @@
     },
     {
       "path": "packages/human-tasks"
+    },
+    {
+      "path": "eval/runner"
     }
   ]
 }
