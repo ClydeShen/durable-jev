@@ -11,5 +11,6 @@
   "approvalTaskTtlMinutes": 240,
   "operationTaskTtlMinutes": 480,
   "semanticNoulPassAtLeast": 0.8,
-  "semanticNoulFailAtMost": 0.2
+  "semanticNoulFailAtMost": 0.2,
+  "semanticChoiceMinProbability": 0.6
 }
