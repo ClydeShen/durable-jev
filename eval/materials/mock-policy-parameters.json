@@ -1,0 +1,13 @@
+{
+  "policyVersion": "policy-v1",
+  "maxCargoItemWeightGrams": 1000000,
+  "maxCargoItemDimensionMm": 3000,
+  "minLegConnectionMinutes": 30,
+  "deliveryWindowToleranceMinutes": 0,
+  "maxSensorRecordAgeMinutes": 120,
+  "temperatureExcursionToleranceMinutes": 30,
+  "creditExceptionLimitCents": 500000,
+  "extraCostApprovalThresholdCents": 50000,
+  "approvalTaskTtlMinutes": 240,
+  "operationTaskTtlMinutes": 480
+}
