@@ -13,6 +13,8 @@ Claude delivery agent 的工作区，由 agent 自治管理。用户文档和测
 ## 工作协议
 
 1. 开始任务前读 `spec.md`、`design.md`、`roadmap.md` 中对应任务。
-2. 一个任务一个或几个小 commit；完成后在 `roadmap.md` 勾选。
+2. 一个任务拆成多个小 commit，每个 commit 只做一件可独立理解的事（例如：先加 schema，再加求值，再加测试，最后勾选 roadmap）；不要把整改、文档、代码混在一个 commit。完成后在 `roadmap.md` 勾选（单独的 `docs(roadmap)` commit 或随任务最后一个 commit）。
+   - commit message 用 Conventional Commits：`<type>(<scope>): <subject>`，type 取 `feat | fix | refactor | test | docs | chore | build`，scope 为包或目录名（如 `rule-engine`、`store`、`spike-jev`、`harness`），subject 用英文祈使句、小写开头、不加句号。
+   - 示例：`feat(rule-engine): add pending-aware and/or combinators`、`docs(m0): record live jev results`。
 3. 偏离设计或任务目标时，先改 `design.md` / `roadmap.md`，再在 `implementation-notes.md` 记一行原因。
 4. 冲突优先级：用户最新指令 > `spec.md` > `design.md` > `prd.md`。
