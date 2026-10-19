@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+  - spikes/*
+  - eval/runner
+onlyBuiltDependencies:
+  - esbuild
+  - better-sqlite3
