@@ -1,4 +1,5 @@
 import type {
+  CaseEvidence,
   CheckResult,
   CheckResultId,
   CheckSubject,
@@ -13,7 +14,7 @@ import type {
   Shipment,
   UtcTimestamp,
 } from '@durable-jev/contracts'
-import { orderStatusMachine } from '@durable-jev/contracts'
+import { emptyCaseEvidence, orderStatusMachine } from '@durable-jev/contracts'
 import {
   applyHumanTaskCommand,
   canBeSuperseded,
@@ -49,6 +50,7 @@ export type CoordinatorDependencies = {
 
 export type SubmitCaseRequest = {
   shipment: Shipment
+  evidence?: CaseEvidence
   scriptedSemanticAnswers?: { ruleId: string; entityId: string; answer: SemanticAnswer }[]
 }
 
@@ -91,6 +93,7 @@ export class CoordinatorService {
         caseId,
         correlationId: `corr-${caseId}`,
         shipment: request.shipment,
+        evidence: request.evidence ?? emptyCaseEvidence,
         orderStatus: orderStatusMachine.initial,
         createdAt: now,
         updatedAt: now,

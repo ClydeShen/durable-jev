@@ -1,4 +1,11 @@
-import { GateStatus, OrderStatus, Role, RuleId, Shipment } from '@durable-jev/contracts'
+import {
+  CaseEvidence,
+  GateStatus,
+  OrderStatus,
+  Role,
+  RuleId,
+  Shipment,
+} from '@durable-jev/contracts'
 import { z } from 'zod'
 
 export const ScriptedSemanticAnswer = z.object({
@@ -45,6 +52,7 @@ export const CaseFile = z.object({
   title: z.string().min(1),
   reviewStatus: z.enum(['draft', 'reviewed']),
   shipment: Shipment,
+  evidence: CaseEvidence.default({ documents: [], temperatureLogs: [], inspectionNotes: [] }),
   scriptedSemanticAnswers: z.array(ScriptedSemanticAnswer),
   eventScript: z.array(EventScriptStep).min(1),
 })

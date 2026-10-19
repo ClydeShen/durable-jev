@@ -20,6 +20,7 @@ export async function resetDemo(supervisor: ProcessSupervisor): Promise<DemoRese
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         shipment: caseFile.shipment,
+        evidence: caseFile.evidence,
         scriptedSemanticAnswers: caseFile.scriptedSemanticAnswers,
       }),
     })

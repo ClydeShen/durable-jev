@@ -1,4 +1,5 @@
 import type {
+  CaseEvidence,
   CheckResult,
   HumanTask,
   HumanTaskStatus,
@@ -6,7 +7,7 @@ import type {
   Shipment,
   TransportLeg,
 } from '@durable-jev/contracts'
-import { reservationMachine } from '@durable-jev/contracts'
+import { emptyCaseEvidence, reservationMachine } from '@durable-jev/contracts'
 import type { StoreDatabase } from '@durable-jev/store'
 import type { SemanticAnswer } from '../rules/evaluation-inputs.js'
 
@@ -14,6 +15,7 @@ export type StoredCase = {
   caseId: string
   correlationId: string
   shipment: Shipment
+  evidence: CaseEvidence
   orderStatus: OrderStatus
   createdAt: string
   updatedAt: string
@@ -23,6 +25,7 @@ type CaseRow = {
   case_id: string
   correlation_id: string
   shipment_json: string
+  evidence_json: string
   order_status: OrderStatus
   created_at: string
   updated_at: string
@@ -32,6 +35,7 @@ const toStoredCase = (row: CaseRow): StoredCase => ({
   caseId: row.case_id,
   correlationId: row.correlation_id,
   shipment: JSON.parse(row.shipment_json),
+  evidence: { ...emptyCaseEvidence, ...JSON.parse(row.evidence_json) },
   orderStatus: row.order_status,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
@@ -43,13 +47,14 @@ export class CoordinatorRepository {
   insertCase(stored: StoredCase): void {
     this.database
       .prepare(
-        `INSERT INTO cases (case_id, correlation_id, shipment_json, case_revision, order_status, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO cases (case_id, correlation_id, shipment_json, evidence_json, case_revision, order_status, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         stored.caseId,
         stored.correlationId,
         JSON.stringify(stored.shipment),
+        JSON.stringify(stored.evidence),
         stored.shipment.caseRevision,
         stored.orderStatus,
         stored.createdAt,

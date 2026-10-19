@@ -59,4 +59,8 @@ export const coordinatorMigrations: readonly Migration[] = [
       UNIQUE (case_id, route_version, leg_id)
     )`,
   },
+  {
+    id: 'coordinator-006-case-evidence',
+    sql: `ALTER TABLE cases ADD COLUMN evidence_json TEXT NOT NULL DEFAULT '{}'`,
+  },
 ]

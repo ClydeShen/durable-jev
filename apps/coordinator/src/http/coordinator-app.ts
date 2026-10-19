@@ -1,4 +1,4 @@
-import { Role, Shipment } from '@durable-jev/contracts'
+import { CaseEvidence, Role, Shipment } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
@@ -7,6 +7,7 @@ import type { CoordinatorService } from '../coordinator-service.js'
 
 const SubmitCaseBody = z.object({
   shipment: Shipment,
+  evidence: CaseEvidence.optional(),
   scriptedSemanticAnswers: z
     .array(
       z.object({
