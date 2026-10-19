@@ -2,6 +2,7 @@ import type { HumanTask, Role } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
 import { CaseList } from './CaseList.js'
+import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
@@ -16,6 +17,7 @@ export function App() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>()
   const [selectedCase, setSelectedCase] = useState<CaseView>()
   const [catalog, setCatalog] = useState<RuleCatalog>()
+  const [view, setView] = useState<'flow' | 'tree'>('flow')
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string }>()
 
   const refresh = useCallback(async () => {
@@ -113,20 +115,37 @@ export function App() {
               <StatusBadge status={selectedCase.orderStatus} />
               <span className="muted small">{selectedCase.correlationId}</span>
             </div>
-            <div className="columns">
-              <section>
-                <h2>Rule tree</h2>
-                {catalog ? (
-                  <RuleTree
-                    rootRuleId="R40"
-                    rules={catalog.rules}
-                    checks={selectedCase.checks}
-                    humanTasks={selectedCase.humanTasks}
-                  />
-                ) : (
-                  <p className="muted">Loading rules…</p>
-                )}
-              </section>
+            <section>
+              <div className="view-tabs">
+                {(['flow', 'tree'] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={view === option}
+                    onClick={() => setView(option)}
+                  >
+                    {option === 'flow' ? 'Flow' : 'Rule tree'}
+                  </button>
+                ))}
+              </div>
+              {!catalog ? (
+                <p className="muted">Loading rules…</p>
+              ) : view === 'flow' ? (
+                <FlowDiagram
+                  rules={catalog.rules}
+                  checks={selectedCase.checks}
+                  humanTasks={selectedCase.humanTasks}
+                />
+              ) : (
+                <RuleTree
+                  rootRuleId="R40"
+                  rules={catalog.rules}
+                  checks={selectedCase.checks}
+                  humanTasks={selectedCase.humanTasks}
+                />
+              )}
+            </section>
+            <div className="columns columns-even">
               <div>
                 <HumanTaskPanel
                   tasks={selectedCase.humanTasks}
