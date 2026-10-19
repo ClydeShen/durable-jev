@@ -9,5 +9,7 @@
   "creditExceptionLimitCents": 500000,
   "extraCostApprovalThresholdCents": 50000,
   "approvalTaskTtlMinutes": 240,
-  "operationTaskTtlMinutes": 480
+  "operationTaskTtlMinutes": 480,
+  "semanticNoulPassAtLeast": 0.8,
+  "semanticNoulFailAtMost": 0.2
 }

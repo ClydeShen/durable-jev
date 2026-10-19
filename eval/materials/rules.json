@@ -56,7 +56,7 @@
       },
       "unknownPolicy": "escalateToHuman",
       "inputPaths": ["cargoItems.description", "cargoItems.declaredCategories"],
-      "parameters": [],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
       "invalidationTriggers": ["cargo", "documents"]
     },
     {
