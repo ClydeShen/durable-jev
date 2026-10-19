@@ -1,7 +1,7 @@
 import { choice, noul, TypeSafeClient } from '@typesafe-ai/sdk'
 
 const pinnedModel = 'jev-1.14.0'
-const hasApiKey = Boolean(process.env.TYPESAFE_API_KEY)
+const isLive = process.env.MODEL_MODE === 'live' && Boolean(process.env.TYPESAFE_API_KEY)
 
 const recordedResponse = {
   model: pinnedModel,
@@ -28,9 +28,9 @@ async function recordedFetch(url: string, init?: RequestInit): Promise<Response>
 
 const client = new TypeSafeClient({
   defaultModel: pinnedModel,
-  apiKey: hasApiKey ? undefined : 'recorded-mode',
+  apiKey: isLive ? undefined : 'recorded-mode',
   compression: false,
-  ...(hasApiKey ? {} : { fetch: recordedFetch }),
+  ...(isLive ? {} : { fetch: recordedFetch }),
 })
 
 const inspectionState = {
@@ -56,7 +56,7 @@ const result = await client.systemOne({
 })
 const durationMs = Math.round(performance.now() - startedAt)
 
-console.log(`mode: ${hasApiKey ? 'live' : 'recorded'}`)
+console.log(`mode: ${isLive ? 'live' : 'recorded'}`)
 console.log(`model: ${result.model}`)
 console.log(`packagingRisk: ${JSON.stringify(result.answers.packagingRisk)}`)
 console.log(

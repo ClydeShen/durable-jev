@@ -57,7 +57,7 @@
 
 ## Jev `@typesafe-ai/sdk` 0.7.0
 
-复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。未设置 `TYPESAFE_API_KEY` 时用 recorded 模式（注入 `fetch` 返回一次真实调用录下的响应），设置后真实调用。
+复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。默认 recorded 模式（注入 `fetch` 返回一次真实调用录下的响应），不消耗额度；`MODEL_MODE=live` 且设置 `TYPESAFE_API_KEY` 时才真实调用。
 
 场景：一次请求同时问 R18（检查备注的风险信号，Choice）和 R10（安全说明与声明是否一致，Noul）。
 

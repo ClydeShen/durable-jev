@@ -47,3 +47,9 @@
 - 现阶段只接 Jev（`TYPESAFE_API_KEY`，模型 `jev-1.14.0`）。
 - 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。用户提供 key 前暂缓；在此之前调查 Agent 与结构化输出只用脚本化模型（pi-ai faux provider）。
 - 除 Jev 与 NVIDIA 外不引入其他 LLM。
+
+## 8. API 额度（2026-10-19）
+
+- Jev key 额度有限。开发与搭建验证一律用 mock/scripted/recorded，默认不发真实请求。
+- 只有显式 `MODEL_MODE=live` 才调用真实 API；仅在功能跑通后的关键完整测试（如 T4.2 验收、B1）使用，并控制样本量。
+- 自动化测试（`pnpm test`、`pnpm spikes`）不得触发真实调用。
