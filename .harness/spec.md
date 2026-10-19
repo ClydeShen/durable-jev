@@ -41,3 +41,9 @@
 ## 6. 外部依赖与凭据
 
 用户负责获取 Jev 和生成式模型的 key。未提供 key 时，相关 spike 只验证接口形状，并在 `docs/m0-findings.md` 如实记录。
+
+## 7. 模型选择（2026-10-19）
+
+- 现阶段只接 Jev（`TYPESAFE_API_KEY`，模型 `jev-1.14.0`）。
+- 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。用户提供 key 前暂缓；在此之前调查 Agent 与结构化输出只用脚本化模型（pi-ai faux provider）。
+- 除 Jev 与 NVIDIA 外不引入其他 LLM。
