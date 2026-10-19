@@ -54,6 +54,7 @@ export type TransportLeg = z.infer<typeof TransportLeg>
 export const Quote = z.object({
   quoteId: z.string().min(1),
   amountCents: nonNegativeInteger,
+  baselineAmountCents: nonNegativeInteger.optional(),
   currency: z.string().length(3),
 })
 export type Quote = z.infer<typeof Quote>

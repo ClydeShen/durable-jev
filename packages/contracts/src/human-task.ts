@@ -29,6 +29,7 @@ export const HumanDecision = z.object({
   decidedBy: Role,
   decidedAt: UtcTimestamp,
   reason: z.string().optional(),
+  conditions: z.array(z.enum(['REWORK_REQUIRED'])).optional(),
 })
 export type HumanDecision = z.infer<typeof HumanDecision>
 
