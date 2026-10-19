@@ -15,7 +15,7 @@
 | Lint/格式 | Biome |
 | 追踪 | `@opentelemetry/api` + W3C traceparent，SDK 在 P0 确认 |
 | 前端 | Vite + React，单页包含工作台、`/console`、演示控制 |
-| 外部依赖候选 | `@earendil-works/pi-durable`、`@earendil-works/pi-ai`、`@a2a-js/sdk`，版本在 P0 锁定；Jev TS 客户端在 P0 确认（可能自写 HTTP 客户端） |
+| 外部依赖 | `@earendil-works/pi-durable` 1.3.0、`@a2a-js/sdk` 1.3.0、`@typesafe-ai/sdk` 0.7.0（模型 `jev-1.14.0`）、OpenTelemetry API 1.9.1；详见 `docs/m0-findings.md` |
 
 ## 2. 目录
 

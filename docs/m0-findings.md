@@ -77,3 +77,46 @@
 - 一次请求可批量问多个问题，同一订单的多个语义判断可以合并成一次调用。
 - SDK 自带重试（默认 2 次，单次超时 10s）。为了让预算守卫准确计数，SDK 重试关掉（`maxRetries: 0`），由 harness 统一管理重试。
 - 环境变量统一用官方名 `TYPESAFE_API_KEY`。
+
+## Trace 传播（OpenTelemetry API 1.9.1 / SDK 2.12.0）
+
+复现：`pnpm --filter @durable-jev/spike-trace propagation`
+
+| 验证项 | 结果 |
+|---|---|
+| 跨服务传播 | 通过。Coordinator 通过 `propagation.inject` 写入 W3C `traceparent`，Cargo Assurance `extract` 后的 span 与上游同 traceId，parent 为上游 span |
+| 恢复后的新 trace | 通过。`run.resumed` 是新的根 span（新 traceId），用 span link 指向中断前的 span |
+| 业务关联 | 通过。correlationId 作为 span 属性，跨两个 trace 保持一致 |
+
+### 对设计的影响
+
+- 只用 `@opentelemetry/api` + SDK 的手动传播，不用自动插桩，行为可预测。
+- 观察库存 span 时同时存 links，Console 用 correlationId 和 links 串起新旧 trace。
+- A2A 客户端可用 SDK 的 `CallInterceptor` 注入 `traceparent`，T5.1 验证。
+
+## 版本锁定
+
+| 依赖 | 版本 |
+|---|---|
+| Node | 22.22.0 |
+| pnpm | 10.28.0 |
+| TypeScript | 6.0.3 |
+| `@earendil-works/pi-durable` / `pi-ai` / `chord` | 1.3.0 |
+| `@a2a-js/sdk` | 1.3.0 |
+| `@typesafe-ai/sdk` | 0.7.0，模型 `jev-1.14.0` |
+| `@opentelemetry/api` | 1.9.1 |
+| `@opentelemetry/sdk-trace-node` / `sdk-trace-base` | 2.12.0 |
+| Express | 5.3.0 |
+
+所有依赖以精确版本写入 `package.json`（`.npmrc` 中 `save-exact=true`），lockfile 已提交。
+
+## 总结
+
+| 依赖 | 可行性 | 主要限制 |
+|---|---|---|
+| Pi Durable | 可行 | Experimental；单进程占有存储；`callers` 与 `restartLimit` 尚未验证 |
+| A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
+| Jev | 接口可行 | 真实调用待 key |
+| OpenTelemetry | 可行 | 无 |
+
+`pnpm spikes` 一次运行全部 spike。
