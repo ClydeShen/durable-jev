@@ -36,3 +36,54 @@ export const minutesBetween = (earlier: string, later: string) =>
 
 export const sortedDescending = (values: number[]) =>
   [...values].sort((left, right) => right - left)
+
+export const notApplicable = (observedValue?: unknown) => outcome('NOT_APPLICABLE', observedValue)
+
+export const conditionHolds = (holds: boolean, observedValue?: unknown) =>
+  outcome(holds ? 'PASS' : 'NOT_APPLICABLE', observedValue)
+
+export function semanticNoulOutcome(
+  ruleId: string,
+  entityId: string,
+  inputs: EvaluationInputs,
+  observedKey: string,
+): LeafOutcome {
+  const answer = inputs.semanticAnswerFor(ruleId, entityId)
+  if (answer?.type !== 'noul') return outcome('UNKNOWN', { answer: answer ?? null })
+  const passAtLeast = numericParameter(inputs.policy, 'semanticNoulPassAtLeast')
+  const failAtMost = numericParameter(inputs.policy, 'semanticNoulFailAtMost')
+  const observedValue = { [observedKey]: answer.noul }
+  if (answer.noul >= passAtLeast) return outcome('PASS', observedValue)
+  if (answer.noul <= failAtMost) return outcome('FAIL', observedValue)
+  return outcome('UNKNOWN', observedValue)
+}
+
+export type ConfidentChoice = { choice: string; probability: number }
+
+export function confidentChoice(
+  ruleId: string,
+  entityId: string,
+  inputs: EvaluationInputs,
+): ConfidentChoice | undefined {
+  const answer = inputs.semanticAnswerFor(ruleId, entityId)
+  if (answer?.type !== 'choice') return undefined
+  const probability = answer.probabilities[answer.choice] ?? 0
+  const minimum = numericParameter(inputs.policy, 'semanticChoiceMinProbability')
+  return probability >= minimum ? { choice: answer.choice, probability } : undefined
+}
+
+export function documentsFor(subject: CheckSubject, inputs: EvaluationInputs) {
+  return inputs.evidence.documents.filter((document) => document.cargoItemId === subject.entityId)
+}
+
+export function temperatureLogFor(subject: CheckSubject, inputs: EvaluationInputs) {
+  return inputs.evidence.temperatureLogs.find((log) => log.cargoItemId === subject.entityId)
+}
+
+export function cargoTokens(item: CargoItem): string[] {
+  return item.declaredCategories.map((category) =>
+    category === 'CONTROLLED' && item.controlledClass
+      ? `CONTROLLED:${item.controlledClass}`
+      : category,
+  )
+}

@@ -1,11 +1,13 @@
 import {
   cargoItemOf,
+  conditionHolds,
   type LeafRule,
   legsInSequence,
   minutesBetween,
   numericParameter,
   outcome,
   passOrFail,
+  semanticNoulOutcome,
   sortedDescending,
 } from './leaf-helpers.js'
 
@@ -29,16 +31,8 @@ const weightAndDimensionsValid: LeafRule = (subject, inputs) => {
   )
 }
 
-const declaredCategoryMatchesDescription: LeafRule = (subject, inputs) => {
-  const answer = inputs.semanticAnswerFor('R03', subject.entityId)
-  if (answer?.type !== 'noul') return outcome('UNKNOWN', { answer: answer ?? null })
-  const passAtLeast = numericParameter(inputs.policy, 'semanticNoulPassAtLeast')
-  const failAtMost = numericParameter(inputs.policy, 'semanticNoulFailAtMost')
-  const observedValue = { matchesDescription: answer.noul }
-  if (answer.noul >= passAtLeast) return outcome('PASS', observedValue)
-  if (answer.noul <= failAtMost) return outcome('FAIL', observedValue)
-  return outcome('UNKNOWN', observedValue)
-}
+const declaredCategoryMatchesDescription: LeafRule = (subject, inputs) =>
+  semanticNoulOutcome('R03', subject.entityId, inputs, 'matchesDescription')
 
 const cargoBranchDetermined: LeafRule = (subject, inputs) => {
   const item = cargoItemOf(subject, inputs)
@@ -58,6 +52,12 @@ const cargoBranchDetermined: LeafRule = (subject, inputs) => {
           : 'GENERAL'
   return outcome('PASS', { branch })
 }
+
+const itemRequiresColdChain: LeafRule = (subject, inputs) =>
+  conditionHolds(Boolean(cargoItemOf(subject, inputs)?.declaredCategories.includes('COLD_CHAIN')))
+
+const itemRequiresControlledHandling: LeafRule = (subject, inputs) =>
+  conditionHolds(Boolean(cargoItemOf(subject, inputs)?.declaredCategories.includes('CONTROLLED')))
 
 const fitsVehicleCapacity: LeafRule = (subject, inputs) => {
   const item = cargoItemOf(subject, inputs)
@@ -143,6 +143,8 @@ export const baseLeafRules: Readonly<Record<string, LeafRule>> = {
   weightAndDimensionsValid,
   declaredCategoryMatchesDescription,
   cargoBranchDetermined,
+  itemRequiresColdChain,
+  itemRequiresControlledHandling,
   fitsVehicleCapacity,
   arrivalWithinDeliveryWindow,
   legSequenceConnects,
