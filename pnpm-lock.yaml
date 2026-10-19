@@ -155,6 +155,22 @@ importers:
         specifier: 5.0.6
         version: 5.0.6
 
+  tools/launcher:
+    dependencies:
+      '@durable-jev/eval-runner':
+        specifier: workspace:*
+        version: link:../../eval/runner
+      '@durable-jev/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
+      express:
+        specifier: 5.3.0
+        version: 5.3.0
+    devDependencies:
+      '@types/express':
+        specifier: 5.0.6
+        version: 5.0.6
+
 packages:
 
   '@a2a-js/sdk@1.3.0':
