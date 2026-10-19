@@ -11,9 +11,9 @@
 | [x] | T0.1 | monorepo 骨架：pnpm workspace、tsconfig base、Biome、Vitest、`.gitignore`、`.env.example` | `pnpm install && pnpm build && pnpm test` 在空包上通过 | |
 | [x] | T0.2 | 根脚本 `bootstrap/start/test` 占位，`README.md` 指向 `docs/getting-started.md` | 命令可执行 | T0.1 |
 | [x] | T0.3 | spike pi-durable：只读工具 + 写工具，杀进程后恢复；观察 replay policy、callers、requestId、restartLimit | 脚本可复现，结论写入 m0-findings | T0.1 |
-| [ ] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
+| [x] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
 | [ ] | T0.5 | spike Jev：确定 TS 客户端或 HTTP 接口；Choice 与 Noul 各一次 | 有 key 时真实调用；无 key 时记录接口形状 | T0.1 |
-| [ ] | T0.6 | spike trace：两个 Fastify 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
+| [ ] | T0.6 | spike trace：两个 Express 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
 | [ ] | T0.7 | `docs/m0-findings.md` + 锁定版本 + 回写 design | 每个依赖：版本、可行性、限制、对设计的影响 | T0.3–T0.6 |
 
 ## P1 确定性核心

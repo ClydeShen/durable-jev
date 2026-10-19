@@ -33,3 +33,24 @@
 - 一个存储只能被一个进程拥有，无跨进程锁。
 - SQLite 存储依赖 Node 内置 `node:sqlite`（运行时打印 ExperimentalWarning）。
 - 断电或主机故障可能丢最新一次提交（`synchronous = NORMAL`），与 PRD 只承诺进程崩溃恢复一致。
+
+## A2A SDK `@a2a-js/sdk` 1.3.0（协议 v1.0）
+
+复现：`pnpm --filter @durable-jev/spike-a2a round-trip`
+
+场景：Cargo Assurance 以 A2A JSON-RPC 暴露能力；客户端发现 Agent Card、发起核验、收到 input-required、补充资料后取得结构化 Artifact。
+
+| 验证项 | 结果 |
+|---|---|
+| 能力发现 | 通过。`ClientFactory.createFromUrl` 读取 `/.well-known/agent-card.json` |
+| 任务查询 | 通过。`getTask` 返回同一任务状态 |
+| 补资料映射 | 通过。`INPUT_REQUIRED` 携带缺失字段；带原 taskId 的后续消息使任务进入 `COMPLETED` |
+| 结构化业务结果 | 通过。业务 checks 以 data part 放入 Artifact |
+| 重复请求去重（F04） | **不提供**。相同 `messageId` 重发会新建任务并再次执行 |
+
+### 对设计的影响
+
+- F04 需要本项目在 `a2a-adapter` 中维护 `(caseId, revision, capability) → a2aTaskId` 映射，重试时返回原任务。
+- SDK 服务端只提供 Express 适配器（另有 gRPC）。服务统一改用 Express 5，不再使用 Fastify。
+- AgentInterface 必须声明 `protocolVersion: '1.0'`，否则服务端拒绝所有请求。
+- 默认 `InMemoryTaskStore` 重启即丢；SDK 提供基于 Kysely 的 `DatabaseTaskStore`（SQLite 可用），T5.1 再决定是否采用。

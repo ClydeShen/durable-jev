@@ -7,7 +7,7 @@
 | 运行时 | Node 22，TypeScript strict，ESM |
 | 包管理 | pnpm workspace，`save-exact=true`，提交 lockfile，不用 Turborepo/Nx |
 | 构建 | `tsc -b`（project references）；web 用 Vite |
-| HTTP | Fastify 5 |
+| HTTP | Express 5（A2A SDK 只提供 Express 适配器） |
 | 契约/校验 | Zod |
 | 存储 | better-sqlite3，每个服务一个 SQLite 文件，位于 `var/data/` |
 | 测试 | Vitest |
@@ -34,7 +34,7 @@ packages/
   model-providers/        SemanticJudge 接口：jev、structured-output、scripted
   agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
   a2a-adapter/            业务任务 ↔ A2A Task 映射，server/client 封装
-  service-kit/            服务启动样板：Fastify、健康检查、本地控制端点
+  service-kit/            服务启动样板：Express、健康检查、本地控制端点
 tools/
   launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
 spikes/                   P0 一次性验证，不被正式代码依赖
