@@ -92,12 +92,13 @@ type RuleDefinition = {
   combiner?: Expression
   unknownPolicy: 'block' | 'escalateToHuman'
   inputPaths: string[]
+  parameters: string[]
   humanGate?: { taskType: 'APPROVAL' | 'OPERATION'; requiredRole: Role }
   invalidationTriggers: string[]
 }
 ```
 
-`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树。
+`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树。`ifThen` 的分支字段名为 `consequence`（避免 `then` 使对象成为 thenable）。`parameters` 列出规则使用的 policy 参数名，供配置校验。
 
 ### 5.3 组合语义
 
