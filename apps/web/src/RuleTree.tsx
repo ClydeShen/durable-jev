@@ -12,6 +12,8 @@ const evaluatorLabels: Record<string, string> = {
   combinator: 'combinator',
 }
 
+const settledStatuses = new Set(['PASS', 'NOT_APPLICABLE'])
+
 type RuleTreeProps = {
   rootRuleId: string
   rules: RuleDefinition[]
@@ -57,7 +59,7 @@ function RuleNode(props: { ruleId: string; context: TreeContext; ancestors: stri
   const rule = rulesById.get(ruleId)
   const checks = checksByRule.get(ruleId) ?? []
   const children = rule ? upstreamOf(rule) : []
-  const needsAttention = checks.some((check) => check.gateStatus !== 'PASS')
+  const needsAttention = checks.some((check) => !settledStatuses.has(check.gateStatus))
   const blockedBy = [...new Set(checks.flatMap((check) => check.blockedBy as string[]))]
   const waitingOn = rootBlockers(blockedBy, checksByRule)
 
