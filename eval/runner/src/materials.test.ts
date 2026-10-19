@@ -16,4 +16,15 @@ describe('eval materials', () => {
     const validation = validateRuleSet(loadRuleSetFile().rules, loadPolicyParameters())
     expect(validation.valid && validation.evaluationOrder.at(-1)).toBe('R40')
   })
+
+  it('defines every policy rule R01 to R40', () => {
+    const ruleIds = new Set(
+      (loadRuleSetFile().rules as { ruleId: string }[]).map((rule) => rule.ruleId),
+    )
+    const policyRuleIds = Array.from(
+      { length: 40 },
+      (_, index) => `R${String(index + 1).padStart(2, '0')}`,
+    )
+    expect(policyRuleIds.filter((ruleId) => !ruleIds.has(ruleId))).toEqual([])
+  })
 })
