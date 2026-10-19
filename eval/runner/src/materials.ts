@@ -1,6 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { ReferenceData } from '@durable-jev/contracts'
+import { CaseFile } from './case-file.js'
 
 export const materialsDirectory = fileURLToPath(new URL('../../materials/', import.meta.url))
 
@@ -19,3 +21,15 @@ export const loadRuleSetFile = () => readMaterial<RuleSetFile>('rules.json')
 
 export const loadPolicyParameters = () =>
   readMaterial<Record<string, unknown>>('mock-policy-parameters.json')
+
+export const loadReferenceData = () =>
+  ReferenceData.parse(readMaterial<unknown>('mock-data/reference-data.json'))
+
+export const listCaseIds = () =>
+  readdirSync(join(materialsDirectory, 'cases'))
+    .filter((fileName) => fileName.endsWith('.json'))
+    .map((fileName) => fileName.replace(/\.json$/, ''))
+    .sort()
+
+export const loadCase = (caseName: string) =>
+  CaseFile.parse(readMaterial<unknown>(`cases/${caseName}.json`))

@@ -10,6 +10,8 @@
     }
   },
   "dependencies": {
-    "@durable-jev/rule-engine": "workspace:*"
+    "@durable-jev/contracts": "workspace:*",
+    "@durable-jev/rule-engine": "workspace:*",
+    "zod": "4.6.7"
   }
 }

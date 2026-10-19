@@ -26,9 +26,15 @@ importers:
 
   eval/runner:
     dependencies:
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../../packages/rule-engine
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
 
   packages/contracts:
     dependencies:
