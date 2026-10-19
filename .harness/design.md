@@ -171,7 +171,7 @@ type ToolDefinition = {
 | 输入通道隔离 | `ContextAssembler`：政策/系统指令与资料文本分区，资料只作为数据 |
 | 输出无权限 | agent 只能 `submit_investigation_result`；结论由规则引擎和人工门槛决定 |
 | 版本绑定 | 结果携带 `caseRevision` 与指纹，提交时校验 |
-| 循环/反复崩溃 | 预算守卫 + 重启上限，超限转人工 |
+| 循环/反复崩溃 | 预算守卫 + 重启上限（本项目实现，Pi 1.3.0 无 restartLimit），超限转人工 |
 | 可追溯 | 每个 run、tool、model 调用发出 `observability` 事件 |
 
 每一行在 `docs/runtime-controls.md` 对应一个证据测试或故障场景。
@@ -185,6 +185,10 @@ interface SemanticJudge {
 ```
 
 实现：`JevJudge`、`StructuredOutputJudge`、`ScriptedJudge`（按 questionId + 输入哈希回放）。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+
+- state 只放该问题 `inputPaths` 对应的字段；资料文本作为数据分区，不与指令混放。
+- 门槛判定只用映射后的离散结论；Choice 的 confidence 由 probabilities 推出，不当作独立信号。
+- B1 对 Choice 问题增加选项顺序打乱的变体，测位置偏差。
 
 ## 9. 可观测性
 

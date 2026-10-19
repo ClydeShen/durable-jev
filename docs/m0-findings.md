@@ -18,13 +18,17 @@
 | 用量记录 | 通过。`harness.usage()` 按 provider/model 汇总，含失败尝试 |
 | 无 key 运行 | 通过。pi-ai 自带 faux provider，可脚本化模型响应 |
 
-尚未验证：`callers` / `modelTools` 不向模型暴露工具、`restartLimit` 崩溃循环保护。
+1.3.0 不提供的能力（核对已安装包的类型与 README）：
+
+- 没有 `restartLimit` / `retryTask`。此前写"尚未验证 restartLimit"不准确，那来自 GitHub 主分支未发布的 README。连续崩溃保护由本项目 `RunBudgetGuard` 实现。
+- `callers` 只区分 `"model"` 与 `"tools"` 两类调用方，没有"仅人工"这一类。人工专属工具只能靠"不注册给 agent"加 `beforeTool` hook 拦截。
 
 ### 对设计的影响
 
 - `replayPolicy: verifyByOperationId` 可直接映射为 Pi 的默认（非 replay-safe）行为，再配合业务端 `get_operation_status`。
 - Pi 的 `requestId` 只保证"提交"幂等，业务副作用幂等仍由我们的 operationId 和业务库唯一约束负责。
-- 人工专属工具优先"不注册给 agent"，hook 拦截作为第二道防线。
+- 人工专属工具不注册给 agent，hook 拦截作为第二道防线（Pi 的 `callers` 无法表达"仅人工"）。
+- 重启上限与崩溃循环保护属于"本项目实现"，不能在 runtime-controls 中写成 Pi 提供。
 - faux provider 可作为 `ScriptedJudge` / 脚本化调查模型的底座。
 
 ### 限制
@@ -83,6 +87,17 @@
 
 未验证：限流（429）行为、大批量问题的延迟、全量样本上的质量（留给 B1）。
 
+Choice 的 `confidence` 完全由 `probabilities` 推出：`(n·p_max − 1) / (n − 1)`（实测 n=3、p_max=0.85 → 0.775，返回 0.77），不是独立信号。Noul 没有 confidence。
+
+官方已知限制（官方只发布了 `jev-1.13` 的限制页，`1.14` 暂无）：
+
+| 限制 | 本项目对应 |
+|---|---|
+| 数学、计数、日期比较不可靠 | 一律由代码规则执行，Jev 只做语义判断（FR-06） |
+| state 中的注入内容会影响答案 | F09；`ContextAssembler` 分区并只送必要字段，结论仍由规则引擎与人工门槛决定 |
+| Choice 偏向排在第一位的选项 | B1 增加选项顺序打乱的变体 |
+| state 中无关信息越多准确率越低 | 送入前按 `inputPaths` 过滤，只给该问题需要的字段 |
+
 ### 对设计的影响
 
 - `JevJudge` 直接使用官方 SDK；`ScriptedJudge` 通过注入 `fetch` 回放，走同一解析路径。
@@ -127,7 +142,7 @@
 
 | 依赖 | 可行性 | 主要限制 |
 |---|---|---|
-| Pi Durable | 可行 | Experimental；单进程占有存储；`callers` 与 `restartLimit` 尚未验证 |
+| Pi Durable | 可行 | Experimental；单进程占有存储；无 `restartLimit`，`callers` 不区分人工 |
 | A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
 | Jev | 可行（已真实调用） | 概率有小幅波动；限流行为未验证 |
 | OpenTelemetry | 可行 | 无 |

@@ -13,3 +13,5 @@
 | 2026-10-19 | Jev 真实调用通过；响应含 `output_tokens`（非 0），与"只按输入计费"的文档需在 B1 成本统计时核实 | T7.1 成本口径 |
 | 2026-10-19 | RuleDefinition 增加 `parameters` 字段，配置校验据此检查缺失的 policy 参数 | design 5.2 已更新 |
 | 2026-10-19 | 人工任务状态机放入新包 `packages/human-tasks`（纯函数），不放进 Coordinator，便于 P1 单测与后续服务复用 | design 目录已更新 |
+| 2026-10-19 | Pi Durable 1.3.0 无 `restartLimit`/`retryTask`，`callers` 不区分人工；崩溃上限由 RunBudgetGuard 实现 | T4.4 范围增加重启上限 |
+| 2026-10-19 | Jev 官方限制（位置偏差、注入、无关信息降准、算术不可靠）写入 m0-findings 与 design 8 | B1 增加选项打乱变体 |
