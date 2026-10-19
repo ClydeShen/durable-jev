@@ -228,3 +228,13 @@ interface SemanticJudge {
 规则门槛状态（GateStatus）不是状态机：它是规则输入、上游结果和人工任务的纯函数，每次求值重算，不做转移校验。
 
 终态订单不再重新求值，也不接受人工任务命令（返回 CONFLICT）。目标版本变化时，旧任务无论处于 OPEN 还是已决定，都转为 SUPERSEDED 并记录 `supersededBy`，旧决定不复用。
+
+## 11. 工作台流程图视图
+
+默认视图是规则流程图（React Flow + dagre 自动布局，左→右，终点 R40）；规则树保留为第二个 tab。
+
+- 节点 = 规则，状态为跨货件/运输段的聚合：FAIL > ERROR > WAITING_HUMAN > BLOCKED_DEPENDENCY > UNKNOWN > INVALIDATED > PASS > NOT_APPLICABLE（全部 N/A 才是 N/A）。
+- 边 = 上游 → 下游，样式由上游状态决定：PASS 绿色流动；WAITING_HUMAN 琥珀静止；BLOCKED/UNKNOWN/INVALIDATED 灰色虚线静止；FAIL/ERROR 红色静止；N/A 淡灰。
+- 人工门槛节点单独形状并标角色；等待中时呼吸提示。
+- N/A 规则默认隐藏（可切换）。点击节点显示各实体状态、observedValue 与根因阻塞。
+- `prefers-reduced-motion` 时不播放动画，只靠颜色和线型区分。
