@@ -1,5 +1,5 @@
 {
-  "ruleSetVersion": "log-001-subset-1",
+  "ruleSetVersion": "policy-v1-rules-1",
   "policyVersion": "policy-v1",
   "reviewStatus": "draft",
   "rules": [
@@ -82,6 +82,34 @@
       "invalidationTriggers": ["cargo"]
     },
     {
+      "ruleId": "R04-COLD",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R04"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "itemRequiresColdChain"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.declaredCategories"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
+      "ruleId": "R04-CONTROLLED",
+      "version": "1",
+      "scope": "cargoItem",
+      "dependsOn": ["R04"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "itemRequiresControlledHandling"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.declaredCategories"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
       "ruleId": "R05",
       "version": "1",
       "scope": "cargoItem",
@@ -150,6 +178,485 @@
       "invalidationTriggers": ["cargo", "route", "carrier", "vehicle", "quote"]
     },
     {
+      "ruleId": "R09",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-CONTROLLED"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "controlledDocumentsComplete"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.cargoItemId"],
+      "parameters": [],
+      "invalidationTriggers": ["documents"]
+    },
+    {
+      "ruleId": "R10",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-CONTROLLED"
+      },
+      "dependsOn": ["R09"],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "documentsMatchDescription"
+      },
+      "unknownPolicy": "escalateToHuman",
+      "inputPaths": ["cargoItems.description", "cargoItems.controlledClass"],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "COMPLIANCE_REVIEWER"
+      },
+      "invalidationTriggers": ["documents", "cargo"]
+    },
+    {
+      "ruleId": "R11",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-CONTROLLED"
+      },
+      "dependsOn": ["R09"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "carrierQualifiedForControlled"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.carrierId", "legs.plannedArrivalAt"],
+      "parameters": [],
+      "invalidationTriggers": ["carrier", "route"]
+    },
+    {
+      "ruleId": "R12",
+      "version": "1",
+      "scope": "order",
+      "appliesWhen": {
+        "kind": "anyOf",
+        "scope": "cargoItem",
+        "expression": {
+          "kind": "ref",
+          "ruleId": "R04-CONTROLLED"
+        }
+      },
+      "dependsOn": ["R04"],
+      "evaluator": {
+        "kind": "decisionTable",
+        "ref": "mixedLoadAllowed"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.declaredCategories", "cargoItems.controlledClass"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
+      "ruleId": "R13",
+      "version": "1",
+      "scope": "order",
+      "appliesWhen": {
+        "kind": "anyOf",
+        "scope": "cargoItem",
+        "expression": {
+          "kind": "ref",
+          "ruleId": "R04-CONTROLLED"
+        }
+      },
+      "dependsOn": ["R10", "R11", "R12"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "complianceSignOff"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [
+        "cargoItems.declaredCategories",
+        "cargoItems.controlledClass",
+        "cargoItems.description",
+        "legs.carrierId",
+        "legs.vehicleId",
+        "legs.fromLocation",
+        "legs.toLocation"
+      ],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "COMPLIANCE_REVIEWER"
+      },
+      "invalidationTriggers": ["cargo", "carrier", "route", "vehicle", "documents"]
+    },
+    {
+      "ruleId": "R14",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-CONTROLLED"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R09"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R10"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R11"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R12"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R13"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R15",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "temperatureRangeDefined"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.temperatureRange"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"]
+    },
+    {
+      "ruleId": "R16",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R15"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "vehicleCoversTemperatureRange"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.temperatureRange", "legs.vehicleId"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "vehicle"]
+    },
+    {
+      "ruleId": "R17",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R15"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "sensorRecordValid"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.plannedDepartureAt"],
+      "parameters": ["maxSensorRecordAgeMinutes"],
+      "invalidationTriggers": ["temperature", "route"]
+    },
+    {
+      "ruleId": "R18",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "inspectionRiskAssessed"
+      },
+      "unknownPolicy": "escalateToHuman",
+      "inputPaths": ["cargoItems.cargoItemId"],
+      "parameters": ["semanticChoiceMinProbability"],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "QUALITY_REVIEWER",
+        "decisionConditions": ["REWORK_REQUIRED"]
+      },
+      "invalidationTriggers": ["inspection"]
+    },
+    {
+      "ruleId": "R18-RISK",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R18"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "riskSignalPresent"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": ["semanticChoiceMinProbability"],
+      "invalidationTriggers": ["inspection"]
+    },
+    {
+      "ruleId": "R19",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R15", "R17"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "temperatureExcursionChecked"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.temperatureRange"],
+      "parameters": ["temperatureExcursionToleranceMinutes"],
+      "invalidationTriggers": ["temperature", "cargo"]
+    },
+    {
+      "ruleId": "R19-EXCURSION",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R19"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "excursionBeyondTolerance"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": ["temperatureExcursionToleranceMinutes"],
+      "invalidationTriggers": ["temperature"]
+    },
+    {
+      "ruleId": "R20",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R19-EXCURSION"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "qualityDisposition"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.temperatureRange", "cargoItems.description"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "QUALITY_REVIEWER",
+        "decisionConditions": ["REWORK_REQUIRED"]
+      },
+      "invalidationTriggers": ["temperature", "cargo"]
+    },
+    {
+      "ruleId": "R20-REWORK",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": ["R20"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "reworkRequestedByQuality"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["temperature", "cargo"]
+    },
+    {
+      "ruleId": "R21-REQUIRED",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "or"
+      },
+      "combiner": {
+        "kind": "or",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R18-RISK"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R20-REWORK"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
+      "ruleId": "R21",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R21-REQUIRED"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "warehouseRepack"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.cargoItemId"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "OPERATION",
+        "requiredRole": "WAREHOUSE_OPERATOR",
+        "evidenceFields": ["repackPhotoRef", "packagingId"]
+      },
+      "invalidationTriggers": ["cargo", "inspection"]
+    },
+    {
+      "ruleId": "R22-CAPTURE",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R21-REQUIRED"
+      },
+      "dependsOn": ["R21"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "retestCapture"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.cargoItemId"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "OPERATION",
+        "requiredRole": "WAREHOUSE_OPERATOR",
+        "evidenceFields": ["retestReadingDeciCelsius", "retestBy"]
+      },
+      "invalidationTriggers": ["cargo", "inspection"]
+    },
+    {
+      "ruleId": "R22",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R21-REQUIRED"
+      },
+      "dependsOn": ["R22-CAPTURE"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "retestWithinRange"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["cargoItems.temperatureRange"],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "inspection"]
+    },
+    {
+      "ruleId": "R23",
+      "version": "1",
+      "scope": "cargoItem",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R04-COLD"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R15"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R16"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R17"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R18"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R19"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R20"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R21"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R22"
+          }
+        ]
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": []
+    },
+    {
       "ruleId": "R24",
       "version": "1",
       "scope": "leg",
@@ -167,27 +674,85 @@
       "ruleId": "R25",
       "version": "1",
       "scope": "leg",
-      "dependsOn": ["R05"],
+      "dependsOn": ["R05", "R16"],
       "evaluator": {
         "kind": "code",
         "ref": "vehicleFitsLeg"
       },
       "unknownPolicy": "block",
-      "inputPaths": ["legs.vehicleId"],
+      "inputPaths": ["legs.vehicleId", "legs.carrierId", "cargoItems.declaredCategories"],
       "parameters": [],
       "invalidationTriggers": ["vehicle", "cargo"]
+    },
+    {
+      "ruleId": "R26",
+      "version": "1",
+      "scope": "leg",
+      "dependsOn": ["R04", "R07"],
+      "evaluator": {
+        "kind": "decisionTable",
+        "ref": "hubSupportsCargo"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["legs.toLocation", "destination", "cargoItems.declaredCategories"],
+      "parameters": [],
+      "invalidationTriggers": ["route", "cargo"]
+    },
+    {
+      "ruleId": "R27",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "customerRestrictionsAllowRoute"
+      },
+      "unknownPolicy": "escalateToHuman",
+      "inputPaths": [
+        "customerInstructions",
+        "legs.carrierId",
+        "legs.vehicleId",
+        "legs.fromLocation",
+        "legs.toLocation"
+      ],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "TRANSPORT_PLANNER"
+      },
+      "invalidationTriggers": ["route", "customer"]
+    },
+    {
+      "ruleId": "R28",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "alternativePlanChecks"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["route"]
     },
     {
       "ruleId": "R29",
       "version": "1",
       "scope": "order",
-      "dependsOn": ["R06", "R24", "R25"],
+      "dependsOn": ["R06", "R11", "R24", "R25", "R26", "R27"],
       "evaluator": {
         "kind": "code",
         "ref": "activeReservationForPlan"
       },
       "unknownPolicy": "block",
-      "inputPaths": ["legs.carrierId", "legs.vehicleId", "entityVersions.route"],
+      "inputPaths": [
+        "legs.carrierId",
+        "legs.vehicleId",
+        "legs.fromLocation",
+        "legs.toLocation",
+        "entityVersions.route"
+      ],
       "parameters": [],
       "invalidationTriggers": ["route", "carrier", "vehicle", "reservation"]
     },
@@ -203,6 +768,14 @@
       "combiner": {
         "kind": "and",
         "operands": [
+          {
+            "kind": "allOf",
+            "scope": "cargoItem",
+            "expression": {
+              "kind": "ref",
+              "ruleId": "R05"
+            }
+          },
           {
             "kind": "ref",
             "ruleId": "R06"
@@ -224,9 +797,21 @@
                 {
                   "kind": "ref",
                   "ruleId": "R25"
+                },
+                {
+                  "kind": "ref",
+                  "ruleId": "R26"
                 }
               ]
             }
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R27"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R28"
           },
           {
             "kind": "ref",
@@ -263,9 +848,91 @@
         "ref": "quoteWithinCredit"
       },
       "unknownPolicy": "block",
-      "inputPaths": ["customerId", "quote.amountCents"],
+      "inputPaths": ["customerId", "quote.amountCents", "quote.currency"],
       "parameters": [],
       "invalidationTriggers": ["customer", "quote"]
+    },
+    {
+      "ruleId": "R33",
+      "version": "1",
+      "scope": "order",
+      "appliesWhen": {
+        "kind": "not",
+        "operand": {
+          "kind": "ref",
+          "ruleId": "R32"
+        }
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "creditExceptionWithinLimit"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["customerId", "quote.amountCents"],
+      "parameters": ["creditExceptionLimitCents"],
+      "invalidationTriggers": ["customer", "quote"]
+    },
+    {
+      "ruleId": "R34",
+      "version": "1",
+      "scope": "order",
+      "appliesWhen": {
+        "kind": "not",
+        "operand": {
+          "kind": "ref",
+          "ruleId": "R32"
+        }
+      },
+      "dependsOn": ["R33"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "creditExceptionApproval"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["customerId", "quote.amountCents", "quote.quoteId"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "COMMERCIAL_MANAGER"
+      },
+      "invalidationTriggers": ["customer", "quote"]
+    },
+    {
+      "ruleId": "R35-REQUIRED",
+      "version": "1",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "code",
+        "ref": "extraCostApprovalRequired"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["quote.amountCents", "quote.baselineAmountCents"],
+      "parameters": ["extraCostApprovalThresholdCents"],
+      "invalidationTriggers": ["quote"]
+    },
+    {
+      "ruleId": "R35",
+      "version": "1",
+      "scope": "order",
+      "appliesWhen": {
+        "kind": "ref",
+        "ruleId": "R35-REQUIRED"
+      },
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "extraCostApproval"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": ["quote.amountCents", "quote.baselineAmountCents", "quote.quoteId"],
+      "parameters": [],
+      "humanGate": {
+        "taskType": "APPROVAL",
+        "requiredRole": "COMMERCIAL_MANAGER"
+      },
+      "invalidationTriggers": ["quote"]
     },
     {
       "ruleId": "R36",
@@ -284,8 +951,30 @@
             "ruleId": "R31"
           },
           {
+            "kind": "or",
+            "operands": [
+              {
+                "kind": "ref",
+                "ruleId": "R32"
+              },
+              {
+                "kind": "and",
+                "operands": [
+                  {
+                    "kind": "ref",
+                    "ruleId": "R33"
+                  },
+                  {
+                    "kind": "ref",
+                    "ruleId": "R34"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "kind": "ref",
-            "ruleId": "R32"
+            "ruleId": "R35"
           }
         ]
       },
@@ -324,6 +1013,14 @@
             {
               "kind": "ref",
               "ruleId": "R05"
+            },
+            {
+              "kind": "ref",
+              "ruleId": "R14"
+            },
+            {
+              "kind": "ref",
+              "ruleId": "R23"
             }
           ]
         }
@@ -339,13 +1036,51 @@
       "scope": "order",
       "dependsOn": [],
       "evaluator": {
-        "kind": "code",
-        "ref": "preloadHumanTasksValid"
+        "kind": "combinator",
+        "ref": "and"
+      },
+      "combiner": {
+        "kind": "and",
+        "operands": [
+          {
+            "kind": "ref",
+            "ruleId": "R13"
+          },
+          {
+            "kind": "allOf",
+            "scope": "cargoItem",
+            "expression": {
+              "kind": "and",
+              "operands": [
+                {
+                  "kind": "ref",
+                  "ruleId": "R20"
+                },
+                {
+                  "kind": "ref",
+                  "ruleId": "R21"
+                },
+                {
+                  "kind": "ref",
+                  "ruleId": "R22-CAPTURE"
+                }
+              ]
+            }
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R34"
+          },
+          {
+            "kind": "ref",
+            "ruleId": "R35"
+          }
+        ]
       },
       "unknownPolicy": "block",
       "inputPaths": [],
       "parameters": [],
-      "invalidationTriggers": ["humanTask"]
+      "invalidationTriggers": []
     },
     {
       "ruleId": "R39-LOAD",
