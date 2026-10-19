@@ -53,3 +53,8 @@
 - Jev key 额度有限。开发与搭建验证一律用 mock/scripted/recorded，默认不发真实请求。
 - 只有显式 `MODEL_MODE=live` 才调用真实 API；仅在功能跑通后的关键完整测试（如 T4.2 验收、B1）使用，并控制样本量。
 - 自动化测试（`pnpm test`、`pnpm spikes`）不得触发真实调用。
+
+## 9. 界面语言（2026-10-19）
+
+- 所有 UI（工作台、Console、演示控制、服务返回给界面的消息）一律使用英文。
+- 文档（`docs/`、`.harness/`）仍可用中文。
