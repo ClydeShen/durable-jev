@@ -1,5 +1,6 @@
 import { Role, Shipment } from '@durable-jev/contracts'
-import express, { type ErrorRequestHandler, type Express, type Request } from 'express'
+import { createServiceApp } from '@durable-jev/service-kit'
+import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
 import { CoordinatorError, type CoordinatorErrorCode } from '../coordinator-errors.js'
 import type { CoordinatorService } from '../coordinator-service.js'
@@ -62,12 +63,7 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
 }
 
 export function createCoordinatorApp(coordinator: CoordinatorService): Express {
-  const app = express()
-  app.use(express.json({ limit: '1mb' }))
-
-  app.get('/health', (_request, response) => {
-    response.json({ status: 'ok' })
-  })
+  const app = createServiceApp('coordinator')
 
   app.get('/cases', (_request, response) => {
     response.json(coordinator.listCases())

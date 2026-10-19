@@ -35,6 +35,9 @@ importers:
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../../packages/rule-engine
+      '@durable-jev/service-kit':
+        specifier: workspace:*
+        version: link:../../packages/service-kit
       '@durable-jev/store':
         specifier: workspace:*
         version: link:../../packages/store

@@ -1,12 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../../packages/contracts" },
-    { "path": "../../packages/human-tasks" },
-    { "path": "../../packages/rule-engine" },
-    { "path": "../../packages/store" }
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/human-tasks"
+    },
+    {
+      "path": "../../packages/rule-engine"
+    },
+    {
+      "path": "../../packages/service-kit"
+    },
+    {
+      "path": "../../packages/store"
+    }
   ]
 }
