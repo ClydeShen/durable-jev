@@ -6,6 +6,7 @@ import type {
   Shipment,
   TransportLeg,
 } from '@durable-jev/contracts'
+import { reservationMachine } from '@durable-jev/contracts'
 import type { StoreDatabase } from '@durable-jev/store'
 import type { SemanticAnswer } from '../rules/evaluation-inputs.js'
 
@@ -177,9 +178,16 @@ export class CoordinatorRepository {
     const { lastInsertRowid } = this.database
       .prepare(
         `INSERT INTO reservations (case_id, route_version, leg_id, carrier_id, vehicle_id, status)
-         VALUES (?, ?, ?, ?, ?, 'RESERVED')`,
+         VALUES (?, ?, ?, ?, ?, ?)`,
       )
-      .run(caseId, routeVersion, leg.legId, leg.carrierId, leg.vehicleId)
+      .run(
+        caseId,
+        routeVersion,
+        leg.legId,
+        leg.carrierId,
+        leg.vehicleId,
+        reservationMachine.initial,
+      )
     return Number(lastInsertRowid)
   }
 
@@ -187,9 +195,9 @@ export class CoordinatorRepository {
     const row = this.database
       .prepare(
         `SELECT COUNT(*) AS count FROM reservations
-         WHERE case_id = ? AND route_version = ? AND status = 'RESERVED'`,
+         WHERE case_id = ? AND route_version = ? AND status = ?`,
       )
-      .get(caseId, routeVersion) as { count: number }
+      .get(caseId, routeVersion, reservationMachine.initial) as { count: number }
     return row.count
   }
 }

@@ -13,6 +13,7 @@ export function deriveOrderStatus(input: {
   openHumanTasks: readonly HumanTask[]
 }): OrderStatus {
   const { evaluations, finalGateStatus, openHumanTasks } = input
+  if (finalGateStatus === 'PASS') return 'READY_TO_DISPATCH'
   if (finalGateStatus === 'ERROR') return 'TECHNICAL_FAILURE'
   if (finalGateStatus === 'FAIL') return 'ON_HOLD'
 

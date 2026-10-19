@@ -6,12 +6,14 @@ import type {
   HumanTask,
   HumanTaskId,
   HumanTaskTarget,
+  OrderStatus,
   ReferenceData,
   Role,
   RuleId,
   Shipment,
   UtcTimestamp,
 } from '@durable-jev/contracts'
+import { orderStatusMachine } from '@durable-jev/contracts'
 import {
   applyHumanTaskCommand,
   createHumanTask,
@@ -88,7 +90,7 @@ export class CoordinatorService {
         caseId,
         correlationId: `corr-${caseId}`,
         shipment: request.shipment,
-        orderStatus: 'SUBMITTED',
+        orderStatus: orderStatusMachine.initial,
         createdAt: now,
         updatedAt: now,
       })
@@ -156,6 +158,7 @@ export class CoordinatorService {
     const attemptDispatch = this.database.transaction(() => {
       const stored = this.requireCase(caseId)
       if (stored.orderStatus === 'DISPATCHED') return
+      this.requireActiveCase(caseId)
       const confirmation = this.repository
         .listHumanTasks({ caseId, status: 'OPEN' })
         .find((task) => task.ruleId === dispatchConfirmationRuleId)
@@ -169,7 +172,7 @@ export class CoordinatorService {
           finalGateStatus,
         })
       }
-      this.repository.updateOrderStatus(caseId, 'DISPATCHED', this.now())
+      this.moveOrderTo(caseId, 'DISPATCHED')
     })
     attemptDispatch.immediate()
     return this.getCase(caseId)
@@ -179,6 +182,7 @@ export class CoordinatorService {
     const act = this.database.transaction(() => {
       const task = this.repository.findHumanTask(humanTaskId)
       if (!task) throw new CoordinatorError('NOT_FOUND', `human task ${humanTaskId} not found`)
+      this.requireActiveCase(task.caseId)
       if (task.ruleId === dispatchConfirmationRuleId) {
         throw new CoordinatorError('CONFLICT', 'dispatcher confirmation goes through dispatch')
       }
@@ -214,6 +218,7 @@ export class CoordinatorService {
 
   private evaluateAndPersist(caseId: string) {
     const stored = this.requireCase(caseId)
+    if (orderStatusMachine.isTerminal(stored.orderStatus)) return undefined
     const { shipment } = stored
     const now = this.now()
     const inputs = this.evaluationInputsFor(stored, now)
@@ -233,7 +238,7 @@ export class CoordinatorService {
       finalGateStatus,
       openHumanTasks: this.repository.listHumanTasks({ caseId, status: 'OPEN' }),
     })
-    this.repository.updateOrderStatus(caseId, orderStatus, now)
+    this.moveOrderTo(caseId, orderStatus)
     return finalGateStatus
   }
 
@@ -400,6 +405,22 @@ export class CoordinatorService {
 
   private entityIdOfTask(task: HumanTask): string {
     return this.repository.findHumanTaskEntityId(task.humanTaskId) ?? 'order'
+  }
+
+  private moveOrderTo(caseId: string, next: OrderStatus): void {
+    const stored = this.requireCase(caseId)
+    const status = orderStatusMachine.transition(stored.orderStatus, next)
+    if (status !== stored.orderStatus) {
+      this.repository.updateOrderStatus(caseId, status, this.now())
+    }
+  }
+
+  private requireActiveCase(caseId: string): StoredCase {
+    const stored = this.requireCase(caseId)
+    if (orderStatusMachine.isTerminal(stored.orderStatus)) {
+      throw new CoordinatorError('CONFLICT', `case ${caseId} is ${stored.orderStatus}`)
+    }
+    return stored
   }
 
   private requireCase(caseId: string): StoredCase {

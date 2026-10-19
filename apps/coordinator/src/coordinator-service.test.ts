@@ -131,3 +131,35 @@ describe('coordinator guards', () => {
     expect({ reservations, cases }).toEqual({ reservations: { count: 1 }, cases: { count: 1 } })
   })
 })
+
+describe('order state machine', () => {
+  function dispatchLogOne() {
+    const started = startCoordinator()
+    const loadTask = openTaskFor(started.submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
+    started.coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {
+      loadScanRef: 'S',
+      physicalCheckBy: 'op',
+    })
+    started.coordinator.dispatch(logOne.caseId, 'DISPATCHER')
+    return { ...started, loadTask }
+  }
+
+  it('keeps a dispatched order dispatched when it is submitted again', () => {
+    const { coordinator, submitLogOne } = dispatchLogOne()
+    submitLogOne()
+    expect(coordinator.getCase(logOne.caseId).orderStatus).toBe('DISPATCHED')
+  })
+
+  it('refuses human task commands once the order is dispatched', () => {
+    const { coordinator, loadTask } = dispatchLogOne()
+    expectCoordinatorError(
+      () => coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', { loadScanRef: 'S' }),
+      'CONFLICT',
+    )
+  })
+
+  it('treats a repeated dispatch as idempotent', () => {
+    const { coordinator } = dispatchLogOne()
+    expect(coordinator.dispatch(logOne.caseId, 'DISPATCHER').orderStatus).toBe('DISPATCHED')
+  })
+})
