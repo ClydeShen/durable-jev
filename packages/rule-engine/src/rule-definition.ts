@@ -23,7 +23,11 @@ export const RuleDefinition = z.object({
   inputPaths: z.array(z.string()),
   parameters: z.array(z.string()),
   humanGate: z
-    .object({ taskType: z.enum(['APPROVAL', 'OPERATION']), requiredRole: Role })
+    .object({
+      taskType: z.enum(['APPROVAL', 'OPERATION']),
+      requiredRole: Role,
+      evidenceFields: z.array(z.string().min(1)).default([]),
+    })
     .optional(),
   invalidationTriggers: z.array(z.string()),
 })
