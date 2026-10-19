@@ -361,7 +361,8 @@
       "parameters": [],
       "humanGate": {
         "taskType": "OPERATION",
-        "requiredRole": "WAREHOUSE_OPERATOR"
+        "requiredRole": "WAREHOUSE_OPERATOR",
+        "evidenceFields": ["loadScanRef", "physicalCheckBy"]
       },
       "invalidationTriggers": ["cargo", "route", "vehicle", "loading"]
     },
