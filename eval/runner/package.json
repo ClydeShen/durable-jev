@@ -20,6 +20,7 @@
   },
   "scripts": {
     "policy:render": "node dist/render-policy.js",
-    "replay": "node dist/replay-cli.js"
+    "replay": "node dist/replay-cli.js",
+    "event-schema:render": "node dist/render-event-schema.js"
   }
 }
