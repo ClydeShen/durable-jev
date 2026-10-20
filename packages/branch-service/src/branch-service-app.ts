@@ -13,6 +13,7 @@ import {
 import {
   evaluateBranchWithJudge,
   type JudgeFor,
+  JudgeUnavailableError,
   type RuleConfiguration,
 } from '@durable-jev/rule-evaluation'
 import { createServiceApp } from '@durable-jev/service-kit'
@@ -50,6 +51,10 @@ export type BranchServiceDependencies = {
 const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => {
   if (error instanceof z.ZodError) {
     response.status(400).json({ error: 'BAD_REQUEST', issues: error.issues })
+    return
+  }
+  if (error instanceof JudgeUnavailableError) {
+    response.status(503).json({ error: 'JUDGE_UNAVAILABLE', message: error.message })
     return
   }
   response.status(500).json({ error: 'INTERNAL', message: String(error) })
