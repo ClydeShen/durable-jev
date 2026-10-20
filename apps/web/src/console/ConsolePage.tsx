@@ -6,7 +6,12 @@ import { CaseTable } from './CaseTable.js'
 import { type CaseSummary, formatDuration, isRecoveryEvent } from './console-model.js'
 import { JudgementDetail } from './JudgementDetail.js'
 import { type CaseDetail, observeApi } from './observe-api.js'
-import { cursorOf, mergeStored, openEventStream, type StreamState } from './observe-stream.js'
+import {
+  mergeStored,
+  openEventStream,
+  reconcileSnapshot,
+  type StreamState,
+} from './observe-stream.js'
 import { RecoveryDetail } from './RecoveryDetail.js'
 import { Timeline } from './Timeline.js'
 
@@ -72,6 +77,8 @@ export function ConsolePage(props: {
       setDetail(undefined)
       return
     }
+    // Another case was chosen: show nothing of the previous one while this one loads.
+    setDetail(undefined)
     let closeStream = () => {}
     let timer: ReturnType<typeof setTimeout> | undefined
     let alive = true
@@ -81,15 +88,7 @@ export function ConsolePage(props: {
         const fresh = await observeApi.caseDetail(correlationId)
         if (!alive) return
         setProblem(undefined)
-        setDetail((current) => {
-          // The collector's history is shorter than ours (its database was reset): start over.
-          const reset = current !== undefined && fresh.latest < cursorOf(current.events)
-          return {
-            summary: fresh.summary,
-            latest: fresh.latest,
-            events: reset || !current ? fresh.events : mergeStored(current.events, fresh.events),
-          }
-        })
+        setDetail((current) => reconcileSnapshot(current, fresh))
         return fresh.latest
       } catch (error) {
         if (alive)

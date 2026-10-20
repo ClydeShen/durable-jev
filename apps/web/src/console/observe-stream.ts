@@ -1,4 +1,5 @@
 import type { StoredEvent } from '@durable-jev/contracts'
+import type { CaseSummary } from './console-model.js'
 
 // Adds incoming events to what is already shown. An event can arrive twice (a snapshot and the
 // stream overlap, or the stream replays after a reconnect): it is kept once, in stream order.
@@ -85,5 +86,24 @@ export function openEventStream(options: StreamOptions): () => void {
     clearTimeout(watchdog)
     clearTimeout(retry)
     source?.close()
+  }
+}
+
+export type ShownCase = { summary: CaseSummary; events: StoredEvent[]; latest: number }
+
+// What to show after a fresh snapshot of a case. Events already on screen are kept only when they
+// belong to the same case and the collector's history has not been reset (its latest sequence is
+// still at least what we have seen); otherwise the snapshot replaces them.
+export function reconcileSnapshot(
+  current: ShownCase | undefined,
+  fresh: { summary: CaseSummary; events: StoredEvent[]; latest: number },
+): ShownCase {
+  const sameCase = current?.summary.correlationId === fresh.summary.correlationId
+  const reset = current !== undefined && fresh.latest < cursorOf(current.events)
+  return {
+    summary: fresh.summary,
+    latest: fresh.latest,
+    events:
+      current && sameCase && !reset ? mergeStored(current.events, fresh.events) : fresh.events,
   }
 }
