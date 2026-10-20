@@ -1,4 +1,13 @@
-import type { CheckResult, HumanTask, OrderStatus, Role, Shipment } from '@durable-jev/contracts'
+import type {
+  CaseChange,
+  CheckResult,
+  HumanTask,
+  OrderStatus,
+  PlanChange,
+  ReferenceData,
+  Role,
+  Shipment,
+} from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
 
 export type CaseSummary = {
@@ -9,7 +18,11 @@ export type CaseSummary = {
   updatedAt: string
 }
 
-export type CaseView = CaseSummary & { checks: CheckResult[]; humanTasks: HumanTask[] }
+export type CaseView = CaseSummary & {
+  checks: CheckResult[]
+  humanTasks: HumanTask[]
+  changes: CaseChange[]
+}
 
 export type RuleCatalog = { ruleSetVersion: string; rules: RuleDefinition[] }
 
@@ -40,6 +53,13 @@ export const api = {
   listCases: () => request<CaseSummary[]>('/api/cases'),
   getCase: (caseId: string) => request<CaseView>(`/api/cases/${caseId}`),
   listRules: () => request<RuleCatalog>('/api/rules'),
+  referenceData: () => request<ReferenceData>('/api/reference-data'),
+  applyChange: (caseId: string, change: PlanChange, role: Role) =>
+    request<CaseView>(`/api/cases/${caseId}/changes`, {
+      method: 'POST',
+      role,
+      body: JSON.stringify(change),
+    }),
   approve: (humanTaskId: string, role: Role, conditions: string[] = []) =>
     request<HumanTask>(`/api/human-tasks/${humanTaskId}/approve`, {
       method: 'POST',

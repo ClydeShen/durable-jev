@@ -1,9 +1,10 @@
-import type { HumanTask, Role } from '@durable-jev/contracts'
+import type { HumanTask, PlanChange, ReferenceData, Role } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
 import { CaseList } from './CaseList.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
+import { PlanChangePanel } from './PlanChangePanel.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
 import { ShipmentSummary } from './ShipmentSummary.js'
@@ -17,6 +18,7 @@ export function App() {
   const [selectedCaseId, setSelectedCaseId] = useState<string>()
   const [selectedCase, setSelectedCase] = useState<CaseView>()
   const [catalog, setCatalog] = useState<RuleCatalog>()
+  const [referenceData, setReferenceData] = useState<ReferenceData>()
   const [view, setView] = useState<'flow' | 'tree'>('flow')
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string }>()
 
@@ -36,6 +38,7 @@ export function App() {
 
   useEffect(() => {
     api.listRules().then(setCatalog, () => {})
+    api.referenceData().then(setReferenceData, () => {})
   }, [])
 
   useEffect(() => {
@@ -167,6 +170,20 @@ export function App() {
                         rule.humanGate?.decisionConditions ?? [],
                       ]),
                     )
+                  }
+                />
+                <PlanChangePanel
+                  key={`${selectedCase.caseId}:${selectedCase.shipment.caseRevision}`}
+                  shipment={selectedCase.shipment}
+                  changes={selectedCase.changes}
+                  referenceData={referenceData}
+                  actingRole={actingRole}
+                  disabled={
+                    selectedCase.orderStatus === 'DISPATCHED' ||
+                    selectedCase.orderStatus === 'REJECTED'
+                  }
+                  applyChange={(change: PlanChange) =>
+                    run('Apply change', () => api.applyChange(caseId, change, actingRole))
                   }
                 />
                 <ShipmentSummary shipment={selectedCase.shipment} />

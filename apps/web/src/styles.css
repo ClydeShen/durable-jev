@@ -541,3 +541,27 @@ section {
     animation: none;
   }
 }
+
+.change-row {
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.change-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.change-row input {
+  width: 110px;
+}
+
+.change-history {
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.flow-node-recheck {
+  color: var(--invalid);
+}
