@@ -1,16 +1,16 @@
 import { rmSync } from 'node:fs'
 import { listCaseIds, loadCase } from '@durable-jev/eval-runner'
 import type { ProcessSupervisor } from './process-supervisor.js'
-import { coordinatorDatabasePath, ports } from './service-manifest.js'
+import { dataServices, ports } from './service-manifest.js'
 
 export type DemoResetResult = { loadedCaseIds: string[] }
 
 export async function resetDemo(supervisor: ProcessSupervisor): Promise<DemoResetResult> {
-  await supervisor.stop('coordinator')
-  for (const suffix of ['', '-wal', '-shm']) {
-    rmSync(`${coordinatorDatabasePath}${suffix}`, { force: true })
+  for (const service of [...dataServices].reverse()) await supervisor.stop(service.name)
+  for (const { databasePath } of dataServices) {
+    for (const suffix of ['', '-wal', '-shm']) rmSync(`${databasePath}${suffix}`, { force: true })
   }
-  await supervisor.start('coordinator')
+  for (const service of dataServices) await supervisor.start(service.name)
 
   const loadedCaseIds: string[] = []
   for (const caseName of listCaseIds()) {

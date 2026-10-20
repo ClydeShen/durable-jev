@@ -10,6 +10,13 @@ const controlServer = createControlApp(supervisor).listen(ports.launcher, '127.0
   console.log('durable-jev is running')
   console.log(`  ${'workbench'.padEnd(12)} http://127.0.0.1:${ports.web}/`)
   console.log(`  ${'coordinator'.padEnd(12)} http://127.0.0.1:${ports.coordinator}/cases`)
+  for (const [name, port] of [
+    ['cargo', ports.cargoAssurance],
+    ['transport', ports.transportPlanning],
+    ['commercial', ports.commercialControl],
+  ] as const) {
+    console.log(`  ${name.padEnd(12)} http://127.0.0.1:${port}/capabilities`)
+  }
   console.log(`  ${'control'.padEnd(12)} http://127.0.0.1:${ports.launcher}/processes`)
   console.log('')
   console.log('Load demo cases with: pnpm demo:reset')
