@@ -76,4 +76,13 @@ export const coordinatorMigrations: readonly Migration[] = [
       change_json TEXT NOT NULL
     )`,
   },
+  {
+    id: 'coordinator-009-investigations',
+    sql: `CREATE TABLE investigations (
+      investigation_id TEXT PRIMARY KEY,
+      case_id TEXT NOT NULL REFERENCES cases (case_id),
+      status TEXT NOT NULL,
+      investigation_json TEXT NOT NULL
+    )`,
+  },
 ]

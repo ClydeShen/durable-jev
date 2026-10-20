@@ -4,6 +4,7 @@ import type {
   CheckResult,
   HumanTask,
   HumanTaskStatus,
+  Investigation,
   OrderStatus,
   ScriptedSemanticAnswer,
   Shipment,
@@ -89,6 +90,36 @@ export class CoordinatorRepository {
         'INSERT INTO case_changes (change_id, case_id, to_revision, change_json) VALUES (?, ?, ?, ?)',
       )
       .run(change.changeId, change.caseId, change.toRevision, JSON.stringify(change))
+  }
+
+  saveInvestigation(investigation: Investigation): void {
+    this.database
+      .prepare(
+        `INSERT INTO investigations (investigation_id, case_id, status, investigation_json)
+         VALUES (?, ?, ?, ?)
+         ON CONFLICT (investigation_id) DO UPDATE SET
+           status = excluded.status, investigation_json = excluded.investigation_json`,
+      )
+      .run(
+        investigation.investigationId,
+        investigation.caseId,
+        investigation.status,
+        JSON.stringify(investigation),
+      )
+  }
+
+  findInvestigation(investigationId: string): Investigation | undefined {
+    const row = this.database
+      .prepare('SELECT investigation_json FROM investigations WHERE investigation_id = ?')
+      .get(investigationId) as { investigation_json: string } | undefined
+    return row && JSON.parse(row.investigation_json)
+  }
+
+  listInvestigations(caseId: string): Investigation[] {
+    const rows = this.database
+      .prepare('SELECT investigation_json FROM investigations WHERE case_id = ? ORDER BY rowid')
+      .all(caseId) as { investigation_json: string }[]
+    return rows.map((row) => JSON.parse(row.investigation_json))
   }
 
   listChanges(caseId: string): CaseChange[] {
