@@ -39,15 +39,15 @@ describe('guided scenarios', () => {
   it('moves to the next step from the order itself, not from clicks', () => {
     const scenario = scenarioFor('LOG-001')
     if (!scenario) throw new Error('missing scenario')
-    const acknowledged = new Set(['read', 'wrong-role'])
-    expect(currentStepIndex(scenario, state(), acknowledged)).toBe(2)
+    const acknowledged = new Set(['read', 'wrong-role', 'race'])
+    expect(currentStepIndex(scenario, state(), acknowledged)).toBe(3)
     expect(
       currentStepIndex(
         scenario,
         state({ humanTasks: [task('R39-LOAD', 'COMPLETED', '2026-01-01T00:00:00Z')] }),
         acknowledged,
       ),
-    ).toBe(3)
+    ).toBe(4)
     expect(
       currentStepIndex(scenario, state({ orderStatus: 'DISPATCHED' }), new Set(['read'])),
     ).toBe(1)
