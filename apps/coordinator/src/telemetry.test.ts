@@ -194,4 +194,36 @@ describe('coordinator telemetry', () => {
       { traceId: asked?.traceId, spanId: asked?.spanId, relation: 'answers' },
     ])
   })
+
+  it('records after a restart which waiting orders found their tasks still open', async () => {
+    const database = openDatabase(':memory:', coordinatorMigrations)
+    const build = () =>
+      new CoordinatorService({
+        database,
+        configuration,
+        evaluators: inProcessEvaluators(configuration, referenceData),
+        telemetry: new Telemetry('coordinator', database),
+      })
+    const view = await submit(build(), 'LOG-006')
+    const waiting = view.humanTasks
+      .filter((task) => task.status === 'OPEN')
+      .map((task) => task.humanTaskId)
+
+    const restarted = build()
+    expect(restarted.recordRestart()).toBe(1)
+    const resumed = readUnpublishedOutboxEvents(database, 100_000)
+      .map(
+        (row) =>
+          row.payload as {
+            eventName: string
+            caseId: string
+            attributes?: Record<string, unknown>
+          },
+      )
+      .find((event) => event.eventName === 'run.resumed')
+    expect(resumed).toMatchObject({
+      caseId: view.caseId,
+      attributes: { scope: 'coordinator', reason: 'process restarted', openHumanTasks: waiting },
+    })
+  })
 })

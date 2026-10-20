@@ -85,6 +85,8 @@ const coordinator = new CoordinatorService({
   investigator: inProcessInvestigator(configuration, referenceData),
 })
 
+coordinator.recordRestart()
+
 await startService(createCoordinatorApp(coordinator, referenceData), {
   serviceName: 'coordinator',
   port,

@@ -484,6 +484,30 @@ export class CoordinatorService {
     return this.reevaluate(caseId)
   }
 
+  // Called once when the process starts: for each order that was waiting for a person, record that
+  // the coordinator came back and which tasks it found still open. On a fresh database there is
+  // nothing to record.
+  recordRestart(): number {
+    let recorded = 0
+    for (const stored of this.repository.listCases()) {
+      if (orderStatusMachine.isTerminal(stored.orderStatus)) continue
+      const open = this.repository.listHumanTasks({ caseId: stored.caseId, status: 'OPEN' })
+      if (open.length === 0) continue
+      this.emit({
+        eventName: 'run.resumed',
+        caseId: stored.caseId,
+        caseRevision: stored.shipment.caseRevision,
+        attributes: {
+          scope: 'coordinator',
+          reason: 'process restarted',
+          openHumanTasks: open.map((task) => task.humanTaskId),
+        },
+      })
+      recorded += 1
+    }
+    return recorded
+  }
+
   listRules(): { ruleSetVersion: string; rules: RuleDefinition[] } {
     return {
       ruleSetVersion: this.configuration.ruleSetVersion,
