@@ -2,7 +2,7 @@ import type { EntityVersions, RuleId } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
 import { evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
 import type { Expression } from './expression.js'
-import { computeInputFingerprint } from './fingerprint.js'
+import { computeInputFingerprint, relevantEntityVersions } from './fingerprint.js'
 import { invalidateDependentsOf, markInvalidated, recomputeInvalidated } from './invalidation.js'
 import type { RuleDefinition } from './rule-definition.js'
 
@@ -112,5 +112,22 @@ describe('computeInputFingerprint', () => {
     expect(fingerprintOf(shipment, { ...entityVersions, route: 2 })).not.toBe(
       fingerprintOf(shipment),
     )
+  })
+})
+
+describe('relevantEntityVersions', () => {
+  const versions: EntityVersions = { cargo: 2, route: 3, carrier: 1, quote: 5 }
+
+  it('keeps only the versions a rule is triggered by', () => {
+    expect(relevantEntityVersions(['cargo', 'carrier', 'vehicle'], versions)).toEqual({
+      cargo: 2,
+      route: 3,
+      carrier: 1,
+    })
+    expect(relevantEntityVersions(['quote'], versions)).toEqual({ quote: 5 })
+  })
+
+  it('binds loading to every version', () => {
+    expect(relevantEntityVersions(['loading'], versions)).toEqual(versions)
   })
 })

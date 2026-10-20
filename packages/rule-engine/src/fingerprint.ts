@@ -16,7 +16,7 @@ function readSegment(value: unknown, segment: string): unknown {
 export function computeInputFingerprint(input: {
   document: unknown
   inputPaths: readonly string[]
-  entityVersions: EntityVersions
+  entityVersions: Partial<EntityVersions>
   upstreamResultIds: readonly CheckResultId[]
 }): string {
   const canonical = canonicalJson({
@@ -37,4 +37,32 @@ function canonicalJson(value: unknown): string {
     return `{${entries.join(',')}}`
   }
   return JSON.stringify(value)
+}
+
+const entityByTrigger: Readonly<Record<string, readonly (keyof EntityVersions)[]>> = {
+  cargo: ['cargo'],
+  documents: ['cargo'],
+  temperature: ['cargo'],
+  inspection: ['cargo'],
+  route: ['route'],
+  vehicle: ['route'],
+  reservation: ['route'],
+  carrier: ['carrier'],
+  quote: ['quote'],
+  customer: ['quote'],
+  loading: ['cargo', 'route', 'carrier', 'quote'],
+}
+
+export function relevantEntityVersions(
+  invalidationTriggers: readonly string[],
+  entityVersions: EntityVersions,
+): Partial<EntityVersions> {
+  const entities = new Set(
+    invalidationTriggers.flatMap((trigger) => entityByTrigger[trigger] ?? []),
+  )
+  return Object.fromEntries(
+    Object.entries(entityVersions).filter(([entity]) =>
+      entities.has(entity as keyof EntityVersions),
+    ),
+  )
 }
