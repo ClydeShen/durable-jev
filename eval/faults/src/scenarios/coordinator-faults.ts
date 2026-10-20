@@ -148,7 +148,7 @@ export const f06: FaultScenario = {
   id: 'F06',
   title: 'Page closed and reopened, order submitted again',
   expectation: 'The snapshot shows the same state; nothing is submitted twice',
-  notes: 'The workbench polls snapshots; SSE with cursors comes in T6.4',
+  notes: 'The Console side of a dropped connection (event stream replay from a cursor, no repeats) is tested in apps/observability/src/stream.test.ts and in the browser',
   async run() {
     const seen = new Observations()
     const coordinator = coordinatorInProcess()

@@ -48,7 +48,7 @@ Open the Console from the top bar (http://127.0.0.1:5173/#/console). It shows wh
 
 "Machine time" counts the time at least one call was running (parallel calls count once) and leaves out the time spent waiting for a person. From a rule node in the workbench's flow diagram, the links under the rule name open the Console on that rule: its Jev judgement, its timeline events, or the calls and A2A tasks.
 
-Events are written to each service's own database first and delivered to the collector in the background, so stopping the collector loses nothing: they arrive when it is back.
+Events are written to each service's own database first and delivered to the collector in the background, so stopping the collector loses nothing: they arrive when it is back. The Console follows the collector live; a new event shows up about half a second after it happens. If the connection drops it says "Reconnecting, nothing is lost", reconnects from the last event it saw, and shows exactly what it missed, once.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
