@@ -17,6 +17,9 @@
       "path": "packages/model-providers"
     },
     {
+      "path": "packages/agent-harness"
+    },
+    {
       "path": "packages/rule-evaluation"
     },
     {
