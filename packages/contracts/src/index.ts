@@ -1,4 +1,5 @@
 export * from './branch-evaluation.js'
+export * from './case-change.js'
 export * from './check.js'
 export * from './evidence.js'
 export * from './human-task.js'

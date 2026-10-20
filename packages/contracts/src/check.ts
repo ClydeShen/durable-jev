@@ -26,6 +26,7 @@ export const CheckResult = z.object({
   modelId: z.string().optional(),
   evidenceRefs: z.array(EvidenceRef),
   invalidatedByChange: z.string().optional(),
+  affectedByChange: z.string().optional(),
   producedAt: UtcTimestamp,
 })
 export type CheckResult = z.infer<typeof CheckResult>
