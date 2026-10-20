@@ -184,7 +184,14 @@ export function App() {
                     selectedCase.orderStatus === 'REJECTED'
                   }
                   applyChange={(change: PlanChange) =>
-                    run('Apply change', () => api.applyChange(caseId, change, actingRole))
+                    run('Apply change', () =>
+                      api.applyChange(
+                        caseId,
+                        change,
+                        actingRole,
+                        selectedCase.shipment.caseRevision,
+                      ),
+                    )
                   }
                 />
                 <InvestigationPanel

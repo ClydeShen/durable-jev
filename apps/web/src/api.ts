@@ -37,13 +37,17 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit & { role?: Role } = {}): Promise<T> {
-  const { role, ...rest } = init
+async function request<T>(
+  path: string,
+  init: RequestInit & { role?: Role; ifMatch?: string } = {},
+): Promise<T> {
+  const { role, ifMatch, ...rest } = init
   const response = await fetch(path, {
     ...rest,
     headers: {
       'content-type': 'application/json',
       ...(role ? { 'x-demo-role': role } : {}),
+      ...(ifMatch ? { 'if-match': ifMatch } : {}),
     },
   })
   const body = await response.json()
@@ -56,10 +60,11 @@ export const api = {
   getCase: (caseId: string) => request<CaseView>(`/api/cases/${caseId}`),
   listRules: () => request<RuleCatalog>('/api/rules'),
   referenceData: () => request<ReferenceData>('/api/reference-data'),
-  applyChange: (caseId: string, change: PlanChange, role: Role) =>
+  applyChange: (caseId: string, change: PlanChange, role: Role, basedOnRevision: number) =>
     request<CaseView>(`/api/cases/${caseId}/changes`, {
       method: 'POST',
       role,
+      ifMatch: String(basedOnRevision),
       body: JSON.stringify(change),
     }),
   approve: (humanTaskId: string, role: Role, conditions: string[] = []) =>
