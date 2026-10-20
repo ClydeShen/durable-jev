@@ -145,6 +145,14 @@ type RuleDefinition = {
 - 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
 - 晚到结果的指纹与当前不符时只归档。
 
+#### 变更与失效（T3.4）
+
+- 变更命令：`reassignVehicle(legId, vehicleId)`、`changeCarrier(legId, carrierId, vehicleId)`（运输计划员）、`changeQuote(amountCents)`（商务主管）。终态订单不接受变更。
+- 每次变更：caseRevision +1，相关实体版本 +1，记录变更（changeId、类型、triggers、操作人、时间）。触发词：vehicle → `vehicle`（route 版本 +1）；carrier → `carrier`、`vehicle`（carrier、route 版本 +1）；quote → `quote`（quote 版本 +1）。
+- 提交变更的事务内：沿 `invalidationTriggers` 与依赖图计算失效集，把当前结果标为 INVALIDATED 并记录 `invalidatedByChange`，订单转 EVALUATING；随后重新求值，失效集内规则的新结果带 `affectedByChange`，界面显示"变更 #N 后重新检查"。
+- 人工任务目标只绑定规则相关的实体版本：触发词 → 实体（cargo、documents、temperature、inspection → cargo；route、vehicle、reservation → route；carrier → carrier；quote、customer → quote；loading → 全部）。目标匹配只比较输入指纹（含相关实体版本），不再比较 caseRevision。
+- 运输预订：新 route 版本预订后，同一订单更早 route 版本的有效预订幂等取消（RESERVED → CANCELLED）。
+
 ## 6. 服务与流程
 
 - Coordinator 拥有订单版本和整单规则图（R01–R40 的聚合层），通过各服务接口获取分支结果；依赖调度是确定性状态机。
