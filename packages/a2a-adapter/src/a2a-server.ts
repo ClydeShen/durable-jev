@@ -150,9 +150,14 @@ export function evaluationExecutor(
 
 // A2A has no request deduplication (M0): a resent message would start a second task. A message
 // id seen before returns the task it created instead, so a client retry never evaluates twice.
-function deduplicating(handler: A2ARequestHandler, store: SqliteTaskStore): A2ARequestHandler {
+function deduplicating(
+  handler: A2ARequestHandler,
+  store: SqliteTaskStore,
+  card: () => AgentCard,
+): A2ARequestHandler {
   return new Proxy(handler, {
     get(target, property, receiver) {
+      if (property === 'getAgentCard') return async () => card()
       if (property !== 'sendMessage') return Reflect.get(target, property, receiver)
       return async (...args: Parameters<A2ARequestHandler['sendMessage']>) => {
         const [params, context] = args
@@ -172,12 +177,19 @@ function deduplicating(handler: A2ARequestHandler, store: SqliteTaskStore): A2AR
 
 export function mountA2a(
   app: Express,
-  options: { card: AgentCard; executor: AgentExecutor; database: StoreDatabase },
+  // A function when the public URL is only known once the server listens.
+  options: {
+    card: AgentCard | (() => AgentCard)
+    executor: AgentExecutor
+    database: StoreDatabase
+  },
 ): void {
+  const card = typeof options.card === 'function' ? options.card : () => options.card as AgentCard
   const store = new SqliteTaskStore(options.database)
   const handler = deduplicating(
-    new DefaultRequestHandler(options.card, store, options.executor),
+    new DefaultRequestHandler(card(), store, options.executor),
     store,
+    card,
   )
   app.use('/.well-known/agent-card.json', agentCardHandler({ agentCardProvider: handler }))
   app.use(
