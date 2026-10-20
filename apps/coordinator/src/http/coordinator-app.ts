@@ -23,6 +23,11 @@ const ApproveBody = z.object({
   conditions: z.array(z.enum(['REWORK_REQUIRED'])).optional(),
 })
 const RejectBody = z.object({ reason: z.string().min(1) })
+const InvestigateBody = z.object({
+  legId: z.string().min(1),
+  unavailableCarrierIds: z.array(z.string().min(1)).min(1),
+  reason: z.string().min(1),
+})
 const CompleteBody = z.object({
   fields: z.record(z.string(), z.string()),
   evidenceRefs: z.array(z.string()).default([]),
@@ -93,6 +98,26 @@ export function createCoordinatorApp(
   app.post('/cases/:caseId/changes', async (request, response) => {
     const change = PlanChange.parse(request.body)
     response.json(await coordinator.applyChange(request.params.caseId, change, demoRoleOf(request)))
+  })
+
+  app.post('/cases/:caseId/investigations', async (request, response) => {
+    const body = InvestigateBody.parse(request.body)
+    response
+      .status(201)
+      .json(await coordinator.investigateCarrier(request.params.caseId, body, demoRoleOf(request)))
+  })
+
+  app.post('/investigations/:investigationId/accept', async (request, response) => {
+    response.json(
+      await coordinator.acceptInvestigation(request.params.investigationId, demoRoleOf(request)),
+    )
+  })
+
+  app.post('/investigations/:investigationId/reject', (request, response) => {
+    const { reason } = RejectBody.parse(request.body)
+    response.json(
+      coordinator.rejectInvestigation(request.params.investigationId, demoRoleOf(request), reason),
+    )
   })
 
   app.post('/cases/:caseId/reevaluate', async (request, response) => {

@@ -5,12 +5,14 @@ import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { inProcessEvaluators } from '../branch-evaluators.js'
 import { CoordinatorService } from '../coordinator-service.js'
+import { inProcessInvestigator } from '../investigator.js'
 import { coordinatorMigrations } from '../persistence/coordinator-migrations.js'
 import { createCoordinatorApp } from './coordinator-app.js'
 
 const materials = new URL('../../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
 const logOne = readJson('cases/LOG-001.json')
+const logTwo = readJson('cases/LOG-002.json')
 
 let baseUrl = ''
 let close = () => {}
@@ -28,6 +30,7 @@ beforeAll(async () => {
     database: openDatabase(':memory:', coordinatorMigrations),
     configuration,
     evaluators: inProcessEvaluators(configuration, readJson('mock-data/reference-data.json')),
+    investigator: inProcessInvestigator(configuration, readJson('mock-data/reference-data.json')),
   })
   const server = createCoordinatorApp(coordinator).listen(0)
   await new Promise((resolve) => server.once('listening', resolve))
@@ -74,6 +77,50 @@ describe('coordinator HTTP API', () => {
       role: 'DISPATCHER',
     })
     expect(dispatched).toMatchObject({ status: 200, body: { orderStatus: 'DISPATCHED' } })
+  })
+
+  it('lets the planner run a carrier investigation and accept its proposal', async () => {
+    await call('POST', '/cases', {
+      body: {
+        shipment: logTwo.shipment,
+        evidence: logTwo.evidence,
+        scriptedSemanticAnswers: logTwo.scriptedSemanticAnswers,
+      },
+    })
+    const request = {
+      legId: logTwo.shipment.legs[0].legId,
+      unavailableCarrierIds: [logTwo.shipment.legs[0].carrierId],
+      reason: 'Carrier cancelled',
+    }
+    const forbidden = await call('POST', `/cases/${logTwo.caseId}/investigations`, {
+      role: 'DISPATCHER',
+      body: request,
+    })
+    expect(forbidden.status).toBe(403)
+
+    const investigation = await call('POST', `/cases/${logTwo.caseId}/investigations`, {
+      role: 'TRANSPORT_PLANNER',
+      body: request,
+    })
+    expect(investigation).toMatchObject({ status: 201, body: { status: 'PROPOSED' } })
+
+    const accepted = await call(
+      'POST',
+      `/investigations/${investigation.body.investigationId}/accept`,
+      { role: 'TRANSPORT_PLANNER' },
+    )
+    expect(accepted.status).toBe(200)
+    expect(accepted.body.shipment.legs[0].carrierId).toBe(investigation.body.proposal.carrierId)
+    expect(accepted.body.investigations[0].status).toBe('ACCEPTED')
+
+    const again = await call(
+      'POST',
+      `/investigations/${investigation.body.investigationId}/accept`,
+      {
+        role: 'TRANSPORT_PLANNER',
+      },
+    )
+    expect(again.status).toBe(409)
   })
 
   it('lists rules in evaluation order', async () => {
