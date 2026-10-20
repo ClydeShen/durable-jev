@@ -20,6 +20,9 @@
       "path": "packages/agent-harness"
     },
     {
+      "path": "packages/agent-runtime-pi"
+    },
+    {
       "path": "packages/rule-evaluation"
     },
     {
