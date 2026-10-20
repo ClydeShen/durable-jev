@@ -18,7 +18,12 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
-import type { Telemetry } from '@durable-jev/telemetry'
+import {
+  annotateActiveSpan,
+  type Telemetry,
+  tracingMiddleware,
+  withSpan,
+} from '@durable-jev/telemetry'
 import type { ErrorRequestHandler, Express } from 'express'
 import { z } from 'zod'
 
@@ -70,6 +75,8 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     `INSERT INTO evaluation_log (case_id, case_revision, evaluated_at, result_json) VALUES (?, ?, ?, ?)`,
   )
   const app = createServiceApp(dependencies.serviceName)
+  // Continue the coordinator's trace (native HTTP and A2A both carry traceparent).
+  app.use(tracingMiddleware())
 
   app.get('/capabilities', (_request, response) => {
     response.json({ service: dependencies.serviceName, branches: dependencies.branches })
@@ -87,6 +94,10 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
   const evaluate = async (evaluationRequest: BranchEvaluationRequest) => {
     if (injectedDelayMs > 0) await new Promise((wait) => setTimeout(wait, injectedDelayMs))
     const { telemetry } = dependencies
+    annotateActiveSpan({
+      caseId: evaluationRequest.caseId as string,
+      caseRevision: evaluationRequest.caseRevision,
+    })
     const caseFields = {
       caseId: evaluationRequest.caseId as string,
       caseRevision: evaluationRequest.caseRevision,
@@ -99,7 +110,18 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     const startedAt = Date.now()
     let result: BranchEvaluationResult
     try {
-      result = await evaluateBranchWithJudge(evaluationRequest, dependencies)
+      result = await withSpan(
+        'rules.evaluate',
+        {
+          caseId: evaluationRequest.caseId as string,
+          caseRevision: evaluationRequest.caseRevision,
+          attributes: {
+            service: dependencies.serviceName,
+            branches: dependencies.branches.join(','),
+          },
+        },
+        () => evaluateBranchWithJudge(evaluationRequest, dependencies),
+      )
     } catch (error) {
       telemetry?.emit({
         eventName: 'task.failed',

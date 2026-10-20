@@ -4,6 +4,8 @@ import {
   type RuleBranch,
 } from '@durable-jev/contracts'
 
+import { fetchWithTrace } from '@durable-jev/telemetry'
+
 export class BranchUnavailableError extends Error {
   constructor(
     readonly evaluatorName: string,
@@ -31,7 +33,7 @@ export function httpBranchEvaluator(
     async evaluate(request) {
       let response: Response
       try {
-        response = await fetch(new URL('/evaluations', baseUrl), {
+        response = await fetchWithTrace(new URL('/evaluations', baseUrl), {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify(request),

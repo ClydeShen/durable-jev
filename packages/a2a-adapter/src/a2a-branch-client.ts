@@ -1,11 +1,18 @@
 import { createHash } from 'node:crypto'
 import { type Message, type Task, TaskState } from '@a2a-js/sdk'
-import { type Client, ClientFactory } from '@a2a-js/sdk/client'
+import {
+  type Client,
+  ClientFactory,
+  ClientFactoryOptions,
+  DefaultAgentCardResolver,
+  JsonRpcTransportFactory,
+} from '@a2a-js/sdk/client'
 import {
   type BranchEvaluationRequest,
   BranchEvaluationResult,
   type RuleBranch,
 } from '@durable-jev/contracts'
+import { annotateActiveSpan, fetchWithTrace } from '@durable-jev/telemetry'
 import { evaluationArtifactName } from './a2a-server.js'
 import { dataPart, readData } from './parts.js'
 import type { A2aTaskLinks, TaskLink } from './task-links.js'
@@ -47,10 +54,18 @@ export function a2aBranchEvaluator(
 ) {
   let client: Promise<Client> | undefined
   const connect = () => {
-    client ??= new ClientFactory().createFromUrl(baseUrl).catch((error) => {
-      client = undefined
-      throw error
-    })
+    client ??= new ClientFactory(
+      // Every call carries the current trace to the service (traceparent header).
+      ClientFactoryOptions.createFrom(ClientFactoryOptions.default, {
+        transports: [new JsonRpcTransportFactory({ fetchImpl: fetchWithTrace })],
+        cardResolver: new DefaultAgentCardResolver({ fetchImpl: fetchWithTrace }),
+      }),
+    )
+      .createFromUrl(baseUrl)
+      .catch((error) => {
+        client = undefined
+        throw error
+      })
     return client
   }
   const call = async <T>(what: string, action: (connected: Client) => Promise<T>) => {
@@ -80,6 +95,7 @@ export function a2aBranchEvaluator(
     )
     const task = asTask(result)
     if (!task) throw new A2aCallError(name, 'the service answered without a task')
+    annotateActiveSpan({ a2aTaskId: task.id })
     return task
   }
 

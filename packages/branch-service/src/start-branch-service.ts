@@ -8,7 +8,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { type Migration, openDatabase, type StoreDatabase } from '@durable-jev/store'
-import { startServiceTelemetry } from '@durable-jev/telemetry'
+import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
 import { branchServiceMigrations, createBranchServiceApp } from './branch-service-app.js'
 
 export async function startBranchService(options: {
@@ -35,6 +35,7 @@ export async function startBranchService(options: {
     database,
     collectorUrl: process.env.OBSERVABILITY_URL,
   })
+  initTracing(telemetry)
   const { ensurePlanReservation } = options
   const port = Number(process.env.SERVICE_PORT ?? options.defaultPort)
   const app = createBranchServiceApp({
