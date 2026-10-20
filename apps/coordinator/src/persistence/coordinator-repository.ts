@@ -8,8 +8,8 @@ import type {
   TransportLeg,
 } from '@durable-jev/contracts'
 import { emptyCaseEvidence, reservationMachine } from '@durable-jev/contracts'
+import type { SemanticAnswer } from '@durable-jev/rule-evaluation'
 import type { StoreDatabase } from '@durable-jev/store'
-import type { SemanticAnswer } from '../rules/evaluation-inputs.js'
 
 export type StoredCase = {
   caseId: string

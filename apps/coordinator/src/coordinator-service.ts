@@ -34,13 +34,16 @@ import {
   subjectKey,
   upstreamRuleIds,
 } from '@durable-jev/rule-engine'
+import {
+  type EvaluationInputs,
+  evaluateLeafRule,
+  type RuleConfiguration,
+  type SemanticAnswer,
+} from '@durable-jev/rule-evaluation'
 import { executeOnce, type StoreDatabase } from '@durable-jev/store'
-import type { RuleConfiguration } from './configuration.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import { deriveOrderStatus, dispatchConfirmationRuleId, finalGateRuleId } from './order-status.js'
 import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
-import type { EvaluationInputs, SemanticAnswer } from './rules/evaluation-inputs.js'
-import { evaluateLeafRule } from './rules/leaf-evaluators.js'
 
 export type CoordinatorDependencies = {
   database: StoreDatabase

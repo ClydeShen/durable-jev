@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import type { CaseEvidence, GateStatus, ReferenceData, Shipment } from '@durable-jev/contracts'
+import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
-import { buildRuleConfiguration } from './configuration.js'
 import { type CaseView, CoordinatorService } from './coordinator-service.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
 

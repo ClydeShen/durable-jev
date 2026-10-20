@@ -13,6 +13,7 @@
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
+    "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/service-kit": "workspace:*",
     "@durable-jev/store": "workspace:*",
     "express": "5.3.0",

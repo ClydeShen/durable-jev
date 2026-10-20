@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
 import type { EvaluationInputs } from './evaluation-inputs.js'
 import { evaluateLeafRule } from './leaf-evaluators.js'
 
-const materials = new URL('../../../../eval/materials/', import.meta.url)
+const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
 const logOne = readJson('cases/LOG-001.json')
 const referenceData: ReferenceData = readJson('mock-data/reference-data.json')

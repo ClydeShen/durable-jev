@@ -1,7 +1,7 @@
 import { resolve } from 'node:path'
+import { loadReferenceData, loadRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
-import { loadReferenceData, loadRuleConfiguration } from './configuration.js'
 import { CoordinatorService } from './coordinator-service.js'
 import { createCoordinatorApp } from './http/coordinator-app.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'

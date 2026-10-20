@@ -1,9 +1,9 @@
 import { readFileSync } from 'node:fs'
 import { ReferenceData } from '@durable-jev/contracts'
 import { type ConfigIssue, type RuleDefinition, validateRuleSet } from '@durable-jev/rule-engine'
-import { type DecisionTables, MixingMatrix } from './rules/decision-tables.js'
-import type { PolicyParameters } from './rules/evaluation-inputs.js'
-import { knownLeafRefs } from './rules/leaf-evaluators.js'
+import { type DecisionTables, MixingMatrix } from './decision-tables.js'
+import type { PolicyParameters } from './evaluation-inputs.js'
+import { knownLeafRefs } from './leaf-evaluators.js'
 
 export type RuleConfiguration = {
   ruleSetVersion: string

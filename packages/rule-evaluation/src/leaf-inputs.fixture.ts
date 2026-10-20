@@ -10,7 +10,7 @@ import type { RuleDefinition } from '@durable-jev/rule-engine'
 import type { EvaluationInputs, SemanticAnswer } from './evaluation-inputs.js'
 import { evaluateLeafRule } from './leaf-evaluators.js'
 
-const materials = new URL('../../../../eval/materials/', import.meta.url)
+const materials = new URL('../../../eval/materials/', import.meta.url)
 export const readMaterial = (path: string) =>
   JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
 
