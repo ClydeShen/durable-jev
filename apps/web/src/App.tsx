@@ -8,6 +8,8 @@ import { CaseList } from './CaseList.js'
 import { ConsolePage } from './console/ConsolePage.js'
 import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
+import { GuidePanel } from './guide/guide.panel.js'
+import { scenarioFor } from './guide/scenarios.model.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { InvestigationPanel } from './InvestigationPanel.js'
 import { Icon } from './icons.js'
@@ -63,6 +65,8 @@ function Workbench() {
   // The action in flight. While it runs the action panels are disabled, so a slow service
   // never looks like a frozen page and nothing is sent twice by an impatient second click.
   const [busy, setBusy] = useState<string>()
+  // Bumped on reset so a guide starts over even though the case ids are the same.
+  const [resetCount, setResetCount] = useState(0)
   const [lastAction, setLastAction] = useState<{
     description: string
     action: () => Promise<unknown>
@@ -129,6 +133,7 @@ function Workbench() {
   }
 
   const caseId = selectedCase?.caseId ?? ''
+  const scenario = selectedCase && scenarioFor(selectedCase.shipment.shipmentId)
   const taskActions = {
     approve: (task: HumanTask, conditions?: string[]) =>
       run(`Approve ${task.ruleId}`, () => api.approve(task.humanTaskId, actingRole, conditions)),
@@ -165,6 +170,7 @@ function Workbench() {
               async () => {
                 setSelectedCaseId(undefined)
                 setLastAction(undefined)
+                setResetCount((count) => count + 1)
                 await api.resetDemo()
               },
               false,
@@ -217,6 +223,15 @@ function Workbench() {
                 </button>
               )}
             </div>
+            {scenario && (
+              <GuidePanel
+                key={`${selectedCase.caseId}:${resetCount}`}
+                scenario={scenario}
+                state={selectedCase}
+                actingRole={actingRole}
+                setActingRole={setActingRole}
+              />
+            )}
             <CaseAttention
               attention={attentionFor({
                 orderStatus: selectedCase.orderStatus,

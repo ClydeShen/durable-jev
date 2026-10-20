@@ -50,6 +50,10 @@ Open the Console from the top bar (http://127.0.0.1:5173/#/console). It shows wh
 
 Events are written to each service's own database first and delivered to the collector in the background, so stopping the collector loses nothing: they arrive when it is back. The Console follows the collector live; a new event shows up about half a second after it happens. If the connection drops it says "Reconnecting, nothing is lost", reconnects from the last event it saw, and shows exactly what it missed, once.
 
+## Guided scenarios
+
+Select LOG-001 to LOG-006 and a guide card appears above the flow diagram. It lists the steps, tells you which role to act as (one click switches it), shows what to type and what you should see. The current step follows the order itself: when you finish a step, the guide moves on. Reading steps and the optional "wrong role" tries have a "Done" button. "Reset demo" starts every guide over.
+
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
 1. Open the workbench and select LOG-001. The order is "Awaiting human".

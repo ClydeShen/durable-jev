@@ -4,6 +4,7 @@ import {
   Ban,
   Bot,
   Check,
+  Circle,
   CircleCheck,
   CircleDot,
   CircleHelp,
@@ -13,6 +14,7 @@ import {
   Code,
   LayoutDashboard,
   Link2,
+  ListChecks,
   Loader,
   Lock,
   type LucideIcon,
@@ -80,6 +82,8 @@ const icons = {
   agent: Bot,
   live: Radio,
   offline: WifiOff,
+  guide: ListChecks,
+  todo: Circle,
 } as const satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof icons
