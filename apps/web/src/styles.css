@@ -565,3 +565,39 @@ section {
 .flow-node-recheck {
   color: var(--invalid);
 }
+
+.reason-input {
+  width: 220px;
+}
+
+.investigations {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.investigation {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blocked);
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.investigation-proposed {
+  border-left-color: var(--wait);
+}
+
+.investigation-accepted {
+  border-left-color: var(--pass);
+}
+
+.investigation-rejected,
+.investigation-escalated,
+.investigation-no_candidate {
+  border-left-color: var(--fail);
+}
+
+.investigation-stale {
+  border-left-color: var(--invalid);
+}

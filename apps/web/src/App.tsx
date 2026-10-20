@@ -4,6 +4,7 @@ import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from
 import { CaseList } from './CaseList.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
+import { InvestigationPanel } from './InvestigationPanel.js'
 import { PlanChangePanel } from './PlanChangePanel.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
@@ -185,6 +186,30 @@ export function App() {
                   applyChange={(change: PlanChange) =>
                     run('Apply change', () => api.applyChange(caseId, change, actingRole))
                   }
+                />
+                <InvestigationPanel
+                  shipment={selectedCase.shipment}
+                  investigations={selectedCase.investigations}
+                  referenceData={referenceData}
+                  actingRole={actingRole}
+                  disabled={
+                    selectedCase.orderStatus === 'DISPATCHED' ||
+                    selectedCase.orderStatus === 'REJECTED'
+                  }
+                  actions={{
+                    investigate: (body) =>
+                      run('Find replacement carrier', () =>
+                        api.investigate(caseId, body, actingRole),
+                      ),
+                    accept: (investigation) =>
+                      run('Accept proposal', () =>
+                        api.acceptInvestigation(investigation.investigationId, actingRole),
+                      ),
+                    reject: (investigation, reason) =>
+                      run('Reject proposal', () =>
+                        api.rejectInvestigation(investigation.investigationId, actingRole, reason),
+                      ),
+                  }}
                 />
                 <ShipmentSummary shipment={selectedCase.shipment} />
               </div>
