@@ -66,6 +66,7 @@ const coordinator = new CoordinatorService({
     ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor, {
         protocol,
         links: new A2aTaskLinks(database),
+        telemetry,
       })
     : inProcessEvaluators(
         configuration,
@@ -78,6 +79,7 @@ const coordinator = new CoordinatorService({
           reservationMigrations,
         ),
         judgeFor,
+        telemetry,
       ),
   investigator: inProcessInvestigator(configuration, referenceData),
 })

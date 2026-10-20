@@ -359,6 +359,7 @@ export const f10: FaultScenario = {
         modelId: 'looping-model',
         toolCalls: session.events().filter((event) => event.type === 'tool.called').length,
         outcome,
+        events: [...session.events()],
       }
     }
     const coordinator = coordinatorInProcess({ investigator: () => looping })

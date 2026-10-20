@@ -1,4 +1,4 @@
-import type { RunOutcome } from '@durable-jev/agent-harness'
+import type { AgentEvent, RunOutcome } from '@durable-jev/agent-harness'
 import type { ReferenceData } from '@durable-jev/contracts'
 import type { RuleConfiguration } from '@durable-jev/rule-evaluation'
 import {
@@ -12,6 +12,7 @@ export type InvestigationRun = {
   modelId: string
   toolCalls: number
   outcome: RunOutcome
+  events: readonly AgentEvent[]
 }
 
 export type Investigator = (input: {
@@ -45,6 +46,7 @@ export function inProcessInvestigator(
       modelId: modelCall?.type === 'model.called' ? modelCall.modelId : 'unknown',
       toolCalls: events.filter((event) => event.type === 'tool.called').length,
       outcome,
+      events: [...events],
     }
   }
 }

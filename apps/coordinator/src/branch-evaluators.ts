@@ -15,6 +15,7 @@ import {
   rulesOfBranches,
 } from '@durable-jev/rule-evaluation'
 import { openDatabase, type StoreDatabase } from '@durable-jev/store'
+import type { Telemetry } from '@durable-jev/telemetry'
 import { ensurePlanReservation, reservationMigrations } from '@durable-jev/transport-reservations'
 
 export type BranchEvaluator = {
@@ -37,6 +38,7 @@ export function inProcessEvaluator(
     referenceData: ReferenceData
     ensurePlanReservation?: (request: BranchEvaluationRequest) => boolean
     judgeFor?: JudgeFor
+    telemetry?: Telemetry
   },
 ): BranchEvaluator {
   return {
@@ -60,8 +62,14 @@ export function inProcessEvaluators(
   referenceData: ReferenceData,
   reservationDatabase: StoreDatabase = openDatabase(':memory:', reservationMigrations),
   judgeFor?: JudgeFor,
+  telemetry?: Telemetry,
 ): BranchEvaluator[] {
-  const dependencies = { configuration, referenceData, ...(judgeFor && { judgeFor }) }
+  const dependencies = {
+    configuration,
+    referenceData,
+    ...(judgeFor && { judgeFor }),
+    ...(telemetry && { telemetry }),
+  }
   return [
     inProcessEvaluator('coordinator', ['base'], dependencies),
     inProcessEvaluator('cargo-assurance', branchesByService.cargoAssurance, dependencies),
@@ -107,9 +115,18 @@ export function serviceEvaluators(
   referenceData: ReferenceData,
   urls: { cargoAssurance: string; transportPlanning: string; commercialControl: string },
   judgeFor?: JudgeFor,
-  transport: { protocol: BranchProtocol; links?: A2aTaskLinks } = { protocol: 'native' },
+  transport: {
+    protocol: BranchProtocol
+    links?: A2aTaskLinks
+    telemetry?: Telemetry
+  } = { protocol: 'native' },
 ): BranchEvaluator[] {
-  const dependencies = { configuration, referenceData, ...(judgeFor && { judgeFor }) }
+  const dependencies = {
+    configuration,
+    referenceData,
+    ...(judgeFor && { judgeFor }),
+    ...(transport.telemetry && { telemetry: transport.telemetry }),
+  }
   const remote = (name: string, branches: readonly RuleBranch[], url: string) =>
     remoteEvaluator(name, branches, url, transport.protocol, transport.links)
   return [

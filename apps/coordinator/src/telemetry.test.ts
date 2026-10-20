@@ -6,6 +6,7 @@ import { Telemetry } from '@durable-jev/telemetry'
 import { describe, expect, it } from 'vitest'
 import { inProcessEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
+import { inProcessInvestigator } from './investigator.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
@@ -26,10 +27,11 @@ function observedCoordinator() {
     database,
     configuration,
     evaluators: inProcessEvaluators(configuration, referenceData),
+    investigator: inProcessInvestigator(configuration, referenceData),
     telemetry: new Telemetry('coordinator', database),
   })
   const events = () =>
-    readUnpublishedOutboxEvents(database).map(
+    readUnpublishedOutboxEvents(database, 100_000).map(
       (row) =>
         row.payload as {
           eventName: string
@@ -112,5 +114,45 @@ describe('coordinator telemetry', () => {
     )
     expect(applied?.attributes).toMatchObject({ kind: 'changeCarrier', actor: 'TRANSPORT_PLANNER' })
     expect(invalidated?.attributes?.ruleIds).toEqual(expect.arrayContaining(['R11']))
+  })
+
+  it('records each dispatch to a branch', async () => {
+    const { coordinator, events } = observedCoordinator()
+    await submit(coordinator, 'LOG-001')
+    const dispatched = events()
+      .filter((event) => event.eventName === 'task.dispatched')
+      .map((event) => event.attributes?.evaluator)
+    expect(new Set(dispatched)).toEqual(
+      new Set(['coordinator', 'cargo-assurance', 'transport-planning', 'commercial-control']),
+    )
+  })
+
+  it('records the agent run and a recommendation that does not change the plan', async () => {
+    const { coordinator, events } = observedCoordinator()
+    const view = await submit(coordinator, 'LOG-004')
+    await coordinator.investigateCarrier(
+      view.caseId,
+      {
+        legId: 'LOG-004-LEG-1',
+        unavailableCarrierIds: ['CAR-SECURA'],
+        reason: 'Carrier cancelled',
+      },
+      'TRANSPORT_PLANNER',
+    )
+    const names = events().map((event) => event.eventName)
+    expect(names).toEqual(
+      expect.arrayContaining([
+        'run.started',
+        'tool.completed',
+        'run.completed',
+        'case.recommended',
+      ]),
+    )
+    const recommended = events().find((event) => event.eventName === 'case.recommended')
+    expect(recommended?.attributes).toMatchObject({
+      carrierId: 'CAR-GLACIER',
+      appliesToPlan: false,
+    })
+    expect(events().some((event) => event.eventName === 'change.applied')).toBe(false)
   })
 })

@@ -234,6 +234,7 @@ export class CoordinatorService {
       request,
       requestId: investigationId,
     })
+    this.emitAgentRun(caseId, caseRevision, investigationId, run)
     const result = run.outcome.status === 'completed' ? (run.outcome.result as Proposal) : undefined
     const status: InvestigationStatus = !result
       ? 'ESCALATED'
@@ -270,6 +271,21 @@ export class CoordinatorService {
             ? investigation
             : { ...investigation, status: investigationMachine.transition(status, 'STALE') }
         this.repository.saveInvestigation(saved)
+        if (saved.status === 'PROPOSED' && saved.proposal) {
+          this.emit({
+            eventName: 'case.recommended',
+            caseId,
+            caseRevision,
+            runId: saved.runId,
+            attributes: {
+              investigationId,
+              carrierId: saved.proposal.carrierId,
+              vehicleId: saved.proposal.vehicleId,
+              // A proposal only: nothing changes until the planner accepts it.
+              appliesToPlan: false,
+            },
+          })
+        }
       })
       .immediate()
     return this.requireInvestigation(investigationId)
@@ -661,6 +677,12 @@ export class CoordinatorService {
           const needed = new Set(
             requiredUpstreamRuleIds(this.configuration.rulesInEvaluationOrder, evaluator.branches),
           )
+          this.emit({
+            eventName: 'task.dispatched',
+            caseId: stored.caseId,
+            caseRevision: stored.shipment.caseRevision,
+            attributes: { evaluator: evaluator.name, branches: evaluator.branches },
+          })
           return evaluator.evaluate({
             caseId: stored.caseId as never,
             caseRevision: stored.shipment.caseRevision,
@@ -747,6 +769,44 @@ export class CoordinatorService {
     })
     this.moveOrderTo(caseId, orderStatus)
     return finalGateStatus
+  }
+
+  // The agent's own events, in the order it produced them.
+  private emitAgentRun(
+    caseId: string,
+    caseRevision: number,
+    investigationId: string,
+    run: Awaited<ReturnType<Investigator>>,
+  ): void {
+    const common = { caseId, caseRevision, runId: run.runId }
+    for (const event of run.events) {
+      if (event.type === 'run.started') {
+        this.emit({
+          eventName: 'run.started',
+          ...common,
+          attributes: { investigationId, modelId: run.modelId },
+        })
+      } else if (event.type === 'run.resumed') {
+        this.emit({ eventName: 'run.resumed', ...common, attempt: event.restart + 1 })
+      } else if (event.type === 'tool.called') {
+        this.emit({
+          eventName: 'tool.completed',
+          ...common,
+          status: event.ok ? 'ok' : 'refused',
+          ...(event.ok ? {} : { errorCode: event.error }),
+          attributes: { toolName: event.tool, investigationId },
+        })
+      } else if (event.type === 'run.escalated') {
+        this.emit({
+          eventName: 'run.escalated',
+          ...common,
+          severity: 'warn',
+          attributes: { investigationId, reason: event.reason, detail: event.detail },
+        })
+      } else if (event.type === 'run.completed') {
+        this.emit({ eventName: 'run.completed', ...common, attributes: { investigationId } })
+      }
+    }
   }
 
   private emit(input: EmitInput): void {
