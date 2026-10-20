@@ -346,6 +346,21 @@ importers:
         specifier: 9.6.0
         version: 9.6.0
 
+  packages/telemetry:
+    dependencies:
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
+      '@opentelemetry/api':
+        specifier: 1.9.1
+        version: 1.9.1
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   packages/transport-investigation:
     dependencies:
       '@durable-jev/agent-harness':
