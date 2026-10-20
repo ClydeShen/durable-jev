@@ -73,6 +73,7 @@
 | [ ] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告 | T4.7, T5.2 |
 | [ ] | T5.4 | F11–F18 | 同上 | T5.3 |
 | [ ] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示 | T5.3 |
+| [ ] | T5.6 | 阶段 live 抽测：真实 Jev 跑全部案例（经 A2A 路径），记录并转成改进 | `docs/live-checks.md` 有 P5 条目，发现已转任务 | T5.2 |
 
 ## P6 可观测性与 Console
 
@@ -82,12 +83,14 @@
 | [ ] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
 | [ ] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
 | [ ] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
+| [ ] | T6.5 | 阶段 live 抽测：真实 Jev 跑案例，在 Console 中核对 Jev span 与判断详情 | `docs/live-checks.md` 有 P6 条目 | T6.3 |
 
 ## P7 Benchmark 与结论
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [ ] | T7.1 | B1 Jev vs 结构化输出 | 报告 macro-F1、成本、p95 | T4.2 |
+| [ ] | T7.0 | 落实此前 live 抽测的改进（如 R27 问法、阈值缓冲带），用真实 Jev 复测 | 复测结果记入 `docs/live-checks.md` | T5.6, T6.5 |
+| [ ] | T7.1 | B1 Jev vs 结构化输出（即 P7 的 live 抽测） | 报告 macro-F1、成本、p95 | T4.2 |
 | [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
 | [ ] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
