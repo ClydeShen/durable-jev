@@ -17,4 +17,5 @@ Claude delivery agent 的工作区，由 agent 自治管理。用户文档和测
    - commit message 用 Conventional Commits：`<type>(<scope>): <subject>`，type 取 `feat | fix | refactor | test | docs | chore | build`，scope 为包或目录名（如 `rule-engine`、`store`、`spike-jev`、`harness`），subject 用英文祈使句、小写开头、不加句号。
    - 示例：`feat(rule-engine): add pending-aware and/or combinators`、`docs(m0): record live jev results`。
 3. 偏离设计或任务目标时，先改 `design.md` / `roadmap.md`，再在 `implementation-notes.md` 记一行原因。
-4. 冲突优先级：用户最新指令 > `spec.md` > `design.md` > `prd.md`。
+4. 每个大阶段结束前做一次真实 Jev 抽测（见 `spec.md` 第 8 节），记录到 `docs/live-checks.md`，把发现转成 roadmap 任务或 implementation-notes 条目后再进入下一阶段。
+5. 冲突优先级：用户最新指令 > `spec.md` > `design.md` > `prd.md`。
