@@ -8,6 +8,7 @@ import {
   CoordinatorService,
   coordinatorMigrations,
   inProcessEvaluators,
+  inProcessInvestigator,
 } from '@durable-jev/coordinator'
 import {
   buildRuleConfiguration,
@@ -77,16 +78,21 @@ class ReplayedCoordinator {
     this.service = this.open()
   }
 
+  private readonly referenceData = loadReferenceData(
+    join(materialsDirectory, 'mock-data/reference-data.json'),
+  )
+
   private open(): CoordinatorService {
     return new CoordinatorService({
       database: openDatabase(this.databasePath, coordinatorMigrations),
       configuration: this.configuration,
       evaluators: inProcessEvaluators(
         this.configuration,
-        loadReferenceData(join(materialsDirectory, 'mock-data/reference-data.json')),
+        this.referenceData,
         openDatabase(this.reservationPath, reservationMigrations),
         this.judgeFor,
       ),
+      investigator: inProcessInvestigator(this.configuration, this.referenceData),
       now: fixedNow,
     })
   }
@@ -146,6 +152,23 @@ async function performStep(
     case 'changePlan':
       await coordinator.applyChange(caseId, step.change, step.actor)
       return
+    case 'investigateCarrier':
+      await coordinator.investigateCarrier(
+        caseId,
+        {
+          legId: step.legId,
+          unavailableCarrierIds: step.unavailableCarrierIds,
+          reason: step.reason,
+        },
+        step.actor,
+      )
+      return
+    case 'acceptInvestigation': {
+      const latest = coordinator.getCase(caseId).investigations.at(-1)
+      if (!latest) throw new Error('no investigation to accept')
+      await coordinator.acceptInvestigation(latest.investigationId, step.actor)
+      return
+    }
     case 'restartCoordinator':
       replayed.restart()
       return
@@ -190,6 +213,15 @@ function compareStage(
     const actual = describe(view.humanTasks.filter((task) => task.status === 'OPEN'))
     const wanted = describe(expected.openHumanTasks)
     if (actual !== wanted) failures.push(`open tasks: expected [${wanted}], got [${actual}]`)
+  }
+  if (expected.latestInvestigation) {
+    const latest = view.investigations.at(-1)
+    const actual =
+      latest && `${latest.status}${latest.proposal ? ` ${latest.proposal.carrierId}` : ''}`
+    const { status, carrierId } = expected.latestInvestigation
+    const wanted = `${status}${carrierId ? ` ${carrierId}` : ''}`
+    if (actual !== wanted)
+      failures.push(`investigation: expected ${wanted}, got ${actual ?? 'none'}`)
   }
   const invalidated = new Set<string>(view.changes.at(-1)?.invalidatedRuleIds ?? [])
   for (const ruleId of expected.invalidated ?? []) {

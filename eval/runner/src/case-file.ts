@@ -1,6 +1,7 @@
 import {
   CaseEvidence,
   GateStatus,
+  InvestigationStatus,
   OrderStatus,
   PlanChange,
   Role,
@@ -17,6 +18,9 @@ const StageExpectation = z.object({
   invalidated: z.array(RuleId).optional(),
   notInvalidated: z.array(RuleId).optional(),
   error: z.string().optional(),
+  latestInvestigation: z
+    .object({ status: InvestigationStatus, carrierId: z.string().optional() })
+    .optional(),
 })
 export type StageExpectation = z.infer<typeof StageExpectation>
 
@@ -48,6 +52,15 @@ export const EventScriptStep = z.discriminatedUnion('step', [
     change: PlanChange,
     expect: StageExpectation,
   }),
+  z.object({
+    step: z.literal('investigateCarrier'),
+    actor: Role,
+    legId: z.string().min(1),
+    unavailableCarrierIds: z.array(z.string().min(1)).min(1),
+    reason: z.string().min(1),
+    expect: StageExpectation,
+  }),
+  z.object({ step: z.literal('acceptInvestigation'), actor: Role, expect: StageExpectation }),
   z.object({ step: z.literal('restartCoordinator'), expect: StageExpectation }),
   z.object({ step: z.literal('dispatch'), actor: Role, expect: StageExpectation }),
 ])
