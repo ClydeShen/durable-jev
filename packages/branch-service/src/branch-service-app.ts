@@ -4,7 +4,11 @@ import {
   type ReferenceData,
   type RuleBranch,
 } from '@durable-jev/contracts'
-import { evaluateBranch, type RuleConfiguration } from '@durable-jev/rule-evaluation'
+import {
+  evaluateBranchWithJudge,
+  type JudgeFor,
+  type RuleConfiguration,
+} from '@durable-jev/rule-evaluation'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
 import type { ErrorRequestHandler, Express } from 'express'
@@ -30,6 +34,7 @@ export type BranchServiceDependencies = {
   referenceData: ReferenceData
   database: StoreDatabase
   ensurePlanReservation?: (request: BranchEvaluationRequest) => boolean
+  judgeFor?: JudgeFor
   now?: () => string
 }
 
@@ -52,20 +57,18 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     response.json({ service: dependencies.serviceName, branches: dependencies.branches })
   })
 
-  app.post('/evaluations', (request, response) => {
+  app.post('/evaluations', async (request, response) => {
     const evaluationRequest = BranchEvaluationRequest.parse(request.body)
-    const result: BranchEvaluationResult = dependencies.database
-      .transaction(() => {
-        const evaluated = evaluateBranch(evaluationRequest, dependencies)
-        recordEvaluation.run(
-          evaluationRequest.caseId,
-          evaluationRequest.caseRevision,
-          now(),
-          JSON.stringify(evaluated),
-        )
-        return evaluated
-      })
-      .immediate()
+    const result: BranchEvaluationResult = await evaluateBranchWithJudge(
+      evaluationRequest,
+      dependencies,
+    )
+    recordEvaluation.run(
+      evaluationRequest.caseId,
+      evaluationRequest.caseRevision,
+      now(),
+      JSON.stringify(result),
+    )
     response.json(result)
   })
 

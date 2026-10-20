@@ -1,6 +1,11 @@
 import { resolve } from 'node:path'
 import type { BranchEvaluationRequest, RuleBranch } from '@durable-jev/contracts'
-import { loadReferenceData, loadRuleConfiguration } from '@durable-jev/rule-evaluation'
+import {
+  judgeForModelMode,
+  judgeMigrations,
+  loadReferenceData,
+  loadRuleConfiguration,
+} from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { type Migration, openDatabase, type StoreDatabase } from '@durable-jev/store'
 import { branchServiceMigrations, createBranchServiceApp } from './branch-service-app.js'
@@ -21,6 +26,7 @@ export async function startBranchService(options: {
   )
   const database = openDatabase(databasePath, [
     ...branchServiceMigrations,
+    ...judgeMigrations,
     ...(options.extraMigrations ?? []),
   ])
   const { ensurePlanReservation } = options
@@ -30,6 +36,10 @@ export async function startBranchService(options: {
     configuration: loadRuleConfiguration(materialsDirectory),
     referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
     database,
+    judgeFor: judgeForModelMode(process.env.MODEL_MODE, {
+      apiKey: process.env.TYPESAFE_API_KEY,
+      cacheDatabase: database,
+    }),
     ...(ensurePlanReservation
       ? { ensurePlanReservation: (request) => ensurePlanReservation(database, request) }
       : {}),
