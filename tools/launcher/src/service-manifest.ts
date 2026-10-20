@@ -24,7 +24,7 @@ function branchService(name: string, port: number): ManagedProcessDefinition & D
     databasePath,
     command: process.execPath,
     args: [resolve(repositoryRoot, `apps/${name}/dist/main.js`)],
-    env: { SERVICE_PORT: String(port), SERVICE_DB: databasePath },
+    env: { SERVICE_PORT: String(port), SERVICE_DB: databasePath, DEMO_FAULTS: 'on' },
     healthUrl: `${serviceUrl(port)}/health`,
   }
 }
@@ -34,6 +34,14 @@ const branchServices = [
   branchService('transport-planning', ports.transportPlanning),
   branchService('commercial-control', ports.commercialControl),
 ]
+
+// Services the workbench may slow down to show a timeout.
+export const slowableServices: Readonly<Record<string, string>> = Object.fromEntries(
+  branchServices.map((service) => [
+    service.name,
+    (service.healthUrl ?? '').replace(/\/health$/, ''),
+  ]),
+)
 
 const coordinatorDatabasePath = resolve(dataDirectory, 'coordinator.sqlite')
 
