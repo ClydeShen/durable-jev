@@ -76,8 +76,10 @@ export function createCoordinatorApp(
   const app = createServiceApp('coordinator')
   // One trace per request; everything the coordinator does for it hangs off this span.
   app.use(tracingMiddleware())
-  app.param('caseId', (_request, _response, next, caseId: string) => {
-    annotateActiveSpan({ caseId })
+  // Only requests that change something are recorded: the workbench polls with GET every couple
+  // of seconds, and reads would drown the real work.
+  app.param('caseId', (request, _response, next, caseId: string) => {
+    if (request.method !== 'GET') annotateActiveSpan({ caseId })
     next()
   })
 
