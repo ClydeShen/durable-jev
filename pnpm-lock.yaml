@@ -70,6 +70,21 @@ importers:
         specifier: 5.0.6
         version: 5.0.6
 
+  apps/transport-planning:
+    dependencies:
+      '@durable-jev/branch-service':
+        specifier: workspace:*
+        version: link:../../packages/branch-service
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../../packages/store
+      '@durable-jev/transport-reservations':
+        specifier: workspace:*
+        version: link:../../packages/transport-reservations
+
   apps/web:
     dependencies:
       '@dagrejs/dagre':

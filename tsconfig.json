@@ -35,6 +35,9 @@
       "path": "apps/commercial-control"
     },
     {
+      "path": "apps/transport-planning"
+    },
+    {
       "path": "apps/coordinator"
     },
     {

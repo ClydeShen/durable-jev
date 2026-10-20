@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"],
+  "references": [
+    {
+      "path": "../../packages/branch-service"
+    },
+    {
+      "path": "../../packages/transport-reservations"
+    },
+    {
+      "path": "../../packages/store"
+    },
+    {
+      "path": "../../packages/contracts"
+    }
+  ]
+}
