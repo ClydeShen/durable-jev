@@ -7,6 +7,7 @@ import {
 } from '@durable-jev/contracts'
 import { appendOutboxEvent, type StoreDatabase } from '@durable-jev/store'
 import { trace } from '@opentelemetry/api'
+import { OutboxRelay } from './outbox-relay.js'
 import { redact } from './redact.js'
 
 export type EmitInput = {
@@ -93,4 +94,20 @@ function activeTraceIds(): { traceId?: string; spanId?: string } {
   return context && trace.isSpanContextValid(context)
     ? { traceId: context.traceId, spanId: context.spanId }
     : {}
+}
+
+export type ServiceTelemetry = { telemetry: Telemetry; relay?: OutboxRelay; stop(): void }
+
+// One call per service at startup. Without a collector URL events still land in the outbox and
+// wait there, so a service started before the collector loses nothing.
+export function startServiceTelemetry(options: {
+  service: string
+  database: StoreDatabase
+  collectorUrl?: string | undefined
+}): ServiceTelemetry {
+  const telemetry = new Telemetry(options.service, options.database)
+  if (!options.collectorUrl) return { telemetry, stop: () => {} }
+  const relay = new OutboxRelay({ database: options.database, collectorUrl: options.collectorUrl })
+  relay.start()
+  return { telemetry, relay, stop: () => relay.stop() }
 }
