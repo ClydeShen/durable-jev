@@ -197,6 +197,16 @@ function Workbench() {
         <h2>Cases</h2>
         <CaseList cases={cases} selectedCaseId={selectedCaseId} onSelect={setSelectedCaseId} />
         <DemoControls
+          key={resetCount}
+          selectedCase={
+            selectedCase
+              ? {
+                  caseId: selectedCase.caseId,
+                  revision: selectedCase.shipment.caseRevision,
+                  amountCents: selectedCase.shipment.quote.amountCents,
+                }
+              : undefined
+          }
           run={(description, action) => run(description, action, false)}
           lastAction={lastAction?.description}
           resendLastAction={async () => {
@@ -213,15 +223,15 @@ function Workbench() {
               <h2>{selectedCase.shipment.shipmentId}</h2>
               <StatusBadge status={selectedCase.orderStatus} />
               <span className="muted small">{selectedCase.correlationId}</span>
-              {(selectedCase.orderStatus === 'TECHNICAL_FAILURE' ||
-                selectedCase.orderStatus === 'SUBMITTED') && (
-                <button
-                  type="button"
-                  onClick={() => run('Re-evaluate', () => api.reevaluate(selectedCase.caseId))}
-                >
-                  <Icon name="reevaluate" /> Re-evaluate
-                </button>
-              )}
+              {selectedCase.orderStatus !== 'DISPATCHED' &&
+                selectedCase.orderStatus !== 'REJECTED' && (
+                  <button
+                    type="button"
+                    onClick={() => run('Re-evaluate', () => api.reevaluate(selectedCase.caseId))}
+                  >
+                    <Icon name="reevaluate" /> Re-evaluate
+                  </button>
+                )}
             </div>
             {scenario && (
               <GuidePanel

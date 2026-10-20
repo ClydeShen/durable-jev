@@ -97,6 +97,17 @@ describe('branch service over HTTP', () => {
     await setDelay(0)
   })
 
+  it('can pretend the model is unavailable for a demo, and recover', async () => {
+    const setJudge = (unavailable: boolean) =>
+      fetch(`${baseUrl}/faults/judge`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ unavailable }),
+      })
+    expect(await (await setJudge(true)).json()).toMatchObject({ judgeUnavailable: true })
+    expect(await (await setJudge(false)).json()).toMatchObject({ judgeUnavailable: false })
+  })
+
   it('rejects a malformed request', async () => {
     const response = await fetch(`${baseUrl}/evaluations`, {
       method: 'POST',

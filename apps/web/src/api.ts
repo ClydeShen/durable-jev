@@ -129,5 +129,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ ms }),
     }),
+  setJudgeUnavailable: (name: string, unavailable: boolean) =>
+    request<{ judgeUnavailable: boolean }>(`/control/faults/${name}/judge`, {
+      method: 'POST',
+      body: JSON.stringify({ unavailable }),
+    }),
   resetDemo: () => request<{ loadedCaseIds: string[] }>('/control/demo/reset', { method: 'POST' }),
 }

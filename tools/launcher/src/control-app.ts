@@ -24,24 +24,27 @@ export function createControlApp(supervisor: ProcessSupervisor): Express {
     response.json(supervisor.status().find((status) => status.name === name))
   })
 
-  // Demo fault: make a branch service answer slowly, so the coordinator times out on it.
-  app.post('/faults/:name/delay', async (request: Request, response: Response) => {
-    const baseUrl = slowableServices[request.params.name as string]
-    if (!baseUrl) {
-      response.status(404).json({ error: 'NOT_FOUND' })
-      return
+  // Demo faults on a branch service: answer slowly, or behave as if Jev were unreachable.
+  const forwardFault =
+    (fault: 'delay' | 'judge') => async (request: Request, response: Response) => {
+      const baseUrl = slowableServices[request.params.name as string]
+      if (!baseUrl) {
+        response.status(404).json({ error: 'NOT_FOUND' })
+        return
+      }
+      try {
+        const forwarded = await fetch(`${baseUrl}/faults/${fault}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(request.body ?? {}),
+        })
+        response.status(forwarded.status).json(await forwarded.json())
+      } catch (error) {
+        response.status(503).json({ error: 'UNAVAILABLE', message: String(error) })
+      }
     }
-    try {
-      const forwarded = await fetch(`${baseUrl}/faults/delay`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(request.body ?? {}),
-      })
-      response.status(forwarded.status).json(await forwarded.json())
-    } catch (error) {
-      response.status(503).json({ error: 'UNAVAILABLE', message: String(error) })
-    }
-  })
+  app.post('/faults/:name/delay', forwardFault('delay'))
+  app.post('/faults/:name/judge', forwardFault('judge'))
 
   app.post('/demo/reset', async (_request, response) => {
     response.json(await resetDemo(supervisor))

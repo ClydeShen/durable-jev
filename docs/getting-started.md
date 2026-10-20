@@ -115,6 +115,11 @@ Open "Demo controls" under the case list.
 2. As "Warehouse operator", complete the loading task, then click "Send again". The duplicate is refused (409) and the order stays ready to dispatch.
 3. Click "Slow down" next to commercial-control and, as "Commercial manager", change the quote. The service now takes 12 s, longer than the coordinator waits, so the change ends in a technical failure. Click "Normal speed", then "Re-evaluate": the order recovers.
 
+### Fault drills in Demo controls
+
+- "Jev unavailable" makes every semantic question fail, as if the model were down. Click "Re-evaluate" on LOG-006: the order shows "Technical failure" and no rule passes. Click "Jev available again" and "Re-evaluate" to recover. "Reset demo" also clears it.
+- "Two changes at once" sends two quote changes for the order on screen, both based on the same revision. One is applied and the other is refused (409).
+
 ### Walkthrough: a branch service goes down
 
 1. `curl -X POST http://127.0.0.1:4000/processes/commercial-control/kill`

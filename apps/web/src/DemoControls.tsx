@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type ProcessStatus } from './api.js'
+import { ApiError, api, type ProcessStatus } from './api.js'
 import { Icon } from './icons.js'
 
 const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-control']
@@ -7,6 +7,8 @@ const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-contr
 const injectedDelayMs = 12_000
 
 export function DemoControls(props: {
+  // The order on screen, for the two-changes-at-once drill.
+  selectedCase: { caseId: string; revision: number; amountCents: number } | undefined
   run: (description: string, action: () => Promise<unknown>) => Promise<void>
   lastAction: string | undefined
   resendLastAction: () => Promise<void>
@@ -14,6 +16,8 @@ export function DemoControls(props: {
   const [open, setOpen] = useState(false)
   const [processes, setProcesses] = useState<ProcessStatus[]>([])
   const [slowed, setSlowed] = useState<Record<string, boolean>>({})
+  const [jevDown, setJevDown] = useState(false)
+  const [raceResult, setRaceResult] = useState<string>()
 
   useEffect(() => {
     if (!open) return
@@ -33,6 +37,34 @@ export function DemoControls(props: {
     props.run(on ? `Slow down ${name}` : `Normal speed for ${name}`, async () => {
       await api.delayService(name, on ? injectedDelayMs : 0)
       setSlowed((current) => ({ ...current, [name]: on }))
+    })
+
+  const setJev = (down: boolean) =>
+    props.run(down ? 'Make Jev unavailable' : 'Make Jev available', async () => {
+      await Promise.all(slowServices.map((name) => api.setJudgeUnavailable(name, down)))
+      setJevDown(down)
+    })
+
+  // Two plan changes based on the same revision, sent at the same time.
+  const quoteRace = () =>
+    props.run('Two quote changes at once', async () => {
+      const order = props.selectedCase
+      if (!order) throw new Error('select an order first')
+      const send = (extraCents: number) =>
+        api
+          .applyChange(
+            order.caseId,
+            { kind: 'changeQuote', amountCents: order.amountCents + extraCents },
+            'COMMERCIAL_MANAGER',
+            order.revision,
+          )
+          .then(
+            () => 'applied',
+            (error: unknown) =>
+              error instanceof ApiError ? `refused (${error.status})` : 'failed',
+          )
+      const results = await Promise.all([send(100), send(200)])
+      setRaceResult(`First change: ${results[0]}. Second change: ${results[1]}.`)
     })
 
   return (
@@ -73,6 +105,24 @@ export function DemoControls(props: {
         "Slow down" makes a service take 12 s, longer than the coordinator waits, so the next action
         ends in a technical failure. Restore normal speed, then use "Re-evaluate".
       </p>
+      <h3>Fault drills</h3>
+      <p className="muted small">
+        "Jev unavailable" makes every semantic question fail, as if the model were down. Click
+        "Re-evaluate" on an order that asks the model (for example LOG-006): it shows a technical
+        failure and no rule passes. Switch Jev back on and re-evaluate to recover.
+      </p>
+      <button type="button" aria-pressed={jevDown} onClick={() => setJev(!jevDown)}>
+        <Icon name={jevDown ? 'start' : 'kill'} />{' '}
+        {jevDown ? 'Jev available again' : 'Jev unavailable'}
+      </button>
+      <p className="muted small">
+        "Two changes at once" sends two quote changes for the order on screen, both based on the
+        same revision. One is applied; the other is refused so nothing is lost.
+      </p>
+      <button type="button" disabled={!props.selectedCase} onClick={quoteRace}>
+        <Icon name="resend" /> Two changes at once
+      </button>
+      {raceResult && <p className="small">{raceResult}</p>}
       <button type="button" disabled={!props.lastAction} onClick={props.resendLastAction}>
         <Icon name="resend" /> Send again: {props.lastAction ?? 'nothing yet'}
       </button>

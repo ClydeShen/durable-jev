@@ -96,6 +96,14 @@ export const scenarios: readonly Scenario[] = [
         expect: 'The server refuses with 403: loading is a warehouse job. The task stays open.',
         role: 'DISPATCHER',
       },
+      {
+        id: 'race',
+        title: 'Two people change the quote at once',
+        instruction:
+          'In "Demo controls" click "Two changes at once", then press "Done" here. Optional.',
+        expect:
+          'Both changes were based on the same revision: one is applied and the other is refused (409), so nothing is lost or applied twice. Revision history shows one new revision.',
+      },
       load(),
       dispatch(),
     ],
@@ -296,6 +304,14 @@ export const scenarios: readonly Scenario[] = [
           'Click "Slow down" next to commercial-control, change the quote as Commercial manager, then click "Normal speed" and "Re-evaluate". Press "Done" here when it has recovered. Optional.',
         expect:
           'The change ends in "Technical failure" with no rule reported as passed; after "Re-evaluate" the order is back to normal.',
+      },
+      {
+        id: 'jev-down',
+        title: 'Take Jev away',
+        instruction:
+          'In "Demo controls" click "Jev unavailable", then click "Re-evaluate" at the top of the order. Then click "Jev available again" and "Re-evaluate" once more. Press "Done" here afterwards. Optional.',
+        expect:
+          'While Jev is unavailable the order shows "Technical failure": it is never passed on a guess. After Jev is back the order returns to normal.',
       },
       dispatch(),
     ],

@@ -90,6 +90,22 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     })
   }
 
+  // Demo fault: the semantic judge answers as if Jev were unreachable.
+  let judgeUnavailable = false
+  const unavailableJudge: ReturnType<JudgeFor> = {
+    provider: 'jev',
+    modelId: 'demo-outage',
+    ask: async () => {
+      throw new JudgeUnavailableError('jev', 3, 'demo outage: the model is switched off')
+    },
+  }
+  if (dependencies.demoFaults) {
+    app.post('/faults/judge', (request, response) => {
+      judgeUnavailable = z.object({ unavailable: z.boolean() }).parse(request.body).unavailable
+      response.json({ service: dependencies.serviceName, judgeUnavailable })
+    })
+  }
+
   // Native HTTP and A2A run the same evaluation and log it the same way.
   const evaluate = async (evaluationRequest: BranchEvaluationRequest) => {
     if (injectedDelayMs > 0) await new Promise((wait) => setTimeout(wait, injectedDelayMs))
@@ -120,7 +136,11 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
             branches: dependencies.branches.join(','),
           },
         },
-        () => evaluateBranchWithJudge(evaluationRequest, dependencies),
+        () =>
+          evaluateBranchWithJudge(
+            evaluationRequest,
+            judgeUnavailable ? { ...dependencies, judgeFor: () => unavailableJudge } : dependencies,
+          ),
       )
     } catch (error) {
       telemetry?.emit({
