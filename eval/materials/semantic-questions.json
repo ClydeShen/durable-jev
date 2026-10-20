@@ -1,0 +1,42 @@
+{
+  "version": "semantic-questions-1",
+  "questions": [
+    {
+      "ruleId": "R03",
+      "scope": "cargoItem",
+      "kind": "noul",
+      "prompt": "The declared cargo categories match what the cargo description says the goods are.",
+      "state": ["item.description", "item.declaredCategories"]
+    },
+    {
+      "ruleId": "R10",
+      "scope": "cargoItem",
+      "kind": "noul",
+      "prompt": "The safety data sheet and the controlled goods declaration describe the same goods as the cargo description.",
+      "state": [
+        "item.description",
+        "item.document:SAFETY_DATA_SHEET",
+        "item.document:CONTROLLED_DECLARATION"
+      ]
+    },
+    {
+      "ruleId": "R18",
+      "scope": "cargoItem",
+      "kind": "choice",
+      "prompt": "Which risk signal does the warehouse inspection note show?",
+      "options": {
+        "no_risk": "No packaging damage or temperature risk is described",
+        "damaged_packaging": "Physical damage to the packaging is described",
+        "cold_chain_risk": "Temperature control appears compromised without physical damage"
+      },
+      "state": ["item.inspectionNote"]
+    },
+    {
+      "ruleId": "R27",
+      "scope": "order",
+      "kind": "noul",
+      "prompt": "The customer's written instructions allow the planned route and handover.",
+      "state": ["order.customerInstructions", "order.routeSummary"]
+    }
+  ]
+}
