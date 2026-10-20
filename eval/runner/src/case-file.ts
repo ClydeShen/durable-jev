@@ -2,6 +2,7 @@ import {
   CaseEvidence,
   GateStatus,
   OrderStatus,
+  PlanChange,
   Role,
   RuleId,
   ScriptedSemanticAnswer,
@@ -10,26 +11,44 @@ import {
 import { z } from 'zod'
 
 const StageExpectation = z.object({
-  orderStatus: OrderStatus,
-  gates: z.record(z.string(), GateStatus),
+  orderStatus: OrderStatus.optional(),
+  gates: z.record(z.string(), GateStatus).optional(),
   openHumanTasks: z.array(z.object({ ruleId: RuleId, requiredRole: Role })).optional(),
+  invalidated: z.array(RuleId).optional(),
+  notInvalidated: z.array(RuleId).optional(),
+  error: z.string().optional(),
 })
+export type StageExpectation = z.infer<typeof StageExpectation>
+
+const taskTarget = { ruleId: RuleId, entityId: z.string().optional(), actor: Role }
 
 export const EventScriptStep = z.discriminatedUnion('step', [
   z.object({ step: z.literal('submit'), expect: StageExpectation }),
   z.object({
     step: z.literal('completeHumanTask'),
-    ruleId: RuleId,
-    actor: Role,
+    ...taskTarget,
     fields: z.record(z.string(), z.string()),
     expect: StageExpectation,
   }),
   z.object({
     step: z.literal('approveHumanTask'),
-    ruleId: RuleId,
-    actor: Role,
+    ...taskTarget,
+    conditions: z.array(z.enum(['REWORK_REQUIRED'])).optional(),
     expect: StageExpectation,
   }),
+  z.object({
+    step: z.literal('rejectHumanTask'),
+    ...taskTarget,
+    reason: z.string().min(1),
+    expect: StageExpectation,
+  }),
+  z.object({
+    step: z.literal('changePlan'),
+    actor: Role,
+    change: PlanChange,
+    expect: StageExpectation,
+  }),
+  z.object({ step: z.literal('restartCoordinator'), expect: StageExpectation }),
   z.object({ step: z.literal('dispatch'), actor: Role, expect: StageExpectation }),
 ])
 export type EventScriptStep = z.infer<typeof EventScriptStep>
