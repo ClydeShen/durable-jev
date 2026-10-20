@@ -2,6 +2,7 @@ import type {
   CaseChange,
   CheckResult,
   HumanTask,
+  Investigation,
   OrderStatus,
   PlanChange,
   ReferenceData,
@@ -22,6 +23,7 @@ export type CaseView = CaseSummary & {
   checks: CheckResult[]
   humanTasks: HumanTask[]
   changes: CaseChange[]
+  investigations: Investigation[]
 }
 
 export type RuleCatalog = { ruleSetVersion: string; rules: RuleDefinition[] }
@@ -77,6 +79,24 @@ export const api = {
       method: 'POST',
       role,
       body: JSON.stringify({ fields }),
+    }),
+  investigate: (
+    caseId: string,
+    body: { legId: string; unavailableCarrierIds: string[]; reason: string },
+    role: Role,
+  ) =>
+    request<Investigation>(`/api/cases/${caseId}/investigations`, {
+      method: 'POST',
+      role,
+      body: JSON.stringify(body),
+    }),
+  acceptInvestigation: (investigationId: string, role: Role) =>
+    request<CaseView>(`/api/investigations/${investigationId}/accept`, { method: 'POST', role }),
+  rejectInvestigation: (investigationId: string, role: Role, reason: string) =>
+    request<Investigation>(`/api/investigations/${investigationId}/reject`, {
+      method: 'POST',
+      role,
+      body: JSON.stringify({ reason }),
     }),
   reevaluate: (caseId: string) =>
     request<CaseView>(`/api/cases/${caseId}/reevaluate`, { method: 'POST' }),
