@@ -247,3 +247,52 @@ describe('branch service outage', () => {
     expect((await coordinator.reevaluate(logOne.caseId)).orderStatus).toBe('AWAITING_HUMAN')
   })
 })
+
+describe('parallel evaluation', () => {
+  it('evaluates independent branches at the same time', async () => {
+    const configuration = buildRuleConfiguration(
+      readJson('rules.json'),
+      readJson('mock-policy-parameters.json'),
+      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+    )
+    const evaluators = inProcessEvaluators(configuration, readJson('mock-data/reference-data.json'))
+    let commercialStarted: () => void = () => {}
+    const commercialHasStarted = new Promise<void>((resolve) => {
+      commercialStarted = resolve
+    })
+    const instrumented = evaluators.map((evaluator) => {
+      if (evaluator.branches.includes('commercial')) {
+        return {
+          ...evaluator,
+          evaluate: (request: Parameters<typeof evaluator.evaluate>[0]) => {
+            commercialStarted()
+            return evaluator.evaluate(request)
+          },
+        }
+      }
+      if (evaluator.branches.includes('base')) {
+        return {
+          ...evaluator,
+          evaluate: async (request: Parameters<typeof evaluator.evaluate>[0]) => {
+            const notConcurrent = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('commercial did not start alongside base')), 1000),
+            )
+            await Promise.race([commercialHasStarted, notConcurrent])
+            return evaluator.evaluate(request)
+          },
+        }
+      }
+      return evaluator
+    })
+    const coordinator = new CoordinatorService({
+      database: openDatabase(':memory:', coordinatorMigrations),
+      configuration,
+      evaluators: instrumented,
+    })
+    const view = await coordinator.submitCase({
+      shipment: logOne.shipment,
+      scriptedSemanticAnswers: logOne.scriptedSemanticAnswers,
+    })
+    expect(view.orderStatus).toBe('AWAITING_HUMAN')
+  })
+})
