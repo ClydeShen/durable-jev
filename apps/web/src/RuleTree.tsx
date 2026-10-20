@@ -46,7 +46,7 @@ export function RuleTree({ rootRuleId, rules, checks, humanTasks }: RuleTreeProp
 
 function describeBlocker(ruleId: string, context: TreeContext): string {
   const role = context.openTaskRoleByRule.get(ruleId)
-  if (role) return `${ruleId} · ${role}`
+  if (role) return `${ruleId} (${role})`
   const statuses = [
     ...new Set((context.checksByRule.get(ruleId) ?? []).map((check) => check.gateStatus)),
   ]

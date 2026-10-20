@@ -1,4 +1,5 @@
 import type { Shipment } from '@durable-jev/contracts'
+import { Dot, Route } from './icons.js'
 
 const kilograms = (grams: number) => `${(grams / 1000).toLocaleString('en-US')} kg`
 const money = (cents: number, currency: string) =>
@@ -19,7 +20,8 @@ export function ShipmentSummary({ shipment }: { shipment: Shipment }) {
       <ul>
         {shipment.cargoItems.map((item) => (
           <li key={item.cargoItemId}>
-            {item.cargoItemId} · {item.declaredCategories.join('/')} · {kilograms(item.weightGrams)}
+            {item.cargoItemId} <Dot /> {item.declaredCategories.join('/')} <Dot />{' '}
+            {kilograms(item.weightGrams)}
             <div className="muted small">{item.description}</div>
           </li>
         ))}
@@ -28,8 +30,8 @@ export function ShipmentSummary({ shipment }: { shipment: Shipment }) {
       <ul>
         {shipment.legs.map((leg) => (
           <li key={leg.legId}>
-            {leg.sequence}. {leg.fromLocation} → {leg.toLocation} · {leg.carrierId} ·{' '}
-            {leg.vehicleId}
+            {leg.sequence}. <Route from={leg.fromLocation} to={leg.toLocation} /> <Dot />{' '}
+            {leg.carrierId} <Dot /> {leg.vehicleId}
           </li>
         ))}
       </ul>

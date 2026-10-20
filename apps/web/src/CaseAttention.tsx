@@ -1,4 +1,5 @@
 import type { Attention } from './attention.js'
+import { Dot, Icon } from './icons.js'
 
 export function CaseAttention({ attention }: { attention: Attention }) {
   const { waiting, failed } = attention
@@ -11,7 +12,7 @@ export function CaseAttention({ attention }: { attention: Attention }) {
           <ul>
             {failed.map((item) => (
               <li key={item.key}>
-                <span aria-hidden="true">✕</span> {item.label}{' '}
+                <Icon name="failed" /> {item.label}{' '}
                 <span className="muted small">{item.detail}</span>
               </li>
             ))}
@@ -24,8 +25,10 @@ export function CaseAttention({ attention }: { attention: Attention }) {
           <ul>
             {waiting.map((item) => (
               <li key={item.key}>
-                <span aria-hidden="true">◔</span> {item.label}{' '}
-                <span className="muted small">· {item.detail}</span>
+                <Icon name="waiting" /> {item.label}{' '}
+                <span className="muted small">
+                  <Dot /> {item.detail}
+                </span>
                 {item.yours && <span className="you-tag">you</span>}
               </li>
             ))}

@@ -6,6 +6,7 @@ import type {
   Shipment,
 } from '@durable-jev/contracts'
 import { useState } from 'react'
+import { Dot, Icon } from './icons.js'
 import { roleLabels } from './roles.js'
 
 const plannerRole: Role = 'TRANSPORT_PLANNER'
@@ -94,7 +95,7 @@ function InvestigateRow(props: {
         onChange={(event) => setReason(event.target.value)}
       />
       <button type="button" disabled={!reason.trim()} onClick={() => props.onInvestigate(reason)}>
-        Find replacement
+        <Icon name="find" /> Find replacement
       </button>
       {props.warning && <span className="warning small">requires {roleLabels[plannerRole]}</span>}
     </div>
@@ -113,7 +114,7 @@ function InvestigationItem(props: {
       <div className="row">
         <strong>{statusLabels[investigation.status]}</strong>
         <span className="muted small">
-          r{investigation.caseRevision} · {investigation.legId}
+          r{investigation.caseRevision} <Dot /> {investigation.legId}
         </span>
       </div>
       {investigation.proposal && (
@@ -124,13 +125,18 @@ function InvestigationItem(props: {
       )}
       {investigation.summary && <div className="small">{investigation.summary}</div>}
       <div className="muted small">
-        {investigation.modelId} · {investigation.toolCalls} tool calls
-        {investigation.decisionReason && ` · ${investigation.decisionReason}`}
+        {investigation.modelId} <Dot /> {investigation.toolCalls} tool calls
+        {investigation.decisionReason && (
+          <>
+            {' '}
+            <Dot /> {investigation.decisionReason}
+          </>
+        )}
       </div>
       {investigation.status === 'PROPOSED' && (
         <div className="row change-row">
           <button type="button" onClick={() => actions.accept(investigation)}>
-            Accept proposal
+            <Icon name="approve" /> Accept proposal
           </button>
           <input
             aria-label="Rejection reason"
@@ -144,7 +150,7 @@ function InvestigationItem(props: {
             disabled={!rejectReason.trim()}
             onClick={() => actions.reject(investigation, rejectReason)}
           >
-            Reject
+            <Icon name="reject" /> Reject
           </button>
         </div>
       )}

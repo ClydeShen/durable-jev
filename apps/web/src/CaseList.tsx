@@ -1,4 +1,5 @@
 import type { CaseSummary } from './api.js'
+import { Route } from './icons.js'
 import { StatusBadge } from './StatusBadge.js'
 
 export function CaseList(props: {
@@ -22,7 +23,7 @@ export function CaseList(props: {
             <span className="case-id">{summary.shipment.shipmentId}</span>
             <StatusBadge status={summary.orderStatus} />
             <span className="muted small">
-              {summary.shipment.origin} → {summary.shipment.destination}
+              <Route from={summary.shipment.origin} to={summary.shipment.destination} />
             </span>
           </button>
         </li>

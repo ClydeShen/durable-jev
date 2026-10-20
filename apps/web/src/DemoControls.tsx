@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api, type ProcessStatus } from './api.js'
+import { Icon } from './icons.js'
 
 const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-control']
 // Longer than the coordinator's 10 s timeout, so the order shows a technical failure.
@@ -52,16 +53,16 @@ export function DemoControls(props: {
               <span className="process-actions">
                 {process.state === 'running' ? (
                   <button type="button" onClick={() => act(process.name, 'kill')}>
-                    Kill
+                    <Icon name="kill" /> Kill
                   </button>
                 ) : (
                   <button type="button" onClick={() => act(process.name, 'start')}>
-                    Start
+                    <Icon name="start" /> Start
                   </button>
                 )}
                 {slowServices.includes(process.name) && process.state === 'running' && (
                   <button type="button" onClick={() => slow(process.name, !slowed[process.name])}>
-                    {slowed[process.name] ? 'Normal speed' : 'Slow down'}
+                    <Icon name="slow" /> {slowed[process.name] ? 'Normal speed' : 'Slow down'}
                   </button>
                 )}
               </span>
@@ -73,7 +74,7 @@ export function DemoControls(props: {
         ends in a technical failure. Restore normal speed, then use "Re-evaluate".
       </p>
       <button type="button" disabled={!props.lastAction} onClick={props.resendLastAction}>
-        Send again: {props.lastAction ?? 'nothing yet'}
+        <Icon name="resend" /> Send again: {props.lastAction ?? 'nothing yet'}
       </button>
       <p className="muted small">
         Repeats your last action as a duplicate submission; the server applies it once.

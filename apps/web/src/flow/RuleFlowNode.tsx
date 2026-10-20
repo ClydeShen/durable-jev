@@ -20,7 +20,7 @@ const roleLabel = (role: string | undefined) =>
   role ? roleLabels[role as keyof typeof roleLabels] : undefined
 
 export const describeWaitingOn = (waitingOn: readonly WaitingOn[]) =>
-  waitingOn.map(({ ruleId, role }) => (role ? `${ruleId} · ${roleLabel(role)}` : ruleId)).join(', ')
+  waitingOn.map(({ ruleId, role }) => (role ? `${ruleId} (${roleLabel(role)})` : ruleId)).join(', ')
 
 export const revisionOf = (changeId: string) => changeId.slice(changeId.lastIndexOf('-') + 1)
 
@@ -37,7 +37,7 @@ export function RuleFlowNode({ data }: NodeProps<RuleFlowNodeType>) {
     .map(
       ([status, count]) => `${count} ${countLabels[status as GateStatus] ?? status.toLowerCase()}`,
     )
-    .join(' · ')
+    .join(', ')
   return (
     <div className={classNames.join(' ')}>
       <Handle type="target" position={Position.Left} />
@@ -62,7 +62,7 @@ export function RuleFlowNode({ data }: NodeProps<RuleFlowNodeType>) {
           <div className="flow-node-note muted">
             {counts}
             {data.recheckedAfterChange &&
-              ` · re-checked after ${revisionOf(data.recheckedAfterChange)}`}
+              `, re-checked after ${revisionOf(data.recheckedAfterChange)}`}
           </div>
         )
       )}

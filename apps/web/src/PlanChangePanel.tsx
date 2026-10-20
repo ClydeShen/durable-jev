@@ -1,5 +1,6 @@
 import type { CaseChange, PlanChange, ReferenceData, Role, Shipment } from '@durable-jev/contracts'
 import { useState } from 'react'
+import { Dot, Route } from './icons.js'
 import { roleLabels } from './roles.js'
 
 const changeLabels: Record<PlanChange['kind'], string> = {
@@ -68,8 +69,8 @@ export function PlanChangePanel(props: {
           <ul className="change-history">
             {props.changes.map((change) => (
               <li key={change.changeId}>
-                r{change.toRevision} · {changeLabels[change.change.kind]} by{' '}
-                {roleLabels[change.requestedBy]} ·{' '}
+                r{change.toRevision} <Dot /> {changeLabels[change.change.kind]} by{' '}
+                {roleLabels[change.requestedBy]} <Dot />{' '}
                 <span className="muted">{change.invalidatedRuleIds.length} rules re-checked</span>
               </li>
             ))}
@@ -97,7 +98,7 @@ function LegChangeRow(props: {
   return (
     <div className="row change-row">
       <span className="small">
-        Leg {leg.sequence}: {leg.fromLocation} → {leg.toLocation}
+        Leg {leg.sequence}: <Route from={leg.fromLocation} to={leg.toLocation} />
       </span>
       <select
         aria-label={`Carrier for leg ${leg.sequence}`}

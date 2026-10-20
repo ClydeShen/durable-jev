@@ -8,6 +8,7 @@ import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { InvestigationPanel } from './InvestigationPanel.js'
+import { Icon } from './icons.js'
 import { formatLocation, parseLocation } from './location-state.js'
 import { PlanChangePanel } from './PlanChangePanel.js'
 import { RuleTree } from './RuleTree.js'
@@ -138,13 +139,13 @@ export function App() {
             )
           }
         >
-          Reset demo
+          <Icon name="reset" /> Reset demo
         </button>
       </header>
 
       {busy ? (
         <div className="message message-busy" role="status" aria-live="polite">
-          <span className="spinner" aria-hidden="true" /> Working: {busy}…
+          <span className="spinner" aria-hidden="true" /> Working: {busy}
         </div>
       ) : (
         message && (
@@ -180,7 +181,7 @@ export function App() {
                   type="button"
                   onClick={() => run('Re-evaluate', () => api.reevaluate(selectedCase.caseId))}
                 >
-                  Re-evaluate
+                  <Icon name="reevaluate" /> Re-evaluate
                 </button>
               )}
             </div>
@@ -207,7 +208,7 @@ export function App() {
                 ))}
               </div>
               {!catalog ? (
-                <p className="muted">Loading rules…</p>
+                <p className="muted">Loading rules</p>
               ) : view === 'flow' ? (
                 <FlowDiagram
                   rules={catalog.rules}

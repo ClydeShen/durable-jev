@@ -97,7 +97,7 @@ select {
 
 .layout {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: 276px 1fr;
   grid-template-rows: auto auto 1fr;
   grid-template-areas: "top top" "message message" "side main";
   min-height: 100vh;
@@ -196,6 +196,10 @@ section {
   background: #eef3ff;
 }
 
+.case-list .case-id {
+  white-space: nowrap;
+}
+
 .case-list .small {
   grid-column: 1 / -1;
 }
@@ -245,7 +249,9 @@ section {
 }
 
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 1px 7px;
   border-radius: 10px;
   font-size: 12px;
@@ -788,4 +794,41 @@ section {
   .reason-input {
     width: 100%;
   }
+}
+
+/* Icons sit on the text baseline and take the colour of the text around them. */
+.icon {
+  flex: none;
+  vertical-align: -2px;
+}
+
+button:has(> .icon),
+.badge {
+  gap: 6px;
+}
+
+button:has(> .icon) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge {
+  gap: 4px;
+}
+
+.dot {
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  margin: 0 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: currentcolor;
+  opacity: 0.6;
+}
+
+.route {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }

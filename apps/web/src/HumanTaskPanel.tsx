@@ -1,5 +1,6 @@
 import type { HumanTask, Role } from '@durable-jev/contracts'
 import { useState } from 'react'
+import { Dot, Icon } from './icons.js'
 import { roleLabels } from './roles.js'
 import { StatusBadge } from './StatusBadge.js'
 
@@ -45,7 +46,10 @@ export function HumanTaskPanel(props: {
               <li key={task.humanTaskId}>
                 {task.ruleId} <StatusBadge status={task.status} /> {roleLabels[task.requiredRole]}
                 {task.supersededBy && (
-                  <span className="muted small"> · superseded by {task.supersededBy}</span>
+                  <span className="muted small">
+                    {' '}
+                    <Dot /> superseded by {task.supersededBy}
+                  </span>
                 )}
               </li>
             ))}
@@ -75,7 +79,7 @@ function OpenTaskCard(props: {
         <span className="muted small">requires {roleLabels[task.requiredRole]}</span>
       </header>
       <p className="muted small">
-        bound to r{task.target.caseRevision} · due{' '}
+        bound to r{task.target.caseRevision} <Dot /> due{' '}
         {new Date(task.expiresAt).toLocaleString('en-GB')}
       </p>
       {roleMismatch && (
@@ -86,7 +90,7 @@ function OpenTaskCard(props: {
 
       {task.ruleId === dispatchConfirmationRuleId ? (
         <button type="button" className="primary" onClick={() => actions.dispatch()}>
-          Confirm dispatch
+          <Icon name="dispatched" /> Confirm dispatch
         </button>
       ) : task.taskType === 'OPERATION' ? (
         <form
@@ -105,13 +109,13 @@ function OpenTaskCard(props: {
             </label>
           ))}
           <button type="submit" className="primary">
-            Submit evidence
+            <Icon name="approve" /> Submit evidence
           </button>
         </form>
       ) : (
         <div className="row">
           <button type="button" className="primary" onClick={() => actions.approve(task)}>
-            Approve
+            <Icon name="approve" /> Approve
           </button>
           {decisionConditions.map((condition) => (
             <button
@@ -119,7 +123,7 @@ function OpenTaskCard(props: {
               type="button"
               onClick={() => actions.approve(task, [condition])}
             >
-              Approve · {conditionLabels[condition] ?? condition}
+              <Icon name="approve" /> Approve, {conditionLabels[condition] ?? condition}
             </button>
           ))}
           <input
@@ -128,7 +132,7 @@ function OpenTaskCard(props: {
             onChange={(event) => setReason(event.target.value)}
           />
           <button type="button" disabled={!reason} onClick={() => actions.reject(task, reason)}>
-            Reject
+            <Icon name="reject" /> Reject
           </button>
         </div>
       )}

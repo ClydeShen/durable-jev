@@ -17,7 +17,7 @@ import { describeWaitingOn, RuleFlowNode, type RuleFlowNodeType } from './RuleFl
 const nodeTypes = { rule: RuleFlowNode }
 
 const edgeLegend: { state: EdgeState; label: string }[] = [
-  { state: 'flowing', label: 'passed — flowing' },
+  { state: 'flowing', label: 'passed, flowing' },
   { state: 'waiting', label: 'stopped at a person' },
   { state: 'blocked', label: 'blocked upstream' },
   { state: 'failed', label: 'failed' },
