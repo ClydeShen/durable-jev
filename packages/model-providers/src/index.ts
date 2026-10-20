@@ -1,3 +1,4 @@
+export * from './caching-judge.js'
 export * from './jev-judge.js'
 export * from './scripted-judge.js'
 export * from './semantic-judge.js'
