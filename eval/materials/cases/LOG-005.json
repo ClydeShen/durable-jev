@@ -1,0 +1,181 @@
+{
+  "caseId": "CASE-LOG-005",
+  "title": "Reroute pushes the order over credit and adds extra cost",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-005",
+    "shipmentId": "LOG-005",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "HGH-DC2",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-005-ITEM-1",
+        "description": "Hospital beds, 6 units, flat packed",
+        "declaredCategories": ["GENERAL"],
+        "weightGrams": 540000,
+        "lengthMm": 2200,
+        "widthMm": 1000,
+        "heightMm": 1200
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-005-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "HGH-DC2",
+        "carrierId": "CAR-NORTHLINE",
+        "vehicleId": "VEH-NL-BOX-7T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-005-1",
+      "amountCents": 120000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [],
+    "temperatureLogs": [],
+    "inspectionNotes": []
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-005-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.96
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R32": "PASS",
+          "R36": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "changePlan",
+      "actor": "COMMERCIAL_MANAGER",
+      "change": {
+        "kind": "changeQuote",
+        "amountCents": 240000
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R32": "FAIL",
+          "R33": "PASS",
+          "R34": "WAITING_HUMAN",
+          "R35-REQUIRED": "PASS",
+          "R35": "WAITING_HUMAN",
+          "R36": "BLOCKED_DEPENDENCY",
+          "R39-LOAD": "BLOCKED_DEPENDENCY"
+        },
+        "invalidated": ["R32", "R33", "R34", "R35", "R36", "R40"],
+        "notInvalidated": ["R05", "R24", "R25", "R29", "R30"],
+        "openHumanTasks": [
+          {
+            "ruleId": "R34",
+            "requiredRole": "COMMERCIAL_MANAGER"
+          },
+          {
+            "ruleId": "R35",
+            "requiredRole": "COMMERCIAL_MANAGER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R34",
+      "actor": "COMMERCIAL_MANAGER",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R34": "PASS",
+          "R35": "WAITING_HUMAN",
+          "R36": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R35",
+            "requiredRole": "COMMERCIAL_MANAGER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R35",
+      "actor": "COMMERCIAL_MANAGER",
+      "expect": {
+        "gates": {
+          "R36": "PASS",
+          "R38": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
