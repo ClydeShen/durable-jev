@@ -38,6 +38,7 @@ export async function startBranchService(options: {
     referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
     database,
     publicUrl: () => process.env.SERVICE_PUBLIC_URL ?? `http://localhost:${port}`,
+    demoFaults: process.env.DEMO_FAULTS === 'on',
     judgeFor: judgeForModelMode(process.env.MODEL_MODE, {
       apiKey: process.env.TYPESAFE_API_KEY,
       cacheDatabase: database,

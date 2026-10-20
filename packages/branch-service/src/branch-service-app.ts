@@ -45,6 +45,8 @@ export type BranchServiceDependencies = {
   judgeFor?: JudgeFor
   // Where clients reach this service; the A2A Agent Card advertises it.
   publicUrl: () => string
+  // Demo only: exposes POST /faults/delay so a slow service can be shown in the workbench.
+  demoFaults?: boolean
   now?: () => string
 }
 
@@ -71,8 +73,17 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     response.json({ service: dependencies.serviceName, branches: dependencies.branches })
   })
 
+  let injectedDelayMs = 0
+  if (dependencies.demoFaults) {
+    app.post('/faults/delay', (request, response) => {
+      injectedDelayMs = z.object({ ms: z.int().min(0).max(60_000) }).parse(request.body).ms
+      response.json({ service: dependencies.serviceName, delayMs: injectedDelayMs })
+    })
+  }
+
   // Native HTTP and A2A run the same evaluation and log it the same way.
   const evaluate = async (evaluationRequest: BranchEvaluationRequest) => {
+    if (injectedDelayMs > 0) await new Promise((wait) => setTimeout(wait, injectedDelayMs))
     const result: BranchEvaluationResult = await evaluateBranchWithJudge(
       evaluationRequest,
       dependencies,

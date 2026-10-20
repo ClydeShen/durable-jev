@@ -43,6 +43,7 @@ beforeAll(async () => {
     referenceData,
     database,
     publicUrl: () => baseUrl,
+    demoFaults: true,
   })
   const server = app.listen(0)
   await new Promise((resolve) => server.once('listening', resolve))
@@ -81,6 +82,19 @@ describe('branch service over HTTP', () => {
       links,
     ).evaluate(request)
     expect(overA2a).toEqual(native)
+  })
+
+  it('can be slowed down for a demo so the caller times out', async () => {
+    const setDelay = (ms: number) =>
+      fetch(`${baseUrl}/faults/delay`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ ms }),
+      })
+    expect((await setDelay(300)).status).toBe(200)
+    const impatient = httpBranchEvaluator('commercial-control', ['commercial'], baseUrl, 100)
+    await expect(impatient.evaluate(baseRequest())).rejects.toBeInstanceOf(BranchUnavailableError)
+    await setDelay(0)
   })
 
   it('rejects a malformed request', async () => {
