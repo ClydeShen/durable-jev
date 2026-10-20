@@ -6,7 +6,8 @@ import type {
   RuleBranch,
 } from '@durable-jev/contracts'
 import {
-  evaluateBranch,
+  evaluateBranchWithJudge,
+  type JudgeFor,
   type RuleConfiguration,
   requiredUpstreamRuleIds,
   rulesOfBranches,
@@ -33,12 +34,13 @@ export function inProcessEvaluator(
     configuration: RuleConfiguration
     referenceData: ReferenceData
     ensurePlanReservation?: (request: BranchEvaluationRequest) => boolean
+    judgeFor?: JudgeFor
   },
 ): BranchEvaluator {
   return {
     name,
     branches,
-    evaluate: async (request) => evaluateBranch(request, { ...dependencies, branches }),
+    evaluate: (request) => evaluateBranchWithJudge(request, { ...dependencies, branches }),
   }
 }
 
@@ -46,8 +48,9 @@ export function inProcessEvaluators(
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
   reservationDatabase: StoreDatabase = openDatabase(':memory:', reservationMigrations),
+  judgeFor?: JudgeFor,
 ): BranchEvaluator[] {
-  const dependencies = { configuration, referenceData }
+  const dependencies = { configuration, referenceData, ...(judgeFor && { judgeFor }) }
   return [
     inProcessEvaluator('coordinator', ['base'], dependencies),
     inProcessEvaluator('cargo-assurance', branchesByService.cargoAssurance, dependencies),
@@ -65,8 +68,9 @@ export function serviceEvaluators(
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
   urls: { cargoAssurance: string; transportPlanning: string; commercialControl: string },
+  judgeFor?: JudgeFor,
 ): BranchEvaluator[] {
-  const dependencies = { configuration, referenceData }
+  const dependencies = { configuration, referenceData, ...(judgeFor && { judgeFor }) }
   return [
     inProcessEvaluator('coordinator', ['base'], dependencies),
     httpBranchEvaluator('cargo-assurance', branchesByService.cargoAssurance, urls.cargoAssurance),
