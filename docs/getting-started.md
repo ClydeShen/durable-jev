@@ -10,7 +10,7 @@
 
 ```bash
 pnpm bootstrap     # install dependencies and build
-pnpm start         # start the coordinator, the workbench and the local control server
+pnpm start         # start the services, the workbench and the local control server
 pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 ```
 
@@ -19,10 +19,15 @@ pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 | URL | What |
 |---|---|
 | http://127.0.0.1:5173/ | Workbench |
-| http://127.0.0.1:4100/cases | Coordinator API |
+| http://127.0.0.1:4100/cases | Coordinator API: orders, human tasks, dispatch |
+| http://127.0.0.1:4110/capabilities | Cargo assurance: controlled goods and cold chain rules |
+| http://127.0.0.1:4120/capabilities | Transport planning: plan rules and carrier reservations |
+| http://127.0.0.1:4130/capabilities | Commercial control: credit and cost rules |
 | http://127.0.0.1:4000/processes | Local control server (listens on 127.0.0.1 only) |
 
-`Ctrl+C` stops every process. Data lives in `var/data/` and survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
+Each service keeps its own SQLite database in `var/data/`. The coordinator owns orders and human tasks and asks the three branch services to evaluate their rules over HTTP (`POST /evaluations`).
+
+`Ctrl+C` stops every process. Data survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
@@ -42,6 +47,13 @@ curl -X POST http://127.0.0.1:4000/processes/coordinator/kill      # simulate a 
 curl -X POST http://127.0.0.1:4000/processes/coordinator/start     # restart; data is kept
 curl http://127.0.0.1:4000/processes                               # process status
 ```
+
+### Walkthrough: a branch service goes down
+
+1. `curl -X POST http://127.0.0.1:4000/processes/commercial-control/kill`
+2. Act on any open task in the workbench. The coordinator answers 503 and the order shows "Technical failure"; no rule is reported as passed.
+3. `curl -X POST http://127.0.0.1:4000/processes/commercial-control/start`
+4. Click "Re-evaluate" next to the order status. The order returns to its normal state.
 
 ## Other commands
 
