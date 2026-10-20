@@ -1,0 +1,227 @@
+{
+  "caseId": "CASE-LOG-002",
+  "title": "Cold chain shipment arrives with damaged packaging",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-002",
+    "shipmentId": "LOG-002",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "CAN-CLINIC",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-002-ITEM-1",
+        "description": "Influenza vaccines, 200 doses in an insulated shipper",
+        "declaredCategories": ["COLD_CHAIN"],
+        "weightGrams": 18000,
+        "lengthMm": 600,
+        "widthMm": 400,
+        "heightMm": 450,
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        },
+        "packagingId": "PKG-002-1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-002-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "CAN-CLINIC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-PL-REEFER-5T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-002-1",
+      "amountCents": 95000,
+      "currency": "CNY"
+    },
+    "customerInstructions": "Hand over to the clinic pharmacy only and keep the shipper refrigerated."
+  },
+  "evidence": {
+    "documents": [],
+    "temperatureLogs": [
+      {
+        "cargoItemId": "LOG-002-ITEM-1",
+        "sensorId": "SENSOR-LOG-002-ITEM-1",
+        "calibrationValidUntil": "2027-01-01T00:00:00Z",
+        "readings": [
+          {
+            "at": "2026-11-03T02:00:00Z",
+            "deciCelsius": 45
+          },
+          {
+            "at": "2026-11-03T03:30:00Z",
+            "deciCelsius": 52
+          }
+        ]
+      }
+    ],
+    "inspectionNotes": [
+      {
+        "cargoItemId": "LOG-002-ITEM-1",
+        "inspectedAt": "2026-11-03T03:00:00Z",
+        "note": "Outer carton crushed on one corner; inner shipper dented; ice packs intact."
+      }
+    ]
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-002-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.95
+      }
+    },
+    {
+      "ruleId": "R27",
+      "entityId": "order",
+      "answer": {
+        "type": "noul",
+        "noul": 0.92
+      }
+    },
+    {
+      "ruleId": "R18",
+      "entityId": "LOG-002-ITEM-1",
+      "answer": {
+        "type": "choice",
+        "choice": "damaged_packaging",
+        "probabilities": {
+          "no_risk": 0.02,
+          "damaged_packaging": 0.85,
+          "cold_chain_risk": 0.13
+        }
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R18": "PASS",
+          "R18-RISK": "PASS",
+          "R20": "NOT_APPLICABLE",
+          "R21": "WAITING_HUMAN",
+          "R22-CAPTURE": "BLOCKED_DEPENDENCY",
+          "R23": "BLOCKED_DEPENDENCY",
+          "R39-LOAD": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R21",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R21",
+      "actor": "WAREHOUSE_OPERATOR",
+      "expect": {
+        "error": "UNPROCESSABLE",
+        "orderStatus": "AWAITING_HUMAN",
+        "openHumanTasks": [
+          {
+            "ruleId": "R21",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R21",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "repackPhotoRef": "PHOTO-002-1",
+        "packagingId": "PKG-002-2"
+      },
+      "expect": {
+        "gates": {
+          "R21": "PASS",
+          "R22-CAPTURE": "WAITING_HUMAN",
+          "R23": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R22-CAPTURE",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R22-CAPTURE",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "retestReadingDeciCelsius": "46",
+        "retestBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R22": "PASS",
+          "R23": "PASS",
+          "R38": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
