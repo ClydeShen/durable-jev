@@ -69,3 +69,26 @@ What follows:
 - The threshold drift is now confirmed on both lines (0.8 and 0.2). A review band around each line (answers close to a line go to a person whichever side they land on) would make the gate stable; it needs the user's decision (T7.0).
 - Injection does move a Noul score. It did not change a decision here because the gate needs 0.8 and a person reviews anything uncertain, but it argues against lowering the pass line and for keeping documents in the data channel only.
 - The R27 question and the LOG-008 label are unchanged and still wait for the user's decision (T7.0).
+
+## P6 · 2026-10-20 · all eight cases, read through the Console (T6.5)
+
+18 judgements, all `jev-1.14.0`, each stored as a `jev.requested` / `jev.completed` event pair and inside a `jev.ask` span. The Console showed the provider and model, the raw answer (with probabilities for choice questions), the call time and an input hash, next to what the rule decided. Order statuses matched the P4 and P5 live runs.
+
+Call time: minimum 84 ms, median 140 ms, maximum 325 ms (3 to 4 calls per order, one per service that asks).
+
+Readings that sit near a threshold, now across four live runs:
+
+| Rule | Case | Earlier readings | This run | Line |
+|---|---|---|---|---|
+| R27 customer restrictions | LOG-001 | 0.58 to 0.62 (3 runs) | 0.57 | pass at 0.8: always goes to a person |
+| R27 customer restrictions | LOG-002 | 0.75, 0.81, 0.81 | 0.80 | pass at 0.8: exactly on the line |
+| R03 declared category | LOG-005 | 0.76, 0.81, 0.79 | 0.81 | pass at 0.8 |
+| R10 documents match | LOG-003 | 0.21, 0.20 | 0.20 | fail at 0.2 |
+| R18 inspection risk | LOG-008 | cold_chain_risk | cold_chain_risk, probability 1.0 | stable |
+| All others | | | within 0.02 | same decisions |
+
+What this adds:
+
+- Three of the readings now sit on a line (0.80 for R27 on LOG-002, 0.81 for R03 on LOG-005, 0.20 for R10 on LOG-003). Jev returns two decimals, so a value of exactly 0.80 means somewhere between 0.795 and 0.805: whether it passes depends on rounding, not on the answer. This is the strongest argument yet for a review band around each line (T7.0).
+- The Console made the point visible: for LOG-008, R18 shows "the model returned cold_chain_risk" next to "the rule decided Pass". That is correct (R18 only classifies; the follow-up is R18-RISK and the repack task), but it reads oddly. The judgement view should show what the rule made of the answer, not only its gate status. Added to the improvement list.
+- Using the Console on live data found a bug in the Console itself: moving from one case to another merged the new case's events into the previous case's list. Fixed with a tested reconcile step.
