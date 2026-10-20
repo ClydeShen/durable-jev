@@ -1,0 +1,208 @@
+{
+  "caseId": "CASE-LOG-007",
+  "title": "Transfer hub on the second leg cannot keep cargo cold",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-007",
+    "shipmentId": "LOG-007",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "CAN-CLINIC",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-007-ITEM-1",
+        "description": "Blood plasma units, 30 bags in a cold box",
+        "declaredCategories": ["COLD_CHAIN"],
+        "weightGrams": 15000,
+        "lengthMm": 600,
+        "widthMm": 400,
+        "heightMm": 400,
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 60
+        },
+        "packagingId": "PKG-007-1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-007-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "SZX-HUB",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-PL-REEFER-5T",
+        "plannedDepartureAt": "2026-11-03T02:00:00Z",
+        "plannedArrivalAt": "2026-11-03T04:30:00Z"
+      },
+      {
+        "legId": "LOG-007-LEG-2",
+        "sequence": 2,
+        "fromLocation": "SZX-HUB",
+        "toLocation": "CAN-CLINIC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-PL-REEFER-5T",
+        "plannedDepartureAt": "2026-11-03T05:15:00Z",
+        "plannedArrivalAt": "2026-11-03T07:45:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-007-1",
+      "amountCents": 130000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [],
+    "temperatureLogs": [
+      {
+        "cargoItemId": "LOG-007-ITEM-1",
+        "sensorId": "SENSOR-LOG-007-ITEM-1",
+        "calibrationValidUntil": "2027-01-01T00:00:00Z",
+        "readings": [
+          {
+            "at": "2026-11-03T00:30:00Z",
+            "deciCelsius": 40
+          },
+          {
+            "at": "2026-11-03T01:30:00Z",
+            "deciCelsius": 42
+          }
+        ]
+      }
+    ],
+    "inspectionNotes": [
+      {
+        "cargoItemId": "LOG-007-ITEM-1",
+        "inspectedAt": "2026-11-03T01:00:00Z",
+        "note": "Cold box sealed and intact."
+      }
+    ]
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-007-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.96
+      }
+    },
+    {
+      "ruleId": "R18",
+      "entityId": "LOG-007-ITEM-1",
+      "answer": {
+        "type": "choice",
+        "choice": "no_risk",
+        "probabilities": {
+          "no_risk": 0.92,
+          "damaged_packaging": 0.03,
+          "cold_chain_risk": 0.05
+        }
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "ON_HOLD",
+        "gates": {
+          "R24": "PASS",
+          "R25": "PASS",
+          "R26@LOG-007-LEG-1": "FAIL",
+          "R26@LOG-007-LEG-2": "NOT_APPLICABLE",
+          "R30": "FAIL",
+          "R23": "PASS",
+          "R40": "FAIL"
+        },
+        "openHumanTasks": []
+      }
+    },
+    {
+      "step": "changePlan",
+      "actor": "TRANSPORT_PLANNER",
+      "change": {
+        "kind": "replaceLegs",
+        "legs": [
+          {
+            "legId": "LOG-007-LEG-1",
+            "sequence": 1,
+            "fromLocation": "SHA-WH1",
+            "toLocation": "SHA-HUB",
+            "carrierId": "CAR-POLAR",
+            "vehicleId": "VEH-PL-REEFER-5T",
+            "plannedDepartureAt": "2026-11-03T02:00:00Z",
+            "plannedArrivalAt": "2026-11-03T04:30:00Z"
+          },
+          {
+            "legId": "LOG-007-LEG-2",
+            "sequence": 2,
+            "fromLocation": "SHA-HUB",
+            "toLocation": "CAN-CLINIC",
+            "carrierId": "CAR-POLAR",
+            "vehicleId": "VEH-PL-REEFER-5T",
+            "plannedDepartureAt": "2026-11-03T05:15:00Z",
+            "plannedArrivalAt": "2026-11-03T07:45:00Z"
+          }
+        ]
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R26@LOG-007-LEG-1": "PASS",
+          "R29": "PASS",
+          "R30": "PASS"
+        },
+        "invalidated": ["R07", "R17", "R24", "R26", "R29", "R30"],
+        "notInvalidated": ["R15", "R18", "R31", "R32"],
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
