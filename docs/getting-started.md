@@ -45,6 +45,16 @@ Each service keeps its own SQLite database in `var/data/`. The coordinator owns 
 3. The order gets a new revision. Only the rules that depend on the change are re-checked; they show "re-checked after r2" in the flow diagram, and "Revision history" lists how many rules were affected. Rules that do not depend on the change (for example the customer's credit) keep their results.
 4. Human tasks bound to what changed are superseded and recreated; the old reservation for the previous route version is cancelled. A quote change by the "Commercial manager" re-asks for credit approvals but keeps a compliance sign-off.
 
+## Walkthrough: let an agent find a replacement carrier
+
+1. Select LOG-004 and switch "Acting as" to "Transport planner".
+2. Under "Carrier investigation", keep or edit the reason and click "Find replacement".
+3. The agent lists carriers that serve both ends of the leg and checks each vehicle by re-running the capacity, qualification, temperature, service area and equipment rules with that vehicle in the plan. It proposes Glacier with VEH-GL-REEFER-4T. Nothing in the order has changed yet.
+4. Click "Accept proposal". The proposal is applied as an ordinary carrier change: a new revision, the affected rules re-checked, and the compliance sign-off asked for again. "Reject" with a reason leaves the plan as it is.
+5. A proposal is only valid for the revision it was made for. If the plan changes first, it is marked out of date and cannot be accepted.
+
+The agent can only read and propose; it has no tool to change the plan, approve or dispatch. Without a model key it runs a scripted investigator through the same tools and budget limits (10 tool calls, 3 model retries); a run that exceeds a limit is handed to the planner.
+
 ## Demo cases
 
 `pnpm demo:reset` loads eight orders. Their event scripts are replayed and checked stage by stage with `pnpm replay`.
@@ -54,7 +64,7 @@ Each service keeps its own SQLite database in `var/data/`. The coordinator owns 
 | LOG-001 | General cargo, one leg, complete documents | Load as warehouse operator, confirm as dispatcher |
 | LOG-002 | Cold chain cargo arrives with damaged packaging | Jev flags the damage; "Approve" cannot replace the repack; repack, then capture the retest |
 | LOG-003 | Controlled goods whose documents conflict with the declaration | The compliance reviewer checks the documents; a commercial manager cannot approve instead; the carrier lacks the qualification until the planner switches to Secura |
-| LOG-004 | Controlled cold chain cargo whose carrier cancels | After the compliance sign-off, change the carrier to Glacier: the sign-off is voided and asked for again; credit checks keep their results |
+| LOG-004 | Controlled cold chain cargo whose carrier cancels | After the compliance sign-off, ask the agent for a replacement carrier and accept its Glacier proposal: the sign-off is voided and asked for again; credit checks keep their results |
 | LOG-005 | A reroute raises the quote over credit | As commercial manager change the quote to 2400.00: credit exception and extra cost need two separate approvals |
 | LOG-006 | The service restarts during the quality review | Kill and restart the coordinator; the quality task is still there |
 | LOG-007 | The transfer hub cannot keep cargo cold | The plan fails at the hub; as planner, replacing the route through SHA-HUB clears it (scripted in `pnpm replay`) |
