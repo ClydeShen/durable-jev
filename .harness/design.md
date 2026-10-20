@@ -162,7 +162,7 @@ type RuleDefinition = {
 
 - 求值代码在 `packages/rule-evaluation`（叶子规则、决策表、配置加载、`evaluateBranch`），各服务只启用自己的分支；规则集仍是同一个 `rules.json`。
 - 原生接口 `POST /evaluations`：请求带订单、证据、语义答案、本服务规则引用的上游结果、相关人工门槛的当前状态（状态、决定、操作字段）；响应带本服务规则的求值结果和 `humanGateRequests`（到达但没有有效任务的人工门槛，含"不确定转人工"）。服务把这些门槛视为 WAITING_HUMAN。
-- Coordinator 通过 `BranchEvaluator` 接口调用（进程内或 HTTP，同一求值代码）。评估顺序在启动时由规则依赖校验：每个求值者引用的上游必须来自它之前的求值者。T3.3 再把无依赖的分支并行。
+- Coordinator 通过 `BranchEvaluator` 接口调用（进程内或 HTTP，同一求值代码）。启动时由规则依赖算出分层（T3.3）：同层并行，层间按依赖顺序；当前为 [base、commercial] → [cargo-assurance] → [transport-planning] → [release]。每个服务只收到它的规则引用的上游结果。重复或遗漏覆盖、循环依赖都拒绝启动。
 - 人工任务仍由 Coordinator 创建与持有；服务不直接改人工任务。
 - 放行：先求值（确认视为已批准），再在同一 SQLite 事务内重读订单，版本或确认任务状态已变则返回 CONFLICT；否则写入批准、检查结果，R40 通过才写 DISPATCHED，不通过整体回滚（乐观并发）。
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
