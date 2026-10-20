@@ -177,6 +177,21 @@ importers:
         specifier: workspace:*
         version: link:../contracts
 
+  packages/model-providers:
+    dependencies:
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
+      '@typesafe-ai/sdk':
+        specifier: 0.7.0
+        version: 0.7.0
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
+
   packages/rule-engine:
     dependencies:
       '@durable-jev/contracts':
