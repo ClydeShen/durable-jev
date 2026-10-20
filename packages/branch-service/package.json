@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
+    "@durable-jev/a2a-adapter": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/service-kit": "workspace:*",

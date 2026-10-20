@@ -1,4 +1,10 @@
 import {
+  a2aServerMigrations,
+  branchAgentCard,
+  evaluationExecutor,
+  mountA2a,
+} from '@durable-jev/a2a-adapter'
+import {
   BranchEvaluationRequest,
   type BranchEvaluationResult,
   type ReferenceData,
@@ -25,6 +31,7 @@ export const branchServiceMigrations: readonly Migration[] = [
       result_json TEXT NOT NULL
     )`,
   },
+  ...a2aServerMigrations,
 ]
 
 export type BranchServiceDependencies = {
@@ -35,6 +42,8 @@ export type BranchServiceDependencies = {
   database: StoreDatabase
   ensurePlanReservation?: (request: BranchEvaluationRequest) => boolean
   judgeFor?: JudgeFor
+  // Where clients reach this service; the A2A Agent Card advertises it.
+  publicUrl: () => string
   now?: () => string
 }
 
@@ -57,8 +66,8 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
     response.json({ service: dependencies.serviceName, branches: dependencies.branches })
   })
 
-  app.post('/evaluations', async (request, response) => {
-    const evaluationRequest = BranchEvaluationRequest.parse(request.body)
+  // Native HTTP and A2A run the same evaluation and log it the same way.
+  const evaluate = async (evaluationRequest: BranchEvaluationRequest) => {
     const result: BranchEvaluationResult = await evaluateBranchWithJudge(
       evaluationRequest,
       dependencies,
@@ -69,7 +78,22 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
       now(),
       JSON.stringify(result),
     )
-    response.json(result)
+    return result
+  }
+
+  app.post('/evaluations', async (request, response) => {
+    response.json(await evaluate(BranchEvaluationRequest.parse(request.body)))
+  })
+
+  mountA2a(app, {
+    card: () =>
+      branchAgentCard({
+        serviceName: dependencies.serviceName,
+        branches: dependencies.branches,
+        baseUrl: dependencies.publicUrl(),
+      }),
+    executor: evaluationExecutor(evaluate),
+    database: dependencies.database,
   })
 
   app.use(handleErrors)

@@ -30,12 +30,14 @@ export async function startBranchService(options: {
     ...(options.extraMigrations ?? []),
   ])
   const { ensurePlanReservation } = options
+  const port = Number(process.env.SERVICE_PORT ?? options.defaultPort)
   const app = createBranchServiceApp({
     serviceName: options.serviceName,
     branches: options.branches,
     configuration: loadRuleConfiguration(materialsDirectory),
     referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
     database,
+    publicUrl: () => process.env.SERVICE_PUBLIC_URL ?? `http://localhost:${port}`,
     judgeFor: judgeForModelMode(process.env.MODEL_MODE, {
       apiKey: process.env.TYPESAFE_API_KEY,
       cacheDatabase: database,
@@ -46,7 +48,7 @@ export async function startBranchService(options: {
   })
   return startService(app, {
     serviceName: options.serviceName,
-    port: Number(process.env.SERVICE_PORT ?? options.defaultPort),
+    port,
     onClose: () => database.close(),
   })
 }

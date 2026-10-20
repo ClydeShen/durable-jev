@@ -1,12 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../contracts" },
-    { "path": "../rule-evaluation" },
-    { "path": "../service-kit" },
-    { "path": "../store" }
+    {
+      "path": "../a2a-adapter"
+    },
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../rule-evaluation"
+    },
+    {
+      "path": "../service-kit"
+    },
+    {
+      "path": "../store"
+    }
   ]
 }

@@ -38,6 +38,9 @@ importers:
 
   apps/coordinator:
     dependencies:
+      '@durable-jev/a2a-adapter':
+        specifier: workspace:*
+        version: link:../../packages/a2a-adapter
       '@durable-jev/agent-harness':
         specifier: workspace:*
         version: link:../../packages/agent-harness
@@ -197,6 +200,9 @@ importers:
 
   packages/branch-service:
     dependencies:
+      '@durable-jev/a2a-adapter':
+        specifier: workspace:*
+        version: link:../a2a-adapter
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../contracts
