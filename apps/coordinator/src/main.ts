@@ -62,7 +62,10 @@ const coordinator = new CoordinatorService({
         configuration,
         referenceData,
         openDatabase(
-          resolve(repositoryRoot, 'var/data/transport-planning.sqlite'),
+          resolve(
+            process.env.TRANSPORT_PLANNING_DB ??
+              resolve(repositoryRoot, 'var/data/transport-planning.sqlite'),
+          ),
           reservationMigrations,
         ),
         judgeFor,
