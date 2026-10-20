@@ -3,6 +3,7 @@ import type { AddressInfo } from 'node:net'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { inProcessEvaluators } from '../branch-evaluators.js'
 import { CoordinatorService } from '../coordinator-service.js'
 import { coordinatorMigrations } from '../persistence/coordinator-migrations.js'
 import { createCoordinatorApp } from './coordinator-app.js'
@@ -15,14 +16,15 @@ let baseUrl = ''
 let close = () => {}
 
 beforeAll(async () => {
+  const configuration = buildRuleConfiguration(
+    readJson('rules.json'),
+    readJson('mock-policy-parameters.json'),
+    { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+  )
   const coordinator = new CoordinatorService({
     database: openDatabase(':memory:', coordinatorMigrations),
-    configuration: buildRuleConfiguration(
-      readJson('rules.json'),
-      readJson('mock-policy-parameters.json'),
-      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
-    ),
-    referenceData: readJson('mock-data/reference-data.json'),
+    configuration,
+    evaluators: inProcessEvaluators(configuration, readJson('mock-data/reference-data.json')),
   })
   const server = createCoordinatorApp(coordinator).listen(0)
   await new Promise((resolve) => server.once('listening', resolve))

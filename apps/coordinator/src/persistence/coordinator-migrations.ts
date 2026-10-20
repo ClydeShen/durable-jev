@@ -63,4 +63,8 @@ export const coordinatorMigrations: readonly Migration[] = [
     id: 'coordinator-006-case-evidence',
     sql: `ALTER TABLE cases ADD COLUMN evidence_json TEXT NOT NULL DEFAULT '{}'`,
   },
+  {
+    id: 'coordinator-007-drop-reservations',
+    sql: 'DROP TABLE reservations',
+  },
 ]

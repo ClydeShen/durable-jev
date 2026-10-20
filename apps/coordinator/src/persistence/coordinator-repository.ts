@@ -4,10 +4,10 @@ import type {
   HumanTask,
   HumanTaskStatus,
   OrderStatus,
+  ScriptedSemanticAnswer,
   Shipment,
-  TransportLeg,
 } from '@durable-jev/contracts'
-import { emptyCaseEvidence, reservationMachine } from '@durable-jev/contracts'
+import { emptyCaseEvidence } from '@durable-jev/contracts'
 import type { SemanticAnswer } from '@durable-jev/rule-evaluation'
 import type { StoreDatabase } from '@durable-jev/store'
 
@@ -94,6 +94,17 @@ export class CoordinatorRepository {
       .run(caseId, ruleId, entityId, JSON.stringify(answer))
   }
 
+  listSemanticAnswers(caseId: string): ScriptedSemanticAnswer[] {
+    const rows = this.database
+      .prepare('SELECT rule_id, entity_id, answer_json FROM semantic_answers WHERE case_id = ?')
+      .all(caseId) as { rule_id: string; entity_id: string; answer_json: string }[]
+    return rows.map((row) => ({
+      ruleId: row.rule_id as never,
+      entityId: row.entity_id,
+      answer: JSON.parse(row.answer_json),
+    }))
+  }
+
   findSemanticAnswer(caseId: string, ruleId: string, entityId: string): SemanticAnswer | undefined {
     const row = this.database
       .prepare(
@@ -176,33 +187,6 @@ export class CoordinatorRepository {
     const row = this.database
       .prepare('SELECT COUNT(*) AS count FROM human_tasks WHERE case_id = ?')
       .get(caseId) as { count: number }
-    return row.count
-  }
-
-  insertReservation(caseId: string, routeVersion: number, leg: TransportLeg): number {
-    const { lastInsertRowid } = this.database
-      .prepare(
-        `INSERT INTO reservations (case_id, route_version, leg_id, carrier_id, vehicle_id, status)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-      )
-      .run(
-        caseId,
-        routeVersion,
-        leg.legId,
-        leg.carrierId,
-        leg.vehicleId,
-        reservationMachine.initial,
-      )
-    return Number(lastInsertRowid)
-  }
-
-  countReservations(caseId: string, routeVersion: number): number {
-    const row = this.database
-      .prepare(
-        `SELECT COUNT(*) AS count FROM reservations
-         WHERE case_id = ? AND route_version = ? AND status = ?`,
-      )
-      .get(caseId, routeVersion, reservationMachine.initial) as { count: number }
     return row.count
   }
 }

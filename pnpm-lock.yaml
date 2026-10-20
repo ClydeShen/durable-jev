@@ -44,6 +44,9 @@ importers:
       '@durable-jev/store':
         specifier: workspace:*
         version: link:../../packages/store
+      '@durable-jev/transport-reservations':
+        specifier: workspace:*
+        version: link:../../packages/transport-reservations
       express:
         specifier: 5.3.0
         version: 5.3.0

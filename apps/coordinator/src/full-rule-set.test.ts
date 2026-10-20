@@ -3,6 +3,7 @@ import type { CaseEvidence, GateStatus, ReferenceData, Shipment } from '@durable
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
+import { inProcessEvaluators } from './branch-evaluators.js'
 import { type CaseView, CoordinatorService } from './coordinator-service.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
 
@@ -12,16 +13,18 @@ const logOne = readJson('cases/LOG-001.json')
 const baseShipment: Shipment = logOne.shipment
 
 function startCoordinator() {
+  const configuration = buildRuleConfiguration(
+    readJson('rules.json'),
+    readJson('mock-policy-parameters.json'),
+    { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+  )
   return new CoordinatorService({
     database: openDatabase(':memory:', coordinatorMigrations),
-    configuration: buildRuleConfiguration(
-      readJson('rules.json'),
-      readJson('mock-policy-parameters.json'),
-      {
-        mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
-      },
+    configuration,
+    evaluators: inProcessEvaluators(
+      configuration,
+      readJson('mock-data/reference-data.json') as ReferenceData,
     ),
-    referenceData: readJson('mock-data/reference-data.json') as ReferenceData,
     now: () => '2026-11-02T08:00:00.000Z',
   })
 }
@@ -91,9 +94,13 @@ describe('cold chain rework chain', () => {
     },
   ]
 
-  it('requires repack, then retest, before loading can start', () => {
+  it('requires repack, then retest, before loading can start', async () => {
     const coordinator = startCoordinator()
-    let view = coordinator.submitCase({ shipment, evidence, scriptedSemanticAnswers: answers })
+    let view = await coordinator.submitCase({
+      shipment,
+      evidence,
+      scriptedSemanticAnswers: answers,
+    })
 
     expect(gate(view, 'R18', itemId)).toBe('PASS')
     expect(gate(view, 'R18-RISK', itemId)).toBe('PASS')
@@ -104,16 +111,20 @@ describe('cold chain rework chain', () => {
     expect(openTask(view, 'R22-CAPTURE')).toBeUndefined()
     expect(openTask(view, 'R39-LOAD')).toBeUndefined()
 
-    coordinator.completeHumanTask(openTask(view, 'R21')?.humanTaskId ?? '', 'WAREHOUSE_OPERATOR', {
-      repackPhotoRef: 'PHOTO-1',
-      packagingId: 'PKG-2',
-    })
+    await coordinator.completeHumanTask(
+      openTask(view, 'R21')?.humanTaskId ?? '',
+      'WAREHOUSE_OPERATOR',
+      {
+        repackPhotoRef: 'PHOTO-1',
+        packagingId: 'PKG-2',
+      },
+    )
     view = coordinator.getCase(shipment.caseId)
     expect(gate(view, 'R21', itemId)).toBe('PASS')
     expect(gate(view, 'R22-CAPTURE', itemId)).toBe('WAITING_HUMAN')
     expect(openTask(view, 'R39-LOAD')).toBeUndefined()
 
-    coordinator.completeHumanTask(
+    await coordinator.completeHumanTask(
       openTask(view, 'R22-CAPTURE')?.humanTaskId ?? '',
       'WAREHOUSE_OPERATOR',
       {
@@ -128,15 +139,23 @@ describe('cold chain rework chain', () => {
     expect(openTask(view, 'R39-LOAD')).toBeDefined()
   })
 
-  it('holds the cargo when the retest reading is out of range', () => {
+  it('holds the cargo when the retest reading is out of range', async () => {
     const coordinator = startCoordinator()
-    let view = coordinator.submitCase({ shipment, evidence, scriptedSemanticAnswers: answers })
-    coordinator.completeHumanTask(openTask(view, 'R21')?.humanTaskId ?? '', 'WAREHOUSE_OPERATOR', {
-      repackPhotoRef: 'PHOTO-1',
-      packagingId: 'PKG-2',
+    let view = await coordinator.submitCase({
+      shipment,
+      evidence,
+      scriptedSemanticAnswers: answers,
     })
+    await coordinator.completeHumanTask(
+      openTask(view, 'R21')?.humanTaskId ?? '',
+      'WAREHOUSE_OPERATOR',
+      {
+        repackPhotoRef: 'PHOTO-1',
+        packagingId: 'PKG-2',
+      },
+    )
     view = coordinator.getCase(shipment.caseId)
-    coordinator.completeHumanTask(
+    await coordinator.completeHumanTask(
       openTask(view, 'R22-CAPTURE')?.humanTaskId ?? '',
       'WAREHOUSE_OPERATOR',
       {
@@ -160,9 +179,9 @@ describe('commercial credit exception', () => {
     quote: { ...baseShipment.quote, amountCents: 4_000_000 },
   }
 
-  it('waits on the commercial manager and only then lets loading start', () => {
+  it('waits on the commercial manager and only then lets loading start', async () => {
     const coordinator = startCoordinator()
-    let view = coordinator.submitCase({
+    let view = await coordinator.submitCase({
       shipment: overCredit,
       scriptedSemanticAnswers: logOne.scriptedSemanticAnswers,
     })
@@ -172,15 +191,18 @@ describe('commercial credit exception', () => {
     expect(gate(view, 'R36')).toBe('BLOCKED_DEPENDENCY')
     expect(openTask(view, 'R39-LOAD')).toBeUndefined()
 
-    coordinator.approveHumanTask(openTask(view, 'R34')?.humanTaskId ?? '', 'COMMERCIAL_MANAGER')
+    await coordinator.approveHumanTask(
+      openTask(view, 'R34')?.humanTaskId ?? '',
+      'COMMERCIAL_MANAGER',
+    )
     view = coordinator.getCase(overCredit.caseId)
     expect(gate(view, 'R36')).toBe('PASS')
     expect(openTask(view, 'R39-LOAD')).toBeDefined()
   })
 
-  it('fails without offering an approval when the excess is beyond the approvable limit', () => {
+  it('fails without offering an approval when the excess is beyond the approvable limit', async () => {
     const coordinator = startCoordinator()
-    const view = coordinator.submitCase({
+    const view = await coordinator.submitCase({
       shipment: { ...overCredit, quote: { ...overCredit.quote, amountCents: 4_400_000 } },
       scriptedSemanticAnswers: logOne.scriptedSemanticAnswers,
     })

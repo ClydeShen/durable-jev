@@ -1,16 +1,20 @@
 import type {
+  BranchEvaluationRequest,
   CaseEvidence,
   CheckResult,
   CheckResultId,
-  CheckSubject,
   EvidenceRef,
+  GateStatus,
+  HumanGateRequest,
+  HumanGateState,
   HumanTask,
   HumanTaskId,
   HumanTaskTarget,
   OrderStatus,
-  ReferenceData,
   Role,
+  RuleEvaluationRecord,
   RuleId,
+  ScriptedSemanticAnswer,
   Shipment,
   UtcTimestamp,
 } from '@durable-jev/contracts'
@@ -28,19 +32,13 @@ import {
 } from '@durable-jev/human-tasks'
 import {
   computeInputFingerprint,
-  evaluateRuleGraph,
   type RuleDefinition,
-  type RuleEvaluation,
   subjectKey,
   upstreamRuleIds,
 } from '@durable-jev/rule-engine'
-import {
-  type EvaluationInputs,
-  evaluateLeafRule,
-  type RuleConfiguration,
-  type SemanticAnswer,
-} from '@durable-jev/rule-evaluation'
-import { executeOnce, type StoreDatabase } from '@durable-jev/store'
+import { humanGateRuleIds, type RuleConfiguration } from '@durable-jev/rule-evaluation'
+import type { StoreDatabase } from '@durable-jev/store'
+import { assertEvaluationOrder, type BranchEvaluator } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import { deriveOrderStatus, dispatchConfirmationRuleId, finalGateRuleId } from './order-status.js'
 import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
@@ -48,14 +46,14 @@ import { CoordinatorRepository, type StoredCase } from './persistence/coordinato
 export type CoordinatorDependencies = {
   database: StoreDatabase
   configuration: RuleConfiguration
-  referenceData: ReferenceData
+  evaluators: readonly BranchEvaluator[]
   now?: () => string
 }
 
 export type SubmitCaseRequest = {
   shipment: Shipment
   evidence?: CaseEvidence
-  scriptedSemanticAnswers?: { ruleId: string; entityId: string; answer: SemanticAnswer }[]
+  scriptedSemanticAnswers?: ScriptedSemanticAnswer[]
 }
 
 export type CaseView = StoredCase & { checks: CheckResult[]; humanTasks: HumanTask[] }
@@ -65,53 +63,72 @@ type HumanTaskAction =
   | { kind: 'reject'; reason: string }
   | { kind: 'complete'; fields: Record<string, string>; evidenceRefs: EvidenceRef[] }
 
+type CaseEvaluation = {
+  caseRevision: number
+  evaluations: RuleEvaluationRecord[]
+  humanGateRequests: HumanGateRequest[]
+}
+
 const minutesFrom = (timestamp: string, minutes: number) =>
   new Date(Date.parse(timestamp) + minutes * 60_000).toISOString()
+
+const gateKey = (ruleId: string, entityId: string) => `${ruleId}@${entityId}`
 
 export class CoordinatorService {
   private readonly repository: CoordinatorRepository
   private readonly database: StoreDatabase
   private readonly configuration: RuleConfiguration
-  private readonly referenceData: ReferenceData
+  private readonly evaluators: readonly BranchEvaluator[]
   private readonly now: () => string
   private readonly rulesById: Map<string, RuleDefinition>
 
   constructor(dependencies: CoordinatorDependencies) {
+    assertEvaluationOrder(dependencies.evaluators, dependencies.configuration)
     this.database = dependencies.database
     this.repository = new CoordinatorRepository(dependencies.database)
     this.configuration = dependencies.configuration
-    this.referenceData = dependencies.referenceData
+    this.evaluators = dependencies.evaluators
     this.now = dependencies.now ?? (() => new Date().toISOString())
     this.rulesById = new Map(
       dependencies.configuration.rulesInEvaluationOrder.map((rule) => [rule.ruleId, rule]),
     )
   }
 
-  submitCase(request: SubmitCaseRequest): CaseView {
+  async submitCase(request: SubmitCaseRequest): Promise<CaseView> {
     const caseId = request.shipment.caseId
-    const submit = this.database.transaction(() => {
-      if (this.repository.findCase(caseId)) return
-      const now = this.now()
-      this.repository.insertCase({
-        caseId,
-        correlationId: `corr-${caseId}`,
-        shipment: request.shipment,
-        evidence: request.evidence ?? emptyCaseEvidence,
-        orderStatus: orderStatusMachine.initial,
-        createdAt: now,
-        updatedAt: now,
-      })
-      for (const scripted of request.scriptedSemanticAnswers ?? []) {
-        this.repository.saveSemanticAnswer(
+    const isNew = this.database
+      .transaction(() => {
+        if (this.repository.findCase(caseId)) return false
+        const now = this.now()
+        this.repository.insertCase({
           caseId,
-          scripted.ruleId,
-          scripted.entityId,
-          scripted.answer,
-        )
-      }
-      this.evaluateAndPersist(caseId)
-    })
-    submit.immediate()
+          correlationId: `corr-${caseId}`,
+          shipment: request.shipment,
+          evidence: request.evidence ?? emptyCaseEvidence,
+          orderStatus: orderStatusMachine.initial,
+          createdAt: now,
+          updatedAt: now,
+        })
+        for (const scripted of request.scriptedSemanticAnswers ?? []) {
+          this.repository.saveSemanticAnswer(
+            caseId,
+            scripted.ruleId,
+            scripted.entityId,
+            scripted.answer,
+          )
+        }
+        return true
+      })
+      .immediate()
+    if (isNew) await this.reevaluate(caseId)
+    return this.getCase(caseId)
+  }
+
+  async reevaluate(caseId: string): Promise<CaseView> {
+    const stored = this.requireCase(caseId)
+    if (orderStatusMachine.isTerminal(stored.orderStatus)) return this.getCase(caseId)
+    const evaluation = await this.evaluateCase(stored)
+    this.database.transaction(() => this.commitEvaluation(caseId, evaluation)).immediate()
     return this.getCase(caseId)
   }
 
@@ -146,7 +163,7 @@ export class CoordinatorService {
     actor: Role,
     reason?: string,
     conditions?: DecisionCondition[],
-  ): HumanTask {
+  ): Promise<HumanTask> {
     return this.actOnHumanTask(humanTaskId, actor, {
       kind: 'approve',
       ...(reason === undefined ? {} : { reason }),
@@ -154,7 +171,7 @@ export class CoordinatorService {
     })
   }
 
-  rejectHumanTask(humanTaskId: string, actor: Role, reason: string): HumanTask {
+  rejectHumanTask(humanTaskId: string, actor: Role, reason: string): Promise<HumanTask> {
     return this.actOnHumanTask(humanTaskId, actor, { kind: 'reject', reason })
   }
 
@@ -163,101 +180,195 @@ export class CoordinatorService {
     actor: Role,
     fields: Record<string, string>,
     evidenceRefs: EvidenceRef[] = [],
-  ): HumanTask {
+  ): Promise<HumanTask> {
     return this.actOnHumanTask(humanTaskId, actor, { kind: 'complete', fields, evidenceRefs })
   }
 
-  dispatch(caseId: string, actor: Role): CaseView {
-    const attemptDispatch = this.database.transaction(() => {
-      const stored = this.requireCase(caseId)
-      if (stored.orderStatus === 'DISPATCHED') return
-      this.requireActiveCase(caseId)
-      const confirmation = this.repository
-        .listHumanTasks({ caseId, status: 'OPEN' })
-        .find((task) => task.ruleId === dispatchConfirmationRuleId)
-      if (!confirmation) {
-        throw new CoordinatorError('NOT_READY_TO_DISPATCH', 'no dispatcher confirmation is pending')
-      }
-      this.applyCommand(confirmation, { kind: 'approve', actor })
-      const finalGateStatus = this.evaluateAndPersist(caseId)
-      if (finalGateStatus !== 'PASS') {
-        throw new CoordinatorError('NOT_READY_TO_DISPATCH', `R40 is ${finalGateStatus}`, {
-          finalGateStatus,
-        })
-      }
-      this.moveOrderTo(caseId, 'DISPATCHED')
-    })
-    attemptDispatch.immediate()
+  async dispatch(caseId: string, actor: Role): Promise<CaseView> {
+    const stored = this.requireCase(caseId)
+    if (stored.orderStatus === 'DISPATCHED') return this.getCase(caseId)
+    this.requireActiveCase(caseId)
+    const confirmation = this.openDispatchConfirmation(caseId)
+    this.assertCommandAccepted(confirmation, { kind: 'approve', actor })
+
+    const confirmedGate: HumanGateState = {
+      ruleId: dispatchConfirmationRuleId,
+      entityId: 'order',
+      status: 'PASS',
+    }
+    const evaluation = await this.evaluateCase(stored, [confirmedGate])
+
+    this.database
+      .transaction(() => {
+        const current = this.requireActiveCase(caseId)
+        const stillOpen = this.openDispatchConfirmation(caseId)
+        if (
+          current.shipment.caseRevision !== evaluation.caseRevision ||
+          stillOpen.humanTaskId !== confirmation.humanTaskId
+        ) {
+          throw new CoordinatorError('CONFLICT', `case ${caseId} changed while dispatching`)
+        }
+        this.applyCommand(stillOpen, { kind: 'approve', actor })
+        const finalGateStatus = this.commitEvaluation(caseId, evaluation)
+        if (finalGateStatus !== 'PASS') {
+          throw new CoordinatorError('NOT_READY_TO_DISPATCH', `R40 is ${finalGateStatus}`, {
+            finalGateStatus,
+          })
+        }
+        this.moveOrderTo(caseId, 'DISPATCHED')
+      })
+      .immediate()
     return this.getCase(caseId)
   }
 
-  private actOnHumanTask(humanTaskId: string, actor: Role, action: HumanTaskAction): HumanTask {
-    const act = this.database.transaction(() => {
-      const task = this.repository.findHumanTask(humanTaskId)
-      if (!task) throw new CoordinatorError('NOT_FOUND', `human task ${humanTaskId} not found`)
-      this.requireActiveCase(task.caseId)
-      if (task.ruleId === dispatchConfirmationRuleId) {
-        throw new CoordinatorError('CONFLICT', 'dispatcher confirmation goes through dispatch')
-      }
-      const allowedConditions = this.requireRule(task.ruleId).humanGate?.decisionConditions ?? []
-      const unexpected = (action.kind === 'approve' ? (action.conditions ?? []) : []).filter(
-        (condition) => !allowedConditions.includes(condition),
-      )
-      if (unexpected.length > 0) {
-        throw new CoordinatorError(
-          'UNPROCESSABLE',
-          `${task.ruleId} does not accept ${unexpected.join(', ')}`,
+  private async actOnHumanTask(
+    humanTaskId: string,
+    actor: Role,
+    action: HumanTaskAction,
+  ): Promise<HumanTask> {
+    const updated = this.database
+      .transaction(() => {
+        const task = this.repository.findHumanTask(humanTaskId)
+        if (!task) throw new CoordinatorError('NOT_FOUND', `human task ${humanTaskId} not found`)
+        this.requireActiveCase(task.caseId)
+        if (task.ruleId === dispatchConfirmationRuleId) {
+          throw new CoordinatorError('CONFLICT', 'dispatcher confirmation goes through dispatch')
+        }
+        const allowedConditions = this.requireRule(task.ruleId).humanGate?.decisionConditions ?? []
+        const unexpected = (action.kind === 'approve' ? (action.conditions ?? []) : []).filter(
+          (condition) => !allowedConditions.includes(condition),
         )
-      }
-      const updated = this.applyCommand(task, { ...action, actor } as HumanTaskCommand)
-      this.evaluateAndPersist(task.caseId)
-      return updated
+        if (unexpected.length > 0) {
+          throw new CoordinatorError(
+            'UNPROCESSABLE',
+            `${task.ruleId} does not accept ${unexpected.join(', ')}`,
+          )
+        }
+        return this.applyCommand(task, { ...action, actor } as HumanTaskCommand)
+      })
+      .immediate()
+    await this.reevaluate(updated.caseId)
+    return updated
+  }
+
+  private openDispatchConfirmation(caseId: string): HumanTask {
+    const confirmation = this.repository
+      .listHumanTasks({ caseId, status: 'OPEN' })
+      .find((task) => task.ruleId === dispatchConfirmationRuleId)
+    if (!confirmation) {
+      throw new CoordinatorError('NOT_READY_TO_DISPATCH', 'no dispatcher confirmation is pending')
+    }
+    return confirmation
+  }
+
+  private commandResult(task: HumanTask, command: HumanTaskCommand) {
+    const stored = this.requireCase(task.caseId)
+    return applyHumanTaskCommand(task, command, {
+      now: this.now() as UtcTimestamp,
+      currentTarget: this.targetFor(this.requireRule(task.ruleId), stored.shipment),
     })
-    return act.immediate()
+  }
+
+  private assertCommandAccepted(task: HumanTask, command: HumanTaskCommand): void {
+    const result = this.commandResult(task, command)
+    if (!result.accepted) throw this.rejectionError(task, result.reason)
   }
 
   private applyCommand(task: HumanTask, command: HumanTaskCommand): HumanTask {
-    const stored = this.requireCase(task.caseId)
-    const rule = this.requireRule(task.ruleId)
-    const entityId = this.entityIdOfTask(task)
-    const result = applyHumanTaskCommand(task, command, {
-      now: this.now() as UtcTimestamp,
-      currentTarget: this.targetFor(rule, stored.shipment),
-    })
-    this.repository.saveHumanTask(result.task, entityId)
-    if (!result.accepted) {
-      const code =
-        result.reason === 'UNAUTHORIZED_ROLE'
-          ? 'FORBIDDEN'
-          : result.reason === 'MISSING_EVIDENCE' || result.reason === 'WRONG_TASK_TYPE'
-            ? 'UNPROCESSABLE'
-            : 'CONFLICT'
-      throw new CoordinatorError(code, `human task ${task.humanTaskId}: ${result.reason}`, {
-        reason: result.reason,
-      })
-    }
+    const result = this.commandResult(task, command)
+    this.repository.saveHumanTask(result.task, this.entityIdOfTask(task))
+    if (!result.accepted) throw this.rejectionError(task, result.reason)
     return result.task
   }
 
-  private evaluateAndPersist(caseId: string) {
+  private rejectionError(task: HumanTask, reason: string): CoordinatorError {
+    const code =
+      reason === 'UNAUTHORIZED_ROLE'
+        ? 'FORBIDDEN'
+        : reason === 'MISSING_EVIDENCE' || reason === 'WRONG_TASK_TYPE'
+          ? 'UNPROCESSABLE'
+          : 'CONFLICT'
+    return new CoordinatorError(code, `human task ${task.humanTaskId}: ${reason}`, { reason })
+  }
+
+  private async evaluateCase(
+    stored: StoredCase,
+    gateOverrides: readonly HumanGateState[] = [],
+  ): Promise<CaseEvaluation> {
+    const overrides = new Map(
+      gateOverrides.map((gate) => [gateKey(gate.ruleId, gate.entityId), gate]),
+    )
+    const evaluations: RuleEvaluationRecord[] = []
+    const humanGateRequests: HumanGateRequest[] = []
+    for (const evaluator of this.evaluators) {
+      const request: BranchEvaluationRequest = {
+        caseId: stored.caseId as never,
+        caseRevision: stored.shipment.caseRevision,
+        shipment: stored.shipment,
+        evidence: stored.evidence,
+        semanticAnswers: this.repository.listSemanticAnswers(stored.caseId),
+        upstreamResults: [...evaluations],
+        humanGates: this.humanGateStates(stored, evaluator, overrides),
+      }
+      const result = await evaluator.evaluate(request)
+      evaluations.push(...result.evaluations)
+      humanGateRequests.push(...result.humanGateRequests)
+    }
+    return { caseRevision: stored.shipment.caseRevision, evaluations, humanGateRequests }
+  }
+
+  private humanGateStates(
+    stored: StoredCase,
+    evaluator: BranchEvaluator,
+    overrides: ReadonlyMap<string, HumanGateState>,
+  ): HumanGateState[] {
+    const now = this.now() as UtcTimestamp
+    return humanGateRuleIds(this.configuration.rulesInEvaluationOrder, evaluator.branches).flatMap(
+      (ruleId) => {
+        const rule = this.requireRule(ruleId)
+        const target = this.targetFor(rule, stored.shipment)
+        return this.entityIdsInScope(rule, stored.shipment).map((entityId): HumanGateState => {
+          const override = overrides.get(gateKey(ruleId, entityId))
+          if (override) return override
+          const tasks = this.repository
+            .listHumanTasksForGate(stored.caseId, ruleId, entityId)
+            .map((task) => expireIfDue(task, now))
+          const current = tasks.filter((task) => targetsMatch(task.target, target))
+          const decision = current.findLast((task) => task.decision)?.decision
+          const completedFields = current.findLast((task) => task.status === 'COMPLETED')
+            ?.actionEvidence?.fields
+          return {
+            ruleId: rule.ruleId,
+            entityId,
+            status: humanGateStatus(tasks, target, now),
+            ...(decision === undefined ? {} : { decision }),
+            ...(completedFields === undefined ? {} : { completedFields }),
+          }
+        })
+      },
+    )
+  }
+
+  private commitEvaluation(caseId: string, evaluation: CaseEvaluation): GateStatus | undefined {
     const stored = this.requireCase(caseId)
     if (orderStatusMachine.isTerminal(stored.orderStatus)) return undefined
-    const { shipment } = stored
+    if (stored.shipment.caseRevision !== evaluation.caseRevision) {
+      throw new CoordinatorError('CONFLICT', `case ${caseId} changed during evaluation`)
+    }
     const now = this.now()
-    const inputs = this.evaluationInputsFor(stored, now)
-    const graph = evaluateRuleGraph({
-      rulesInEvaluationOrder: this.configuration.rulesInEvaluationOrder,
-      subjects: {
-        cargoItem: shipment.cargoItems.map((item) => item.cargoItemId),
-        leg: shipment.legs.map((leg) => leg.legId),
-      },
-      evaluateLeaf: (rule, subject) => this.evaluateLeafOrEscalate(rule, subject, inputs),
-    })
-
-    this.repository.replaceCheckResults(caseId, this.toCheckResults(stored, graph.evaluations, now))
-    const finalGateStatus = graph.statusOf(finalGateRuleId)
+    this.expireDueTasks(caseId, now)
+    for (const request of evaluation.humanGateRequests) {
+      this.openTaskForGate(stored, this.requireRule(request.ruleId), request.entityId, now)
+    }
+    this.repository.replaceCheckResults(
+      caseId,
+      this.toCheckResults(stored, evaluation.evaluations, now),
+    )
+    const finalGateStatus =
+      evaluation.evaluations.find((result) => result.ruleId === finalGateRuleId)?.gateStatus ??
+      'UNKNOWN'
     const orderStatus = deriveOrderStatus({
-      evaluations: graph.evaluations,
+      evaluations: evaluation.evaluations,
       finalGateStatus,
       openHumanTasks: this.repository.listHumanTasks({ caseId, status: 'OPEN' }),
     })
@@ -265,86 +376,22 @@ export class CoordinatorService {
     return finalGateStatus
   }
 
-  private evaluationInputsFor(stored: StoredCase, now: string): EvaluationInputs {
-    const { caseId, shipment } = stored
-    return {
-      shipment,
-      evidence: stored.evidence,
-      decisionTables: this.configuration.decisionTables,
-      storedVersions: {
-        caseRevision: shipment.caseRevision,
-        entityVersions: shipment.entityVersions,
-      },
-      referenceData: this.referenceData,
-      policy: this.configuration.policy,
-      semanticAnswerFor: (ruleId, entityId) =>
-        this.repository.findSemanticAnswer(caseId, ruleId, entityId),
-      humanGateStatus: (rule, subject) => this.resolveHumanGate(stored, rule, subject, now),
-      humanDecisionFor: (ruleId, entityId) =>
-        this.currentTasksFor(stored, ruleId, entityId).findLast((task) => task.decision)?.decision,
-      completedOperationFieldsFor: (ruleId, entityId) =>
-        this.currentTasksFor(stored, ruleId, entityId).findLast(
-          (task) => task.status === 'COMPLETED',
-        )?.actionEvidence?.fields,
-      ensurePlanReservation: () => {
-        const routeVersion = shipment.entityVersions.route
-        executeOnce(
-          this.database,
-          {
-            operationId: `${caseId}:route-v${routeVersion}:reserve_transport`,
-            actionType: 'reserve_transport',
-            request: { legs: shipment.legs.map((leg) => leg.legId) },
-          },
-          () =>
-            shipment.legs.map((leg) =>
-              this.repository.insertReservation(caseId, routeVersion, leg),
-            ),
-        )
-        return this.repository.countReservations(caseId, routeVersion) === shipment.legs.length
-      },
+  private expireDueTasks(caseId: string, now: string): void {
+    for (const task of this.repository.listHumanTasks({ caseId, status: 'OPEN' })) {
+      const current = expireIfDue(task, now as UtcTimestamp)
+      if (current !== task) this.repository.saveHumanTask(current, this.entityIdOfTask(task))
     }
   }
 
-  private currentTasksFor(stored: StoredCase, ruleId: string, entityId: string): HumanTask[] {
-    const target = this.targetFor(this.requireRule(ruleId), stored.shipment)
-    return this.repository
-      .listHumanTasksForGate(stored.caseId, ruleId, entityId)
-      .filter((task) => targetsMatch(task.target, target))
-  }
-
-  private evaluateLeafOrEscalate(
-    rule: RuleDefinition,
-    subject: CheckSubject,
-    inputs: EvaluationInputs,
-  ) {
-    const outcome = evaluateLeafRule(rule, subject, inputs)
-    const escalates =
-      outcome.gateStatus === 'UNKNOWN' &&
-      rule.unknownPolicy === 'escalateToHuman' &&
-      rule.evaluator.kind !== 'humanGate'
-    if (!escalates) return outcome
-    return {
-      gateStatus: inputs.humanGateStatus(rule, subject),
-      observedValue: {
-        automated: outcome.observedValue ?? null,
-        escalatedTo: rule.humanGate?.requiredRole,
-      },
-    }
-  }
-
-  private resolveHumanGate(
+  private openTaskForGate(
     stored: StoredCase,
     rule: RuleDefinition,
-    subject: CheckSubject,
+    entityId: string,
     now: string,
-  ) {
+  ): void {
     const target = this.targetFor(rule, stored.shipment)
-    const tasks = this.repository
-      .listHumanTasksForGate(stored.caseId, rule.ruleId, subject.entityId)
-      .map((task) => this.persistIfExpired(task, subject.entityId, now))
-    const status = humanGateStatus(tasks, target, now as UtcTimestamp)
-    if (status !== 'UNKNOWN') return status
-
+    const tasks = this.repository.listHumanTasksForGate(stored.caseId, rule.ruleId, entityId)
+    if (humanGateStatus(tasks, target, now as UtcTimestamp) !== 'UNKNOWN') return
     const replacement = createHumanTask({
       humanTaskId: this.nextHumanTaskId(stored.caseId, rule.ruleId),
       caseId: stored.caseId as never,
@@ -357,17 +404,19 @@ export class CoordinatorService {
       createdAt: now as UtcTimestamp,
       expiresAt: minutesFrom(now, this.taskTtlMinutes(rule)) as UtcTimestamp,
     })
-    this.repository.saveHumanTask(replacement, subject.entityId)
+    this.repository.saveHumanTask(replacement, entityId)
     const staleTasks = tasks.filter(
       (task) => !targetsMatch(task.target, target) && canBeSuperseded(task),
     )
     for (const staleTask of staleTasks) {
-      this.repository.saveHumanTask(
-        supersedeTask(staleTask, replacement.humanTaskId),
-        subject.entityId,
-      )
+      this.repository.saveHumanTask(supersedeTask(staleTask, replacement.humanTaskId), entityId)
     }
-    return 'WAITING_HUMAN'
+  }
+
+  private entityIdsInScope(rule: RuleDefinition, shipment: Shipment): string[] {
+    if (rule.scope === 'cargoItem') return shipment.cargoItems.map((item) => item.cargoItemId)
+    if (rule.scope === 'leg') return shipment.legs.map((leg) => leg.legId)
+    return ['order']
   }
 
   private taskTtlMinutes(rule: RuleDefinition): number {
@@ -376,12 +425,6 @@ export class CoordinatorService {
         ? 'operationTaskTtlMinutes'
         : 'approvalTaskTtlMinutes'
     return Number(this.configuration.policy[parameter])
-  }
-
-  private persistIfExpired(task: HumanTask, entityId: string, now: string): HumanTask {
-    const current = expireIfDue(task, now as UtcTimestamp)
-    if (current !== task) this.repository.saveHumanTask(current, entityId)
-    return current
   }
 
   private targetFor(rule: RuleDefinition, shipment: Shipment): HumanTaskTarget {
@@ -399,11 +442,11 @@ export class CoordinatorService {
 
   private toCheckResults(
     stored: StoredCase,
-    evaluations: readonly RuleEvaluation[],
+    evaluations: readonly RuleEvaluationRecord[],
     now: string,
   ): CheckResult[] {
     const { shipment } = stored
-    const checkResultIdOf = (evaluation: Pick<RuleEvaluation, 'ruleId' | 'subject'>) =>
+    const checkResultIdOf = (evaluation: Pick<RuleEvaluationRecord, 'ruleId' | 'subject'>) =>
       `${stored.caseId}:r${shipment.caseRevision}:${subjectKey(evaluation.ruleId, evaluation.subject)}` as CheckResultId
     const evaluationsByRule = Map.groupBy(evaluations, (evaluation) => evaluation.ruleId as string)
 

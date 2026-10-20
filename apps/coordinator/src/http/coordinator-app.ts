@@ -62,17 +62,17 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
     response.json(coordinator.listCases())
   })
 
-  app.post('/cases', (request, response) => {
+  app.post('/cases', async (request, response) => {
     const body = SubmitCaseBody.parse(request.body)
-    response.status(201).json(coordinator.submitCase(body))
+    response.status(201).json(await coordinator.submitCase(body))
   })
 
   app.get('/cases/:caseId', (request, response) => {
     response.json(coordinator.getCase(request.params.caseId))
   })
 
-  app.post('/cases/:caseId/dispatch', (request, response) => {
-    response.json(coordinator.dispatch(request.params.caseId, demoRoleOf(request)))
+  app.post('/cases/:caseId/dispatch', async (request, response) => {
+    response.json(await coordinator.dispatch(request.params.caseId, demoRoleOf(request)))
   })
 
   app.get('/human-tasks', (request, response) => {
@@ -80,10 +80,10 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
     response.json(coordinator.listOpenHumanTasks(role))
   })
 
-  app.post('/human-tasks/:humanTaskId/approve', (request, response) => {
+  app.post('/human-tasks/:humanTaskId/approve', async (request, response) => {
     const { reason, conditions } = ApproveBody.parse(request.body ?? {})
     response.json(
-      coordinator.approveHumanTask(
+      await coordinator.approveHumanTask(
         request.params.humanTaskId,
         demoRoleOf(request),
         reason,
@@ -92,17 +92,17 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
     )
   })
 
-  app.post('/human-tasks/:humanTaskId/reject', (request, response) => {
+  app.post('/human-tasks/:humanTaskId/reject', async (request, response) => {
     const { reason } = RejectBody.parse(request.body)
     response.json(
-      coordinator.rejectHumanTask(request.params.humanTaskId, demoRoleOf(request), reason),
+      await coordinator.rejectHumanTask(request.params.humanTaskId, demoRoleOf(request), reason),
     )
   })
 
-  app.post('/human-tasks/:humanTaskId/complete', (request, response) => {
+  app.post('/human-tasks/:humanTaskId/complete', async (request, response) => {
     const { fields, evidenceRefs } = CompleteBody.parse(request.body)
     response.json(
-      coordinator.completeHumanTask(
+      await coordinator.completeHumanTask(
         request.params.humanTaskId,
         demoRoleOf(request),
         fields,

@@ -3,6 +3,7 @@ import type { GateStatus, ReferenceData } from '@durable-jev/contracts'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
+import { inProcessEvaluators } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import { type CaseView, CoordinatorService } from './coordinator-service.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
@@ -13,14 +14,18 @@ const logOne = readJson('cases/LOG-001.json')
 
 function startCoordinator() {
   const database = openDatabase(':memory:', coordinatorMigrations)
+  const configuration = buildRuleConfiguration(
+    readJson('rules.json'),
+    readJson('mock-policy-parameters.json'),
+    { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+  )
   const coordinator = new CoordinatorService({
     database,
-    configuration: buildRuleConfiguration(
-      readJson('rules.json'),
-      readJson('mock-policy-parameters.json'),
-      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+    configuration,
+    evaluators: inProcessEvaluators(
+      configuration,
+      readJson('mock-data/reference-data.json') as ReferenceData,
     ),
-    referenceData: readJson('mock-data/reference-data.json') as ReferenceData,
     now: () => '2026-11-02T08:00:00.000Z',
   })
   const submitLogOne = () =>
@@ -48,9 +53,9 @@ function expectStage(
   }
 }
 
-function expectCoordinatorError(action: () => unknown, code: string) {
+async function expectCoordinatorError(action: () => unknown, code: string) {
   try {
-    action()
+    await action()
   } catch (error) {
     expect(error).toBeInstanceOf(CoordinatorError)
     expect((error as CoordinatorError).code).toBe(code)
@@ -60,29 +65,29 @@ function expectCoordinatorError(action: () => unknown, code: string) {
 }
 
 describe('LOG-001 event script', () => {
-  it('reaches DISPATCHED through warehouse loading and dispatcher confirmation', () => {
+  it('reaches DISPATCHED through warehouse loading and dispatcher confirmation', async () => {
     const { coordinator, submitLogOne } = startCoordinator()
-    let view = submitLogOne()
+    let view = await submitLogOne()
 
     for (const step of logOne.eventScript) {
       if (step.step === 'completeHumanTask') {
         const task = openTaskFor(view, step.ruleId)
         expect(task?.requiredRole).toBe(step.actor)
-        coordinator.completeHumanTask(task?.humanTaskId ?? '', step.actor, step.fields)
+        await coordinator.completeHumanTask(task?.humanTaskId ?? '', step.actor, step.fields)
         view = coordinator.getCase(view.caseId)
       }
-      if (step.step === 'dispatch') view = coordinator.dispatch(view.caseId, step.actor)
+      if (step.step === 'dispatch') view = await coordinator.dispatch(view.caseId, step.actor)
       expectStage(view, step.expect)
     }
   })
 })
 
 describe('coordinator guards', () => {
-  it('rejects loading by the wrong role and without required evidence', () => {
+  it('rejects loading by the wrong role and without required evidence', async () => {
     const { coordinator, submitLogOne } = startCoordinator()
-    const loadTask = openTaskFor(submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
+    const loadTask = openTaskFor(await submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
 
-    expectCoordinatorError(
+    await expectCoordinatorError(
       () =>
         coordinator.completeHumanTask(loadTask, 'DISPATCHER', {
           loadScanRef: 'S',
@@ -90,17 +95,17 @@ describe('coordinator guards', () => {
         }),
       'FORBIDDEN',
     )
-    expectCoordinatorError(
+    await expectCoordinatorError(
       () => coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', { loadScanRef: 'S' }),
       'UNPROCESSABLE',
     )
     expect(coordinator.getCase(logOne.caseId).orderStatus).toBe('AWAITING_HUMAN')
   })
 
-  it('rejects decision conditions the gate does not declare', () => {
+  it('rejects decision conditions the gate does not declare', async () => {
     const { coordinator } = startCoordinator()
     const [firstAnswer, ...otherAnswers] = logOne.scriptedSemanticAnswers
-    const view = coordinator.submitCase({
+    const view = await coordinator.submitCase({
       shipment: logOne.shipment,
       scriptedSemanticAnswers: [
         { ...firstAnswer, answer: { type: 'noul', noul: 0.5 } },
@@ -108,7 +113,7 @@ describe('coordinator guards', () => {
       ],
     })
     const reviewTask = openTaskFor(view, 'R03')?.humanTaskId ?? ''
-    expectCoordinatorError(
+    await expectCoordinatorError(
       () =>
         coordinator.approveHumanTask(reviewTask, 'TRANSPORT_PLANNER', undefined, [
           'REWORK_REQUIRED',
@@ -117,24 +122,24 @@ describe('coordinator guards', () => {
     )
   })
 
-  it('refuses to dispatch before loading is complete', () => {
+  it('refuses to dispatch before loading is complete', async () => {
     const { coordinator, submitLogOne } = startCoordinator()
-    submitLogOne()
-    expectCoordinatorError(
+    await submitLogOne()
+    await expectCoordinatorError(
       () => coordinator.dispatch(logOne.caseId, 'DISPATCHER'),
       'NOT_READY_TO_DISPATCH',
     )
   })
 
-  it('keeps the confirmation open when someone other than the dispatcher dispatches', () => {
+  it('keeps the confirmation open when someone other than the dispatcher dispatches', async () => {
     const { coordinator, submitLogOne } = startCoordinator()
-    const loadTask = openTaskFor(submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
-    coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {
+    const loadTask = openTaskFor(await submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
+    await coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {
       loadScanRef: 'S',
       physicalCheckBy: 'op',
     })
 
-    expectCoordinatorError(
+    await expectCoordinatorError(
       () => coordinator.dispatch(logOne.caseId, 'WAREHOUSE_OPERATOR'),
       'FORBIDDEN',
     )
@@ -143,53 +148,51 @@ describe('coordinator guards', () => {
     expect(openTaskFor(view, 'R39-CONFIRM')).toBeDefined()
   })
 
-  it('treats a repeated submission as the same case and reserves transport once', () => {
+  it('treats a repeated submission as the same case', async () => {
     const { database, submitLogOne } = startCoordinator()
-    submitLogOne()
-    submitLogOne()
-    const reservations = database.prepare('SELECT COUNT(*) AS count FROM reservations').get()
-    const cases = database.prepare('SELECT COUNT(*) AS count FROM cases').get()
-    expect({ reservations, cases }).toEqual({ reservations: { count: 1 }, cases: { count: 1 } })
+    await submitLogOne()
+    await submitLogOne()
+    expect(database.prepare('SELECT COUNT(*) AS count FROM cases').get()).toEqual({ count: 1 })
   })
 })
 
 describe('order state machine', () => {
-  function dispatchLogOne() {
+  async function dispatchLogOne() {
     const started = startCoordinator()
-    const loadTask = openTaskFor(started.submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
-    started.coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {
+    const loadTask = openTaskFor(await started.submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
+    await started.coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {
       loadScanRef: 'S',
       physicalCheckBy: 'op',
     })
-    started.coordinator.dispatch(logOne.caseId, 'DISPATCHER')
+    await started.coordinator.dispatch(logOne.caseId, 'DISPATCHER')
     return { ...started, loadTask }
   }
 
-  it('keeps a dispatched order dispatched when it is submitted again', () => {
-    const { coordinator, submitLogOne } = dispatchLogOne()
-    submitLogOne()
+  it('keeps a dispatched order dispatched when it is submitted again', async () => {
+    const { coordinator, submitLogOne } = await dispatchLogOne()
+    await submitLogOne()
     expect(coordinator.getCase(logOne.caseId).orderStatus).toBe('DISPATCHED')
   })
 
-  it('refuses human task commands once the order is dispatched', () => {
-    const { coordinator, loadTask } = dispatchLogOne()
-    expectCoordinatorError(
+  it('refuses human task commands once the order is dispatched', async () => {
+    const { coordinator, loadTask } = await dispatchLogOne()
+    await expectCoordinatorError(
       () => coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', { loadScanRef: 'S' }),
       'CONFLICT',
     )
   })
 
-  it('treats a repeated dispatch as idempotent', () => {
-    const { coordinator } = dispatchLogOne()
-    expect(coordinator.dispatch(logOne.caseId, 'DISPATCHER').orderStatus).toBe('DISPATCHED')
+  it('treats a repeated dispatch as idempotent', async () => {
+    const { coordinator } = await dispatchLogOne()
+    expect((await coordinator.dispatch(logOne.caseId, 'DISPATCHER')).orderStatus).toBe('DISPATCHED')
   })
 })
 
 describe('uncertain semantic answers', () => {
-  it('creates a review task for the configured role and passes once it is approved', () => {
+  it('creates a review task for the configured role and passes once it is approved', async () => {
     const { coordinator } = startCoordinator()
     const [firstAnswer, ...otherAnswers] = logOne.scriptedSemanticAnswers
-    const view = coordinator.submitCase({
+    const view = await coordinator.submitCase({
       shipment: logOne.shipment,
       scriptedSemanticAnswers: [
         { ...firstAnswer, answer: { type: 'noul', noul: 0.5 } },
@@ -200,7 +203,7 @@ describe('uncertain semantic answers', () => {
     expect(reviewTask?.requiredRole).toBe('TRANSPORT_PLANNER')
     expect(openTaskFor(view, 'R39-LOAD')).toBeUndefined()
 
-    coordinator.approveHumanTask(reviewTask?.humanTaskId ?? '', 'TRANSPORT_PLANNER')
+    await coordinator.approveHumanTask(reviewTask?.humanTaskId ?? '', 'TRANSPORT_PLANNER')
     expect(openTaskFor(coordinator.getCase(logOne.caseId), 'R39-LOAD')).toBeDefined()
   })
 })
