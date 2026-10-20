@@ -10,11 +10,14 @@ export type AgentEvent =
   | { type: 'tool.called'; runId: string; tool: string; ok: true }
   | { type: 'tool.called'; runId: string; tool: string; ok: false; error: ToolErrorCode }
   | { type: 'run.completed'; runId: string; result: unknown }
-  | { type: 'run.escalated'; runId: string; limit: BudgetLimit; detail: string }
+  | { type: 'run.escalated'; runId: string; reason: EscalationReason; detail: string }
+
+// Every way a run can end without a result hands the case to a person.
+export type EscalationReason = BudgetLimit | 'noResult'
 
 export type RunOutcome =
   | { status: 'completed'; result: unknown }
-  | { status: 'escalated'; limit: BudgetLimit; detail: string }
+  | { status: 'escalated'; reason: EscalationReason; detail: string }
 
 export type RunHandle = { runId: string; outcome: Promise<RunOutcome> }
 

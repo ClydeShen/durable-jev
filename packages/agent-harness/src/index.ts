@@ -1,5 +1,7 @@
+export * from './agent-model.js'
 export * from './agent-runtime.js'
 export * from './context-assembler.js'
+export * from './in-memory-agent-runtime.js'
 export * from './run-budget-guard.js'
 export * from './tool.js'
 export * from './tool-registry.js'
