@@ -265,7 +265,7 @@ interface SemanticJudge {
 ## 12. 演示案例与回放（T3.5、T3.6）
 
 - 案例文件 `eval/materials/cases/LOG-00x.json`：订单、证据、脚本化语义答案、事件脚本；`reviewStatus: draft` 直到用户审定。
-- 事件脚本步骤：`submit`、`completeHumanTask`、`approveHumanTask`（可带 conditions）、`rejectHumanTask`、`changePlan`、`restartCoordinator`、`dispatch`。人工任务按 `ruleId`（可加 `entityId`）定位当前打开的任务。
+- 事件脚本步骤：`submit`、`completeHumanTask`、`approveHumanTask`（可带 conditions）、`rejectHumanTask`、`changePlan`、`restartCoordinator`、`dispatch`。人工任务按 `ruleId` 定位当前唯一打开的任务（同一规则多个打开任务时 runner 报错，需要时再加实体定位）。
 - 每步断言（都可选）：`orderStatus`、`gates`（`R13` 或 `R21@ITEM-1`）、`openHumanTasks`（精确集合）、`invalidated` / `notInvalidated`（最近一次变更的失效集）、`error`（期望的错误码，如重复提交 CONFLICT）。
 - 新变更命令：`replaceLegs`（运输计划员，替换运输段，触发 route、carrier、vehicle）、`recordPackaging`（仓库操作员，记录货件新包装版本，触发 cargo；旧质量处置和整改任务作废）。
 - 回放 runner 在 `eval/runner`：进程内 Coordinator + 进程内求值（与服务同一求值代码），临时 SQLite 文件，`restartCoordinator` 重新打开同一文件。vitest 跑全部案例；`pnpm replay` 输出报告到终端。

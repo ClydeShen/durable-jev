@@ -15,7 +15,8 @@
     "start": "tsc -b && node tools/launcher/dist/main.js",
     "format": "biome format --write .",
     "spikes": "pnpm --filter @durable-jev/spike-pi-durable crash-recovery && pnpm --filter @durable-jev/spike-a2a round-trip && pnpm --filter @durable-jev/spike-jev semantic-checks && pnpm --filter @durable-jev/spike-trace propagation",
-    "demo:reset": "node tools/launcher/dist/demo-reset-cli.js"
+    "demo:reset": "node tools/launcher/dist/demo-reset-cli.js",
+    "replay": "pnpm --filter @durable-jev/eval-runner replay"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

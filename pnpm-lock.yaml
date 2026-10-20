@@ -121,9 +121,21 @@ importers:
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@durable-jev/coordinator':
+        specifier: workspace:*
+        version: link:../../apps/coordinator
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../../packages/rule-engine
+      '@durable-jev/rule-evaluation':
+        specifier: workspace:*
+        version: link:../../packages/rule-evaluation
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../../packages/store
+      '@durable-jev/transport-reservations':
+        specifier: workspace:*
+        version: link:../../packages/transport-reservations
       zod:
         specifier: 4.6.7
         version: 4.6.7

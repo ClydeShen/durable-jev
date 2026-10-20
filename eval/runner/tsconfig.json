@@ -12,6 +12,18 @@
     },
     {
       "path": "../../packages/rule-engine"
+    },
+    {
+      "path": "../../apps/coordinator"
+    },
+    {
+      "path": "../../packages/rule-evaluation"
+    },
+    {
+      "path": "../../packages/store"
+    },
+    {
+      "path": "../../packages/transport-reservations"
     }
   ]
 }

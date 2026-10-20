@@ -11,10 +11,15 @@
   },
   "dependencies": {
     "@durable-jev/contracts": "workspace:*",
+    "@durable-jev/coordinator": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
+    "@durable-jev/rule-evaluation": "workspace:*",
+    "@durable-jev/store": "workspace:*",
+    "@durable-jev/transport-reservations": "workspace:*",
     "zod": "4.6.7"
   },
   "scripts": {
-    "policy:render": "node dist/render-policy.js"
+    "policy:render": "node dist/render-policy.js",
+    "replay": "node dist/replay-cli.js"
   }
 }
