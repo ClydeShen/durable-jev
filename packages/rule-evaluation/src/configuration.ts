@@ -16,6 +16,7 @@ export type RuleConfiguration = {
   policy: PolicyParameters
   decisionTables: DecisionTables
   semanticQuestions: SemanticQuestionTemplate[]
+  categoryDefinitions: Record<string, string>
 }
 
 export class InvalidRuleConfigurationError extends Error {
@@ -45,7 +46,9 @@ export function buildRuleConfiguration(
     .map((rule) => ({ kind: 'unknownEvaluator' as const, ref: rule.evaluator.ref }))
   if (unknownEvaluators.length > 0) throw new InvalidRuleConfigurationError(unknownEvaluators)
 
-  const semanticQuestions = SemanticQuestionCatalog.parse(tables.semanticQuestions).questions
+  const { questions: semanticQuestions, categoryDefinitions } = SemanticQuestionCatalog.parse(
+    tables.semanticQuestions,
+  )
   const askedRuleIds = new Set(semanticQuestions.map((question) => question.ruleId))
   const unasked = validation.rules
     .filter((rule) => rule.evaluator.kind === 'semantic' && !askedRuleIds.has(rule.ruleId))
@@ -61,6 +64,7 @@ export function buildRuleConfiguration(
     policy,
     decisionTables: { mixingMatrix: MixingMatrix.parse(tables.mixingMatrix) },
     semanticQuestions,
+    categoryDefinitions,
   }
 }
 

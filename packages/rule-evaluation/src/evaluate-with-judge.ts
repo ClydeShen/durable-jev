@@ -44,6 +44,10 @@ export async function evaluateBranchWithJudge(
     ruleIds: semanticRuleIds,
     shipment: request.shipment,
     evidence: request.evidence,
+    glossary: {
+      referenceData: dependencies.referenceData,
+      categoryDefinitions: dependencies.configuration.categoryDefinitions,
+    },
   })
   const judgements =
     questions.length > 0

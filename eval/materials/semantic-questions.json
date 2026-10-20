@@ -1,5 +1,10 @@
 {
-  "version": "semantic-questions-1",
+  "version": "semantic-questions-2",
+  "categoryDefinitions": {
+    "GENERAL": "ordinary goods that need no temperature control or special permits",
+    "COLD_CHAIN": "goods that must stay within a set temperature range, such as vaccines, medicines and fresh food",
+    "CONTROLLED": "regulated or dangerous goods that need a controlled goods declaration and a safety data sheet, such as lithium batteries, chemicals and flammable or pressurised materials"
+  },
   "questions": [
     {
       "ruleId": "R03",

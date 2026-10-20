@@ -9,6 +9,7 @@ const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materia
 const catalog = SemanticQuestionCatalog.parse(readJson('semantic-questions.json'))
 const logTwo = readJson('cases/LOG-002.json')
 const logThree = readJson('cases/LOG-003.json')
+const referenceData = readJson('mock-data/reference-data.json')
 
 const questionsFor = (
   caseFile: { shipment: Shipment; evidence: CaseEvidence },
@@ -19,6 +20,7 @@ const questionsFor = (
     ruleIds: new Set(ruleIds),
     shipment: caseFile.shipment,
     evidence: caseFile.evidence,
+    glossary: { referenceData, categoryDefinitions: catalog.categoryDefinitions },
   })
 
 describe('buildSemanticQuestions', () => {
@@ -38,12 +40,18 @@ describe('buildSemanticQuestions', () => {
     expect(questionsFor(logThree, ['R10'])).toHaveLength(1)
   })
 
-  it('summarises the route for order level questions', () => {
+  it('summarises the route in readable names for order level questions', () => {
     const [question] = questionsFor(logTwo, ['R27'])
     expect(question?.state).toEqual({
       customerInstructions: expect.stringContaining('pharmacy'),
-      routeSummary: 'SHA-WH1 to CAN-CLINIC by CAR-POLAR',
+      routeSummary:
+        "Shanghai warehouse 1 (shipper's dispatch warehouse) to Guangzhou clinic pharmacy (Blue Clinic Group) by Polar Cold Logistics in a refrigerated vehicle holding -25.0 °C to 25.0 °C",
     })
+  })
+
+  it('explains declared category codes', () => {
+    const [question] = questionsFor(logThree, ['R03'])
+    expect(question?.state['declaredCategories']).toMatch(/^CONTROLLED \(.*lithium/)
   })
 })
 
