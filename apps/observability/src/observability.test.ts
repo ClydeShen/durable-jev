@@ -104,6 +104,32 @@ describe('summarizeCase', () => {
     })
   })
 
+  it('uses time, not arrival order, when services deliver their events out of turn', () => {
+    const store = newStore()
+    store.ingest([
+      { ...event('late', 'task.accepted', 5), service: 'cargo-assurance' },
+      event('early', 'case.submitted', 0),
+      span('s1', 1, 2),
+    ])
+    const summary = summarizeCase(store.list().map((entry) => entry.event))
+    expect(summary).toMatchObject({
+      totalMs: 5000,
+      machineMs: 2000,
+      lastEventName: 'task.accepted',
+    })
+    expect(summary?.firstAt).toBe(at(0))
+  })
+
+  it('counts overlapping waits for several people once', () => {
+    const store = newStore()
+    const request = (id: string, seconds: number) =>
+      event(id, 'information.requested', seconds, { attributes: { humanTaskId: id } })
+    const answer = (id: string, seconds: number) =>
+      event(`${id}-a`, 'information.received', seconds, { attributes: { humanTaskId: id } })
+    store.ingest([request('HT-1', 0), request('HT-2', 10), answer('HT-1', 30), answer('HT-2', 40)])
+    expect(summarizeCase(store.list().map((entry) => entry.event))?.humanWaitMs).toBe(40_000)
+  })
+
   it('counts a request nobody has answered yet up to the last event', () => {
     const store = newStore()
     store.ingest([
