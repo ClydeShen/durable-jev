@@ -1,3 +1,4 @@
+import type { StoredEvent } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express } from 'express'
 import { z } from 'zod'
@@ -38,6 +39,53 @@ export function createObservabilityApp(store: ObservationStore): Express {
   app.get('/events', (request, response) => {
     const query = QueryParams.parse(request.query) as EventQuery
     response.json({ events: store.list(query), latest: store.latestSequence() })
+  })
+
+  // Server-sent events. Each message's id is the event's sequence, so a browser that reconnects
+  // sends Last-Event-ID and receives exactly what it missed, in order. The live subscription is
+  // opened before the backlog is read, so an event stored in between is neither lost nor sent twice.
+  app.get('/stream', (request, response) => {
+    const query = z
+      .object({
+        after: z.coerce.number().int().nonnegative().optional(),
+        correlationId: z.string().min(1).optional(),
+      })
+      .parse(request.query)
+    const lastEventId = Number(request.header('last-event-id'))
+    let cursor = Number.isInteger(lastEventId) && lastEventId > 0 ? lastEventId : (query.after ?? 0)
+    response.set({
+      'content-type': 'text/event-stream',
+      'cache-control': 'no-cache, no-transform',
+      connection: 'keep-alive',
+      'x-accel-buffering': 'no',
+    })
+    response.flushHeaders()
+    // Tell the browser how soon to try again after a drop.
+    response.write('retry: 1000\n\n')
+
+    const send = (stored: StoredEvent) => {
+      if (stored.sequence <= cursor) return
+      if (query.correlationId && stored.event.correlationId !== query.correlationId) return
+      cursor = stored.sequence
+      response.write(`id: ${stored.sequence}\ndata: ${JSON.stringify(stored)}\n\n`)
+    }
+    let replaying = true
+    const waiting: StoredEvent[] = []
+    const unsubscribe = store.subscribe((events) => {
+      for (const stored of events) {
+        if (replaying) waiting.push(stored)
+        else send(stored)
+      }
+    })
+    for (const stored of store.list({ after: cursor, limit: 100_000 })) send(stored)
+    replaying = false
+    for (const stored of waiting.sort((left, right) => left.sequence - right.sequence)) send(stored)
+
+    const heartbeat = setInterval(() => response.write(': keep-alive\n\n'), 15_000)
+    request.on('close', () => {
+      clearInterval(heartbeat)
+      unsubscribe()
+    })
   })
 
   app.get('/cases', (_request, response) => {

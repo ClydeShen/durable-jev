@@ -42,12 +42,23 @@ export type IngestResult = {
 
 type EventRow = { sequence: number; event_json: string }
 
+export type StoreListener = (events: StoredEvent[]) => void
+
 export class ObservationStore {
+  private readonly listeners = new Set<StoreListener>()
+
   constructor(private readonly database: StoreDatabase) {}
+
+  // Called with each batch of newly stored events, after it is committed.
+  subscribe(listener: StoreListener): () => void {
+    this.listeners.add(listener)
+    return () => this.listeners.delete(listener)
+  }
 
   // Idempotent by eventId: a relay that resends after a lost response changes nothing.
   ingest(candidates: readonly unknown[]): IngestResult {
     const result: IngestResult = { accepted: [], duplicates: [], rejected: [] }
+    const before = this.latestSequence()
     const insert = this.database.prepare(
       `INSERT INTO events (event_id, kind, event_name, service, correlation_id, case_id, trace_id, span_id, timestamp, event_json)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -78,6 +89,10 @@ export class ObservationStore {
         })
       })
       .immediate()
+    if (result.accepted.length > 0 && this.listeners.size > 0) {
+      const fresh = this.list({ after: before, limit: 100_000 })
+      for (const listener of this.listeners) listener(fresh)
+    }
     return result
   }
 

@@ -20,6 +20,8 @@ export function startService(
       resolve(server)
     })
     const shutdown = () => {
+      // Long-lived connections (event streams) would otherwise keep the port open forever.
+      server.closeAllConnections()
       server.close(() => {
         options.onClose?.()
         process.exit(0)
