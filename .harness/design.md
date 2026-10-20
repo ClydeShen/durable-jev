@@ -227,7 +227,14 @@ interface SemanticJudge {
 }
 ```
 
-实现：`JevJudge`、`StructuredOutputJudge`、`ScriptedJudge`（按 questionId + 输入哈希回放）。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+实现：`JevJudge`、`StructuredOutputJudge`（NVIDIA，暂缓）、`ScriptedJudge`。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+
+#### 落地（T4.1–T4.3）
+
+- `packages/model-providers`：`SemanticJudge.ask(questions) → judgements`；一次求值把同一分支的问题合并成一次调用。
+- 问题模板 `eval/materials/semantic-questions.json`：每条语义规则一个模板（种类 noul/choice、问题文本、choice 选项、state 来源名）。state 来源由代码解析（如 `item.description`、`item.document:SAFETY_DATA_SHEET`、`item.inspectionNote`、`order.customerInstructions`、`order.routeSummary`），只放该问题需要的字段；缺来源则不提问（规则保持 UNKNOWN）。
+- `ScriptedJudge`：按 `ruleId + entityId` 回放案例文件里的脚本化答案。`JevJudge`：官方 SDK，固定 `jev-1.14.0`，`retry.maxRetries = 0`，超时 10s。`CachingJudge`：按 (modelId, 问题, 选项, state) 的哈希缓存在服务自己的 SQLite，live 模式下无关变更不重复计费。
+- 模式由 `MODEL_MODE` 决定：`scripted`（默认）或 `live`（需 `TYPESAFE_API_KEY`）。服务先按模板生成问题、问 judge，再把答案交给 `evaluateBranch`（同步求值不变）。语义规则的 observedValue 记录 provider 与 modelId。
 
 - state 只放该问题 `inputPaths` 对应的字段；资料文本作为数据分区，不与指令混放。
 - 门槛判定只用映射后的离散结论；Choice 的 confidence 由 probabilities 推出，不当作独立信号。
