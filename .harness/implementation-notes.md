@@ -38,3 +38,5 @@
 | 2026-10-20 | T4.6：调查 agent 目前在 coordinator 进程内运行（`inProcessInvestigator`），未放到 transport-planning 服务后面；服务边界与 A2A 在 P5 处理。无 NVIDIA key 时用确定性的 `ScriptedInvestigatorModel` | P5、NVIDIA key |
 | 2026-10-20 | LOG-004 事件脚本把手工换承运商改为 investigateCarrier + acceptInvestigation，阶段断言不变，仍为 draft | 待用户审定 |
 | 2026-10-20 | 用户要求的 live 抽测：8 个案例全部用真实 Jev 回放（约 13 次新判断）+ 工作台 live 演示（各服务各自缓存，再约 20 次），之后关回 scripted。回放 5/8 通过。失败原因：①R27 问法"指令是否允许路线"不合常识，LOG-001 的交货口/电话指令与路线无关，Jev 给 0.58–0.62 → 转人工；应改问"指令是否禁止/限制该路线"；②LOG-005 R03"病床=GENERAL"在 0.76 与 0.81 之间漂移，同一输入跨过 0.8 阈值，一次转人工一次通过；③LOG-008 检查记录"gel packs partly thawed"，Jev 判 cold_chain_risk（1.0），草稿标注为 no_risk，从现实看 Jev 更合理，需用户审定标注 | 用户审定、B1 |
+| 2026-10-20 | T5.2：分支服务同时提供原生 `/evaluations` 与 A2A，二者共用同一求值与日志函数；Coordinator 用 `BRANCH_PROTOCOL=a2a` 切换，A2aCallError 映射为 BranchUnavailableError，故 TECHNICAL_FAILURE 处理不变。H4 测试：同一组订单两种协议结果完全一致，CoordinatorService 无改动 | H4 |
+| 2026-10-20 | 验证 A2A 时发现 launcher 缺陷：旧 launcher 留下的服务进程仍占端口并通过新 launcher 的健康检查，demo reset 删除的库文件被旧进程继续写入（已删除 inode），重启即丢数据。修复：启动前若健康地址已有应答则拒绝启动，启动后确认子进程仍存活 | 故障场景 |
