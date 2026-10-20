@@ -31,4 +31,18 @@ describe('ProcessSupervisor', () => {
     await supervisor.stopAll()
     expect(supervisor.status()[0]?.state).toBe('stopped')
   })
+
+  it('refuses to start when another process already answers on its health URL', async () => {
+    const definition = {
+      name: 'tiny',
+      command: process.execPath,
+      args: ['-e', tinyServer],
+      healthUrl: `http://127.0.0.1:${port}/`,
+    }
+    const first = new ProcessSupervisor([definition], () => {})
+    const second = new ProcessSupervisor([definition], () => {})
+    await first.start('tiny')
+    await expect(second.start('tiny')).rejects.toThrow(/another instance is running/)
+    await first.stopAll()
+  })
 })

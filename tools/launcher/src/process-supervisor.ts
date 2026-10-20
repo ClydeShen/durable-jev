@@ -46,6 +46,13 @@ export class ProcessSupervisor {
     const managed = this.require(name)
     if (managed.state === 'running') return
     const { definition } = managed
+    // Something left over from an earlier run would answer the health check in our place,
+    // and a demo reset would then delete the files that process still writes to.
+    if (definition.healthUrl && (await answers(definition.healthUrl))) {
+      throw new Error(
+        `${name}: ${definition.healthUrl} already answers; another instance is running. Stop it first.`,
+      )
+    }
     const child = spawn(definition.command, definition.args, {
       ...(definition.cwd === undefined ? {} : { cwd: definition.cwd }),
       env: { ...process.env, ...definition.env },
@@ -67,6 +74,7 @@ export class ProcessSupervisor {
       this.log(`[${name}] exited with ${code}`)
     })
     if (definition.healthUrl) await waitForHealth(definition.healthUrl)
+    if (managed.child !== child) throw new Error(`${name} exited while starting`)
   }
 
   async stop(name: string): Promise<void> {
@@ -116,6 +124,14 @@ export class ProcessSupervisor {
     const managed = this.processes.get(name)
     if (!managed) throw new Error(`unknown process ${name}`)
     return managed
+  }
+}
+
+async function answers(url: string): Promise<boolean> {
+  try {
+    return (await fetch(url, { signal: AbortSignal.timeout(1000) })).ok
+  } catch {
+    return false
   }
 }
 
