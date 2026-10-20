@@ -48,10 +48,17 @@ export const CustomerAccount = z.object({
 })
 export type CustomerAccount = z.infer<typeof CustomerAccount>
 
+export const Location = z.object({
+  locationId: z.string().min(1),
+  name: z.string().min(1),
+})
+export type Location = z.infer<typeof Location>
+
 export const ReferenceData = z.object({
   carriers: z.array(Carrier),
   vehicles: z.array(Vehicle),
   hubs: z.array(Hub),
   customers: z.array(CustomerAccount),
+  locations: z.array(Location).optional(),
 })
 export type ReferenceData = z.infer<typeof ReferenceData>

@@ -158,5 +158,31 @@
       "creditUsedCents": 0,
       "currency": "CNY"
     }
+  ],
+  "locations": [
+    {
+      "locationId": "SHA-WH1",
+      "name": "Shanghai warehouse 1 (shipper's dispatch warehouse)"
+    },
+    {
+      "locationId": "SHA-HUB",
+      "name": "Shanghai transfer hub"
+    },
+    {
+      "locationId": "HGH-DC2",
+      "name": "Hangzhou distribution centre 2"
+    },
+    {
+      "locationId": "NKG-DC3",
+      "name": "Nanjing distribution centre 3"
+    },
+    {
+      "locationId": "SZX-HUB",
+      "name": "Shenzhen transfer hub"
+    },
+    {
+      "locationId": "CAN-CLINIC",
+      "name": "Guangzhou clinic pharmacy (Blue Clinic Group)"
+    }
   ]
 }
