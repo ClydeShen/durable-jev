@@ -37,3 +37,4 @@
 | 2026-10-20 | T4.6：调查 agent 的候选校验复用规则引擎（`evaluateSelectedRules` 只重算 R05/R11/R16/R24/R25/R26，其余取当前结果），提交工具再校验一次；提议存 coordinator `investigations` 表，状态机 RUNNING→PROPOSED/NO_CANDIDATE/ESCALATED，PROPOSED→ACCEPTED/REJECTED/STALE；接受在同一事务里写 changeCarrier 与 ACCEPTED，其他计划变更使未决提议 STALE | design 7 |
 | 2026-10-20 | T4.6：调查 agent 目前在 coordinator 进程内运行（`inProcessInvestigator`），未放到 transport-planning 服务后面；服务边界与 A2A 在 P5 处理。无 NVIDIA key 时用确定性的 `ScriptedInvestigatorModel` | P5、NVIDIA key |
 | 2026-10-20 | LOG-004 事件脚本把手工换承运商改为 investigateCarrier + acceptInvestigation，阶段断言不变，仍为 draft | 待用户审定 |
+| 2026-10-20 | 用户要求的 live 抽测：8 个案例全部用真实 Jev 回放（约 13 次新判断）+ 工作台 live 演示（各服务各自缓存，再约 20 次），之后关回 scripted。回放 5/8 通过。失败原因：①R27 问法"指令是否允许路线"不合常识，LOG-001 的交货口/电话指令与路线无关，Jev 给 0.58–0.62 → 转人工；应改问"指令是否禁止/限制该路线"；②LOG-005 R03"病床=GENERAL"在 0.76 与 0.81 之间漂移，同一输入跨过 0.8 阈值，一次转人工一次通过；③LOG-008 检查记录"gel packs partly thawed"，Jev 判 cold_chain_risk（1.0），草稿标注为 no_risk，从现实看 Jev 更合理，需用户审定标注 | 用户审定、B1 |
