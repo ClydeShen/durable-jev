@@ -38,10 +38,18 @@ export function evaluateRuleGraph(input: {
   rulesInEvaluationOrder: readonly RuleDefinition[]
   subjects: GraphSubjects
   evaluateLeaf: LeafEvaluator
+  upstreamRules?: readonly RuleDefinition[]
+  upstreamResults?: readonly RuleEvaluation[]
 }): RuleGraphEvaluation {
   const { rulesInEvaluationOrder, subjects, evaluateLeaf } = input
-  const rulesById = new Map(rulesInEvaluationOrder.map((rule) => [rule.ruleId, rule]))
+  const rulesById = new Map(
+    [...(input.upstreamRules ?? []), ...rulesInEvaluationOrder].map((rule) => [rule.ruleId, rule]),
+  )
   const results = new Map<string, RuleEvaluation>()
+  for (const upstream of input.upstreamResults ?? []) {
+    results.set(subjectKey(upstream.ruleId, upstream.subject), upstream)
+  }
+  const evaluatedKeys: string[] = []
 
   const statusOf = (ruleId: RuleId, subject: CheckSubject = orderSubject): GateStatus => {
     const upstreamScope = rulesById.get(ruleId)?.scope
@@ -71,11 +79,16 @@ export function evaluateRuleGraph(input: {
         subjects,
         evaluateLeaf,
       })
-      results.set(subjectKey(rule.ruleId, subject), evaluation)
+      const key = subjectKey(rule.ruleId, subject)
+      results.set(key, evaluation)
+      evaluatedKeys.push(key)
     }
   }
 
-  return { evaluations: [...results.values()], statusOf }
+  return {
+    evaluations: evaluatedKeys.map((key) => results.get(key) as RuleEvaluation),
+    statusOf,
+  }
 }
 
 function subjectsInScope(rule: RuleDefinition, subjects: GraphSubjects): CheckSubject[] {

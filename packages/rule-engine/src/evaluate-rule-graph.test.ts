@@ -161,4 +161,44 @@ describe('evaluateRuleGraph', () => {
       R40: 'BLOCKED_DEPENDENCY',
     })
   })
+
+  it('evaluates a subset of rules on top of results produced elsewhere', () => {
+    const upstreamRules = [rule('R01'), rule('R02', { scope: 'cargoItem' })]
+    const subset = [
+      rule('R37', { combiner: { kind: 'allOf', scope: 'cargoItem', expression: ref('R02') } }),
+      rule('R40', { combiner: { kind: 'and', operands: [ref('R01'), ref('R37')] } }),
+    ]
+    const graph = evaluateRuleGraph({
+      rulesInEvaluationOrder: subset,
+      upstreamRules,
+      upstreamResults: [
+        {
+          ruleId: 'R01' as RuleId,
+          subject: { scope: 'order', entityId: 'order' },
+          gateStatus: 'PASS',
+          blockedBy: [],
+        },
+        {
+          ruleId: 'R02' as RuleId,
+          subject: { scope: 'cargoItem', entityId: 'item-1' },
+          gateStatus: 'PASS',
+          blockedBy: [],
+        },
+        {
+          ruleId: 'R02' as RuleId,
+          subject: { scope: 'cargoItem', entityId: 'item-2' },
+          gateStatus: 'FAIL',
+          blockedBy: [],
+        },
+      ],
+      subjects: { cargoItem: ['item-1', 'item-2'], leg: [] },
+      evaluateLeaf: leafStatuses({}),
+    })
+    expect(
+      graph.evaluations.map((evaluation) => [evaluation.ruleId, evaluation.gateStatus]),
+    ).toEqual([
+      ['R37', 'FAIL'],
+      ['R40', 'FAIL'],
+    ])
+  })
 })
