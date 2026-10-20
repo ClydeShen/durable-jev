@@ -1,6 +1,5 @@
 import { BranchUnavailableError } from '@durable-jev/branch-service'
 import type {
-  BranchEvaluationRequest,
   CaseEvidence,
   CheckResult,
   CheckResultId,
@@ -37,9 +36,13 @@ import {
   subjectKey,
   upstreamRuleIds,
 } from '@durable-jev/rule-engine'
-import { humanGateRuleIds, type RuleConfiguration } from '@durable-jev/rule-evaluation'
+import {
+  humanGateRuleIds,
+  type RuleConfiguration,
+  requiredUpstreamRuleIds,
+} from '@durable-jev/rule-evaluation'
 import type { StoreDatabase } from '@durable-jev/store'
-import { assertEvaluationOrder, type BranchEvaluator } from './branch-evaluators.js'
+import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import { deriveOrderStatus, dispatchConfirmationRuleId, finalGateRuleId } from './order-status.js'
 import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
@@ -79,16 +82,18 @@ export class CoordinatorService {
   private readonly repository: CoordinatorRepository
   private readonly database: StoreDatabase
   private readonly configuration: RuleConfiguration
-  private readonly evaluators: readonly BranchEvaluator[]
+  private readonly evaluationLayers: BranchEvaluator[][]
   private readonly now: () => string
   private readonly rulesById: Map<string, RuleDefinition>
 
   constructor(dependencies: CoordinatorDependencies) {
-    assertEvaluationOrder(dependencies.evaluators, dependencies.configuration)
     this.database = dependencies.database
     this.repository = new CoordinatorRepository(dependencies.database)
     this.configuration = dependencies.configuration
-    this.evaluators = dependencies.evaluators
+    this.evaluationLayers = planEvaluationLayers(
+      dependencies.evaluators,
+      dependencies.configuration,
+    )
     this.now = dependencies.now ?? (() => new Date().toISOString())
     this.rulesById = new Map(
       dependencies.configuration.rulesInEvaluationOrder.map((rule) => [rule.ruleId, rule]),
@@ -322,19 +327,28 @@ export class CoordinatorService {
     )
     const evaluations: RuleEvaluationRecord[] = []
     const humanGateRequests: HumanGateRequest[] = []
-    for (const evaluator of this.evaluators) {
-      const request: BranchEvaluationRequest = {
-        caseId: stored.caseId as never,
-        caseRevision: stored.shipment.caseRevision,
-        shipment: stored.shipment,
-        evidence: stored.evidence,
-        semanticAnswers: this.repository.listSemanticAnswers(stored.caseId),
-        upstreamResults: [...evaluations],
-        humanGates: this.humanGateStates(stored, evaluator, overrides),
+    const semanticAnswers = this.repository.listSemanticAnswers(stored.caseId)
+    for (const layer of this.evaluationLayers) {
+      const results = await Promise.all(
+        layer.map((evaluator) => {
+          const needed = new Set(
+            requiredUpstreamRuleIds(this.configuration.rulesInEvaluationOrder, evaluator.branches),
+          )
+          return evaluator.evaluate({
+            caseId: stored.caseId as never,
+            caseRevision: stored.shipment.caseRevision,
+            shipment: stored.shipment,
+            evidence: stored.evidence,
+            semanticAnswers,
+            upstreamResults: evaluations.filter((evaluation) => needed.has(evaluation.ruleId)),
+            humanGates: this.humanGateStates(stored, evaluator, overrides),
+          })
+        }),
+      )
+      for (const result of results) {
+        evaluations.push(...result.evaluations)
+        humanGateRequests.push(...result.humanGateRequests)
       }
-      const result = await evaluator.evaluate(request)
-      evaluations.push(...result.evaluations)
-      humanGateRequests.push(...result.humanGateRequests)
     }
     return { caseRevision: stored.shipment.caseRevision, evaluations, humanGateRequests }
   }

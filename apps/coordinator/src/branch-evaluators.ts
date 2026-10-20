@@ -84,29 +84,54 @@ export function serviceEvaluators(
   ]
 }
 
-export function assertEvaluationOrder(
+export function planEvaluationLayers(
   evaluators: readonly BranchEvaluator[],
   configuration: RuleConfiguration,
-): void {
+): BranchEvaluator[][] {
   const rules = configuration.rulesInEvaluationOrder
-  const evaluatedRuleIds = new Set<string>()
-  const coveredBranches = new Set<RuleBranch>()
+  const ownerOfRule = new Map<string, BranchEvaluator>()
   for (const evaluator of evaluators) {
-    const duplicated = evaluator.branches.filter((branch) => coveredBranches.has(branch))
-    if (duplicated.length > 0) {
-      throw new Error(`${evaluator.name} evaluates ${duplicated.join(', ')} a second time`)
+    for (const rule of rulesOfBranches(rules, evaluator.branches)) {
+      const existing = ownerOfRule.get(rule.ruleId)
+      if (existing) {
+        throw new Error(`${evaluator.name} and ${existing.name} both evaluate ${rule.ruleId}`)
+      }
+      ownerOfRule.set(rule.ruleId, evaluator)
     }
-    const missing = requiredUpstreamRuleIds(rules, evaluator.branches).filter(
-      (ruleId) => !evaluatedRuleIds.has(ruleId),
-    )
-    if (missing.length > 0) {
-      throw new Error(`${evaluator.name} needs ${missing.join(', ')} evaluated before it`)
-    }
-    for (const branch of evaluator.branches) coveredBranches.add(branch)
-    for (const rule of rulesOfBranches(rules, evaluator.branches)) evaluatedRuleIds.add(rule.ruleId)
   }
-  const uncovered = rules.filter((rule) => !rule.branch || !coveredBranches.has(rule.branch))
+  const uncovered = rules.filter((rule) => !ownerOfRule.has(rule.ruleId))
   if (uncovered.length > 0) {
     throw new Error(`no evaluator covers ${uncovered.map((rule) => rule.ruleId).join(', ')}`)
   }
+
+  const prerequisitesOf = new Map(
+    evaluators.map((evaluator) => [
+      evaluator,
+      new Set(
+        requiredUpstreamRuleIds(rules, evaluator.branches).map(
+          (ruleId) => ownerOfRule.get(ruleId) as BranchEvaluator,
+        ),
+      ),
+    ]),
+  )
+  const layers: BranchEvaluator[][] = []
+  const scheduled = new Set<BranchEvaluator>()
+  while (scheduled.size < evaluators.length) {
+    const ready = evaluators.filter(
+      (evaluator) =>
+        !scheduled.has(evaluator) &&
+        [...(prerequisitesOf.get(evaluator) ?? [])].every((prerequisite) =>
+          scheduled.has(prerequisite),
+        ),
+    )
+    if (ready.length === 0) {
+      const waiting = evaluators.filter((evaluator) => !scheduled.has(evaluator))
+      throw new Error(
+        `evaluators depend on each other: ${waiting.map((evaluator) => evaluator.name).join(', ')}`,
+      )
+    }
+    layers.push(ready)
+    for (const evaluator of ready) scheduled.add(evaluator)
+  }
+  return layers
 }
