@@ -159,9 +159,7 @@ export function humanGateStatus(
 }
 
 export function targetsMatch(left: HumanTaskTarget, right: HumanTaskTarget): boolean {
-  return (
-    left.caseRevision === right.caseRevision && left.inputFingerprint === right.inputFingerprint
-  )
+  return left.inputFingerprint === right.inputFingerprint
 }
 
 function isExpired(task: HumanTask, now: UtcTimestamp): boolean {

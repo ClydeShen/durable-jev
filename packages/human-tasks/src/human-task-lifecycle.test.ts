@@ -141,6 +141,16 @@ describe('human task commands', () => {
 })
 
 describe('humanGateStatus', () => {
+  it('keeps a decision valid across revisions that do not touch its inputs', () => {
+    const approved = applyHumanTaskCommand(
+      complianceApproval,
+      { kind: 'approve', actor: 'COMPLIANCE_REVIEWER' },
+      current,
+    ).task
+    const quoteRevision = { ...target, caseRevision: 2 }
+    expect(humanGateStatus([approved], quoteRevision, beforeDeadline)).toBe('PASS')
+  })
+
   it('waits while the task is open and passes once approved', () => {
     expect(humanGateStatus([complianceApproval], target, beforeDeadline)).toBe('WAITING_HUMAN')
     const approved = applyHumanTaskCommand(
