@@ -1,6 +1,8 @@
 import {
+  Activity,
   ArrowRight,
   Ban,
+  Bot,
   Check,
   CircleCheck,
   CircleDot,
@@ -8,6 +10,9 @@ import {
   CirclePause,
   CircleX,
   Clock,
+  Code,
+  LayoutDashboard,
+  Link2,
   Loader,
   Lock,
   type LucideIcon,
@@ -20,11 +25,14 @@ import {
   RotateCcw,
   Search,
   Send,
+  Server,
   ServerCrash,
+  Sparkles,
   Timer,
   TriangleAlert,
   Truck,
   UserRound,
+  Wrench,
   X,
 } from 'lucide-react'
 
@@ -59,6 +67,15 @@ const icons = {
   ready: PackageCheck,
   dispatched: Truck,
   technicalFailure: ServerCrash,
+  // Console: what kind of thing an event is.
+  console: Activity,
+  workbench: LayoutDashboard,
+  link: Link2,
+  code: Code,
+  jev: Sparkles,
+  tool: Wrench,
+  service: Server,
+  agent: Bot,
 } as const satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof icons
