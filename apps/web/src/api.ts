@@ -58,6 +58,8 @@ export const api = {
       role,
       body: JSON.stringify({ fields }),
     }),
+  reevaluate: (caseId: string) =>
+    request<CaseView>(`/api/cases/${caseId}/reevaluate`, { method: 'POST' }),
   dispatch: (caseId: string, role: Role) =>
     request<CaseView>(`/api/cases/${caseId}/dispatch`, { method: 'POST', role }),
   resetDemo: () => request<{ loadedCaseIds: string[] }>('/control/demo/reset', { method: 'POST' }),

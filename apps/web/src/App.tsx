@@ -114,6 +114,15 @@ export function App() {
               <h2>{selectedCase.shipment.shipmentId}</h2>
               <StatusBadge status={selectedCase.orderStatus} />
               <span className="muted small">{selectedCase.correlationId}</span>
+              {(selectedCase.orderStatus === 'TECHNICAL_FAILURE' ||
+                selectedCase.orderStatus === 'SUBMITTED') && (
+                <button
+                  type="button"
+                  onClick={() => run('Re-evaluate', () => api.reevaluate(selectedCase.caseId))}
+                >
+                  Re-evaluate
+                </button>
+              )}
             </div>
             <section>
               <div className="view-tabs">
