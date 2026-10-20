@@ -1,4 +1,5 @@
 import { resolve } from 'node:path'
+import { A2aTaskLinks, a2aClientMigrations } from '@durable-jev/a2a-adapter'
 import {
   judgeForModelMode,
   judgeMigrations,
@@ -34,7 +35,13 @@ const branchServiceUrls =
       }
     : undefined
 
-const database = openDatabase(databasePath, [...coordinatorMigrations, ...judgeMigrations])
+const database = openDatabase(databasePath, [
+  ...coordinatorMigrations,
+  ...judgeMigrations,
+  ...a2aClientMigrations,
+])
+// BRANCH_PROTOCOL=a2a delegates to the branch services over A2A instead of native HTTP.
+const protocol = process.env.BRANCH_PROTOCOL === 'a2a' ? 'a2a' : 'native'
 const judgeFor = judgeForModelMode(process.env.MODEL_MODE, {
   apiKey: process.env.TYPESAFE_API_KEY,
   cacheDatabase: database,
@@ -47,7 +54,10 @@ const coordinator = new CoordinatorService({
   database,
   configuration,
   evaluators: branchServiceUrls
-    ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor)
+    ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor, {
+        protocol,
+        links: new A2aTaskLinks(database),
+      })
     : inProcessEvaluators(
         configuration,
         referenceData,

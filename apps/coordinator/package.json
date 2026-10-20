@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
+    "@durable-jev/a2a-adapter": "workspace:*",
     "@durable-jev/agent-harness": "workspace:*",
     "@durable-jev/branch-service": "workspace:*",
     "@durable-jev/contracts": "workspace:*",

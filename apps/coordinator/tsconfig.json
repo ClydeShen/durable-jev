@@ -8,6 +8,9 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     {
+      "path": "../../packages/a2a-adapter"
+    },
+    {
       "path": "../../packages/branch-service"
     },
     {

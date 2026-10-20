@@ -1,4 +1,5 @@
-import { httpBranchEvaluator } from '@durable-jev/branch-service'
+import { A2aCallError, type A2aTaskLinks, a2aBranchEvaluator } from '@durable-jev/a2a-adapter'
+import { BranchUnavailableError, httpBranchEvaluator } from '@durable-jev/branch-service'
 import type {
   BranchEvaluationRequest,
   BranchEvaluationResult,
@@ -64,26 +65,48 @@ export function inProcessEvaluators(
   ]
 }
 
+export type BranchProtocol = 'native' | 'a2a'
+
+// The coordinator only sees BranchEvaluator: swapping the protocol changes nothing above it (H4).
+function remoteEvaluator(
+  name: string,
+  branches: readonly RuleBranch[],
+  url: string,
+  protocol: BranchProtocol,
+  links: A2aTaskLinks | undefined,
+): BranchEvaluator {
+  if (protocol === 'native') return httpBranchEvaluator(name, branches, url)
+  if (!links) throw new Error('A2A delegation needs the A2A task links of the coordinator')
+  const evaluator = a2aBranchEvaluator(name, branches, url, links)
+  return {
+    name,
+    branches,
+    evaluate: async (request) => {
+      try {
+        return await evaluator.evaluate(request)
+      } catch (error) {
+        if (error instanceof A2aCallError) throw new BranchUnavailableError(name, error.message)
+        throw error
+      }
+    },
+  }
+}
+
 export function serviceEvaluators(
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
   urls: { cargoAssurance: string; transportPlanning: string; commercialControl: string },
   judgeFor?: JudgeFor,
+  transport: { protocol: BranchProtocol; links?: A2aTaskLinks } = { protocol: 'native' },
 ): BranchEvaluator[] {
   const dependencies = { configuration, referenceData, ...(judgeFor && { judgeFor }) }
+  const remote = (name: string, branches: readonly RuleBranch[], url: string) =>
+    remoteEvaluator(name, branches, url, transport.protocol, transport.links)
   return [
     inProcessEvaluator('coordinator', ['base'], dependencies),
-    httpBranchEvaluator('cargo-assurance', branchesByService.cargoAssurance, urls.cargoAssurance),
-    httpBranchEvaluator(
-      'transport-planning',
-      branchesByService.transportPlanning,
-      urls.transportPlanning,
-    ),
-    httpBranchEvaluator(
-      'commercial-control',
-      branchesByService.commercialControl,
-      urls.commercialControl,
-    ),
+    remote('cargo-assurance', branchesByService.cargoAssurance, urls.cargoAssurance),
+    remote('transport-planning', branchesByService.transportPlanning, urls.transportPlanning),
+    remote('commercial-control', branchesByService.commercialControl, urls.commercialControl),
     inProcessEvaluator('coordinator', ['release'], dependencies),
   ]
 }
