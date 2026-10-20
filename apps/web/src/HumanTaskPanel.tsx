@@ -25,7 +25,9 @@ export function HumanTaskPanel(props: {
   return (
     <section>
       <h2>Human tasks</h2>
-      {openTasks.length === 0 && <p className="muted">No open human tasks.</p>}
+      {openTasks.length === 0 && (
+        <p className="muted">Nothing is waiting for a person right now.</p>
+      )}
       {openTasks.map((task) => (
         <OpenTaskCard
           key={task.humanTaskId}
