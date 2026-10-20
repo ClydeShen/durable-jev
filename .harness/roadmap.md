@@ -60,7 +60,7 @@
 | [x] | T4.3 | 接入语义规则 R03、R10、R18、R27；observedValue 与 gateStatus 分开 | LOG-002、LOG-003 语义节点正确 | T4.1, T3.1 |
 | [x] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard（含重启上限）、ContextAssembler | 预算、重启上限与白名单测试 | T1.6 |
 | [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完 | T4.4 |
-| [ ] | T4.6 | transport-planning 调查 Agent：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
+| [x] | T4.6 | transport-planning 调查 Agent：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
 | [ ] | T4.7 | PiDurableAgentRuntime | 同一调查杀进程后恢复 | T0.3, T4.5 |
 | [ ] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
 

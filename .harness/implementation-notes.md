@@ -33,3 +33,7 @@
 | 2026-10-20 | T4.1–T4.3：语义规则经 `evaluateBranchWithJudge` 先问 judge 再求值；`MODEL_MODE=live` 时为 `CachingJudge(JevJudge)`，缓存表在各服务自己的库里，`pnpm replay` 在 live 下用 `var/data/semantic-cache.sqlite`。observedValue 带 provider/modelId | T4.2 只完成 Jev 部分 |
 | 2026-10-20 | live 回放 LOG-002/003（共 8 次判断，含缓存命中外的新请求）首轮失败：只给代码时 Jev 犹豫（LOG-003 锂电池申报 CONTROLLED 0.72；LOG-002 路线只有地点/承运商代码 0.75），均落入 UNKNOWN→人工，行为安全但与预期不符。修正为问题中给出类别定义、地点名、承运商名和车辆温控范围后 0.97/0.81，2/2 通过。未调阈值 | B1 |
 | 2026-10-20 | 风险：live 值离阈值很近（R27 0.81 vs 0.8；R10 0.21 vs 0.2），轻微漂移就会改变门槛结果。回放/回归仍只用 scripted；B1 需统计阈值附近的翻转率 | T7.1 |
+| 2026-10-20 | T4.4/T4.5：`AgentSession.events()` 先返回数组而非 AsyncIterable（同步测试更简单），T4.7 若 Pi 侧需要流式再改；run 只能通过 `resultTool` 成功调用产出结果，模型停止或超预算一律 escalated 交给人 | design 7.1 |
+| 2026-10-20 | T4.6：调查 agent 的候选校验复用规则引擎（`evaluateSelectedRules` 只重算 R05/R11/R16/R24/R25/R26，其余取当前结果），提交工具再校验一次；提议存 coordinator `investigations` 表，状态机 RUNNING→PROPOSED/NO_CANDIDATE/ESCALATED，PROPOSED→ACCEPTED/REJECTED/STALE；接受在同一事务里写 changeCarrier 与 ACCEPTED，其他计划变更使未决提议 STALE | design 7 |
+| 2026-10-20 | T4.6：调查 agent 目前在 coordinator 进程内运行（`inProcessInvestigator`），未放到 transport-planning 服务后面；服务边界与 A2A 在 P5 处理。无 NVIDIA key 时用确定性的 `ScriptedInvestigatorModel` | P5、NVIDIA key |
+| 2026-10-20 | LOG-004 事件脚本把手工换承运商改为 investigateCarrier + acceptInvestigation，阶段断言不变，仍为 draft | 待用户审定 |
