@@ -15,6 +15,7 @@
     "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/service-kit": "workspace:*",
     "@durable-jev/store": "workspace:*",
+    "@durable-jev/telemetry": "workspace:*",
     "express": "5.3.0",
     "zod": "4.6.7"
   },

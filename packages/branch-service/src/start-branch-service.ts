@@ -8,6 +8,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { type Migration, openDatabase, type StoreDatabase } from '@durable-jev/store'
+import { startServiceTelemetry } from '@durable-jev/telemetry'
 import { branchServiceMigrations, createBranchServiceApp } from './branch-service-app.js'
 
 export async function startBranchService(options: {
@@ -29,6 +30,11 @@ export async function startBranchService(options: {
     ...judgeMigrations,
     ...(options.extraMigrations ?? []),
   ])
+  const { telemetry, stop: stopTelemetry } = startServiceTelemetry({
+    service: options.serviceName,
+    database,
+    collectorUrl: process.env.OBSERVABILITY_URL,
+  })
   const { ensurePlanReservation } = options
   const port = Number(process.env.SERVICE_PORT ?? options.defaultPort)
   const app = createBranchServiceApp({
@@ -37,6 +43,7 @@ export async function startBranchService(options: {
     configuration: loadRuleConfiguration(materialsDirectory),
     referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
     database,
+    telemetry,
     publicUrl: () => process.env.SERVICE_PUBLIC_URL ?? `http://localhost:${port}`,
     demoFaults: process.env.DEMO_FAULTS === 'on',
     judgeFor: judgeForModelMode(process.env.MODEL_MODE, {
@@ -50,6 +57,9 @@ export async function startBranchService(options: {
   return startService(app, {
     serviceName: options.serviceName,
     port,
-    onClose: () => database.close(),
+    onClose: () => {
+      stopTelemetry()
+      database.close()
+    },
   })
 }

@@ -18,6 +18,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
+import type { Telemetry } from '@durable-jev/telemetry'
 import type { ErrorRequestHandler, Express } from 'express'
 import { z } from 'zod'
 
@@ -43,6 +44,7 @@ export type BranchServiceDependencies = {
   database: StoreDatabase
   ensurePlanReservation?: (request: BranchEvaluationRequest) => boolean
   judgeFor?: JudgeFor
+  telemetry?: Telemetry
   // Where clients reach this service; the A2A Agent Card advertises it.
   publicUrl: () => string
   // Demo only: exposes POST /faults/delay so a slow service can be shown in the workbench.
@@ -84,10 +86,31 @@ export function createBranchServiceApp(dependencies: BranchServiceDependencies):
   // Native HTTP and A2A run the same evaluation and log it the same way.
   const evaluate = async (evaluationRequest: BranchEvaluationRequest) => {
     if (injectedDelayMs > 0) await new Promise((wait) => setTimeout(wait, injectedDelayMs))
-    const result: BranchEvaluationResult = await evaluateBranchWithJudge(
-      evaluationRequest,
-      dependencies,
-    )
+    const { telemetry } = dependencies
+    const caseFields = {
+      caseId: evaluationRequest.caseId as string,
+      caseRevision: evaluationRequest.caseRevision,
+    }
+    telemetry?.emit({
+      eventName: 'task.accepted',
+      ...caseFields,
+      attributes: { service: dependencies.serviceName, branches: dependencies.branches },
+    })
+    const startedAt = Date.now()
+    let result: BranchEvaluationResult
+    try {
+      result = await evaluateBranchWithJudge(evaluationRequest, dependencies)
+    } catch (error) {
+      telemetry?.emit({
+        eventName: 'task.failed',
+        ...caseFields,
+        errorCode:
+          error instanceof JudgeUnavailableError ? 'JUDGE_UNAVAILABLE' : 'EVALUATION_FAILED',
+        durationMs: Date.now() - startedAt,
+        attributes: { service: dependencies.serviceName, message: String(error) },
+      })
+      throw error
+    }
     recordEvaluation.run(
       evaluationRequest.caseId,
       evaluationRequest.caseRevision,
