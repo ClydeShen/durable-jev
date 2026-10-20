@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   humanTaskMachine,
   InvalidTransitionError,
+  investigationMachine,
   orderStatusMachine,
   reservationMachine,
 } from './index.js'
@@ -17,6 +18,7 @@ describe('orderStatusMachine', () => {
     expect(orderStatusMachine.terminalStates).toEqual(['DISPATCHED', 'REJECTED'])
     expect(() => orderStatusMachine.transition('DISPATCHED', 'ON_HOLD')).toThrow(
       InvalidTransitionError,
+      investigationMachine,
     )
   })
 
@@ -41,5 +43,14 @@ describe('reservationMachine', () => {
   it('can only cancel a reservation once', () => {
     expect(reservationMachine.canTransition('RESERVED', 'CANCELLED')).toBe(true)
     expect(reservationMachine.canTransition('CANCELLED', 'RESERVED')).toBe(false)
+  })
+})
+
+describe('investigationMachine', () => {
+  it('only lets a proposal be accepted, and only once', () => {
+    expect(investigationMachine.canTransition('PROPOSED', 'ACCEPTED')).toBe(true)
+    expect(investigationMachine.canTransition('NO_CANDIDATE', 'ACCEPTED')).toBe(false)
+    expect(investigationMachine.canTransition('ACCEPTED', 'STALE')).toBe(false)
+    expect(investigationMachine.canTransition('STALE', 'ACCEPTED')).toBe(false)
   })
 })

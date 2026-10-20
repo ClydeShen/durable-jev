@@ -1,4 +1,5 @@
 import type { HumanTaskStatus } from './human-task.js'
+import type { InvestigationStatus } from './investigation.js'
 import { defineStateMachine } from './state-machine.js'
 import type { OrderStatus } from './statuses.js'
 
@@ -51,5 +52,19 @@ export const reservationMachine = defineStateMachine<ReservationStatus>({
   transitions: {
     RESERVED: ['CANCELLED'],
     CANCELLED: [],
+  },
+})
+
+export const investigationMachine = defineStateMachine<InvestigationStatus>({
+  name: 'investigation',
+  initial: 'RUNNING',
+  transitions: {
+    RUNNING: ['PROPOSED', 'NO_CANDIDATE', 'ESCALATED', 'STALE'],
+    PROPOSED: ['ACCEPTED', 'REJECTED', 'STALE'],
+    NO_CANDIDATE: [],
+    ESCALATED: [],
+    ACCEPTED: [],
+    REJECTED: [],
+    STALE: [],
   },
 })
