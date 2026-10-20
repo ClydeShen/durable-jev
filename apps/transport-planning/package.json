@@ -8,8 +8,6 @@
   },
   "dependencies": {
     "@durable-jev/branch-service": "workspace:*",
-    "@durable-jev/contracts": "workspace:*",
-    "@durable-jev/store": "workspace:*",
     "@durable-jev/transport-reservations": "workspace:*"
   }
 }
