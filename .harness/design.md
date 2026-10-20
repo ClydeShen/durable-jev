@@ -151,6 +151,7 @@ type RuleDefinition = {
 - 每次变更：caseRevision +1，相关实体版本 +1，记录变更（changeId、类型、triggers、操作人、时间）。触发词：vehicle → `vehicle`（route 版本 +1）；carrier → `carrier`、`vehicle`（carrier、route 版本 +1）；quote → `quote`（quote 版本 +1）。
 - 提交变更的事务内：沿 `invalidationTriggers` 与依赖图计算失效集，把当前结果标为 INVALIDATED 并记录 `invalidatedByChange`，订单转 EVALUATING；随后重新求值，失效集内规则的新结果带 `affectedByChange`，界面显示"变更 #N 后重新检查"。
 - 人工任务目标只绑定规则相关的实体版本：触发词 → 实体（cargo、documents、temperature、inspection → cargo；route、vehicle、reservation → route；carrier → carrier；quote、customer → quote；loading → 全部）。目标匹配只比较输入指纹（含相关实体版本），不再比较 caseRevision。
+- 变更后仍打开、但目标已过期且没有替代任务的人工任务（门槛暂时到达不了）转为 CANCELLED，不再可操作。
 - 运输预订：新 route 版本预订后，同一订单更早 route 版本的有效预订幂等取消（RESERVED → CANCELLED）。
 
 ## 6. 服务与流程
