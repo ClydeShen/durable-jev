@@ -8,7 +8,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
-import { startServiceTelemetry } from '@durable-jev/telemetry'
+import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
 import { reservationMigrations } from '@durable-jev/transport-reservations'
 import { inProcessEvaluators, serviceEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
@@ -54,6 +54,7 @@ const { telemetry, stop: stopTelemetry } = startServiceTelemetry({
   database,
   collectorUrl: process.env.OBSERVABILITY_URL,
 })
+initTracing(telemetry)
 const configuration = loadRuleConfiguration(materialsDirectory)
 const referenceData = loadReferenceData(
   resolve(materialsDirectory, 'mock-data/reference-data.json'),

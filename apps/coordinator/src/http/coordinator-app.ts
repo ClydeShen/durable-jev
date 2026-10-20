@@ -8,6 +8,7 @@ import {
   Shipment,
 } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
+import { annotateActiveSpan, tracingMiddleware } from '@durable-jev/telemetry'
 import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
 import { CoordinatorError, type CoordinatorErrorCode } from '../coordinator-errors.js'
@@ -73,6 +74,12 @@ export function createCoordinatorApp(
   referenceData?: ReferenceData,
 ): Express {
   const app = createServiceApp('coordinator')
+  // One trace per request; everything the coordinator does for it hangs off this span.
+  app.use(tracingMiddleware())
+  app.param('caseId', (_request, _response, next, caseId: string) => {
+    annotateActiveSpan({ caseId })
+    next()
+  })
 
   app.get('/reference-data', (_request, response) => {
     response.json(referenceData ?? { carriers: [], vehicles: [], hubs: [], customers: [] })

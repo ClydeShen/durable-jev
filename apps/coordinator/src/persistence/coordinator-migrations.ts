@@ -85,4 +85,11 @@ export const coordinatorMigrations: readonly Migration[] = [
       investigation_json TEXT NOT NULL
     )`,
   },
+  {
+    id: 'coordinator-010-trace-links',
+    sql: `CREATE TABLE trace_links (
+      link_key TEXT PRIMARY KEY,
+      traceparent TEXT NOT NULL
+    )`,
+  },
 ]

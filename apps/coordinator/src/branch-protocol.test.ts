@@ -4,7 +4,8 @@ import { A2aTaskLinks, a2aClientMigrations } from '@durable-jev/a2a-adapter'
 import { branchServiceMigrations, createBranchServiceApp } from '@durable-jev/branch-service'
 import type { ReferenceData, RuleBranch } from '@durable-jev/contracts'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
-import { openDatabase } from '@durable-jev/store'
+import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
+import { initTracing, Telemetry } from '@durable-jev/telemetry'
 import { ensurePlanReservation, reservationMigrations } from '@durable-jev/transport-reservations'
 import { afterAll, describe, expect, it } from 'vitest'
 import { type BranchProtocol, branchesByService, serviceEvaluators } from './branch-evaluators.js'
@@ -125,4 +126,47 @@ describe('switching the branch protocol', () => {
     )
     expect(native.links.forCase('CASE-LOG-001')).toEqual([])
   })
+
+  it.each(['native', 'a2a'] as const)(
+    'carries one trace from the coordinator into every branch service over %s',
+    async (protocol) => {
+      const observed = openDatabase(':memory:')
+      initTracing(new Telemetry('test', observed))
+      const { coordinator } = await coordinatorOver(protocol)
+      const caseFile = readJson('cases/LOG-001.json')
+      await coordinator.submitCase({
+        shipment: caseFile.shipment,
+        evidence: caseFile.evidence,
+        scriptedSemanticAnswers: caseFile.scriptedSemanticAnswers,
+      })
+      const spans = readUnpublishedOutboxEvents(observed, 100_000)
+        .map(
+          (row) =>
+            row.payload as {
+              kind: string
+              eventName: string
+              traceId: string
+              spanId: string
+              parentSpanId?: string
+            },
+        )
+        .filter((event) => event.kind === 'span')
+      const root = spans.find((span) => span.eventName === 'case.evaluate')
+      expect(root).toBeDefined()
+      const served = spans.filter(
+        (span) => span.eventName === 'POST /evaluations' || span.eventName === 'POST /a2a/jsonrpc',
+      )
+      expect(served.length).toBeGreaterThanOrEqual(3)
+      expect(new Set(spans.map((span) => span.traceId))).toEqual(new Set([root?.traceId]))
+      // Each served request's parent is the coordinator's branch.evaluate span for that service.
+      const branchCalls = new Set(
+        spans.filter((span) => span.eventName === 'branch.evaluate').map((span) => span.spanId),
+      )
+      expect(served.every((span) => span.parentSpanId && branchCalls.has(span.parentSpanId))).toBe(
+        true,
+      )
+      expect(spans.some((span) => span.eventName === 'rules.evaluate')).toBe(true)
+      expect(spans.some((span) => span.eventName === 'jev.ask')).toBe(true)
+    },
+  )
 })

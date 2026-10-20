@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import type { ReferenceData } from '@durable-jev/contracts'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
-import { Telemetry } from '@durable-jev/telemetry'
+import { initTracing, Telemetry } from '@durable-jev/telemetry'
 import { describe, expect, it } from 'vitest'
 import { inProcessEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
@@ -154,5 +154,44 @@ describe('coordinator telemetry', () => {
       appliesToPlan: false,
     })
     expect(events().some((event) => event.eventName === 'change.applied')).toBe(false)
+  })
+
+  it('answers a human task in a new trace that links back to the one that asked', async () => {
+    const database = openDatabase(':memory:', coordinatorMigrations)
+    const telemetry = new Telemetry('coordinator', database)
+    initTracing(telemetry)
+    const coordinator = new CoordinatorService({
+      database,
+      configuration,
+      evaluators: inProcessEvaluators(configuration, referenceData),
+      telemetry,
+    })
+    const view = await submit(coordinator, 'LOG-001')
+    const load = view.humanTasks.find((task) => task.ruleId === 'R39-LOAD')
+    // Hours later, a separate request.
+    await coordinator.completeHumanTask(load?.humanTaskId ?? '', 'WAREHOUSE_OPERATOR', {
+      loadScanRef: 'SCAN-1',
+      physicalCheckBy: 'op-2',
+    })
+    const spans = readUnpublishedOutboxEvents(database, 100_000)
+      .map(
+        (row) =>
+          row.payload as {
+            kind: string
+            eventName: string
+            traceId: string
+            spanId: string
+            links?: { traceId: string; spanId: string; relation: string }[]
+            correlationId: string
+          },
+      )
+      .filter((event) => event.kind === 'span')
+    const asked = spans.find((span) => span.eventName === 'case.reevaluate')
+    const answered = spans.find((span) => span.eventName === 'human.act')
+    expect(answered?.traceId).not.toBe(asked?.traceId)
+    expect(answered?.correlationId).toBe(asked?.correlationId)
+    expect(answered?.links).toEqual([
+      { traceId: asked?.traceId, spanId: asked?.spanId, relation: 'answers' },
+    ])
   })
 })

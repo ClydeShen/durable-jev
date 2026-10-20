@@ -48,7 +48,13 @@ import {
   requiredUpstreamRuleIds,
 } from '@durable-jev/rule-evaluation'
 import type { StoreDatabase } from '@durable-jev/store'
-import type { EmitInput, Telemetry } from '@durable-jev/telemetry'
+import {
+  annotateActiveSpan,
+  currentTraceparent,
+  type EmitInput,
+  type Telemetry,
+  withSpan,
+} from '@durable-jev/telemetry'
 import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import type { Investigator } from './investigator.js'
@@ -142,6 +148,7 @@ export class CoordinatorService {
 
   async submitCase(request: SubmitCaseRequest): Promise<CaseView> {
     const caseId = request.shipment.caseId
+    annotateActiveSpan({ caseId })
     const isNew = this.database
       .transaction(() => {
         if (this.repository.findCase(caseId)) return false
@@ -184,9 +191,17 @@ export class CoordinatorService {
   async reevaluate(caseId: string): Promise<CaseView> {
     const stored = this.requireCase(caseId)
     if (orderStatusMachine.isTerminal(stored.orderStatus)) return this.getCase(caseId)
-    const evaluation = await this.evaluateCase(stored)
-    this.database.transaction(() => this.commitEvaluation(caseId, evaluation)).immediate()
-    return this.getCase(caseId)
+    // One span for evaluating and committing, so the tasks this commit creates remember the trace
+    // they were requested in.
+    return withSpan(
+      'case.reevaluate',
+      { caseId, caseRevision: stored.shipment.caseRevision },
+      async () => {
+        const evaluation = await this.evaluateCase(stored)
+        this.database.transaction(() => this.commitEvaluation(caseId, evaluation)).immediate()
+        return this.getCase(caseId)
+      },
+    )
   }
 
   getCase(caseId: string): CaseView {
@@ -293,6 +308,7 @@ export class CoordinatorService {
 
   async acceptInvestigation(investigationId: string, actor: Role): Promise<CaseView> {
     const investigation = this.requireInvestigation(investigationId)
+    annotateActiveSpan({ caseId: investigation.caseId })
     if (actor !== 'TRANSPORT_PLANNER') {
       throw new CoordinatorError('FORBIDDEN', 'accepting a proposal requires TRANSPORT_PLANNER')
     }
@@ -322,6 +338,7 @@ export class CoordinatorService {
 
   rejectInvestigation(investigationId: string, actor: Role, reason: string): Investigation {
     const investigation = this.requireInvestigation(investigationId)
+    annotateActiveSpan({ caseId: investigation.caseId })
     if (actor !== 'TRANSPORT_PLANNER') {
       throw new CoordinatorError('FORBIDDEN', 'rejecting a proposal requires TRANSPORT_PLANNER')
     }
@@ -552,6 +569,29 @@ export class CoordinatorService {
     actor: Role,
     action: HumanTaskAction,
   ): Promise<HumanTask> {
+    const known = this.repository.findHumanTask(humanTaskId)
+    if (!known) throw new CoordinatorError('NOT_FOUND', `human task ${humanTaskId} not found`)
+    annotateActiveSpan({ caseId: known.caseId })
+    const createdIn = this.repository.findTraceLink(`humanTask:${humanTaskId}`)
+    // The answer may come hours later in another trace: a link points back to where the task
+    // was requested, instead of keeping a span open.
+    return withSpan(
+      'human.act',
+      {
+        caseId: known.caseId,
+        caseRevision: known.target.caseRevision,
+        attributes: { humanTaskId, ruleId: known.ruleId, action: action.kind },
+        ...(createdIn ? { links: [{ traceparent: createdIn, relation: 'answers' }] } : {}),
+      },
+      () => this.decideHumanTask(humanTaskId, actor, action),
+    )
+  }
+
+  private async decideHumanTask(
+    humanTaskId: string,
+    actor: Role,
+    action: HumanTaskAction,
+  ): Promise<HumanTask> {
     const updated = this.database
       .transaction(() => {
         const task = this.repository.findHumanTask(humanTaskId)
@@ -638,7 +678,11 @@ export class CoordinatorService {
     gateOverrides: readonly HumanGateState[] = [],
   ): Promise<CaseEvaluation> {
     try {
-      return await this.evaluateWithEvaluators(stored, gateOverrides)
+      return await withSpan(
+        'case.evaluate',
+        { caseId: stored.caseId, caseRevision: stored.shipment.caseRevision },
+        () => this.evaluateWithEvaluators(stored, gateOverrides),
+      )
     } catch (error) {
       if (error instanceof BranchUnavailableError) {
         this.database
@@ -683,15 +727,24 @@ export class CoordinatorService {
             caseRevision: stored.shipment.caseRevision,
             attributes: { evaluator: evaluator.name, branches: evaluator.branches },
           })
-          return evaluator.evaluate({
-            caseId: stored.caseId as never,
-            caseRevision: stored.shipment.caseRevision,
-            shipment: stored.shipment,
-            evidence: stored.evidence,
-            semanticAnswers,
-            upstreamResults: evaluations.filter((evaluation) => needed.has(evaluation.ruleId)),
-            humanGates: this.humanGateStates(stored, evaluator, overrides),
-          })
+          return withSpan(
+            'branch.evaluate',
+            {
+              caseId: stored.caseId,
+              caseRevision: stored.shipment.caseRevision,
+              attributes: { evaluator: evaluator.name, branches: evaluator.branches.join(',') },
+            },
+            () =>
+              evaluator.evaluate({
+                caseId: stored.caseId as never,
+                caseRevision: stored.shipment.caseRevision,
+                shipment: stored.shipment,
+                evidence: stored.evidence,
+                semanticAnswers,
+                upstreamResults: evaluations.filter((evaluation) => needed.has(evaluation.ruleId)),
+                humanGates: this.humanGateStates(stored, evaluator, overrides),
+              }),
+          )
         }),
       )
       for (const result of results) {
@@ -889,6 +942,8 @@ export class CoordinatorService {
       expiresAt: minutesFrom(now, this.taskTtlMinutes(rule)) as UtcTimestamp,
     })
     this.repository.saveHumanTask(replacement, entityId)
+    const createdIn = currentTraceparent()
+    if (createdIn) this.repository.saveTraceLink(`humanTask:${replacement.humanTaskId}`, createdIn)
     this.emit({
       eventName: 'information.requested',
       caseId: stored.caseId,

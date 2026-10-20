@@ -92,6 +92,20 @@ export class CoordinatorRepository {
       .run(change.changeId, change.caseId, change.toRevision, JSON.stringify(change))
   }
 
+  // The trace a task or run was created in, so a later request in another trace can link to it.
+  saveTraceLink(linkKey: string, traceparent: string): void {
+    this.database
+      .prepare('INSERT OR IGNORE INTO trace_links (link_key, traceparent) VALUES (?, ?)')
+      .run(linkKey, traceparent)
+  }
+
+  findTraceLink(linkKey: string): string | undefined {
+    const row = this.database
+      .prepare('SELECT traceparent FROM trace_links WHERE link_key = ?')
+      .get(linkKey) as { traceparent: string } | undefined
+    return row?.traceparent
+  }
+
   saveInvestigation(investigation: Investigation): void {
     this.database
       .prepare(
