@@ -1,0 +1,271 @@
+{
+  "caseId": "CASE-LOG-004",
+  "title": "Controlled cold chain cargo whose primary carrier cancels",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-004",
+    "shipmentId": "LOG-004",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "NKG-DC3",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-004-ITEM-1",
+        "description": "Clinical trial samples with lithium-powered data loggers, 12 boxes",
+        "declaredCategories": ["COLD_CHAIN", "CONTROLLED"],
+        "controlledClass": "CLASS-9",
+        "weightGrams": 36000,
+        "lengthMm": 800,
+        "widthMm": 600,
+        "heightMm": 600,
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        },
+        "packagingId": "PKG-004-1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-004-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "NKG-DC3",
+        "carrierId": "CAR-SECURA",
+        "vehicleId": "VEH-SC-REEFER-3T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-004-1",
+      "amountCents": 120000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [
+      {
+        "documentId": "LOG-004-SDS",
+        "kind": "SAFETY_DATA_SHEET",
+        "cargoItemId": "LOG-004-ITEM-1",
+        "text": "Data loggers contain lithium metal coin cells, UN3091, class 9.",
+        "extractedFields": {}
+      },
+      {
+        "documentId": "LOG-004-DECL",
+        "kind": "CONTROLLED_DECLARATION",
+        "cargoItemId": "LOG-004-ITEM-1",
+        "text": "Clinical samples shipped with lithium coin cell data loggers, class 9.",
+        "extractedFields": {}
+      }
+    ],
+    "temperatureLogs": [
+      {
+        "cargoItemId": "LOG-004-ITEM-1",
+        "sensorId": "SENSOR-LOG-004-ITEM-1",
+        "calibrationValidUntil": "2027-01-01T00:00:00Z",
+        "readings": [
+          {
+            "at": "2026-11-03T02:00:00Z",
+            "deciCelsius": 40
+          },
+          {
+            "at": "2026-11-03T03:40:00Z",
+            "deciCelsius": 44
+          }
+        ]
+      }
+    ],
+    "inspectionNotes": [
+      {
+        "cargoItemId": "LOG-004-ITEM-1",
+        "inspectedAt": "2026-11-03T03:00:00Z",
+        "note": "All boxes sealed and intact; data loggers running."
+      }
+    ]
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-004-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.93
+      }
+    },
+    {
+      "ruleId": "R10",
+      "entityId": "LOG-004-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.9
+      }
+    },
+    {
+      "ruleId": "R18",
+      "entityId": "LOG-004-ITEM-1",
+      "answer": {
+        "type": "choice",
+        "choice": "no_risk",
+        "probabilities": {
+          "no_risk": 0.91,
+          "damaged_packaging": 0.04,
+          "cold_chain_risk": 0.05
+        }
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R11": "PASS",
+          "R16": "PASS",
+          "R23": "PASS",
+          "R13": "WAITING_HUMAN",
+          "R14": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R13",
+            "requiredRole": "COMPLIANCE_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R13",
+      "actor": "COMPLIANCE_REVIEWER",
+      "expect": {
+        "gates": {
+          "R13": "PASS",
+          "R14": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "changePlan",
+      "actor": "TRANSPORT_PLANNER",
+      "change": {
+        "kind": "changeCarrier",
+        "legId": "LOG-004-LEG-1",
+        "carrierId": "CAR-GLACIER",
+        "vehicleId": "VEH-GL-REEFER-4T"
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R11": "PASS",
+          "R16": "PASS",
+          "R25": "PASS",
+          "R29": "PASS",
+          "R13": "WAITING_HUMAN",
+          "R36": "PASS"
+        },
+        "invalidated": [
+          "R05",
+          "R11",
+          "R13",
+          "R14",
+          "R16",
+          "R23",
+          "R24",
+          "R25",
+          "R29",
+          "R30",
+          "R37",
+          "R38",
+          "R39-LOAD",
+          "R40"
+        ],
+        "notInvalidated": [
+          "R02",
+          "R03",
+          "R09",
+          "R10",
+          "R12",
+          "R15",
+          "R17",
+          "R18",
+          "R19",
+          "R31",
+          "R32",
+          "R36"
+        ],
+        "openHumanTasks": [
+          {
+            "ruleId": "R13",
+            "requiredRole": "COMPLIANCE_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R13",
+      "actor": "COMPLIANCE_REVIEWER",
+      "expect": {
+        "gates": {
+          "R14": "PASS",
+          "R37": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
