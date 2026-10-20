@@ -81,7 +81,9 @@ export function createObservabilityApp(store: ObservationStore): Express {
     replaying = false
     for (const stored of waiting.sort((left, right) => left.sequence - right.sequence)) send(stored)
 
-    const heartbeat = setInterval(() => response.write(': keep-alive\n\n'), 15_000)
+    // A real event, not a comment: a browser cannot see comments, and it needs something to tell
+    // a quiet stream from a dead one.
+    const heartbeat = setInterval(() => response.write('event: ping\ndata: {}\n\n'), 5_000)
     request.on('close', () => {
       clearInterval(heartbeat)
       unsubscribe()
