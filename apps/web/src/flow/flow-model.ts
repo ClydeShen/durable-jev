@@ -33,6 +33,7 @@ export type FlowNodeModel = {
   statusCounts: Partial<Record<GateStatus, number>>
   checks: CheckResult[]
   branch?: RuleBranch
+  recheckedAfterChange?: string
 }
 
 export type FlowEdgeModel = { from: string; to: string; state: EdgeState }
@@ -158,6 +159,13 @@ export function buildFlowModel(input: {
   }
   leavesUnit.add(input.rootRuleId)
 
+  const recheckedAfter = (members: readonly RuleDefinition[]) => {
+    const changeIds = members.flatMap((member) =>
+      (checksByRule.get(member.ruleId) ?? []).flatMap((check) => check.affectedByChange ?? []),
+    )
+    return changeIds.length > 0 ? { recheckedAfterChange: changeIds.sort().at(-1) as string } : {}
+  }
+
   const nodes: FlowNodeModel[] = [...membersByUnit.entries()].map(([unit, members]) => {
     const memberStatuses = members.map((member) => ruleStatus(member.ruleId))
     const statusCounts: Partial<Record<GateStatus, number>> = {}
@@ -183,6 +191,7 @@ export function buildFlowModel(input: {
           .filter((member) => ruleStatus(member.ruleId) === 'WAITING_HUMAN')
           .map((member) => waitingEntry(member.ruleId)),
         checks: [],
+        ...recheckedAfter(members),
       }
     }
     const rule = members.find((member) => member.ruleId === unit) ?? (members[0] as RuleDefinition)
@@ -200,6 +209,7 @@ export function buildFlowModel(input: {
       waitingOn: rootBlockers(blockedBy, checksByRule).map(waitingEntry),
       checks,
       ...(rule.branch === undefined ? {} : { branch: rule.branch }),
+      ...recheckedAfter([rule]),
     }
   })
 

@@ -22,6 +22,8 @@ const roleLabel = (role: string | undefined) =>
 export const describeWaitingOn = (waitingOn: readonly WaitingOn[]) =>
   waitingOn.map(({ ruleId, role }) => (role ? `${ruleId} · ${roleLabel(role)}` : ruleId)).join(', ')
 
+export const revisionOf = (changeId: string) => changeId.slice(changeId.lastIndexOf('-') + 1)
+
 export function RuleFlowNode({ data }: NodeProps<RuleFlowNodeType>) {
   const isHuman = data.evaluatorKind === 'humanGate'
   const classNames = [
@@ -56,7 +58,18 @@ export function RuleFlowNode({ data }: NodeProps<RuleFlowNodeType>) {
           waiting on {describeWaitingOn(data.waitingOn)}
         </div>
       ) : (
-        data.kind === 'group' && <div className="flow-node-note muted">{counts}</div>
+        data.kind === 'group' && (
+          <div className="flow-node-note muted">
+            {counts}
+            {data.recheckedAfterChange &&
+              ` · re-checked after ${revisionOf(data.recheckedAfterChange)}`}
+          </div>
+        )
+      )}
+      {data.kind === 'rule' && data.recheckedAfterChange && (
+        <div className="flow-node-note flow-node-recheck">
+          re-checked after {revisionOf(data.recheckedAfterChange)}
+        </div>
       )}
       <Handle type="source" position={Position.Right} />
     </div>

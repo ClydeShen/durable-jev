@@ -133,3 +133,25 @@ describe('all rules view', () => {
     expect(model.edges).toContainEqual({ from: 'R09', to: 'R39-LOAD', state: 'inactive' })
   })
 })
+
+describe('change markers', () => {
+  it('marks a rule and its branch as re-checked after the latest change', () => {
+    const changed = checks.map((result) =>
+      result.ruleId === 'R31' ? { ...result, affectedByChange: 'CHG-CASE-r2' } : result,
+    )
+    const overview = buildFlowModel({
+      rootRuleId: 'R40',
+      view: { kind: 'overview' },
+      rules,
+      checks: changed,
+      humanTasks: [],
+      showNotApplicable: false,
+    })
+    expect(
+      overview.nodes.find((node) => node.id === 'branch:commercial')?.recheckedAfterChange,
+    ).toBe('CHG-CASE-r2')
+    expect(
+      overview.nodes.find((node) => node.id === 'branch:base')?.recheckedAfterChange,
+    ).toBeUndefined()
+  })
+})
