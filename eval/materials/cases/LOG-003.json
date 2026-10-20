@@ -1,0 +1,210 @@
+{
+  "caseId": "CASE-LOG-003",
+  "title": "Controlled goods whose documents conflict with the declaration",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-003",
+    "shipmentId": "LOG-003",
+    "customerId": "CUST-ACME-RETAIL",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "NKG-DC3",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-003-ITEM-1",
+        "description": "Lithium ion battery packs for warehouse scanners, 40 units",
+        "declaredCategories": ["CONTROLLED"],
+        "controlledClass": "CLASS-9",
+        "weightGrams": 120000,
+        "lengthMm": 1200,
+        "widthMm": 800,
+        "heightMm": 1000
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-003-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "NKG-DC3",
+        "carrierId": "CAR-NORTHLINE",
+        "vehicleId": "VEH-NL-BOX-7T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-003-1",
+      "amountCents": 260000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [
+      {
+        "documentId": "LOG-003-SDS",
+        "kind": "SAFETY_DATA_SHEET",
+        "cargoItemId": "LOG-003-ITEM-1",
+        "text": "Safety data sheet: lithium metal cells, UN3090, class 9. Keep away from heat.",
+        "extractedFields": {}
+      },
+      {
+        "documentId": "LOG-003-DECL",
+        "kind": "CONTROLLED_DECLARATION",
+        "cargoItemId": "LOG-003-ITEM-1",
+        "text": "Declared goods: lithium ion battery packs for handheld scanners, class 9.",
+        "extractedFields": {}
+      }
+    ],
+    "temperatureLogs": [],
+    "inspectionNotes": []
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-003-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.93
+      }
+    },
+    {
+      "ruleId": "R10",
+      "entityId": "LOG-003-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.5
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "ON_HOLD",
+        "gates": {
+          "R09": "PASS",
+          "R10": "WAITING_HUMAN",
+          "R11": "FAIL",
+          "R13": "BLOCKED_DEPENDENCY",
+          "R14": "FAIL",
+          "R40": "FAIL"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R10",
+            "requiredRole": "COMPLIANCE_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R10",
+      "actor": "COMMERCIAL_MANAGER",
+      "expect": {
+        "error": "FORBIDDEN",
+        "orderStatus": "ON_HOLD",
+        "gates": {
+          "R10": "WAITING_HUMAN"
+        }
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R10",
+      "actor": "COMPLIANCE_REVIEWER",
+      "expect": {
+        "orderStatus": "ON_HOLD",
+        "gates": {
+          "R10": "PASS",
+          "R11": "FAIL",
+          "R13": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": []
+      }
+    },
+    {
+      "step": "changePlan",
+      "actor": "TRANSPORT_PLANNER",
+      "change": {
+        "kind": "changeCarrier",
+        "legId": "LOG-003-LEG-1",
+        "carrierId": "CAR-SECURA",
+        "vehicleId": "VEH-SC-REEFER-3T"
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R10": "PASS",
+          "R11": "PASS",
+          "R13": "WAITING_HUMAN"
+        },
+        "invalidated": ["R11", "R13", "R24", "R25", "R29"],
+        "notInvalidated": ["R10", "R31", "R32"],
+        "openHumanTasks": [
+          {
+            "ruleId": "R13",
+            "requiredRole": "COMPLIANCE_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R13",
+      "actor": "COMPLIANCE_REVIEWER",
+      "expect": {
+        "gates": {
+          "R14": "PASS",
+          "R37": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
