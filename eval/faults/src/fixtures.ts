@@ -4,6 +4,7 @@ import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import {
+  type BranchEvaluator,
   CoordinatorService,
   coordinatorMigrations,
   type Investigator,
@@ -24,22 +25,29 @@ export function coordinatorInProcess(
   options: {
     judgeFor?: JudgeFor
     investigator?: (current: () => CoordinatorService) => Investigator
+    now?: () => string
+    // Lets a scenario put a fault between the coordinator and its branches.
+    wrapEvaluators?: (
+      evaluators: BranchEvaluator[],
+      current: () => CoordinatorService,
+    ) => BranchEvaluator[]
   } = {},
 ) {
   const directory = workDirectory('coordinator')
   let coordinator: CoordinatorService | undefined
+  const current = () => coordinator as CoordinatorService
+  const evaluators = inProcessEvaluators(
+    configuration,
+    referenceData,
+    openDatabase(join(directory, 'reservations.sqlite'), reservationMigrations),
+    options.judgeFor,
+  )
   coordinator = new CoordinatorService({
     database: openDatabase(join(directory, 'coordinator.sqlite'), coordinatorMigrations),
     configuration,
-    evaluators: inProcessEvaluators(
-      configuration,
-      referenceData,
-      openDatabase(join(directory, 'reservations.sqlite'), reservationMigrations),
-      options.judgeFor,
-    ),
-    ...(options.investigator
-      ? { investigator: options.investigator(() => coordinator as CoordinatorService) }
-      : {}),
+    evaluators: options.wrapEvaluators ? options.wrapEvaluators(evaluators, current) : evaluators,
+    ...(options.now ? { now: options.now } : {}),
+    ...(options.investigator ? { investigator: options.investigator(current) } : {}),
   })
   return coordinator
 }
