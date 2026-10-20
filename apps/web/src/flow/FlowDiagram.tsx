@@ -123,7 +123,8 @@ export function FlowDiagram(props: {
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: 0.15, maxZoom: 1 }}
+          // minZoom keeps nodes readable on a phone: the diagram is then wider than the canvas, so drag it.
+          fitViewOptions={{ padding: 0.12, minZoom: 0.55, maxZoom: 1.2 }}
           minZoom={0.2}
           nodesConnectable={false}
           onNodeClick={(_event, node) => {
