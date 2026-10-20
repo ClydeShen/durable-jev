@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
+import { A2aTaskLinks, a2aBranchEvaluator, a2aClientMigrations } from '@durable-jev/a2a-adapter'
 import type { BranchEvaluationRequest } from '@durable-jev/contracts'
 import { buildRuleConfiguration, evaluateBranch } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
@@ -41,6 +42,7 @@ beforeAll(async () => {
     configuration,
     referenceData,
     database,
+    publicUrl: () => baseUrl,
   })
   const server = app.listen(0)
   await new Promise((resolve) => server.once('listening', resolve))
@@ -61,6 +63,24 @@ describe('branch service over HTTP', () => {
     expect(database.prepare('SELECT COUNT(*) AS count FROM evaluation_log').get()).toEqual({
       count: 1,
     })
+  })
+
+  it('answers the same evaluation over A2A as over native HTTP', async () => {
+    const base = evaluateBranch(baseRequest(), { configuration, referenceData, branches: ['base'] })
+    const request = { ...baseRequest(), caseRevision: 2, upstreamResults: base.evaluations }
+    const native = await httpBranchEvaluator(
+      'commercial-control',
+      ['commercial'],
+      baseUrl,
+    ).evaluate(request)
+    const links = new A2aTaskLinks(openDatabase(':memory:', a2aClientMigrations))
+    const overA2a = await a2aBranchEvaluator(
+      'commercial-control',
+      ['commercial'],
+      baseUrl,
+      links,
+    ).evaluate(request)
+    expect(overA2a).toEqual(native)
   })
 
   it('rejects a malformed request', async () => {
