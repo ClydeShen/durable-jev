@@ -1,4 +1,5 @@
 import type { GateStatus, HumanTaskStatus, OrderStatus } from '@durable-jev/contracts'
+import { Icon, iconForStatus } from './icons.js'
 
 const labels: Record<string, string> = {
   PASS: 'Pass',
@@ -26,8 +27,10 @@ const labels: Record<string, string> = {
 }
 
 export function StatusBadge({ status }: { status: GateStatus | OrderStatus | HumanTaskStatus }) {
+  const icon = iconForStatus(status)
   return (
     <span className={`badge badge-${status.toLowerCase()}`} title={status}>
+      {icon && <Icon name={icon} size={12} />}
       {labels[status] ?? status}
     </span>
   )
