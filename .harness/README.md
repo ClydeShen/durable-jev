@@ -20,3 +20,5 @@ Claude delivery agent 的工作区，由 agent 自治管理。用户文档和测
 3. 偏离设计或任务目标时，先改 `design.md` / `roadmap.md`，再在 `implementation-notes.md` 记一行原因。
 4. 每个大阶段结束前做一次真实 Jev 抽测（见 `spec.md` 第 8 节），记录到 `docs/live-checks.md`，把发现转成 roadmap 任务或 implementation-notes 条目后再进入下一阶段。
 5. 冲突优先级：用户最新指令 > `spec.md` > `design.md` > `prd.md`。
+
+代码规范见 `docs/conventions.md`：新代码必须通过 `pnpm check:conventions`（arrow function 能用就用；文件名为 `<概念>.<角色>.ts`）。旧代码按 P8 逐包迁移。
