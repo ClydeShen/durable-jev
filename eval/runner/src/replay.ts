@@ -11,6 +11,7 @@ import {
 } from '@durable-jev/coordinator'
 import {
   buildRuleConfiguration,
+  type JudgeFor,
   loadReferenceData,
   type RuleConfiguration,
 } from '@durable-jev/rule-evaluation'
@@ -63,6 +64,7 @@ class ReplayedCoordinator {
     private readonly configuration: RuleConfiguration,
     private readonly databasePath: string,
     private readonly reservationPath: string,
+    private readonly judgeFor?: JudgeFor,
   ) {
     this.service = this.open()
   }
@@ -83,6 +85,7 @@ class ReplayedCoordinator {
         this.configuration,
         loadReferenceData(join(materialsDirectory, 'mock-data/reference-data.json')),
         openDatabase(this.reservationPath, reservationMigrations),
+        this.judgeFor,
       ),
       now: fixedNow,
     })
@@ -205,9 +208,12 @@ function errorCodeOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+export type ReplayOptions = { judgeFor?: JudgeFor; caseIds?: readonly string[] }
+
 export async function replayCase(
   caseFile: CaseFile,
   configuration: RuleConfiguration = loadReplayConfiguration(),
+  options: ReplayOptions = {},
 ): Promise<CaseReplay> {
   const workDirectory = mkdtempSync(join(tmpdir(), `replay-${caseFile.caseId}-`))
   try {
@@ -215,6 +221,7 @@ export async function replayCase(
       configuration,
       join(workDirectory, 'coordinator.sqlite'),
       join(workDirectory, 'transport-planning.sqlite'),
+      options.judgeFor,
     )
     const stages: StageResult[] = []
     for (const [index, step] of caseFile.eventScript.entries()) {
@@ -239,10 +246,11 @@ export async function replayCase(
   }
 }
 
-export async function replayAllCases(): Promise<CaseReplay[]> {
+export async function replayAllCases(options: ReplayOptions = {}): Promise<CaseReplay[]> {
   const configuration = loadReplayConfiguration()
   const results: CaseReplay[] = []
-  for (const caseName of listCaseIds())
-    results.push(await replayCase(loadCase(caseName), configuration))
+  const caseIds = options.caseIds?.length ? options.caseIds : listCaseIds()
+  for (const caseName of caseIds)
+    results.push(await replayCase(loadCase(caseName), configuration, options))
   return results
 }
