@@ -6,10 +6,9 @@ import { CaseTable } from './CaseTable.js'
 import { type CaseSummary, formatDuration, isRecoveryEvent } from './console-model.js'
 import { JudgementDetail } from './JudgementDetail.js'
 import { type CaseDetail, observeApi } from './observe-api.js'
+import { cursorOf, mergeStored, openEventStream, type StreamState } from './observe-stream.js'
 import { RecoveryDetail } from './RecoveryDetail.js'
 import { Timeline } from './Timeline.js'
-
-const refreshIntervalMs = 2000
 
 const tabs: { id: ConsoleTab; label: string }[] = [
   { id: 'timeline', label: 'Timeline' },
@@ -26,41 +25,133 @@ export function ConsolePage(props: {
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [detail, setDetail] = useState<CaseDetail>()
   const [problem, setProblem] = useState<string>()
+  const [stream, setStream] = useState<StreamState>('connecting')
+  const { correlationId } = location
 
-  const refresh = useCallback(async () => {
+  // The list and the summary tiles are small snapshots; events themselves arrive on the stream.
+  const loadCases = useCallback(async () => {
     try {
-      setCases((await observeApi.cases()).cases)
-      setDetail(
-        location.correlationId ? await observeApi.caseDetail(location.correlationId) : undefined,
-      )
+      const { cases: latestCases, latest } = await observeApi.cases()
+      setCases(latestCases)
       setProblem(undefined)
+      return latest
     } catch (error) {
       setProblem(
         `Cannot reach the observation service (${String(error)}). The workbench keeps working without it.`,
       )
+      return 0
     }
-  }, [location.correlationId])
+  }, [])
 
   useEffect(() => {
-    refresh()
-    const timer = setInterval(refresh, refreshIntervalMs)
-    return () => clearInterval(timer)
-  }, [refresh])
+    if (correlationId) return
+    let closeStream = () => {}
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let alive = true
+    loadCases().then((latest) => {
+      if (!alive) return
+      closeStream = openEventStream({
+        after: latest,
+        onState: setStream,
+        // Many events arrive together: refresh the list once they settle.
+        onEvents: () => {
+          clearTimeout(timer)
+          timer = setTimeout(loadCases, 300)
+        },
+      })
+    })
+    return () => {
+      alive = false
+      clearTimeout(timer)
+      closeStream()
+    }
+  }, [correlationId, loadCases])
+
+  useEffect(() => {
+    if (!correlationId) {
+      setDetail(undefined)
+      return
+    }
+    let closeStream = () => {}
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let alive = true
+    let wasInterrupted = false
+    const snapshot = async () => {
+      try {
+        const fresh = await observeApi.caseDetail(correlationId)
+        if (!alive) return
+        setProblem(undefined)
+        setDetail((current) => {
+          // The collector's history is shorter than ours (its database was reset): start over.
+          const reset = current !== undefined && fresh.latest < cursorOf(current.events)
+          return {
+            summary: fresh.summary,
+            latest: fresh.latest,
+            events: reset || !current ? fresh.events : mergeStored(current.events, fresh.events),
+          }
+        })
+        return fresh.latest
+      } catch (error) {
+        if (alive)
+          setProblem(
+            `Cannot reach the observation service (${String(error)}). The workbench keeps working without it.`,
+          )
+        return undefined
+      }
+    }
+    snapshot().then((latest) => {
+      if (!alive) return
+      closeStream = openEventStream({
+        after: latest ?? 0,
+        correlationId,
+        onState: (state) => {
+          setStream(state)
+          if (state === 'reconnecting') wasInterrupted = true
+          // After a drop the stream replays what was missed; the snapshot also refreshes the totals
+          // and catches a collector that was reset in the meantime.
+          if (state === 'live' && wasInterrupted) {
+            wasInterrupted = false
+            snapshot()
+          }
+        },
+        onEvents: (incoming) => {
+          setDetail(
+            (current) => current && { ...current, events: mergeStored(current.events, incoming) },
+          )
+          clearTimeout(timer)
+          timer = setTimeout(snapshot, 400)
+        },
+      })
+    })
+    return () => {
+      alive = false
+      clearTimeout(timer)
+      closeStream()
+    }
+  }, [correlationId])
 
   const go = (next: Partial<ConsoleLocation>) =>
     props.navigate(formatConsoleLocation({ ...location, ...next }))
 
   return (
     <main className="content console">
+      <div className={`stream-state stream-${stream}`} role="status">
+        <Icon name={stream === 'live' ? 'live' : 'offline'} />{' '}
+        {stream === 'live'
+          ? 'Live'
+          : stream === 'connecting'
+            ? 'Connecting'
+            : 'Reconnecting, nothing is lost'}
+      </div>
       {problem && (
         <div className="message message-error" role="status">
           {problem}
         </div>
       )}
-      {!location.correlationId ? (
+      {!correlationId ? (
         <CaseTable
           cases={cases}
-          onOpen={(correlationId) => props.navigate(formatConsoleLocation({ correlationId }))}
+          onOpen={(next) => props.navigate(formatConsoleLocation({ correlationId: next }))}
         />
       ) : (
         <>
@@ -68,8 +159,8 @@ export function ConsolePage(props: {
             <button type="button" onClick={() => props.navigate(formatConsoleLocation({}))}>
               <Icon name="route" size={12} /> All cases
             </button>
-            <h2>{detail?.summary.caseId ?? location.correlationId}</h2>
-            <span className="muted small">{location.correlationId}</span>
+            <h2>{detail?.summary.caseId ?? correlationId}</h2>
+            <span className="muted small">{correlationId}</span>
             {detail?.summary.caseId && (
               <a
                 className="link-button small"

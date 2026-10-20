@@ -1171,3 +1171,20 @@ button:has(> .icon) {
 .timeline-what .link-button {
   margin-left: 10px;
 }
+
+.stream-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.stream-live {
+  color: var(--pass);
+}
+
+.stream-reconnecting {
+  color: var(--wait);
+}
