@@ -13,4 +13,9 @@ describe('fault runner', () => {
     expect(report).toContain('3 of 3 scenarios passed')
     expect(report).toContain('| F08 | The same field result submitted twice |')
   })
+
+  it('runs the gate scenarios F11 to F18 in process', async () => {
+    const runs = await runFaults(['F11', 'F12', 'F13', 'F14', 'F15', 'F16', 'F17', 'F18'])
+    expect(runs.filter((run) => !run.passed).map((run) => run.observations)).toEqual([])
+  })
 })

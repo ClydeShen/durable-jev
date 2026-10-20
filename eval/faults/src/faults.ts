@@ -5,6 +5,7 @@ import { repositoryRoot } from './fixtures.js'
 import { f03, f05, f06, f07, f08, f09, f10 } from './scenarios/coordinator-faults.js'
 import { f01, restartLoop } from './scenarios/crash-recovery.js'
 import { f02, f04 } from './scenarios/duplicate-delivery.js'
+import { f11, f12, f13, f14, f15, f16, f17, f18 } from './scenarios/gate-faults.js'
 
 export const faultScenarios: readonly FaultScenario[] = [
   f01,
@@ -18,6 +19,14 @@ export const faultScenarios: readonly FaultScenario[] = [
   f09,
   f10,
   restartLoop,
+  f11,
+  f12,
+  f13,
+  f14,
+  f15,
+  f16,
+  f17,
+  f18,
 ]
 
 export type FaultRun = FaultScenario & FaultResult & { durationMs: number }
