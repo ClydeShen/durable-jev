@@ -254,6 +254,22 @@ interface SemanticJudge {
 - 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
 - 业务正确性不依赖观察库。
 
+### 9.1 落地（T6.1–T6.4）
+
+**事件与 span 同一张表，两种 kind。** `ObservabilityEvent`（contracts，zod，`eval/materials/event-schema.json` 由它生成并有一致性测试）：
+- `kind: 'event'`：业务时间线上的一件事（`case.submitted`、`rule.evaluated`、`jev.requested`/`jev.completed`、`information.requested`/`information.received`、`run.interrupted`/`run.resumed`、`result.invalidated`、`case.recommended`、`task.failed` 等 PRD 15.3 列出的类型）。
+- `kind: 'span'`：一次调用的起止、父子与 link，用于调用树。
+- 公共字段：`eventId`、`causationId?`、`timestamp`（UTC）、`severity`、`service`、`correlationId`、`caseId`、`caseRevision?`、`traceId?`、`spanId?`、`parentSpanId?`、`links?`、`a2aTaskId?`、`runId?`、`attempt?`、`status?`、`durationMs?`、`errorCode?`、`attributes?`。不适用的字段省略，不填假值；usage/成本未知写 `unknown`，不写 0。
+- 不存完整提示、文档、密钥；`redact()` 统一处理 attributes 与 headers（Authorization、api key 一类键）。
+
+**写入路径。** `packages/telemetry`：`Telemetry.emit()` 把事件同步写入本服务自己的 `outbox`（同一个 SQLite，业务事务内可一起提交）；`OutboxRelay` 轮询未发布事件，批量 POST 到收集器，成功后标记已发布，失败退避重试，不影响业务。收集器 `apps/observability`（端口 4200）按 `eventId` 幂等入库到 `observability.sqlite`，每条事件有递增 `sequence` 作游标。观察层不可用时业务照常运行，恢复后由 outbox 回补；未收集到的 span 不事后伪造。
+
+**Trace。** `@opentelemetry/api` + `sdk-trace-node`（M0 验证），不用自动埋点。`initTracing(service, telemetry)` 注册 tracer provider，自定义 SpanProcessor 把结束的 span 转成 `kind: 'span'` 事件。跨服务：HTTP（原生与 A2A）注入 `traceparent`，服务端 Express 中间件提取后在该上下文内处理请求。等待人工或进程重启后的处理开新 trace，用 span link 指回创建该任务/运行时的 span（`traceparent` 存在任务/运行记录里），同一 `correlationId`，不保持 span 打开数小时。
+
+**查询与实时。** 收集器提供只读查询：案例列表（历时、机器处理时间、人工等待、最后活动）、案例时间线、trace 的 span 树、事件详情；`GET /stream?after=<sequence>` 为 SSE，每条带 `id: <sequence>`，客户端先取快照得到游标再续订，断线用 `Last-Event-ID` 补齐，按 `eventId` 去重。机器处理时间 = 各 span 的并集时长，不含人工等待，并行 span 不简单累加。
+
+**Console。** 工作台新增 `/console` 视图（只读，故障注入仍在 Demo controls）：案例列表、时间线（区分代码规则、Jev、工具、A2A、人工）、调用视图（span 树）、判断详情（Jev 原始答案与业务映射并排，注明 probability 不等于准确率）、恢复详情（中断、恢复、幂等命中、旧结果失效）；从流程图规则节点可跳到对应 Jev span、A2A Task、人工操作证据。
+
 ## 10. 状态机
 
 所有持久化状态用 `contracts` 中的 `defineStateMachine` 定义：状态、允许的转移、初始态；没有出边的状态即终态。任何写状态的代码都经过 `machine.transition(from, to)`，非法转移抛错；同态转移视为 no-op。
