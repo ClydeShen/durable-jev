@@ -17,6 +17,7 @@ const controlServer = createControlApp(supervisor).listen(ports.launcher, '127.0
   ] as const) {
     console.log(`  ${name.padEnd(12)} http://127.0.0.1:${port}/capabilities`)
   }
+  console.log(`  ${'observe'.padEnd(12)} http://127.0.0.1:${ports.observability}/cases`)
   console.log(`  ${'control'.padEnd(12)} http://127.0.0.1:${ports.launcher}/processes`)
   console.log('')
   console.log('Load demo cases with: pnpm demo:reset')

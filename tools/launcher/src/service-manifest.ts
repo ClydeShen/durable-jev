@@ -10,12 +10,15 @@ export const ports = {
   cargoAssurance: 4110,
   transportPlanning: 4120,
   commercialControl: 4130,
+  observability: 4200,
   web: 5173,
 } as const
 
 const serviceUrl = (port: number) => `http://127.0.0.1:${port}`
 
 export type DataService = { name: string; databasePath: string }
+
+const observabilityUrl = serviceUrl(ports.observability)
 
 function branchService(name: string, port: number): ManagedProcessDefinition & DataService {
   const databasePath = resolve(dataDirectory, `${name}.sqlite`)
@@ -24,7 +27,12 @@ function branchService(name: string, port: number): ManagedProcessDefinition & D
     databasePath,
     command: process.execPath,
     args: [resolve(repositoryRoot, `apps/${name}/dist/main.js`)],
-    env: { SERVICE_PORT: String(port), SERVICE_DB: databasePath, DEMO_FAULTS: 'on' },
+    env: {
+      SERVICE_PORT: String(port),
+      SERVICE_DB: databasePath,
+      DEMO_FAULTS: 'on',
+      OBSERVABILITY_URL: observabilityUrl,
+    },
     healthUrl: `${serviceUrl(port)}/health`,
   }
 }
@@ -56,13 +64,30 @@ const coordinator: ManagedProcessDefinition & DataService = {
     CARGO_ASSURANCE_URL: serviceUrl(ports.cargoAssurance),
     TRANSPORT_PLANNING_URL: serviceUrl(ports.transportPlanning),
     COMMERCIAL_CONTROL_URL: serviceUrl(ports.commercialControl),
+    OBSERVABILITY_URL: observabilityUrl,
   },
   healthUrl: `${serviceUrl(ports.coordinator)}/health`,
 }
 
-export const dataServices: readonly DataService[] = [...branchServices, coordinator]
+// Starts first: the services' relays deliver to it from their first event.
+const observabilityDatabasePath = resolve(dataDirectory, 'observability.sqlite')
+
+const observability: ManagedProcessDefinition & DataService = {
+  name: 'observability',
+  databasePath: observabilityDatabasePath,
+  command: process.execPath,
+  args: [resolve(repositoryRoot, 'apps/observability/dist/main.js')],
+  env: {
+    OBSERVABILITY_PORT: String(ports.observability),
+    OBSERVABILITY_DB: observabilityDatabasePath,
+  },
+  healthUrl: `${observabilityUrl}/health`,
+}
+
+export const dataServices: readonly DataService[] = [observability, ...branchServices, coordinator]
 
 export const serviceManifest: ManagedProcessDefinition[] = [
+  observability,
   ...branchServices,
   coordinator,
   {
@@ -78,6 +103,7 @@ export const serviceManifest: ManagedProcessDefinition[] = [
       WEB_PORT: String(ports.web),
       COORDINATOR_URL: serviceUrl(ports.coordinator),
       LAUNCHER_URL: serviceUrl(ports.launcher),
+      OBSERVABILITY_URL: observabilityUrl,
     },
     healthUrl: `${serviceUrl(ports.web)}/`,
   },
