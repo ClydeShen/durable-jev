@@ -17,7 +17,7 @@ describe('icon system', () => {
       readFileSync(file, 'utf8')
         .split('\n')
         .flatMap((line, index) =>
-          /[^\x00-\x7F]/.test(line) ? [`${file}:${index + 1}: ${line.trim()}`] : [],
+          /[^\p{ASCII}]/u.test(line) ? [`${file}:${index + 1}: ${line.trim()}`] : [],
         ),
     )
     expect(offenders).toEqual([])
