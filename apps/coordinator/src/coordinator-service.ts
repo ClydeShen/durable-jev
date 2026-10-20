@@ -48,7 +48,12 @@ import {
 import type { StoreDatabase } from '@durable-jev/store'
 import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
-import { deriveOrderStatus, dispatchConfirmationRuleId, finalGateRuleId } from './order-status.js'
+import {
+  deriveOrderStatus,
+  dispatchConfirmationRuleId,
+  finalGateRuleId,
+  gatesBeforeDispatchConfirmation,
+} from './order-status.js'
 import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
 import { applyPlanChange, roleForChange } from './plan-change.js'
 
@@ -94,6 +99,7 @@ export class CoordinatorService {
   private readonly evaluationLayers: BranchEvaluator[][]
   private readonly now: () => string
   private readonly rulesById: Map<string, RuleDefinition>
+  private readonly gatesBeforeConfirmation: string[]
 
   constructor(dependencies: CoordinatorDependencies) {
     this.database = dependencies.database
@@ -104,6 +110,9 @@ export class CoordinatorService {
       dependencies.configuration,
     )
     this.now = dependencies.now ?? (() => new Date().toISOString())
+    this.gatesBeforeConfirmation = gatesBeforeDispatchConfirmation(
+      dependencies.configuration.rulesInEvaluationOrder,
+    )
     this.rulesById = new Map(
       dependencies.configuration.rulesInEvaluationOrder.map((rule) => [rule.ruleId, rule]),
     )
@@ -470,6 +479,7 @@ export class CoordinatorService {
       evaluations: evaluation.evaluations,
       finalGateStatus,
       openHumanTasks: this.repository.listHumanTasks({ caseId, status: 'OPEN' }),
+      gatesBeforeConfirmation: this.gatesBeforeConfirmation,
     })
     this.moveOrderTo(caseId, orderStatus)
     return finalGateStatus
