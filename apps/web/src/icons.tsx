@@ -20,6 +20,7 @@ import {
   PackageCheck,
   Play,
   Power,
+  Radio,
   RefreshCw,
   Replace,
   RotateCcw,
@@ -32,6 +33,7 @@ import {
   TriangleAlert,
   Truck,
   UserRound,
+  WifiOff,
   Wrench,
   X,
 } from 'lucide-react'
@@ -76,6 +78,8 @@ const icons = {
   tool: Wrench,
   service: Server,
   agent: Bot,
+  live: Radio,
+  offline: WifiOff,
 } as const satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof icons
