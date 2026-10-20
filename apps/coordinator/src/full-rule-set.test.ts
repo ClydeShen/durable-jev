@@ -213,3 +213,86 @@ describe('commercial credit exception', () => {
     expect(view.orderStatus).toBe('ON_HOLD')
   })
 })
+
+describe('branches progress independently while waiting on people', () => {
+  const itemId = 'CTRL-ITEM-1'
+  const controlledOverCredit: Shipment = {
+    ...baseShipment,
+    caseId: 'CASE-PARALLEL' as never,
+    shipmentId: 'PARALLEL-1' as never,
+    destination: 'NKG-DC3',
+    cargoItems: [
+      {
+        cargoItemId: itemId as never,
+        description: 'Lithium ion battery packs for medical carts, 20 units',
+        declaredCategories: ['CONTROLLED'],
+        controlledClass: 'CLASS-9',
+        weightGrams: 80_000,
+        lengthMm: 1200,
+        widthMm: 800,
+        heightMm: 900,
+      },
+    ],
+    legs: baseShipment.legs.map((leg) => ({
+      ...leg,
+      toLocation: 'NKG-DC3',
+      carrierId: 'CAR-SECURA' as never,
+      vehicleId: 'VEH-SC-REEFER-3T' as never,
+    })),
+    quote: { ...baseShipment.quote, amountCents: 4_000_000 },
+  }
+  const evidence: CaseEvidence = {
+    documents: [
+      {
+        documentId: 'SDS-1',
+        kind: 'SAFETY_DATA_SHEET',
+        cargoItemId: itemId as never,
+        text: 'Lithium ion batteries, UN3480, class 9.',
+        extractedFields: {},
+      },
+      {
+        documentId: 'DECL-1',
+        kind: 'CONTROLLED_DECLARATION',
+        cargoItemId: itemId as never,
+        text: 'Declared: lithium ion battery packs, class 9.',
+        extractedFields: {},
+      },
+    ],
+    temperatureLogs: [],
+    inspectionNotes: [],
+  }
+  const answers = [
+    { ruleId: 'R03', entityId: itemId, answer: { type: 'noul' as const, noul: 0.94 } },
+    { ruleId: 'R10', entityId: itemId, answer: { type: 'noul' as const, noul: 0.92 } },
+    { ruleId: 'R27', entityId: 'order', answer: { type: 'noul' as const, noul: 0.93 } },
+  ]
+
+  it('completes the commercial branch while compliance sign-off is still pending', async () => {
+    const coordinator = startCoordinator()
+    let view = await coordinator.submitCase({
+      shipment: controlledOverCredit,
+      evidence,
+      scriptedSemanticAnswers: answers,
+    })
+    expect(openTask(view, 'R13')?.requiredRole).toBe('COMPLIANCE_REVIEWER')
+    expect(openTask(view, 'R34')?.requiredRole).toBe('COMMERCIAL_MANAGER')
+
+    await coordinator.approveHumanTask(
+      openTask(view, 'R34')?.humanTaskId ?? '',
+      'COMMERCIAL_MANAGER',
+    )
+    view = coordinator.getCase(controlledOverCredit.caseId)
+    expect(gate(view, 'R36')).toBe('PASS')
+    expect(gate(view, 'R13')).toBe('WAITING_HUMAN')
+    expect(gate(view, 'R14', itemId)).toBe('BLOCKED_DEPENDENCY')
+    expect(openTask(view, 'R39-LOAD')).toBeUndefined()
+
+    await coordinator.approveHumanTask(
+      openTask(view, 'R13')?.humanTaskId ?? '',
+      'COMPLIANCE_REVIEWER',
+    )
+    view = coordinator.getCase(controlledOverCredit.caseId)
+    expect(gate(view, 'R14', itemId)).toBe('PASS')
+    expect(openTask(view, 'R39-LOAD')).toBeDefined()
+  })
+})
