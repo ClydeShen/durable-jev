@@ -1,3 +1,4 @@
+import { BranchUnavailableError } from '@durable-jev/branch-service'
 import { CaseEvidence, Role, ScriptedSemanticAnswer, Shipment } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express, Request } from 'express'
@@ -42,6 +43,10 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
       message: error.message,
       details: error.details,
     })
+    return
+  }
+  if (error instanceof BranchUnavailableError) {
+    response.status(503).json({ error: 'BRANCH_UNAVAILABLE', message: error.message })
     return
   }
   if (error instanceof z.ZodError) {

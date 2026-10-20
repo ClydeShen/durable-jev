@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
+    "@durable-jev/branch-service": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",

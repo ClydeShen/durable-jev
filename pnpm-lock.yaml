@@ -38,6 +38,9 @@ importers:
 
   apps/coordinator:
     dependencies:
+      '@durable-jev/branch-service':
+        specifier: workspace:*
+        version: link:../../packages/branch-service
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts

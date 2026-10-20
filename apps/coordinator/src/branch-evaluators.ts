@@ -1,3 +1,4 @@
+import { httpBranchEvaluator } from '@durable-jev/branch-service'
 import type {
   BranchEvaluationRequest,
   BranchEvaluationResult,
@@ -56,6 +57,29 @@ export function inProcessEvaluators(
         ensurePlanReservation(reservationDatabase, request.shipment),
     }),
     inProcessEvaluator('commercial-control', branchesByService.commercialControl, dependencies),
+    inProcessEvaluator('coordinator', ['release'], dependencies),
+  ]
+}
+
+export function serviceEvaluators(
+  configuration: RuleConfiguration,
+  referenceData: ReferenceData,
+  urls: { cargoAssurance: string; transportPlanning: string; commercialControl: string },
+): BranchEvaluator[] {
+  const dependencies = { configuration, referenceData }
+  return [
+    inProcessEvaluator('coordinator', ['base'], dependencies),
+    httpBranchEvaluator('cargo-assurance', branchesByService.cargoAssurance, urls.cargoAssurance),
+    httpBranchEvaluator(
+      'transport-planning',
+      branchesByService.transportPlanning,
+      urls.transportPlanning,
+    ),
+    httpBranchEvaluator(
+      'commercial-control',
+      branchesByService.commercialControl,
+      urls.commercialControl,
+    ),
     inProcessEvaluator('coordinator', ['release'], dependencies),
   ]
 }

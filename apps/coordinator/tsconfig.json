@@ -8,6 +8,9 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     {
+      "path": "../../packages/branch-service"
+    },
+    {
       "path": "../../packages/contracts"
     },
     {
