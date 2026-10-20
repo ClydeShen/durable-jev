@@ -27,6 +27,8 @@ pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 
 Each service keeps its own SQLite database in `var/data/`. The coordinator owns orders and human tasks and asks the three branch services to evaluate their rules over HTTP (`POST /evaluations`).
 
+Each branch service also speaks A2A: its Agent Card is at `/.well-known/agent-card.json` (for example http://127.0.0.1:4110/.well-known/agent-card.json) and its JSON-RPC endpoint at `/a2a/jsonrpc`. Start with `BRANCH_PROTOCOL=a2a pnpm start` to have the coordinator delegate over A2A instead of native HTTP; the orders end the same either way. Each delegation is recorded in the coordinator's `a2a_task_links` table, and a resent request returns the original A2A task instead of evaluating again.
+
 `Ctrl+C` stops every process. Data survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
@@ -114,5 +116,5 @@ Live judgements are cached in `var/data/semantic-cache.sqlite`, so a rerun costs
 
 ## Troubleshooting
 
-- Port already in use: make sure nothing else is on 4000, 4100 or 5173, or stop the previous `pnpm start` with `Ctrl+C`.
+- Port already in use, or "another instance is running": a service from an earlier run is still up. Stop the previous `pnpm start` with `Ctrl+C`, or find the process on 4000, 4100–4130 or 5173 and stop it.
 - `pnpm demo:reset` cannot connect: run `pnpm start` in another terminal first.
