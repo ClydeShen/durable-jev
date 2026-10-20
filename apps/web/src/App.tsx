@@ -245,6 +245,8 @@ export function App() {
                       )
                     }
                   />
+                </div>
+                <div>
                   <InvestigationPanel
                     shipment={selectedCase.shipment}
                     investigations={selectedCase.investigations}
