@@ -84,6 +84,14 @@ curl -X POST http://127.0.0.1:4000/processes/coordinator/start     # restart; da
 curl http://127.0.0.1:4000/processes                               # process status
 ```
 
+### Walkthrough: crashes, slow services and duplicates from the workbench
+
+Open "Demo controls" under the case list.
+
+1. Select LOG-006 and leave the quality review (R20) open. Click "Kill" next to the coordinator: the workbench reports that it cannot reach the coordinator. Click "Start": the same R20 task is still there; approve it as "Quality reviewer".
+2. As "Warehouse operator", complete the loading task, then click "Send again". The duplicate is refused (409) and the order stays ready to dispatch.
+3. Click "Slow down" next to commercial-control and, as "Commercial manager", change the quote. The service now takes 12 s, longer than the coordinator waits, so the change ends in a technical failure. Click "Normal speed", then "Re-evaluate": the order recovers.
+
 ### Walkthrough: a branch service goes down
 
 1. `curl -X POST http://127.0.0.1:4000/processes/commercial-control/kill`
