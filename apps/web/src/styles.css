@@ -601,3 +601,49 @@ section {
 .investigation-stale {
   border-left-color: var(--invalid);
 }
+
+.demo-controls {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.demo-controls summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.process-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+  font-size: 13px;
+}
+
+.process-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.process-name {
+  font-weight: 600;
+}
+
+.process-actions {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.process-running {
+  color: var(--pass);
+}
+
+.process-exited,
+.process-stopped {
+  color: var(--fail);
+}

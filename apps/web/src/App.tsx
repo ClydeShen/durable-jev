@@ -2,6 +2,7 @@ import type { HumanTask, PlanChange, ReferenceData, Role } from '@durable-jev/co
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
 import { CaseList } from './CaseList.js'
+import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { InvestigationPanel } from './InvestigationPanel.js'
@@ -22,6 +23,10 @@ export function App() {
   const [referenceData, setReferenceData] = useState<ReferenceData>()
   const [view, setView] = useState<'flow' | 'tree'>('flow')
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string }>()
+  const [lastAction, setLastAction] = useState<{
+    description: string
+    action: () => Promise<unknown>
+  }>()
 
   const refresh = useCallback(async () => {
     try {
@@ -33,7 +38,11 @@ export function App() {
         setSelectedCase(await api.getCase(caseId))
       }
     } catch (error) {
-      setMessage({ kind: 'error', text: `Cannot reach the coordinator: ${String(error)}` })
+      const detail = error instanceof ApiError ? `HTTP ${error.status}` : String(error)
+      setMessage({
+        kind: 'error',
+        text: `Cannot reach the coordinator (${detail}). If it was stopped, start it under Demo controls.`,
+      })
     }
   }, [selectedCaseId])
 
@@ -48,7 +57,9 @@ export function App() {
     return () => clearInterval(timer)
   }, [refresh])
 
-  const run = async (description: string, action: () => Promise<unknown>) => {
+  // Business actions are remembered so the demo controls can send the same one again.
+  const run = async (description: string, action: () => Promise<unknown>, remember = true) => {
+    if (remember) setLastAction({ description, action })
     try {
       await action()
       setMessage({ kind: 'info', text: `${description}: done` })
@@ -90,10 +101,15 @@ export function App() {
         <button
           type="button"
           onClick={() =>
-            run('Reset demo', async () => {
-              setSelectedCaseId(undefined)
-              await api.resetDemo()
-            })
+            run(
+              'Reset demo',
+              async () => {
+                setSelectedCaseId(undefined)
+                setLastAction(undefined)
+                await api.resetDemo()
+              },
+              false,
+            )
           }
         >
           Reset demo
@@ -109,6 +125,14 @@ export function App() {
       <aside className="sidebar">
         <h2>Cases</h2>
         <CaseList cases={cases} selectedCaseId={selectedCaseId} onSelect={setSelectedCaseId} />
+        <DemoControls
+          run={(description, action) => run(description, action, false)}
+          lastAction={lastAction?.description}
+          resendLastAction={async () => {
+            if (lastAction)
+              await run(`${lastAction.description} (sent again)`, lastAction.action, false)
+          }}
+        />
       </aside>
 
       <main className="content">
