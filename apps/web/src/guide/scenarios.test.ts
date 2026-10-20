@@ -15,7 +15,7 @@ const state = (overrides: Partial<GuideState> = {}): GuideState => ({
 })
 
 describe('guided scenarios', () => {
-  it('has a scenario for each workbench order that needs only buttons', () => {
+  it('has a scenario for each workbench order', () => {
     expect(scenarios.map((scenario) => scenario.shipmentId)).toEqual([
       'LOG-001',
       'LOG-002',
@@ -23,6 +23,8 @@ describe('guided scenarios', () => {
       'LOG-004',
       'LOG-005',
       'LOG-006',
+      'LOG-007',
+      'LOG-008',
     ])
   })
 

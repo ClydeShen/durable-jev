@@ -102,7 +102,7 @@
 |---|---|---|---|---|
 | [x] | T8.1 | 写 `docs/conventions.md`（arrow function 能用就用、目录分层、`<概念>.<角色>.ts` 命名、术语表）并加 `pnpm check:conventions` 棘轮检查 | lint 包含该检查；基线只增不减 | - |
 | [x] | T8.2 | Dashboard 场景导览：8 个案例与故障演示做成可点的场景，步骤随真实状态推进 | 全部场景不开终端即可演完 | T8.1 |
-| [ ] | T8.3 | 补缺失控件：换路线（LOG-007）、记录新包装（LOG-008）；故障按钮（Jev 不可用、并发改报价） | replay 里的每一步 UI 都能做 | T8.2 |
+| [~] | T8.3 | 补缺失控件：换路线（LOG-007）、记录新包装（LOG-008）；故障按钮（Jev 不可用、并发改报价） | replay 里的每一步 UI 都能做 | T8.2 |
 | [ ] | T8.4 | Dashboard 内切换 native/A2A 与 scripted/live；证明页显示 replay 与 faults 结果并可重跑 | 无需改环境变量或敲命令 | T8.2 |
 | [ ] | T8.5 | 一键启动（bootstrap+start 合一，自动打开浏览器） | 一条命令进入 Dashboard | T8.2 |
 | [ ] | T8.6 | 按包迁移到新规范（每包一组小 commit，每包迁完跑全套验证），基线清零 | `baseline.json` 为空 | T8.1 |

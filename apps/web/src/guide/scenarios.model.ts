@@ -300,6 +300,109 @@ export const scenarios: readonly Scenario[] = [
       dispatch(),
     ],
   },
+  {
+    shipmentId: 'LOG-007',
+    title: 'The transfer hub cannot keep the cargo cold',
+    shows: 'A failed check no approval can fix, and a route change that clears it.',
+    steps: [
+      {
+        id: 'read',
+        title: 'See why it is on hold',
+        instruction:
+          'R26 failed on leg 1: the Shenzhen hub cannot keep cold chain cargo cold. No person is asked to approve, because a failed check is not something an approval can override.',
+        expect: 'The order is "On hold" and no human task is open.',
+      },
+      {
+        id: 'route',
+        title: 'Route through another hub',
+        instruction:
+          'Under "Plan changes" choose the transfer hub SHA-HUB and click "Route through hub".',
+        expect:
+          'A new revision with two legs through the Shanghai hub. R26 passes and loading opens.',
+        role: 'TRANSPORT_PLANNER',
+        done: planChanged('replaceLegs'),
+      },
+      load(),
+      dispatch(),
+    ],
+  },
+  {
+    shipmentId: 'LOG-008',
+    title: 'Quality approval for an old packaging version',
+    shows:
+      'A change voids exactly the approvals that depended on what changed, and asks for them again.',
+    steps: [
+      {
+        id: 'read',
+        title: 'See what is waiting',
+        instruction: 'R20 asks the quality reviewer about the temperature excursion.',
+        expect: 'The order is "Awaiting human".',
+      },
+      {
+        id: 'rework',
+        title: 'Approve with rework',
+        instruction: 'Click "Approve, rework required".',
+        expect: 'R21 (repack) opens for the warehouse operator.',
+        role: 'QUALITY_REVIEWER',
+        done: taskResolved('R20'),
+      },
+      {
+        id: 'repack',
+        title: 'Repack',
+        instruction: 'Complete R21.',
+        expect: 'The retest R22-CAPTURE opens.',
+        role: 'WAREHOUSE_OPERATOR',
+        fill: { repackPhotoRef: 'PHOTO-008-1', packagingId: 'PKG-008-2' },
+        done: taskResolved('R21'),
+      },
+      {
+        id: 'retest',
+        title: 'Record a failing retest',
+        instruction: 'Complete R22-CAPTURE with a reading that is too warm.',
+        expect: 'R22 and R23 fail and the order is "On hold".',
+        role: 'WAREHOUSE_OPERATOR',
+        fill: { retestReadingDeciCelsius: '92', retestBy: 'warehouse-op-02' },
+        done: taskResolved('R22-CAPTURE'),
+      },
+      {
+        id: 'packaging',
+        title: 'Record new packaging',
+        instruction: 'Under "Plan changes" record packaging PKG-008-3 for the cargo item.',
+        expect:
+          'A new revision. R20, R21, R22 and R23 are voided and asked for again; checks that do not depend on packaging keep their results.',
+        role: 'WAREHOUSE_OPERATOR',
+        done: planChanged('recordPackaging'),
+      },
+      {
+        id: 'rework-again',
+        title: 'Approve again',
+        instruction: 'Click "Approve, rework required" on the new R20.',
+        expect: 'R21 opens again.',
+        role: 'QUALITY_REVIEWER',
+        done: taskResolvedAgain('R20'),
+      },
+      {
+        id: 'repack-again',
+        title: 'Repack again',
+        instruction: 'Complete the new R21.',
+        expect: 'The retest opens again.',
+        role: 'WAREHOUSE_OPERATOR',
+        fill: { repackPhotoRef: 'PHOTO-008-2', packagingId: 'PKG-008-3' },
+        done: taskResolvedAgain('R21'),
+      },
+      {
+        id: 'retest-again',
+        title: 'Record a passing retest',
+        instruction: 'Complete the new R22-CAPTURE.',
+        expect: 'R22 and R23 pass and loading opens.',
+        role: 'WAREHOUSE_OPERATOR',
+        fill: { retestReadingDeciCelsius: '48', retestBy: 'warehouse-op-02' },
+        done: taskResolvedAgain('R22-CAPTURE'),
+      },
+      load(),
+      dispatch(),
+    ],
+  },
 ]
 
 export const scenarioFor = (shipmentId: string): Scenario | undefined =>

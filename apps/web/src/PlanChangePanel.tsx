@@ -1,6 +1,7 @@
 import type { CaseChange, PlanChange, ReferenceData, Role, Shipment } from '@durable-jev/contracts'
 import { useState } from 'react'
 import { Dot, Route } from './icons.js'
+import { hubChoices, routeThroughHub } from './plan/route-change.model.js'
 import { roleLabels } from './roles.js'
 
 const changeLabels: Record<PlanChange['kind'], string> = {
@@ -13,6 +14,7 @@ const changeLabels: Record<PlanChange['kind'], string> = {
 
 const plannerRole: Role = 'TRANSPORT_PLANNER'
 const commercialRole: Role = 'COMMERCIAL_MANAGER'
+const warehouseRole: Role = 'WAREHOUSE_OPERATOR'
 
 export function PlanChangePanel(props: {
   shipment: Shipment
@@ -61,6 +63,17 @@ export function PlanChangePanel(props: {
               <span className="warning small">requires {roleLabels[commercialRole]}</span>
             )}
           </div>
+          <RouteRow
+            shipment={shipment}
+            referenceData={referenceData}
+            warning={actingRole !== plannerRole}
+            applyChange={props.applyChange}
+          />
+          <PackagingRows
+            shipment={shipment}
+            warning={actingRole !== warehouseRole}
+            applyChange={props.applyChange}
+          />
         </>
       )}
       {props.changes.length > 0 && (
@@ -148,5 +161,84 @@ function LegChangeRow(props: {
       </button>
       {props.warning && <span className="warning small">requires {roleLabels[plannerRole]}</span>}
     </div>
+  )
+}
+
+const RouteRow = (props: {
+  shipment: Shipment
+  referenceData: ReferenceData | undefined
+  warning: boolean
+  applyChange: (change: PlanChange) => Promise<void>
+}) => {
+  const choices = hubChoices(props.shipment, props.referenceData?.hubs ?? [])
+  const [hub, setHub] = useState('')
+  if (choices.length === 0) return null
+  return (
+    <div className="row change-row">
+      <span className="small">Route</span>
+      <select
+        aria-label="Transfer hub"
+        value={hub}
+        onChange={(event) => setHub(event.target.value)}
+      >
+        <option value="" disabled>
+          choose transfer hub
+        </option>
+        {choices.map((choice) => (
+          <option key={choice} value={choice}>
+            {choice}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        disabled={!hub}
+        onClick={() => props.applyChange(routeThroughHub(props.shipment, hub))}
+      >
+        Route through hub
+      </button>
+      {props.warning && <span className="warning small">requires {roleLabels[plannerRole]}</span>}
+    </div>
+  )
+}
+
+const PackagingRows = (props: {
+  shipment: Shipment
+  warning: boolean
+  applyChange: (change: PlanChange) => Promise<void>
+}) => {
+  const [packaging, setPackaging] = useState<Record<string, string>>({})
+  return (
+    <>
+      {props.shipment.cargoItems.map((item) => (
+        <div className="row change-row" key={item.cargoItemId}>
+          <label className="small">
+            Packaging of {item.cargoItemId} (now {item.packagingId})
+            <input
+              value={packaging[item.cargoItemId] ?? ''}
+              onChange={(event) =>
+                setPackaging({ ...packaging, [item.cargoItemId]: event.target.value })
+              }
+            />
+          </label>
+          <button
+            type="button"
+            disabled={!packaging[item.cargoItemId]}
+            onClick={() =>
+              props.applyChange({
+                kind: 'recordPackaging',
+                cargoItemId: item.cargoItemId,
+                packagingId: packaging[item.cargoItemId] ?? '',
+              })
+            }
+          >
+            Record packaging
+          </button>
+          {props.warning && (
+            <span className="warning small">requires {roleLabels[warehouseRole]}</span>
+          )}
+        </div>
+      ))}
+    </>
   )
 }

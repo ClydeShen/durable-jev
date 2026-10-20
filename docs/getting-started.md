@@ -52,7 +52,7 @@ Events are written to each service's own database first and delivered to the col
 
 ## Guided scenarios
 
-Select LOG-001 to LOG-006 and a guide card appears above the flow diagram. It lists the steps, tells you which role to act as (one click switches it), shows what to type and what you should see. The current step follows the order itself: when you finish a step, the guide moves on. Reading steps and the optional "wrong role" tries have a "Done" button. "Reset demo" starts every guide over.
+Select any of LOG-001 to LOG-008 and a guide card appears above the flow diagram. It lists the steps, tells you which role to act as (one click switches it), shows what to type and what you should see. The current step follows the order itself: when you finish a step, the guide moves on. Reading steps and the optional "wrong role" tries have a "Done" button. "Reset demo" starts every guide over.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
