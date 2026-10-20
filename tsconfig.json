@@ -11,6 +11,9 @@
       "path": "packages/store"
     },
     {
+      "path": "packages/a2a-adapter"
+    },
+    {
       "path": "packages/transport-reservations"
     },
     {
