@@ -154,6 +154,15 @@ importers:
         specifier: 9.6.0
         version: 9.6.0
 
+  packages/transport-reservations:
+    dependencies:
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
+
   spikes/a2a:
     dependencies:
       '@a2a-js/sdk':
