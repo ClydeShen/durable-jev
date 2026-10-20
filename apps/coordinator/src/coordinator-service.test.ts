@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import { BranchUnavailableError } from '@durable-jev/branch-service'
 import type { GateStatus, ReferenceData } from '@durable-jev/contracts'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
@@ -205,5 +206,44 @@ describe('uncertain semantic answers', () => {
 
     await coordinator.approveHumanTask(reviewTask?.humanTaskId ?? '', 'TRANSPORT_PLANNER')
     expect(openTaskFor(coordinator.getCase(logOne.caseId), 'R39-LOAD')).toBeDefined()
+  })
+})
+
+describe('branch service outage', () => {
+  it('marks the order as a technical failure and recovers on re-evaluation', async () => {
+    const configuration = buildRuleConfiguration(
+      readJson('rules.json'),
+      readJson('mock-policy-parameters.json'),
+      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+    )
+    const evaluators = inProcessEvaluators(configuration, readJson('mock-data/reference-data.json'))
+    let commercialIsDown = true
+    const commercial = evaluators[3] as (typeof evaluators)[number]
+    const flakyCommercial = {
+      ...commercial,
+      evaluate: async (request: Parameters<typeof commercial.evaluate>[0]) => {
+        if (commercialIsDown)
+          throw new BranchUnavailableError(commercial.name, 'connection refused')
+        return commercial.evaluate(request)
+      },
+    }
+    const coordinator = new CoordinatorService({
+      database: openDatabase(':memory:', coordinatorMigrations),
+      configuration,
+      evaluators: evaluators.map((evaluator) =>
+        evaluator === commercial ? flakyCommercial : evaluator,
+      ),
+    })
+
+    await expect(
+      coordinator.submitCase({
+        shipment: logOne.shipment,
+        scriptedSemanticAnswers: logOne.scriptedSemanticAnswers,
+      }),
+    ).rejects.toBeInstanceOf(BranchUnavailableError)
+    expect(coordinator.getCase(logOne.caseId).orderStatus).toBe('TECHNICAL_FAILURE')
+
+    commercialIsDown = false
+    expect((await coordinator.reevaluate(logOne.caseId)).orderStatus).toBe('AWAITING_HUMAN')
   })
 })

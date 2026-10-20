@@ -1,3 +1,4 @@
+import { BranchUnavailableError } from '@durable-jev/branch-service'
 import type {
   BranchEvaluationRequest,
   CaseEvidence,
@@ -294,6 +295,27 @@ export class CoordinatorService {
   private async evaluateCase(
     stored: StoredCase,
     gateOverrides: readonly HumanGateState[] = [],
+  ): Promise<CaseEvaluation> {
+    try {
+      return await this.evaluateWithEvaluators(stored, gateOverrides)
+    } catch (error) {
+      if (error instanceof BranchUnavailableError) {
+        this.database
+          .transaction(() => {
+            const current = this.requireCase(stored.caseId)
+            if (!orderStatusMachine.isTerminal(current.orderStatus)) {
+              this.moveOrderTo(stored.caseId, 'TECHNICAL_FAILURE')
+            }
+          })
+          .immediate()
+      }
+      throw error
+    }
+  }
+
+  private async evaluateWithEvaluators(
+    stored: StoredCase,
+    gateOverrides: readonly HumanGateState[],
   ): Promise<CaseEvaluation> {
     const overrides = new Map(
       gateOverrides.map((gate) => [gateKey(gate.ruleId, gate.entityId), gate]),

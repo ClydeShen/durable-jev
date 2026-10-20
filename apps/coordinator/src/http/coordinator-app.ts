@@ -76,6 +76,10 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
     response.json(coordinator.getCase(request.params.caseId))
   })
 
+  app.post('/cases/:caseId/reevaluate', async (request, response) => {
+    response.json(await coordinator.reevaluate(request.params.caseId))
+  })
+
   app.post('/cases/:caseId/dispatch', async (request, response) => {
     response.json(await coordinator.dispatch(request.params.caseId, demoRoleOf(request)))
   })
