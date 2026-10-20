@@ -1,5 +1,10 @@
 import { resolve } from 'node:path'
-import { loadReferenceData, loadRuleConfiguration } from '@durable-jev/rule-evaluation'
+import {
+  judgeForModelMode,
+  judgeMigrations,
+  loadReferenceData,
+  loadRuleConfiguration,
+} from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
 import { reservationMigrations } from '@durable-jev/transport-reservations'
@@ -28,7 +33,11 @@ const branchServiceUrls =
       }
     : undefined
 
-const database = openDatabase(databasePath, coordinatorMigrations)
+const database = openDatabase(databasePath, [...coordinatorMigrations, ...judgeMigrations])
+const judgeFor = judgeForModelMode(process.env.MODEL_MODE, {
+  apiKey: process.env.TYPESAFE_API_KEY,
+  cacheDatabase: database,
+})
 const configuration = loadRuleConfiguration(materialsDirectory)
 const referenceData = loadReferenceData(
   resolve(materialsDirectory, 'mock-data/reference-data.json'),
@@ -37,7 +46,7 @@ const coordinator = new CoordinatorService({
   database,
   configuration,
   evaluators: branchServiceUrls
-    ? serviceEvaluators(configuration, referenceData, branchServiceUrls)
+    ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor)
     : inProcessEvaluators(
         configuration,
         referenceData,
@@ -45,6 +54,7 @@ const coordinator = new CoordinatorService({
           resolve(repositoryRoot, 'var/data/transport-planning.sqlite'),
           reservationMigrations,
         ),
+        judgeFor,
       ),
 })
 
