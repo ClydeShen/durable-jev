@@ -63,6 +63,9 @@
     },
     {
       "path": "tools/launcher"
+    },
+    {
+      "path": "apps/observability"
     }
   ]
 }
