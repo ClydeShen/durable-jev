@@ -1,15 +1,22 @@
 import type { HumanTask, PlanChange, ReferenceData, Role } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
+import { AppNav } from './AppNav.js'
 import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
 import { attentionFor } from './attention.js'
 import { CaseAttention } from './CaseAttention.js'
 import { CaseList } from './CaseList.js'
+import { ConsolePage } from './console/ConsolePage.js'
 import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { InvestigationPanel } from './InvestigationPanel.js'
 import { Icon } from './icons.js'
-import { formatLocation, parseLocation } from './location-state.js'
+import {
+  formatLocation,
+  isConsoleHash,
+  parseConsoleLocation,
+  parseLocation,
+} from './location-state.js'
 import { PlanChangePanel } from './PlanChangePanel.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
@@ -19,6 +26,30 @@ import { StatusBadge } from './StatusBadge.js'
 const refreshIntervalMs = 2000
 
 export function App() {
+  const [hash, setHash] = useState(window.location.hash)
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash)
+    window.addEventListener('hashchange', onChange)
+    return () => window.removeEventListener('hashchange', onChange)
+  }, [])
+  if (!isConsoleHash(hash)) return <Workbench />
+  return (
+    <div className="layout layout-console">
+      <header className="topbar">
+        <h1>Dispatch Workbench</h1>
+        <AppNav current="console" />
+      </header>
+      <ConsolePage
+        location={parseConsoleLocation(hash)}
+        navigate={(next) => {
+          window.location.hash = next
+        }}
+      />
+    </div>
+  )
+}
+
+function Workbench() {
   const [actingRole, setActingRole] = useState<Role>('WAREHOUSE_OPERATOR')
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(
@@ -112,6 +143,7 @@ export function App() {
     <div className="layout">
       <header className="topbar">
         <h1>Dispatch Workbench</h1>
+        <AppNav current="workbench" />
         <label>
           Acting as
           <select
@@ -214,6 +246,7 @@ export function App() {
                   rules={catalog.rules}
                   checks={selectedCase.checks}
                   humanTasks={selectedCase.humanTasks}
+                  correlationId={selectedCase.correlationId}
                 />
               ) : (
                 <RuleTree
