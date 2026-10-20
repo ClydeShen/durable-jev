@@ -31,7 +31,7 @@ Each branch service also speaks A2A: its Agent Card is at `/.well-known/agent-ca
 
 `Ctrl+C` stops every process. Data survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
 
-The workbench keeps the selected case and view in the address (for example `http://127.0.0.1:5173/#/cases/CASE-LOG-003?view=tree`), so a reload or a pasted link opens the same screen. Every case starts with a summary of what failed and who it is waiting for; while an action runs the page shows "Working…" and disables the action buttons.
+The workbench keeps the selected case and view in the address (for example `http://127.0.0.1:5173/#/cases/CASE-LOG-003?view=tree`), so a reload or a pasted link opens the same screen. Icons come from one place (`apps/web/src/icons.tsx`, Lucide); the UI source contains no symbol characters, and a test enforces it. Every case starts with a summary of what failed and who it is waiting for; while an action runs the page shows "Working…" and disables the action buttons.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
