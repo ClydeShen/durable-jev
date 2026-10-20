@@ -38,6 +38,13 @@ Each service keeps its own SQLite database in `var/data/`. The coordinator owns 
 5. Switch back to "Warehouse operator", fill in `loadScanRef` and `physicalCheckBy`, and submit. Leaving either field empty is rejected (F14). The order becomes "Ready to dispatch" and the line now stops at the dispatcher.
 6. Switch to "Dispatcher" and click "Confirm dispatch". In one transaction the coordinator re-reads the current revision and re-evaluates R40; only if it passes is the order written as "Dispatched", and every line in the diagram flows. Otherwise the whole transaction rolls back.
 
+## Walkthrough: change the plan
+
+1. Select an order that is not yet dispatched and switch "Acting as" to "Transport planner".
+2. Under "Plan changes", pick another vehicle for a leg and click "Reassign vehicle" (or pick another carrier and click "Change carrier").
+3. The order gets a new revision. Only the rules that depend on the change are re-checked; they show "re-checked after r2" in the flow diagram, and "Revision history" lists how many rules were affected. Rules that do not depend on the change (for example the customer's credit) keep their results.
+4. Human tasks bound to what changed are superseded and recreated; the old reservation for the previous route version is cancelled. A quote change by the "Commercial manager" re-asks for credit approvals but keeps a compliance sign-off.
+
 ## Process control
 
 The local control server is for demos (the workbench will call it in later phases):
