@@ -61,7 +61,7 @@
 | [x] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard（含重启上限）、ContextAssembler | 预算、重启上限与白名单测试 | T1.6 |
 | [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完 | T4.4 |
 | [x] | T4.6 | transport-planning 调查 Agent：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
-| [ ] | T4.7 | PiDurableAgentRuntime | 同一调查杀进程后恢复 | T0.3, T4.5 |
+| [x] | T4.7 | PiDurableAgentRuntime | 同一调查杀进程后恢复 | T0.3, T4.5 |
 | [ ] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
 
 ## P5 A2A、持久化与故障
