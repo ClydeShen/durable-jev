@@ -8,6 +8,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
+import { startServiceTelemetry } from '@durable-jev/telemetry'
 import { reservationMigrations } from '@durable-jev/transport-reservations'
 import { inProcessEvaluators, serviceEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
@@ -46,12 +47,20 @@ const judgeFor = judgeForModelMode(process.env.MODEL_MODE, {
   apiKey: process.env.TYPESAFE_API_KEY,
   cacheDatabase: database,
 })
+// Events go to the outbox in the coordinator's own database; the relay delivers them to the
+// collector in the background and the coordinator never waits on it.
+const { telemetry, stop: stopTelemetry } = startServiceTelemetry({
+  service: 'coordinator',
+  database,
+  collectorUrl: process.env.OBSERVABILITY_URL,
+})
 const configuration = loadRuleConfiguration(materialsDirectory)
 const referenceData = loadReferenceData(
   resolve(materialsDirectory, 'mock-data/reference-data.json'),
 )
 const coordinator = new CoordinatorService({
   database,
+  telemetry,
   configuration,
   evaluators: branchServiceUrls
     ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor, {
@@ -76,5 +85,8 @@ const coordinator = new CoordinatorService({
 await startService(createCoordinatorApp(coordinator, referenceData), {
   serviceName: 'coordinator',
   port,
-  onClose: () => database.close(),
+  onClose: () => {
+    stopTelemetry()
+    database.close()
+  },
 })
