@@ -44,6 +44,9 @@
       "path": "eval/runner"
     },
     {
+      "path": "eval/faults"
+    },
+    {
       "path": "apps/cargo-assurance"
     },
     {
