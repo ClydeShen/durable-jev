@@ -23,6 +23,9 @@
       "path": "packages/rule-evaluation"
     },
     {
+      "path": "packages/transport-investigation"
+    },
+    {
       "path": "packages/branch-service"
     },
     {
