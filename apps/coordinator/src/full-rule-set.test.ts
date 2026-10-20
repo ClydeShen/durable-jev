@@ -438,6 +438,25 @@ describe('plan changes', () => {
     })
   })
 
+  it('withdraws an open task that a change made stale and unreachable', async () => {
+    const coordinator = startCoordinator()
+    const before = await coordinator.submitCase({
+      shipment: baseShipment,
+      scriptedSemanticAnswers: logOne.scriptedSemanticAnswers,
+    })
+    const loadTask = openTask(before, 'R39-LOAD')
+    const after = await coordinator.applyChange(
+      baseShipment.caseId,
+      { kind: 'changeQuote', amountCents: 4_000_000 },
+      'COMMERCIAL_MANAGER',
+    )
+    expect(gate(after, 'R39-LOAD')).toBe('BLOCKED_DEPENDENCY')
+    expect(tasksFor(after, 'R39-LOAD')).toMatchObject([
+      { humanTaskId: loadTask?.humanTaskId, status: 'CANCELLED' },
+    ])
+    expect(openTask(after, 'R34')).toBeDefined()
+  })
+
   it('only lets the responsible role change the plan, and never after dispatch', async () => {
     const coordinator = startCoordinator()
     await coordinator.submitCase({
