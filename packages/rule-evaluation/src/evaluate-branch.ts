@@ -55,8 +55,38 @@ export function evaluateBranch(
   request: BranchEvaluationRequest,
   dependencies: BranchEvaluationDependencies,
 ): BranchEvaluationResult {
+  return evaluateOwnedRules(
+    request,
+    dependencies,
+    rulesOfBranches(dependencies.configuration.rulesInEvaluationOrder, dependencies.branches),
+    dependencies.branches.join(', '),
+  )
+}
+
+// Re-evaluates only the given rules and takes every other result from the request, e.g.
+// "with everything else as it is now, would this carrier fit?". Nothing is reserved.
+export function evaluateSelectedRules(
+  request: BranchEvaluationRequest,
+  dependencies: Omit<BranchEvaluationDependencies, 'branches' | 'ensurePlanReservation'> & {
+    ruleIds: readonly string[]
+  },
+): BranchEvaluationResult {
+  const selected = new Set(dependencies.ruleIds)
+  return evaluateOwnedRules(
+    request,
+    dependencies,
+    dependencies.configuration.rulesInEvaluationOrder.filter((rule) => selected.has(rule.ruleId)),
+    'a what-if evaluation',
+  )
+}
+
+function evaluateOwnedRules(
+  request: BranchEvaluationRequest,
+  dependencies: Omit<BranchEvaluationDependencies, 'branches'>,
+  owned: readonly RuleDefinition[],
+  owner: string,
+): BranchEvaluationResult {
   const { configuration } = dependencies
-  const owned = rulesOfBranches(configuration.rulesInEvaluationOrder, dependencies.branches)
   const ownedIds = new Set(owned.map((rule) => rule.ruleId))
   const gates = new Map<string, HumanGateState>(
     request.humanGates.map((gate) => [gateKey(gate.ruleId, gate.entityId), gate]),
@@ -91,9 +121,7 @@ export function evaluateBranch(
       gates.get(gateKey(ruleId, entityId))?.completedFields,
     ensurePlanReservation: () => {
       if (!dependencies.ensurePlanReservation) {
-        throw new Error(
-          `branches ${dependencies.branches.join(', ')} do not own transport reservations`,
-        )
+        throw new Error(`${owner} does not own transport reservations`)
       }
       return dependencies.ensurePlanReservation(request)
     },

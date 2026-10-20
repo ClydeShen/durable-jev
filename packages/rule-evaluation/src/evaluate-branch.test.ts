@@ -1,7 +1,11 @@
 import type { BranchEvaluationRequest, RuleEvaluationRecord } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
 import { buildRuleConfiguration } from './configuration.js'
-import { evaluateBranch, requiredUpstreamRuleIds } from './evaluate-branch.js'
+import {
+  evaluateBranch,
+  evaluateSelectedRules,
+  requiredUpstreamRuleIds,
+} from './evaluate-branch.js'
 import { baseShipment, logOne, readMaterial, referenceData } from './leaf-inputs.fixture.js'
 
 const configuration = buildRuleConfiguration(
@@ -115,7 +119,7 @@ describe('evaluateBranch', () => {
         referenceData,
         branches: ['plan'],
       }),
-    ).toThrow('do not own transport reservations')
+    ).toThrow('does not own transport reservations')
   })
 })
 
@@ -124,5 +128,24 @@ describe('requiredUpstreamRuleIds', () => {
     const upstream = requiredUpstreamRuleIds(configuration.rulesInEvaluationOrder, ['plan'])
     expect(upstream).toEqual(expect.arrayContaining(['R05', 'R16', 'R11']))
     expect(upstream).not.toContain('R24')
+  })
+})
+
+describe('evaluateSelectedRules', () => {
+  it('re-checks only the selected rules against a changed plan', () => {
+    const [leg] = baseShipment.legs
+    const shipment = {
+      ...baseShipment,
+      legs: [{ ...leg, carrierId: 'CAR-SECURA', vehicleId: 'VEH-SC-REEFER-3T' }],
+    } as typeof baseShipment
+    const whatIf = evaluateSelectedRules(request(beforePlan, [], { shipment }), {
+      configuration,
+      referenceData,
+      ruleIds: ['R24', 'R25'],
+    })
+    expect(new Set(whatIf.evaluations.map((evaluation) => evaluation.ruleId))).toEqual(
+      new Set(['R24', 'R25']),
+    )
+    expect(statusOf(whatIf.evaluations, 'R24')).toBe('FAIL')
   })
 })
