@@ -11,6 +11,8 @@ import type {
   HumanTask,
   HumanTaskId,
   HumanTaskTarget,
+  Investigation,
+  InvestigationStatus,
   OrderStatus,
   PlanChange,
   Role,
@@ -20,7 +22,7 @@ import type {
   Shipment,
   UtcTimestamp,
 } from '@durable-jev/contracts'
-import { emptyCaseEvidence, orderStatusMachine } from '@durable-jev/contracts'
+import { emptyCaseEvidence, investigationMachine, orderStatusMachine } from '@durable-jev/contracts'
 import {
   applyHumanTaskCommand,
   canBeSuperseded,
@@ -48,6 +50,7 @@ import {
 import type { StoreDatabase } from '@durable-jev/store'
 import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
+import type { Investigator } from './investigator.js'
 import {
   deriveOrderStatus,
   dispatchConfirmationRuleId,
@@ -61,7 +64,14 @@ export type CoordinatorDependencies = {
   database: StoreDatabase
   configuration: RuleConfiguration
   evaluators: readonly BranchEvaluator[]
+  investigator?: Investigator
   now?: () => string
+}
+
+export type CarrierInvestigationRequest = {
+  legId: string
+  unavailableCarrierIds: string[]
+  reason: string
 }
 
 export type SubmitCaseRequest = {
@@ -74,6 +84,7 @@ export type CaseView = StoredCase & {
   checks: CheckResult[]
   humanTasks: HumanTask[]
   changes: CaseChange[]
+  investigations: Investigation[]
 }
 
 type HumanTaskAction =
@@ -86,6 +97,10 @@ type CaseEvaluation = {
   evaluations: RuleEvaluationRecord[]
   humanGateRequests: HumanGateRequest[]
 }
+
+type Proposal =
+  | { outcome: 'REPLACEMENT'; carrierId: string; vehicleId: string; rationale: string }
+  | { outcome: 'NO_CANDIDATE'; rationale: string }
 
 const minutesFrom = (timestamp: string, minutes: number) =>
   new Date(Date.parse(timestamp) + minutes * 60_000).toISOString()
@@ -100,9 +115,11 @@ export class CoordinatorService {
   private readonly now: () => string
   private readonly rulesById: Map<string, RuleDefinition>
   private readonly gatesBeforeConfirmation: string[]
+  private readonly investigator: Investigator | undefined
 
   constructor(dependencies: CoordinatorDependencies) {
     this.database = dependencies.database
+    this.investigator = dependencies.investigator
     this.repository = new CoordinatorRepository(dependencies.database)
     this.configuration = dependencies.configuration
     this.evaluationLayers = planEvaluationLayers(
@@ -163,13 +180,170 @@ export class CoordinatorService {
       checks: this.repository.listCheckResults(caseId),
       humanTasks: this.repository.listHumanTasks({ caseId }),
       changes: this.repository.listChanges(caseId),
+      investigations: this.repository.listInvestigations(caseId),
     }
   }
 
-  async applyChange(caseId: string, change: PlanChange, actor: Role): Promise<CaseView> {
+  // The agent only reads and proposes; nothing changes until the planner accepts.
+  async investigateCarrier(
+    caseId: string,
+    request: CarrierInvestigationRequest,
+    actor: Role,
+  ): Promise<Investigation> {
+    if (!this.investigator)
+      throw new CoordinatorError('UNPROCESSABLE', 'no investigator configured')
+    if (actor !== 'TRANSPORT_PLANNER') {
+      throw new CoordinatorError('FORBIDDEN', 'carrier investigations require TRANSPORT_PLANNER')
+    }
+    const stored = this.requireActiveCase(caseId)
+    if (!stored.shipment.legs.some((leg) => leg.legId === request.legId)) {
+      throw new CoordinatorError('UNPROCESSABLE', `${request.legId} is not a leg of ${caseId}`)
+    }
+    const caseRevision = stored.shipment.caseRevision
+    const investigationId = `INV-${caseId}-r${caseRevision}-${this.repository.listInvestigations(caseId).length + 1}`
+    const run = await this.investigator({
+      investigated: {
+        caseId,
+        caseRevision,
+        shipment: stored.shipment,
+        evidence: stored.evidence,
+        checks: this.repository.listCheckResults(caseId).map((check) => ({
+          ruleId: check.ruleId,
+          subject: check.subject,
+          gateStatus: check.gateStatus,
+          observedValue: check.observedValue,
+          blockedBy: check.blockedBy,
+        })),
+      },
+      request,
+      requestId: investigationId,
+    })
+    const result = run.outcome.status === 'completed' ? (run.outcome.result as Proposal) : undefined
+    const status: InvestigationStatus = !result
+      ? 'ESCALATED'
+      : result.outcome === 'REPLACEMENT'
+        ? 'PROPOSED'
+        : 'NO_CANDIDATE'
+    const investigation: Investigation = {
+      investigationId,
+      caseId: caseId as never,
+      caseRevision,
+      legId: request.legId as never,
+      unavailableCarrierIds: request.unavailableCarrierIds as never,
+      reason: request.reason,
+      status: investigationMachine.transition('RUNNING', status),
+      ...(result?.outcome === 'REPLACEMENT'
+        ? { proposal: { carrierId: result.carrierId, vehicleId: result.vehicleId } as never }
+        : {}),
+      summary:
+        run.outcome.status === 'escalated'
+          ? `Escalated to the planner: ${run.outcome.detail}`
+          : (result?.rationale ?? ''),
+      runId: run.runId,
+      modelId: run.modelId,
+      toolCalls: run.toolCalls,
+      requestedBy: actor,
+      requestedAt: this.now() as UtcTimestamp,
+    }
+    this.database
+      .transaction(() => {
+        // The case may have changed while the agent was working.
+        const current = this.requireActiveCase(caseId)
+        const saved =
+          current.shipment.caseRevision === caseRevision
+            ? investigation
+            : { ...investigation, status: investigationMachine.transition(status, 'STALE') }
+        this.repository.saveInvestigation(saved)
+      })
+      .immediate()
+    return this.requireInvestigation(investigationId)
+  }
+
+  async acceptInvestigation(investigationId: string, actor: Role): Promise<CaseView> {
+    const investigation = this.requireInvestigation(investigationId)
+    if (actor !== 'TRANSPORT_PLANNER') {
+      throw new CoordinatorError('FORBIDDEN', 'accepting a proposal requires TRANSPORT_PLANNER')
+    }
+    if (investigation.status !== 'PROPOSED' || !investigation.proposal) {
+      throw new CoordinatorError('CONFLICT', `${investigationId} is ${investigation.status}`)
+    }
+    const stored = this.requireActiveCase(investigation.caseId)
+    if (stored.shipment.caseRevision !== investigation.caseRevision) {
+      this.decideInvestigation(investigation, 'STALE')
+      throw new CoordinatorError(
+        'CONFLICT',
+        `${investigationId} was made for r${investigation.caseRevision}; the order is now r${stored.shipment.caseRevision}`,
+      )
+    }
+    return this.changePlan(
+      investigation.caseId,
+      {
+        kind: 'changeCarrier',
+        legId: investigation.legId,
+        carrierId: investigation.proposal.carrierId,
+        vehicleId: investigation.proposal.vehicleId,
+      },
+      actor,
+      investigation,
+    )
+  }
+
+  rejectInvestigation(investigationId: string, actor: Role, reason: string): Investigation {
+    const investigation = this.requireInvestigation(investigationId)
+    if (actor !== 'TRANSPORT_PLANNER') {
+      throw new CoordinatorError('FORBIDDEN', 'rejecting a proposal requires TRANSPORT_PLANNER')
+    }
+    if (investigation.status !== 'PROPOSED') {
+      throw new CoordinatorError('CONFLICT', `${investigationId} is ${investigation.status}`)
+    }
+    this.decideInvestigation(investigation, 'REJECTED', reason)
+    return this.requireInvestigation(investigationId)
+  }
+
+  private decideInvestigation(
+    investigation: Investigation,
+    status: InvestigationStatus,
+    decisionReason?: string,
+  ): void {
+    this.repository.saveInvestigation({
+      ...investigation,
+      status: investigationMachine.transition(investigation.status, status),
+      decidedAt: this.now() as UtcTimestamp,
+      ...(decisionReason ? { decisionReason } : {}),
+    })
+  }
+
+  private requireInvestigation(investigationId: string): Investigation {
+    const investigation = this.repository.findInvestigation(investigationId)
+    if (!investigation) {
+      throw new CoordinatorError('NOT_FOUND', `investigation ${investigationId} not found`)
+    }
+    return investigation
+  }
+
+  applyChange(caseId: string, change: PlanChange, actor: Role): Promise<CaseView> {
+    return this.changePlan(caseId, change, actor)
+  }
+
+  private async changePlan(
+    caseId: string,
+    change: PlanChange,
+    actor: Role,
+    acceptedInvestigation?: Investigation,
+  ): Promise<CaseView> {
     this.database
       .transaction(() => {
         const stored = this.requireActiveCase(caseId)
+        if (
+          acceptedInvestigation &&
+          (this.requireInvestigation(acceptedInvestigation.investigationId).status !== 'PROPOSED' ||
+            stored.shipment.caseRevision !== acceptedInvestigation.caseRevision)
+        ) {
+          throw new CoordinatorError(
+            'CONFLICT',
+            `${acceptedInvestigation.investigationId} is no longer current`,
+          )
+        }
         if (actor !== roleForChange[change.kind]) {
           throw new CoordinatorError(
             'FORBIDDEN',
@@ -195,6 +369,19 @@ export class CoordinatorService {
           requestedAt: now as UtcTimestamp,
         })
         this.repository.updateShipment(caseId, applied.shipment, now)
+        // A proposal is only valid for the plan it was made for.
+        for (const investigation of this.repository.listInvestigations(caseId)) {
+          if (investigation.status !== 'PROPOSED' && investigation.status !== 'RUNNING') continue
+          const accepted = investigation.investigationId === acceptedInvestigation?.investigationId
+          this.repository.saveInvestigation({
+            ...investigation,
+            status: investigationMachine.transition(
+              investigation.status,
+              accepted ? 'ACCEPTED' : 'STALE',
+            ),
+            decidedAt: now as UtcTimestamp,
+          })
+        }
         this.repository.replaceCheckResults(
           caseId,
           this.repository
