@@ -23,6 +23,9 @@ export function App() {
   const [referenceData, setReferenceData] = useState<ReferenceData>()
   const [view, setView] = useState<'flow' | 'tree'>('flow')
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string }>()
+  // The action in flight. While it runs the action panels are disabled, so a slow service
+  // never looks like a frozen page and nothing is sent twice by an impatient second click.
+  const [busy, setBusy] = useState<string>()
   const [lastAction, setLastAction] = useState<{
     description: string
     action: () => Promise<unknown>
@@ -60,6 +63,7 @@ export function App() {
   // Business actions are remembered so the demo controls can send the same one again.
   const run = async (description: string, action: () => Promise<unknown>, remember = true) => {
     if (remember) setLastAction({ description, action })
+    setBusy(description)
     try {
       await action()
       setMessage({ kind: 'info', text: `${description}: done` })
@@ -67,6 +71,7 @@ export function App() {
       const text = error instanceof ApiError ? `${error.status} ${error.message}` : String(error)
       setMessage({ kind: 'error', text: `${description}: ${text}` })
     }
+    setBusy(undefined)
     await refresh()
   }
 
@@ -116,10 +121,16 @@ export function App() {
         </button>
       </header>
 
-      {message && (
-        <div className={`message message-${message.kind}`} role="status">
-          {message.text}
+      {busy ? (
+        <div className="message message-busy" role="status" aria-live="polite">
+          <span className="spinner" aria-hidden="true" /> Working: {busy}…
         </div>
+      ) : (
+        message && (
+          <div className={`message message-${message.kind}`} role="status">
+            {message.text}
+          </div>
+        )
       )}
 
       <aside className="sidebar">
@@ -182,69 +193,79 @@ export function App() {
                 />
               )}
             </section>
-            <div className="columns columns-even">
-              <div>
-                <HumanTaskPanel
-                  tasks={selectedCase.humanTasks}
-                  actingRole={actingRole}
-                  actions={taskActions}
-                  decisionConditionsByRule={
-                    new Map(
-                      (catalog?.rules ?? []).map((rule) => [
-                        rule.ruleId as string,
-                        rule.humanGate?.decisionConditions ?? [],
-                      ]),
-                    )
-                  }
-                />
-                <PlanChangePanel
-                  key={`${selectedCase.caseId}:${selectedCase.shipment.caseRevision}`}
-                  shipment={selectedCase.shipment}
-                  changes={selectedCase.changes}
-                  referenceData={referenceData}
-                  actingRole={actingRole}
-                  disabled={
-                    selectedCase.orderStatus === 'DISPATCHED' ||
-                    selectedCase.orderStatus === 'REJECTED'
-                  }
-                  applyChange={(change: PlanChange) =>
-                    run('Apply change', () =>
-                      api.applyChange(
-                        caseId,
-                        change,
-                        actingRole,
-                        selectedCase.shipment.caseRevision,
-                      ),
-                    )
-                  }
-                />
-                <InvestigationPanel
-                  shipment={selectedCase.shipment}
-                  investigations={selectedCase.investigations}
-                  referenceData={referenceData}
-                  actingRole={actingRole}
-                  disabled={
-                    selectedCase.orderStatus === 'DISPATCHED' ||
-                    selectedCase.orderStatus === 'REJECTED'
-                  }
-                  actions={{
-                    investigate: (body) =>
-                      run('Find replacement carrier', () =>
-                        api.investigate(caseId, body, actingRole),
-                      ),
-                    accept: (investigation) =>
-                      run('Accept proposal', () =>
-                        api.acceptInvestigation(investigation.investigationId, actingRole),
-                      ),
-                    reject: (investigation, reason) =>
-                      run('Reject proposal', () =>
-                        api.rejectInvestigation(investigation.investigationId, actingRole, reason),
-                      ),
-                  }}
-                />
-                <ShipmentSummary shipment={selectedCase.shipment} />
+            <fieldset
+              className="actions"
+              disabled={busy !== undefined}
+              aria-busy={busy !== undefined}
+            >
+              <div className="columns columns-even">
+                <div>
+                  <HumanTaskPanel
+                    tasks={selectedCase.humanTasks}
+                    actingRole={actingRole}
+                    actions={taskActions}
+                    decisionConditionsByRule={
+                      new Map(
+                        (catalog?.rules ?? []).map((rule) => [
+                          rule.ruleId as string,
+                          rule.humanGate?.decisionConditions ?? [],
+                        ]),
+                      )
+                    }
+                  />
+                  <PlanChangePanel
+                    key={`${selectedCase.caseId}:${selectedCase.shipment.caseRevision}`}
+                    shipment={selectedCase.shipment}
+                    changes={selectedCase.changes}
+                    referenceData={referenceData}
+                    actingRole={actingRole}
+                    disabled={
+                      selectedCase.orderStatus === 'DISPATCHED' ||
+                      selectedCase.orderStatus === 'REJECTED'
+                    }
+                    applyChange={(change: PlanChange) =>
+                      run('Apply change', () =>
+                        api.applyChange(
+                          caseId,
+                          change,
+                          actingRole,
+                          selectedCase.shipment.caseRevision,
+                        ),
+                      )
+                    }
+                  />
+                  <InvestigationPanel
+                    shipment={selectedCase.shipment}
+                    investigations={selectedCase.investigations}
+                    referenceData={referenceData}
+                    actingRole={actingRole}
+                    disabled={
+                      selectedCase.orderStatus === 'DISPATCHED' ||
+                      selectedCase.orderStatus === 'REJECTED'
+                    }
+                    actions={{
+                      investigate: (body) =>
+                        run('Find replacement carrier', () =>
+                          api.investigate(caseId, body, actingRole),
+                        ),
+                      accept: (investigation) =>
+                        run('Accept proposal', () =>
+                          api.acceptInvestigation(investigation.investigationId, actingRole),
+                        ),
+                      reject: (investigation, reason) =>
+                        run('Reject proposal', () =>
+                          api.rejectInvestigation(
+                            investigation.investigationId,
+                            actingRole,
+                            reason,
+                          ),
+                        ),
+                    }}
+                  />
+                  <ShipmentSummary shipment={selectedCase.shipment} />
+                </div>
               </div>
-            </div>
+            </fieldset>
           </>
         ) : (
           <p className="muted">Select a case on the left.</p>
