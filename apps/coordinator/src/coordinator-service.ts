@@ -48,6 +48,7 @@ import {
   requiredUpstreamRuleIds,
 } from '@durable-jev/rule-evaluation'
 import type { StoreDatabase } from '@durable-jev/store'
+import type { EmitInput, Telemetry } from '@durable-jev/telemetry'
 import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
 import { CoordinatorError } from './coordinator-errors.js'
 import type { Investigator } from './investigator.js'
@@ -65,6 +66,8 @@ export type CoordinatorDependencies = {
   configuration: RuleConfiguration
   evaluators: readonly BranchEvaluator[]
   investigator?: Investigator
+  // Events go to the same SQLite file as the business data, so they commit with it.
+  telemetry?: Telemetry
   now?: () => string
 }
 
@@ -116,10 +119,12 @@ export class CoordinatorService {
   private readonly rulesById: Map<string, RuleDefinition>
   private readonly gatesBeforeConfirmation: string[]
   private readonly investigator: Investigator | undefined
+  private readonly telemetry: Telemetry | undefined
 
   constructor(dependencies: CoordinatorDependencies) {
     this.database = dependencies.database
     this.investigator = dependencies.investigator
+    this.telemetry = dependencies.telemetry
     this.repository = new CoordinatorRepository(dependencies.database)
     this.configuration = dependencies.configuration
     this.evaluationLayers = planEvaluationLayers(
@@ -158,6 +163,17 @@ export class CoordinatorService {
             scripted.answer,
           )
         }
+        this.emit({
+          eventName: 'case.submitted',
+          caseId,
+          caseRevision: request.shipment.caseRevision,
+          attributes: {
+            shipmentId: request.shipment.shipmentId,
+            customerId: request.shipment.customerId,
+            cargoItems: request.shipment.cargoItems.length,
+            legs: request.shipment.legs.length,
+          },
+        })
         return true
       })
       .immediate()
@@ -406,6 +422,29 @@ export class CoordinatorService {
                 : check,
             ),
         )
+        this.emit({
+          eventName: 'change.applied',
+          caseId,
+          caseRevision: applied.shipment.caseRevision,
+          attributes: {
+            changeId,
+            kind: change.kind,
+            actor,
+            fromRevision: stored.shipment.caseRevision,
+          },
+        })
+        if (invalidated.size > 0) {
+          this.emit({
+            eventName: 'result.invalidated',
+            caseId,
+            caseRevision: applied.shipment.caseRevision,
+            attributes: {
+              changeId,
+              reason: `${change.kind} changed what these results depend on`,
+              ruleIds: [...invalidated],
+            },
+          })
+        }
         this.moveOrderTo(caseId, 'EVALUATING')
       })
       .immediate()
@@ -515,7 +554,23 @@ export class CoordinatorService {
             `${task.ruleId} does not accept ${unexpected.join(', ')}`,
           )
         }
-        return this.applyCommand(task, { ...action, actor } as HumanTaskCommand)
+        const decided = this.applyCommand(task, { ...action, actor } as HumanTaskCommand)
+        this.emit({
+          eventName: 'information.received',
+          caseId: task.caseId,
+          caseRevision: task.target.caseRevision,
+          status: decided.status,
+          attributes: {
+            humanTaskId: task.humanTaskId,
+            ruleId: task.ruleId,
+            action: action.kind,
+            actor,
+            ...(action.kind === 'approve' && action.conditions?.length
+              ? { conditions: action.conditions }
+              : {}),
+          },
+        })
+        return decided
       })
       .immediate()
     await this.reevaluate(updated.caseId)
@@ -572,6 +627,13 @@ export class CoordinatorService {
       if (error instanceof BranchUnavailableError) {
         this.database
           .transaction(() => {
+            this.emit({
+              eventName: 'task.failed',
+              caseId: stored.caseId,
+              caseRevision: stored.shipment.caseRevision,
+              errorCode: 'BRANCH_UNAVAILABLE',
+              attributes: { evaluator: error.evaluatorName, message: error.message },
+            })
             const current = this.requireCase(stored.caseId)
             if (!orderStatusMachine.isTerminal(current.orderStatus)) {
               this.moveOrderTo(stored.caseId, 'TECHNICAL_FAILURE')
@@ -662,6 +724,7 @@ export class CoordinatorService {
       this.openTaskForGate(stored, this.requireRule(request.ruleId), request.entityId, now)
     }
     this.withdrawStaleOpenTasks(stored, now)
+    this.emitChangedRules(stored, evaluation)
     const latestChange = this.repository
       .listChanges(caseId)
       .find((change) => change.toRevision === stored.shipment.caseRevision)
@@ -684,6 +747,41 @@ export class CoordinatorService {
     })
     this.moveOrderTo(caseId, orderStatus)
     return finalGateStatus
+  }
+
+  private emit(input: EmitInput): void {
+    this.telemetry?.emit(input)
+  }
+
+  // One event per rule result that is new or changed, so a re-evaluation does not repeat
+  // everything that stayed the same.
+  private emitChangedRules(stored: StoredCase, evaluation: CaseEvaluation): void {
+    if (!this.telemetry) return
+    const before = new Map(
+      this.repository
+        .listCheckResults(stored.caseId)
+        .map((check) => [`${check.ruleId}@${check.subject.entityId}`, check.gateStatus]),
+    )
+    for (const record of evaluation.evaluations) {
+      const key = `${record.ruleId}@${record.subject.entityId}`
+      if (before.get(key) === record.gateStatus) continue
+      const observed = record.observedValue as { provider?: string; modelId?: string } | undefined
+      this.emit({
+        eventName: 'rule.evaluated',
+        caseId: stored.caseId,
+        caseRevision: evaluation.caseRevision,
+        status: record.gateStatus,
+        attributes: {
+          ruleId: record.ruleId,
+          entityId: record.subject.entityId,
+          scope: record.subject.scope,
+          previousStatus: before.get(key) ?? 'none',
+          blockedBy: record.blockedBy,
+          evaluator: this.rulesById.get(record.ruleId)?.evaluator.kind,
+          ...(observed?.provider ? { provider: observed.provider, modelId: observed.modelId } : {}),
+        },
+      })
+    }
   }
 
   private expireDueTasks(caseId: string, now: string): void {
@@ -731,11 +829,35 @@ export class CoordinatorService {
       expiresAt: minutesFrom(now, this.taskTtlMinutes(rule)) as UtcTimestamp,
     })
     this.repository.saveHumanTask(replacement, entityId)
+    this.emit({
+      eventName: 'information.requested',
+      caseId: stored.caseId,
+      caseRevision: stored.shipment.caseRevision,
+      attributes: {
+        humanTaskId: replacement.humanTaskId,
+        ruleId: rule.ruleId,
+        entityId,
+        taskType: replacement.taskType,
+        requiredRole: replacement.requiredRole,
+        expiresAt: replacement.expiresAt,
+      },
+    })
     const staleTasks = tasks.filter(
       (task) => !targetsMatch(task.target, target) && canBeSuperseded(task),
     )
     for (const staleTask of staleTasks) {
       this.repository.saveHumanTask(supersedeTask(staleTask, replacement.humanTaskId), entityId)
+      this.emit({
+        eventName: 'result.invalidated',
+        caseId: stored.caseId,
+        caseRevision: stored.shipment.caseRevision,
+        attributes: {
+          humanTaskId: staleTask.humanTaskId,
+          ruleId: rule.ruleId,
+          reason: 'the human review was bound to an older version',
+          supersededBy: replacement.humanTaskId,
+        },
+      })
     }
   }
 
@@ -823,6 +945,13 @@ export class CoordinatorService {
     const status = orderStatusMachine.transition(stored.orderStatus, next)
     if (status !== stored.orderStatus) {
       this.repository.updateOrderStatus(caseId, status, this.now())
+      this.emit({
+        eventName: 'order.status_changed',
+        caseId,
+        caseRevision: stored.shipment.caseRevision,
+        status,
+        attributes: { from: stored.orderStatus, to: status },
+      })
     }
   }
 

@@ -65,6 +65,9 @@ importers:
       '@durable-jev/store':
         specifier: workspace:*
         version: link:../../packages/store
+      '@durable-jev/telemetry':
+        specifier: workspace:*
+        version: link:../../packages/telemetry
       '@durable-jev/transport-investigation':
         specifier: workspace:*
         version: link:../../packages/transport-investigation

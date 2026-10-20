@@ -39,6 +39,9 @@
     },
     {
       "path": "../../packages/transport-investigation"
+    },
+    {
+      "path": "../../packages/telemetry"
     }
   ]
 }
