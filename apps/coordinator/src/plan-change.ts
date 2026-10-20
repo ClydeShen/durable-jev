@@ -5,6 +5,8 @@ export const roleForChange: Record<PlanChange['kind'], Role> = {
   reassignVehicle: 'TRANSPORT_PLANNER',
   changeCarrier: 'TRANSPORT_PLANNER',
   changeQuote: 'COMMERCIAL_MANAGER',
+  replaceLegs: 'TRANSPORT_PLANNER',
+  recordPackaging: 'WAREHOUSE_OPERATOR',
 }
 
 export type AppliedPlanChange = { shipment: Shipment; triggers: string[] }
@@ -58,6 +60,36 @@ export function applyPlanChange(shipment: Shipment, change: PlanChange): Applied
             baselineAmountCents: shipment.quote.baselineAmountCents ?? shipment.quote.amountCents,
             amountCents: change.amountCents,
           },
+        },
+      }
+    case 'replaceLegs':
+      return {
+        triggers: ['route', 'carrier', 'vehicle'],
+        shipment: {
+          ...shipment,
+          caseRevision: nextRevision,
+          entityVersions: { ...versions, route: versions.route + 1, carrier: versions.carrier + 1 },
+          legs: change.legs,
+        },
+      }
+    case 'recordPackaging':
+      if (!shipment.cargoItems.some((item) => item.cargoItemId === change.cargoItemId)) {
+        throw new CoordinatorError(
+          'UNPROCESSABLE',
+          `cargo item ${change.cargoItemId} is not part of ${shipment.shipmentId}`,
+        )
+      }
+      return {
+        triggers: ['cargo'],
+        shipment: {
+          ...shipment,
+          caseRevision: nextRevision,
+          entityVersions: { ...versions, cargo: versions.cargo + 1 },
+          cargoItems: shipment.cargoItems.map((item) =>
+            item.cargoItemId === change.cargoItemId
+              ? { ...item, packagingId: change.packagingId }
+              : item,
+          ),
         },
       }
   }

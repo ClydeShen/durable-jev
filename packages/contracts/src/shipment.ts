@@ -36,6 +36,7 @@ export const CargoItem = z.object({
   widthMm: positiveInteger,
   heightMm: positiveInteger,
   temperatureRange: TemperatureRange.optional(),
+  packagingId: z.string().min(1).optional(),
 })
 export type CargoItem = z.infer<typeof CargoItem>
 

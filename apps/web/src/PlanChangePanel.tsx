@@ -6,6 +6,8 @@ const changeLabels: Record<PlanChange['kind'], string> = {
   reassignVehicle: 'vehicle reassigned',
   changeCarrier: 'carrier changed',
   changeQuote: 'quote changed',
+  replaceLegs: 'route replaced',
+  recordPackaging: 'new packaging recorded',
 }
 
 const plannerRole: Role = 'TRANSPORT_PLANNER'

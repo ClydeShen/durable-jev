@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.js'
+import { CargoItemId, CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.js'
+import { TransportLeg } from './shipment.js'
 import { Role } from './statuses.js'
 
 export const PlanChange = z.discriminatedUnion('kind', [
@@ -11,6 +12,12 @@ export const PlanChange = z.discriminatedUnion('kind', [
     vehicleId: VehicleId,
   }),
   z.object({ kind: z.literal('changeQuote'), amountCents: z.int().nonnegative() }),
+  z.object({ kind: z.literal('replaceLegs'), legs: z.array(TransportLeg).min(1).max(3) }),
+  z.object({
+    kind: z.literal('recordPackaging'),
+    cargoItemId: CargoItemId,
+    packagingId: z.string().min(1),
+  }),
 ])
 export type PlanChange = z.infer<typeof PlanChange>
 
