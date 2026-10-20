@@ -33,6 +33,7 @@ import {
 import {
   computeInputFingerprint,
   type RuleDefinition,
+  relevantEntityVersions,
   subjectKey,
   upstreamRuleIds,
 } from '@durable-jev/rule-engine'
@@ -470,7 +471,7 @@ export class CoordinatorService {
       inputFingerprint: computeInputFingerprint({
         document: shipment,
         inputPaths: rule.inputPaths,
-        entityVersions: shipment.entityVersions,
+        entityVersions: relevantEntityVersions(rule.invalidationTriggers, shipment.entityVersions),
         upstreamResultIds: [],
       }),
     }
