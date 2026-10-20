@@ -165,14 +165,31 @@
       }
     },
     {
-      "step": "changePlan",
+      "step": "investigateCarrier",
       "actor": "TRANSPORT_PLANNER",
-      "change": {
-        "kind": "changeCarrier",
-        "legId": "LOG-004-LEG-1",
-        "carrierId": "CAR-GLACIER",
-        "vehicleId": "VEH-GL-REEFER-4T"
-      },
+      "legId": "LOG-004-LEG-1",
+      "unavailableCarrierIds": ["CAR-SECURA"],
+      "reason": "Secura cancelled the booking after its reefer broke down.",
+      "expect": {
+        "gates": {
+          "R13": "PASS",
+          "R14": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ],
+        "latestInvestigation": {
+          "status": "PROPOSED",
+          "carrierId": "CAR-GLACIER"
+        }
+      }
+    },
+    {
+      "step": "acceptInvestigation",
+      "actor": "TRANSPORT_PLANNER",
       "expect": {
         "orderStatus": "AWAITING_HUMAN",
         "gates": {
@@ -218,7 +235,11 @@
             "ruleId": "R13",
             "requiredRole": "COMPLIANCE_REVIEWER"
           }
-        ]
+        ],
+        "latestInvestigation": {
+          "status": "ACCEPTED",
+          "carrierId": "CAR-GLACIER"
+        }
       }
     },
     {
