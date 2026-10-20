@@ -98,6 +98,8 @@ curl http://127.0.0.1:4000/processes                               # process sta
 | `pnpm test` | Run unit tests |
 | `pnpm lint` | Check formatting and lint |
 | `pnpm spikes` | Run the M0 technical spikes; findings in [m0-findings.md](m0-findings.md) |
+| `pnpm faults` | Run the fault scenarios F01–F10 (process kills, lost responses, model outages, duplicates, injection, loops); report in `var/reports/faults.md` |
+| `pnpm replay` | Replay the demo cases stage by stage |
 
 How the agent runtime is kept under control, with evidence for each control: [runtime-controls.md](runtime-controls.md).
 
