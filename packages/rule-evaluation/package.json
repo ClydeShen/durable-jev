@@ -13,6 +13,7 @@
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
+    "@durable-jev/store": "workspace:*",
     "zod": "4.6.7"
   }
 }
