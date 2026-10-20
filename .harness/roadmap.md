@@ -45,7 +45,7 @@
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [x] | T3.1 | 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力） | 全部 40 条通过配置校验 | T2.1 |
-| [ ] | T3.2 | 拆出 cargo-assurance、transport-planning、commercial-control，原生 HTTP 任务接口 | 各自 SQLite，launcher 启动 | T2.4 |
+| [x] | T3.2 | 拆出 cargo-assurance、transport-planning、commercial-control，原生 HTTP 任务接口 | 各自 SQLite，launcher 启动 | T2.4 |
 | [ ] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
 | [ ] | T3.4 | 变更：改车辆/路线/报价触发失效，UI 显示"哪次变更导致失效" | LOG-004 失效集符合预期 | T1.5, T3.3 |
 | [ ] | T3.5 | LOG-002–008 案例、事件脚本、draft 标注 | 文件齐全，标 `reviewStatus: draft` | T3.1 |
