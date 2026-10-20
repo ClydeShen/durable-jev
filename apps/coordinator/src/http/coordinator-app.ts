@@ -2,6 +2,7 @@ import { BranchUnavailableError } from '@durable-jev/branch-service'
 import {
   CaseEvidence,
   PlanChange,
+  type ReferenceData,
   Role,
   ScriptedSemanticAnswer,
   Shipment,
@@ -62,8 +63,15 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
   response.status(500).json({ error: 'INTERNAL', message: String(error) })
 }
 
-export function createCoordinatorApp(coordinator: CoordinatorService): Express {
+export function createCoordinatorApp(
+  coordinator: CoordinatorService,
+  referenceData?: ReferenceData,
+): Express {
   const app = createServiceApp('coordinator')
+
+  app.get('/reference-data', (_request, response) => {
+    response.json(referenceData ?? { carriers: [], vehicles: [], hubs: [], customers: [] })
+  })
 
   app.get('/rules', (_request, response) => {
     response.json(coordinator.listRules())

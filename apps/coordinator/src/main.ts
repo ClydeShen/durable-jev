@@ -52,7 +52,7 @@ const coordinator = new CoordinatorService({
       ),
 })
 
-await startService(createCoordinatorApp(coordinator), {
+await startService(createCoordinatorApp(coordinator, referenceData), {
   serviceName: 'coordinator',
   port,
   onClose: () => database.close(),
