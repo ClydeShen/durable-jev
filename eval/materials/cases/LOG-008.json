@@ -1,0 +1,294 @@
+{
+  "caseId": "CASE-LOG-008",
+  "title": "Quality approval was for an old packaging version",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-008",
+    "shipmentId": "LOG-008",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "CAN-CLINIC",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-008-ITEM-1",
+        "description": "Biologic medicine vials, 300 units in a cold box",
+        "declaredCategories": ["COLD_CHAIN"],
+        "weightGrams": 20000,
+        "lengthMm": 600,
+        "widthMm": 500,
+        "heightMm": 450,
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        },
+        "packagingId": "PKG-008-1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-008-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "CAN-CLINIC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-PL-REEFER-5T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-008-1",
+      "amountCents": 105000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [],
+    "temperatureLogs": [
+      {
+        "cargoItemId": "LOG-008-ITEM-1",
+        "sensorId": "SENSOR-LOG-008-ITEM-1",
+        "calibrationValidUntil": "2027-01-01T00:00:00Z",
+        "readings": [
+          {
+            "at": "2026-11-03T00:00:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-03T00:20:00Z",
+            "deciCelsius": 96
+          },
+          {
+            "at": "2026-11-03T01:10:00Z",
+            "deciCelsius": 58
+          },
+          {
+            "at": "2026-11-03T03:30:00Z",
+            "deciCelsius": 47
+          }
+        ]
+      }
+    ],
+    "inspectionNotes": [
+      {
+        "cargoItemId": "LOG-008-ITEM-1",
+        "inspectedAt": "2026-11-03T03:00:00Z",
+        "note": "Cold box sealed; gel packs partly thawed."
+      }
+    ]
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-008-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.95
+      }
+    },
+    {
+      "ruleId": "R18",
+      "entityId": "LOG-008-ITEM-1",
+      "answer": {
+        "type": "choice",
+        "choice": "no_risk",
+        "probabilities": {
+          "no_risk": 0.88,
+          "damaged_packaging": 0.04,
+          "cold_chain_risk": 0.08
+        }
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R19-EXCURSION": "PASS",
+          "R20": "WAITING_HUMAN"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R20",
+            "requiredRole": "QUALITY_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R20",
+      "actor": "QUALITY_REVIEWER",
+      "conditions": ["REWORK_REQUIRED"],
+      "expect": {
+        "gates": {
+          "R20": "PASS",
+          "R20-REWORK": "PASS",
+          "R21-REQUIRED": "PASS",
+          "R21": "WAITING_HUMAN"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R21",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R21",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "repackPhotoRef": "PHOTO-008-1",
+        "packagingId": "PKG-008-2"
+      },
+      "expect": {
+        "openHumanTasks": [
+          {
+            "ruleId": "R22-CAPTURE",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R22-CAPTURE",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "retestReadingDeciCelsius": "92",
+        "retestBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "ON_HOLD",
+        "gates": {
+          "R22": "FAIL",
+          "R23": "FAIL",
+          "R40": "FAIL"
+        },
+        "openHumanTasks": []
+      }
+    },
+    {
+      "step": "changePlan",
+      "actor": "WAREHOUSE_OPERATOR",
+      "change": {
+        "kind": "recordPackaging",
+        "cargoItemId": "LOG-008-ITEM-1",
+        "packagingId": "PKG-008-3"
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R20": "WAITING_HUMAN",
+          "R21": "BLOCKED_DEPENDENCY",
+          "R23": "BLOCKED_DEPENDENCY"
+        },
+        "invalidated": ["R20", "R21", "R22-CAPTURE", "R22", "R23"],
+        "notInvalidated": ["R24", "R27", "R31", "R32"],
+        "openHumanTasks": [
+          {
+            "ruleId": "R20",
+            "requiredRole": "QUALITY_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R20",
+      "actor": "QUALITY_REVIEWER",
+      "conditions": ["REWORK_REQUIRED"],
+      "expect": {
+        "openHumanTasks": [
+          {
+            "ruleId": "R21",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R21",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "repackPhotoRef": "PHOTO-008-2",
+        "packagingId": "PKG-008-3"
+      },
+      "expect": {
+        "openHumanTasks": [
+          {
+            "ruleId": "R22-CAPTURE",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R22-CAPTURE",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "retestReadingDeciCelsius": "48",
+        "retestBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R22": "PASS",
+          "R23": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    }
+  ]
+}
