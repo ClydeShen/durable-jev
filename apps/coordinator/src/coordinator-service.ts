@@ -451,6 +451,7 @@ export class CoordinatorService {
     for (const request of evaluation.humanGateRequests) {
       this.openTaskForGate(stored, this.requireRule(request.ruleId), request.entityId, now)
     }
+    this.withdrawStaleOpenTasks(stored, now)
     const latestChange = this.repository
       .listChanges(caseId)
       .find((change) => change.toRevision === stored.shipment.caseRevision)
@@ -478,6 +479,22 @@ export class CoordinatorService {
     for (const task of this.repository.listHumanTasks({ caseId, status: 'OPEN' })) {
       const current = expireIfDue(task, now as UtcTimestamp)
       if (current !== task) this.repository.saveHumanTask(current, this.entityIdOfTask(task))
+    }
+  }
+
+  private withdrawStaleOpenTasks(stored: StoredCase, now: string): void {
+    for (const task of this.repository.listHumanTasks({ caseId: stored.caseId, status: 'OPEN' })) {
+      const target = this.targetFor(this.requireRule(task.ruleId), stored.shipment)
+      if (targetsMatch(task.target, target)) continue
+      const withdrawn = applyHumanTaskCommand(
+        task,
+        { kind: 'cancel' },
+        {
+          now: now as UtcTimestamp,
+          currentTarget: target,
+        },
+      )
+      this.repository.saveHumanTask(withdrawn.task, this.entityIdOfTask(task))
     }
   }
 
