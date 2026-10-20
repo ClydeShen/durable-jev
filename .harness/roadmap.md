@@ -82,7 +82,7 @@
 | [x] | T6.1 | 事件 schema、各服务 outbox、收集器 | 事件汇入观察库 | T1.6 |
 | [x] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
 | [x] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
-| [ ] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
+| [x] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
 | [ ] | T6.5 | 阶段 live 抽测：真实 Jev 跑案例，在 Console 中核对 Jev span 与判断详情 | `docs/live-checks.md` 有 P6 条目 | T6.3 |
 
 ## P7 Benchmark 与结论
