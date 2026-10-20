@@ -113,7 +113,9 @@ export function describeEvent(event: BusinessEvent): string {
     case 'run.interrupted':
       return 'Agent run interrupted'
     case 'run.resumed':
-      return `Agent run resumed (attempt ${event.attempt ?? '?'})`
+      return a.scope === 'coordinator'
+        ? `Coordinator restarted; still waiting for ${Array.isArray(a.openHumanTasks) ? a.openHumanTasks.join(', ') : 'people'}`
+        : `Agent run resumed (attempt ${event.attempt ?? '?'})`
     case 'run.completed':
       return 'Agent run completed'
     case 'run.escalated':
@@ -134,8 +136,16 @@ export function describeAnswer(answer: unknown): string {
   return 'unknown'
 }
 
+// Services deliver independently, so arrival order is not time order: sort by time, and keep
+// arrival order for events with the same timestamp.
 export const businessEvents = (events: readonly StoredEvent[]): BusinessEvent[] =>
-  events.flatMap(({ event }) => (event.kind === 'event' ? [event] : []))
+  events
+    .flatMap(({ event, sequence }) => (event.kind === 'event' ? [{ event, sequence }] : []))
+    .sort(
+      (left, right) =>
+        left.event.timestamp.localeCompare(right.event.timestamp) || left.sequence - right.sequence,
+    )
+    .map(({ event }) => event)
 export const spanRecords = (events: readonly StoredEvent[]): SpanRecord[] =>
   events.flatMap(({ event }) => (event.kind === 'span' ? [event] : []))
 
@@ -227,7 +237,8 @@ export function judgements(events: readonly BusinessEvent[]): Judgement[] {
     else if (event.eventName === 'rule.evaluated' && a.evaluator === 'semantic')
       row(ruleId, entityId).decided = event
   }
-  return [...rows.values()]
+  // A rule that was never put to the model has nothing to compare.
+  return [...rows.values()].filter((row) => row.requested || row.completed)
 }
 
 export const isRecoveryEvent = (event: ObservabilityEvent): boolean =>
@@ -241,3 +252,44 @@ export function formatDuration(ms: number): string {
     ? `${minutes} min ${Math.round((ms % 60_000) / 1000)} s`
     : `${(ms / 3_600_000).toFixed(1)} h`
 }
+
+export type TimelineItem =
+  | { kind: 'event'; event: BusinessEvent }
+  // A run of rule results that arrived together, e.g. the first evaluation of an order.
+  | { kind: 'rules'; events: BusinessEvent[]; counts: Record<string, number> }
+
+const minimumGroup = 4
+
+// Folds consecutive rule results into one row, so the first evaluation does not bury the story.
+export function groupTimeline(events: readonly BusinessEvent[]): TimelineItem[] {
+  const items: TimelineItem[] = []
+  let run: BusinessEvent[] = []
+  const flush = () => {
+    if (run.length >= minimumGroup) {
+      const counts: Record<string, number> = {}
+      for (const event of run)
+        counts[event.status ?? 'unknown'] = (counts[event.status ?? 'unknown'] ?? 0) + 1
+      items.push({ kind: 'rules', events: run, counts })
+    } else {
+      for (const event of run) items.push({ kind: 'event', event })
+    }
+    run = []
+  }
+  for (const event of events) {
+    if (event.eventName === 'rule.evaluated') run.push(event)
+    else {
+      flush()
+      items.push({ kind: 'event', event })
+    }
+  }
+  flush()
+  return items
+}
+
+const spanLabels: Record<string, string> = {
+  'human.act': 'A person answered',
+  'agent.run.resumed': 'Agent run resumed',
+}
+
+export const describeSpan = (span: SpanRecord): string =>
+  spanLabels[span.eventName] ?? span.eventName

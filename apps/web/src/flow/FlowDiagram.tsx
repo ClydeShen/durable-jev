@@ -3,6 +3,8 @@ import type { RuleDefinition } from '@durable-jev/rule-engine'
 import { Background, Controls, type Edge, ReactFlow, useNodesState } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useEffect, useMemo, useState } from 'react'
+import { Icon } from '../icons.js'
+import { formatConsoleLocation } from '../location-state.js'
 import { StatusBadge } from '../StatusBadge.js'
 import { layoutFlow } from './flow-layout.js'
 import {
@@ -27,6 +29,8 @@ export function FlowDiagram(props: {
   rules: RuleDefinition[]
   checks: CheckResult[]
   humanTasks: HumanTask[]
+  // Lets a rule node open the Console on the same order.
+  correlationId?: string
 }) {
   const [view, setView] = useState<FlowView>({ kind: 'overview' })
   const [showNotApplicable, setShowNotApplicable] = useState(false)
@@ -145,15 +149,52 @@ export function FlowDiagram(props: {
           ? 'Click a branch to see its rules. Click a step to see its details.'
           : 'Click a rule to see its result for each cargo item or leg.'}
       </p>
-      {selected && <RuleDetails node={selected} />}
+      {selected && <RuleDetails node={selected} correlationId={props.correlationId} />}
     </div>
   )
 }
 
-function RuleDetails({ node }: { node: FlowNodeModel }) {
+// Where to look for the evidence behind this rule in the Console.
+function evidenceLinks(node: FlowNodeModel, correlationId: string) {
+  if (node.kind !== 'rule') return []
+  const base = { correlationId, rule: node.id }
+  const links = [{ label: `Timeline events for ${node.id}`, href: formatConsoleLocation(base) }]
+  if (node.evaluatorKind === 'semantic') {
+    links.unshift({
+      label: 'Jev judgement',
+      href: formatConsoleLocation({ ...base, tab: 'judgements' }),
+    })
+  }
+  if (node.evaluatorKind === 'humanGate') {
+    links.unshift({ label: 'Human task and evidence', href: formatConsoleLocation(base) })
+  }
+  links.push({
+    label: 'Calls and A2A tasks',
+    href: formatConsoleLocation({ correlationId, tab: 'calls' }),
+  })
+  return links
+}
+
+function RuleDetails({
+  node,
+  correlationId,
+}: {
+  node: FlowNodeModel
+  correlationId: string | undefined
+}) {
+  const links = correlationId ? evidenceLinks(node, correlationId) : []
   return (
     <div className="flow-details">
       <strong>{node.id}</strong> <StatusBadge status={node.status} />
+      {links.length > 0 && (
+        <span className="evidence-links">
+          {links.map((link) => (
+            <a key={link.label} className="link-button small" href={link.href}>
+              <Icon name="console" size={12} /> {link.label}
+            </a>
+          ))}
+        </span>
+      )}
       {node.waitingOn.length > 0 && (
         <span className="muted small"> waiting on {describeWaitingOn(node.waitingOn)}</span>
       )}
