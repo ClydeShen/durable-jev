@@ -1,0 +1,240 @@
+{
+  "caseId": "CASE-LOG-006",
+  "title": "Service restarts while the quality review is pending",
+  "reviewStatus": "draft",
+  "shipment": {
+    "caseId": "CASE-LOG-006",
+    "shipmentId": "LOG-006",
+    "customerId": "CUST-BLUE-CLINIC",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "origin": "SHA-WH1",
+    "destination": "CAN-CLINIC",
+    "deliveryWindow": {
+      "earliestAt": "2026-11-03T06:00:00Z",
+      "latestAt": "2026-11-03T12:00:00Z"
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "LOG-006-ITEM-1",
+        "description": "Insulin pens, 500 units in a validated cold box",
+        "declaredCategories": ["COLD_CHAIN"],
+        "weightGrams": 22000,
+        "lengthMm": 600,
+        "widthMm": 500,
+        "heightMm": 500,
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        },
+        "packagingId": "PKG-006-1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LOG-006-LEG-1",
+        "sequence": 1,
+        "fromLocation": "SHA-WH1",
+        "toLocation": "CAN-CLINIC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-PL-REEFER-5T",
+        "plannedDepartureAt": "2026-11-03T04:00:00Z",
+        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+      }
+    ],
+    "quote": {
+      "quoteId": "Q-LOG-006-1",
+      "amountCents": 110000,
+      "currency": "CNY"
+    }
+  },
+  "evidence": {
+    "documents": [],
+    "temperatureLogs": [
+      {
+        "cargoItemId": "LOG-006-ITEM-1",
+        "sensorId": "SENSOR-LOG-006-ITEM-1",
+        "calibrationValidUntil": "2027-01-01T00:00:00Z",
+        "readings": [
+          {
+            "at": "2026-11-03T00:00:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-03T00:30:00Z",
+            "deciCelsius": 95
+          },
+          {
+            "at": "2026-11-03T01:00:00Z",
+            "deciCelsius": 98
+          },
+          {
+            "at": "2026-11-03T01:20:00Z",
+            "deciCelsius": 60
+          },
+          {
+            "at": "2026-11-03T03:30:00Z",
+            "deciCelsius": 48
+          }
+        ]
+      }
+    ],
+    "inspectionNotes": [
+      {
+        "cargoItemId": "LOG-006-ITEM-1",
+        "inspectedAt": "2026-11-03T03:00:00Z",
+        "note": "Cold box sealed; no visible damage."
+      }
+    ]
+  },
+  "scriptedSemanticAnswers": [
+    {
+      "ruleId": "R03",
+      "entityId": "LOG-006-ITEM-1",
+      "answer": {
+        "type": "noul",
+        "noul": 0.95
+      }
+    },
+    {
+      "ruleId": "R18",
+      "entityId": "LOG-006-ITEM-1",
+      "answer": {
+        "type": "choice",
+        "choice": "no_risk",
+        "probabilities": {
+          "no_risk": 0.9,
+          "damaged_packaging": 0.03,
+          "cold_chain_risk": 0.07
+        }
+      }
+    }
+  ],
+  "eventScript": [
+    {
+      "step": "submit",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R19": "PASS",
+          "R19-EXCURSION": "PASS",
+          "R20": "WAITING_HUMAN",
+          "R23": "BLOCKED_DEPENDENCY"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R20",
+            "requiredRole": "QUALITY_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "restartCoordinator",
+      "expect": {
+        "orderStatus": "AWAITING_HUMAN",
+        "gates": {
+          "R20": "WAITING_HUMAN"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R20",
+            "requiredRole": "QUALITY_REVIEWER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "approveHumanTask",
+      "ruleId": "R20",
+      "actor": "QUALITY_REVIEWER",
+      "expect": {
+        "gates": {
+          "R20": "PASS",
+          "R20-REWORK": "NOT_APPLICABLE",
+          "R21": "NOT_APPLICABLE",
+          "R23": "PASS"
+        },
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-LOAD",
+            "requiredRole": "WAREHOUSE_OPERATOR"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "completeHumanTask",
+      "ruleId": "R39-LOAD",
+      "actor": "WAREHOUSE_OPERATOR",
+      "fields": {
+        "loadScanRef": "SCAN-01",
+        "physicalCheckBy": "warehouse-op-02"
+      },
+      "reuseLastTask": true,
+      "expect": {
+        "error": "CONFLICT",
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "restartCoordinator",
+      "expect": {
+        "orderStatus": "READY_TO_DISPATCH",
+        "openHumanTasks": [
+          {
+            "ruleId": "R39-CONFIRM",
+            "requiredRole": "DISPATCHER"
+          }
+        ]
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED",
+        "gates": {
+          "R40": "PASS"
+        },
+        "openHumanTasks": []
+      }
+    },
+    {
+      "step": "dispatch",
+      "actor": "DISPATCHER",
+      "expect": {
+        "orderStatus": "DISPATCHED"
+      }
+    }
+  ]
+}
