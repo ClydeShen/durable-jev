@@ -92,6 +92,14 @@ curl http://127.0.0.1:4000/processes                               # process sta
 Copy `.env.example` to `.env`. The default `MODEL_MODE=scripted` means tests, spikes and the demo never send real requests.
 Jev is only called when you explicitly set `MODEL_MODE=live` and provide `TYPESAFE_API_KEY`. Jev quota is limited, so live mode is reserved for key end-to-end tests.
 
+In live mode every service caches judgements by model, question and input in its own database, so re-evaluating an unchanged order does not call Jev again. To replay selected cases against Jev:
+
+```bash
+MODEL_MODE=live pnpm replay LOG-002 LOG-003
+```
+
+Live judgements are cached in `var/data/semantic-cache.sqlite`, so a rerun costs no quota. Each semantic result records the provider and model that answered it.
+
 ## Troubleshooting
 
 - Port already in use: make sure nothing else is on 4000, 4100 or 5173, or stop the previous `pnpm start` with `Ctrl+C`.
