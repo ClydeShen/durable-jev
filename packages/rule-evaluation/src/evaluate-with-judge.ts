@@ -11,7 +11,7 @@ import {
   semanticCacheMigrations,
 } from '@durable-jev/model-providers'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
-import type { Telemetry } from '@durable-jev/telemetry'
+import { type Telemetry, withSpan } from '@durable-jev/telemetry'
 import {
   type BranchEvaluationDependencies,
   evaluateBranch,
@@ -81,7 +81,19 @@ export async function evaluateBranchWithJudge(
   let judgements: Awaited<ReturnType<typeof judge.ask>> = []
   if (questions.length > 0) {
     try {
-      judgements = await judge.ask(questions)
+      judgements = await withSpan(
+        'jev.ask',
+        {
+          caseId: caseFields.caseId,
+          caseRevision: caseFields.caseRevision,
+          attributes: {
+            provider: judge.provider,
+            modelId: judge.modelId,
+            questions: questions.length,
+          },
+        },
+        () => judge.ask(questions),
+      )
     } catch (error) {
       telemetry?.emit({
         eventName: 'task.failed',
