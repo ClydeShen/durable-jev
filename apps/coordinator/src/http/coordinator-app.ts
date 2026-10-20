@@ -1,5 +1,11 @@
 import { BranchUnavailableError } from '@durable-jev/branch-service'
-import { CaseEvidence, Role, ScriptedSemanticAnswer, Shipment } from '@durable-jev/contracts'
+import {
+  CaseEvidence,
+  PlanChange,
+  Role,
+  ScriptedSemanticAnswer,
+  Shipment,
+} from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
@@ -74,6 +80,11 @@ export function createCoordinatorApp(coordinator: CoordinatorService): Express {
 
   app.get('/cases/:caseId', (request, response) => {
     response.json(coordinator.getCase(request.params.caseId))
+  })
+
+  app.post('/cases/:caseId/changes', async (request, response) => {
+    const change = PlanChange.parse(request.body)
+    response.json(await coordinator.applyChange(request.params.caseId, change, demoRoleOf(request)))
   })
 
   app.post('/cases/:caseId/reevaluate', async (request, response) => {

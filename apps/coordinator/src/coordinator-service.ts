@@ -1,5 +1,6 @@
 import { BranchUnavailableError } from '@durable-jev/branch-service'
 import type {
+  CaseChange,
   CaseEvidence,
   CheckResult,
   CheckResultId,
@@ -11,6 +12,7 @@ import type {
   HumanTaskId,
   HumanTaskTarget,
   OrderStatus,
+  PlanChange,
   Role,
   RuleEvaluationRecord,
   RuleId,
@@ -32,6 +34,7 @@ import {
 } from '@durable-jev/human-tasks'
 import {
   computeInputFingerprint,
+  invalidateDependentsOf,
   type RuleDefinition,
   relevantEntityVersions,
   subjectKey,
@@ -47,6 +50,7 @@ import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.
 import { CoordinatorError } from './coordinator-errors.js'
 import { deriveOrderStatus, dispatchConfirmationRuleId, finalGateRuleId } from './order-status.js'
 import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
+import { applyPlanChange, roleForChange } from './plan-change.js'
 
 export type CoordinatorDependencies = {
   database: StoreDatabase
@@ -61,7 +65,11 @@ export type SubmitCaseRequest = {
   scriptedSemanticAnswers?: ScriptedSemanticAnswer[]
 }
 
-export type CaseView = StoredCase & { checks: CheckResult[]; humanTasks: HumanTask[] }
+export type CaseView = StoredCase & {
+  checks: CheckResult[]
+  humanTasks: HumanTask[]
+  changes: CaseChange[]
+}
 
 type HumanTaskAction =
   | { kind: 'approve'; reason?: string; conditions?: DecisionCondition[] }
@@ -145,7 +153,53 @@ export class CoordinatorService {
       ...stored,
       checks: this.repository.listCheckResults(caseId),
       humanTasks: this.repository.listHumanTasks({ caseId }),
+      changes: this.repository.listChanges(caseId),
     }
+  }
+
+  async applyChange(caseId: string, change: PlanChange, actor: Role): Promise<CaseView> {
+    this.database
+      .transaction(() => {
+        const stored = this.requireActiveCase(caseId)
+        if (actor !== roleForChange[change.kind]) {
+          throw new CoordinatorError(
+            'FORBIDDEN',
+            `${change.kind} requires ${roleForChange[change.kind]}`,
+          )
+        }
+        const applied = applyPlanChange(stored.shipment, change)
+        const changeId = `CHG-${caseId}-r${applied.shipment.caseRevision}`
+        const invalidated = invalidateDependentsOf(this.configuration.rulesInEvaluationOrder, {
+          changeId,
+          triggers: applied.triggers,
+        })
+        const now = this.now()
+        this.repository.insertChange({
+          changeId,
+          caseId: caseId as never,
+          fromRevision: stored.shipment.caseRevision,
+          toRevision: applied.shipment.caseRevision,
+          change,
+          triggers: applied.triggers,
+          invalidatedRuleIds: [...invalidated],
+          requestedBy: actor,
+          requestedAt: now as UtcTimestamp,
+        })
+        this.repository.updateShipment(caseId, applied.shipment, now)
+        this.repository.replaceCheckResults(
+          caseId,
+          this.repository
+            .listCheckResults(caseId)
+            .map((check) =>
+              invalidated.has(check.ruleId)
+                ? { ...check, gateStatus: 'INVALIDATED', invalidatedByChange: changeId }
+                : check,
+            ),
+        )
+        this.moveOrderTo(caseId, 'EVALUATING')
+      })
+      .immediate()
+    return this.reevaluate(caseId)
   }
 
   listRules(): { ruleSetVersion: string; rules: RuleDefinition[] } {
@@ -397,9 +451,16 @@ export class CoordinatorService {
     for (const request of evaluation.humanGateRequests) {
       this.openTaskForGate(stored, this.requireRule(request.ruleId), request.entityId, now)
     }
+    const latestChange = this.repository
+      .listChanges(caseId)
+      .find((change) => change.toRevision === stored.shipment.caseRevision)
     this.repository.replaceCheckResults(
       caseId,
-      this.toCheckResults(stored, evaluation.evaluations, now),
+      this.toCheckResults(stored, evaluation.evaluations, now).map((check) =>
+        latestChange?.invalidatedRuleIds.includes(check.ruleId)
+          ? { ...check, affectedByChange: latestChange.changeId }
+          : check,
+      ),
     )
     const finalGateStatus =
       evaluation.evaluations.find((result) => result.ruleId === finalGateRuleId)?.gateStatus ??

@@ -67,4 +67,13 @@ export const coordinatorMigrations: readonly Migration[] = [
     id: 'coordinator-007-drop-reservations',
     sql: 'DROP TABLE reservations',
   },
+  {
+    id: 'coordinator-008-case-changes',
+    sql: `CREATE TABLE case_changes (
+      change_id TEXT PRIMARY KEY,
+      case_id TEXT NOT NULL REFERENCES cases (case_id),
+      to_revision INTEGER NOT NULL,
+      change_json TEXT NOT NULL
+    )`,
+  },
 ]

@@ -1,4 +1,5 @@
 import type {
+  CaseChange,
   CaseEvidence,
   CheckResult,
   HumanTask,
@@ -72,6 +73,29 @@ export class CoordinatorRepository {
   listCases(): StoredCase[] {
     const rows = this.database.prepare('SELECT * FROM cases ORDER BY created_at, case_id').all()
     return (rows as CaseRow[]).map(toStoredCase)
+  }
+
+  updateShipment(caseId: string, shipment: Shipment, updatedAt: string): void {
+    this.database
+      .prepare(
+        'UPDATE cases SET shipment_json = ?, case_revision = ?, updated_at = ? WHERE case_id = ?',
+      )
+      .run(JSON.stringify(shipment), shipment.caseRevision, updatedAt, caseId)
+  }
+
+  insertChange(change: CaseChange): void {
+    this.database
+      .prepare(
+        'INSERT INTO case_changes (change_id, case_id, to_revision, change_json) VALUES (?, ?, ?, ?)',
+      )
+      .run(change.changeId, change.caseId, change.toRevision, JSON.stringify(change))
+  }
+
+  listChanges(caseId: string): CaseChange[] {
+    const rows = this.database
+      .prepare('SELECT change_json FROM case_changes WHERE case_id = ? ORDER BY to_revision')
+      .all(caseId) as { change_json: string }[]
+    return rows.map((row) => JSON.parse(row.change_json))
   }
 
   updateOrderStatus(caseId: string, orderStatus: OrderStatus, updatedAt: string): void {
