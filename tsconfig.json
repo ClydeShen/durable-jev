@@ -17,6 +17,9 @@
       "path": "packages/rule-evaluation"
     },
     {
+      "path": "packages/branch-service"
+    },
+    {
       "path": "packages/service-kit"
     },
     {
