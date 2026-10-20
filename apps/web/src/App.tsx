@@ -8,6 +8,7 @@ import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
 import { HumanTaskPanel } from './HumanTaskPanel.js'
 import { InvestigationPanel } from './InvestigationPanel.js'
+import { formatLocation, parseLocation } from './location-state.js'
 import { PlanChangePanel } from './PlanChangePanel.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
@@ -19,11 +20,13 @@ const refreshIntervalMs = 2000
 export function App() {
   const [actingRole, setActingRole] = useState<Role>('WAREHOUSE_OPERATOR')
   const [cases, setCases] = useState<CaseSummary[]>([])
-  const [selectedCaseId, setSelectedCaseId] = useState<string>()
+  const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(
+    () => parseLocation(window.location.hash).caseId,
+  )
   const [selectedCase, setSelectedCase] = useState<CaseView>()
   const [catalog, setCatalog] = useState<RuleCatalog>()
   const [referenceData, setReferenceData] = useState<ReferenceData>()
-  const [view, setView] = useState<'flow' | 'tree'>('flow')
+  const [view, setView] = useState<'flow' | 'tree'>(() => parseLocation(window.location.hash).view)
   const [message, setMessage] = useState<{ kind: 'error' | 'info'; text: string }>()
   // The action in flight. While it runs the action panels are disabled, so a slow service
   // never looks like a frozen page and nothing is sent twice by an impatient second click.
@@ -50,6 +53,22 @@ export function App() {
       })
     }
   }, [selectedCaseId])
+
+  useEffect(() => {
+    const next = formatLocation({ caseId: selectedCaseId, view })
+    if (next && window.location.hash !== next) window.history.replaceState(null, '', next)
+  }, [selectedCaseId, view])
+
+  useEffect(() => {
+    // Back and forward, or a pasted link, change the hash without reloading the page.
+    const onHashChange = () => {
+      const next = parseLocation(window.location.hash)
+      setSelectedCaseId(next.caseId)
+      setView(next.view)
+    }
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
 
   useEffect(() => {
     api.listRules().then(setCatalog, () => {})
@@ -281,7 +300,7 @@ export function App() {
             </fieldset>
           </>
         ) : (
-          <p className="muted">Select a case on the left.</p>
+          <p className="muted">Select a case to see its checks, tasks and plan.</p>
         )}
       </main>
     </div>
