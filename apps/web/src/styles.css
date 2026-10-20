@@ -62,7 +62,14 @@ select {
   font-size: 13px;
 }
 
+/* Keyboard users must always see where they are; the ring is never removed. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 button {
+  min-height: 28px;
   padding: 5px 12px;
   border-radius: 6px;
   border: 1px solid var(--border);

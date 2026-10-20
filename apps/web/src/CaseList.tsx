@@ -16,6 +16,7 @@ export function CaseList(props: {
           <button
             type="button"
             className={summary.caseId === props.selectedCaseId ? 'selected' : ''}
+            aria-current={summary.caseId === props.selectedCaseId ? 'true' : undefined}
             onClick={() => props.onSelect(summary.caseId)}
           >
             <span className="case-id">{summary.shipment.shipmentId}</span>
