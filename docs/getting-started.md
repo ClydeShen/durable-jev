@@ -23,6 +23,7 @@ pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
 | http://127.0.0.1:4110/capabilities | Cargo assurance: controlled goods and cold chain rules |
 | http://127.0.0.1:4120/capabilities | Transport planning: plan rules and carrier reservations |
 | http://127.0.0.1:4130/capabilities | Commercial control: credit and cost rules |
+| http://127.0.0.1:4200/cases | Observation collector: events and traces behind the Console |
 | http://127.0.0.1:4000/processes | Local control server (listens on 127.0.0.1 only) |
 
 Each service keeps its own SQLite database in `var/data/`. The coordinator owns orders and human tasks and asks the three branch services to evaluate their rules over HTTP (`POST /evaluations`).
@@ -32,6 +33,22 @@ Each branch service also speaks A2A: its Agent Card is at `/.well-known/agent-ca
 `Ctrl+C` stops every process. Data survives restarts; `pnpm demo:reset` or the workbench's "Reset demo" button wipes it and reloads the cases.
 
 The workbench keeps the selected case and view in the address (for example `http://127.0.0.1:5173/#/cases/CASE-LOG-003?view=tree`), so a reload or a pasted link opens the same screen. Icons come from one place (`apps/web/src/icons.tsx`, Lucide); the UI source contains no symbol characters, and a test enforces it. Every case starts with a summary of what failed and who it is waiting for; while an action runs the page shows "Working…" and disables the action buttons.
+
+## Console
+
+Open the Console from the top bar (http://127.0.0.1:5173/#/console). It shows what happened to each order across all services; it is read only, and the workbench works the same without it.
+
+| View | What it answers |
+|---|---|
+| Cases | Every order with its status, services, total time, machine time, time spent waiting for people, errors and last activity; filter by case, status, service or errors |
+| Timeline | Everything that happened to one order, in time order, with an icon for who did it (code rule, Jev, tool, service call, person, agent, recovery). The first evaluation's rule results fold into one row |
+| Calls | The calls behind it as traces: each block is one continuous piece of work, with bars for when each call started and how long it ran. A late human answer or a resumed run is its own trace that links back to the one it continues |
+| Judgements | For each question put to Jev: what the model returned next to what the rule decided. A probability is the model's own confidence, not a checked accuracy |
+| Recovery | Restarts, interruptions, results voided by a change, failures, and the linked traces |
+
+"Machine time" counts the time at least one call was running (parallel calls count once) and leaves out the time spent waiting for a person. From a rule node in the workbench's flow diagram, the links under the rule name open the Console on that rule: its Jev judgement, its timeline events, or the calls and A2A tasks.
+
+Events are written to each service's own database first and delivered to the collector in the background, so stopping the collector loses nothing: they arrive when it is back.
 
 ## Walkthrough: LOG-001, general cargo from submission to dispatch
 
