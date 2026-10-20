@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
+    "@durable-jev/agent-harness": "workspace:*",
     "@durable-jev/branch-service": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",
@@ -17,6 +18,7 @@
     "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/service-kit": "workspace:*",
     "@durable-jev/store": "workspace:*",
+    "@durable-jev/transport-investigation": "workspace:*",
     "@durable-jev/transport-reservations": "workspace:*",
     "express": "5.3.0",
     "zod": "4.6.7"

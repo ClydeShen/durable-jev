@@ -30,6 +30,12 @@
     },
     {
       "path": "../../packages/transport-reservations"
+    },
+    {
+      "path": "../../packages/agent-harness"
+    },
+    {
+      "path": "../../packages/transport-investigation"
     }
   ]
 }

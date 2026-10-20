@@ -38,6 +38,9 @@ importers:
 
   apps/coordinator:
     dependencies:
+      '@durable-jev/agent-harness':
+        specifier: workspace:*
+        version: link:../../packages/agent-harness
       '@durable-jev/branch-service':
         specifier: workspace:*
         version: link:../../packages/branch-service
@@ -59,6 +62,9 @@ importers:
       '@durable-jev/store':
         specifier: workspace:*
         version: link:../../packages/store
+      '@durable-jev/transport-investigation':
+        specifier: workspace:*
+        version: link:../../packages/transport-investigation
       '@durable-jev/transport-reservations':
         specifier: workspace:*
         version: link:../../packages/transport-reservations
