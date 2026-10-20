@@ -177,6 +177,14 @@ type RuleDefinition = {
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
 - R39 拆为两个人工门槛 `R39-LOAD`（仓库操作员，装载扫码与复核证据）与 `R39-CONFIRM`（调度员确认），R39 为二者 AND。调度员确认在放行事务内记录；R40 不通过则整个事务回滚，确认也不保留。
 
+### 6.2 A2A 适配（T5.1）
+
+- `packages/a2a-adapter`：服务端 `mountA2a` 在业务服务的 Express 上挂 Agent Card（`/.well-known/agent-card.json`）与 JSON-RPC（`/a2a/jsonrpc`），技能 `evaluate-branches`，输入为 `BranchEvaluationRequest` data part，结果放 Artifact `branch-evaluation`；与原生 `/evaluations` 用同一求值函数。
+- 任务存储：自实现 `SqliteTaskStore`（服务自己的库），重启不丢 A2A Task。
+- F04：SDK 不按 messageId 去重；适配层包一层 request handler，已见过的 messageId 直接返回原 Task，不再执行。
+- 客户端（Coordinator）：`a2a_task_links` 映射表，键为请求内容哈希，记录 caseId、revision、能力、messageId、a2aTaskId、状态、之前的 taskId。发送前先落库；同一请求已完成则 `getTask` 取结果，不重复委派；已失败/取消/拒绝的任务不继续，新建 Task 并在 `referenceTaskIds` 指向旧任务。
+- 业务状态与 A2A Task 生命周期分开：A2A 只承载一次求值，订单状态仍由 Coordinator 状态机决定。
+
 ## 7. Runtime harness
 
 ### 7.1 接口
