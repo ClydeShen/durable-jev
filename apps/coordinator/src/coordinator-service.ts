@@ -321,8 +321,15 @@ export class CoordinatorService {
     return investigation
   }
 
-  applyChange(caseId: string, change: PlanChange, actor: Role): Promise<CaseView> {
-    return this.changePlan(caseId, change, actor)
+  // expectedRevision is the revision the person was looking at; if someone changed the plan
+  // since, the change is refused instead of silently applied on top (F15).
+  applyChange(
+    caseId: string,
+    change: PlanChange,
+    actor: Role,
+    expectedRevision?: number,
+  ): Promise<CaseView> {
+    return this.changePlan(caseId, change, actor, undefined, expectedRevision)
   }
 
   private async changePlan(
@@ -330,10 +337,17 @@ export class CoordinatorService {
     change: PlanChange,
     actor: Role,
     acceptedInvestigation?: Investigation,
+    expectedRevision?: number,
   ): Promise<CaseView> {
     this.database
       .transaction(() => {
         const stored = this.requireActiveCase(caseId)
+        if (expectedRevision !== undefined && stored.shipment.caseRevision !== expectedRevision) {
+          throw new CoordinatorError(
+            'CONFLICT',
+            `the change was made against r${expectedRevision}; ${caseId} is now r${stored.shipment.caseRevision}`,
+          )
+        }
         if (
           acceptedInvestigation &&
           (this.requireInvestigation(acceptedInvestigation.investigationId).status !== 'PROPOSED' ||
