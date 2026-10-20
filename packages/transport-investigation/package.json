@@ -14,5 +14,9 @@
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/rule-evaluation": "workspace:*",
     "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@durable-jev/agent-runtime-pi": "workspace:*",
+    "@durable-jev/store": "workspace:*"
   }
 }
