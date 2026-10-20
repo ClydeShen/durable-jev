@@ -45,6 +45,23 @@ Each service keeps its own SQLite database in `var/data/`. The coordinator owns 
 3. The order gets a new revision. Only the rules that depend on the change are re-checked; they show "re-checked after r2" in the flow diagram, and "Revision history" lists how many rules were affected. Rules that do not depend on the change (for example the customer's credit) keep their results.
 4. Human tasks bound to what changed are superseded and recreated; the old reservation for the previous route version is cancelled. A quote change by the "Commercial manager" re-asks for credit approvals but keeps a compliance sign-off.
 
+## Demo cases
+
+`pnpm demo:reset` loads eight orders. Their event scripts are replayed and checked stage by stage with `pnpm replay`.
+
+| Case | Story | What to try |
+|---|---|---|
+| LOG-001 | General cargo, one leg, complete documents | Load as warehouse operator, confirm as dispatcher |
+| LOG-002 | Cold chain cargo arrives with damaged packaging | Jev flags the damage; "Approve" cannot replace the repack; repack, then capture the retest |
+| LOG-003 | Controlled goods whose documents conflict with the declaration | The compliance reviewer checks the documents; a commercial manager cannot approve instead; the carrier lacks the qualification until the planner switches to Secura |
+| LOG-004 | Controlled cold chain cargo whose carrier cancels | After the compliance sign-off, change the carrier to Glacier: the sign-off is voided and asked for again; credit checks keep their results |
+| LOG-005 | A reroute raises the quote over credit | As commercial manager change the quote to 2400.00: credit exception and extra cost need two separate approvals |
+| LOG-006 | The service restarts during the quality review | Kill and restart the coordinator; the quality task is still there |
+| LOG-007 | The transfer hub cannot keep cargo cold | The plan fails at the hub; as planner, replacing the route through SHA-HUB clears it (scripted in `pnpm replay`) |
+| LOG-008 | Quality approval was for an old packaging version | Approve with "rework required", record a failing retest, then the new packaging voids the earlier approval |
+
+All expected results are drafts (`reviewStatus: draft`) until a reviewer signs them off.
+
 ## Process control
 
 The local control server is for demos (the workbench will call it in later phases):
