@@ -4,15 +4,26 @@
       "carrierId": "CAR-NORTHLINE",
       "name": "Northline Freight",
       "serviceLocations": ["SHA-WH1", "SHA-HUB", "HGH-DC2", "NKG-DC3"],
-      "qualifications": [{ "category": "GENERAL", "validUntil": "2027-12-31T23:59:59Z" }]
+      "qualifications": [
+        {
+          "category": "GENERAL",
+          "validUntil": "2027-12-31T23:59:59Z"
+        }
+      ]
     },
     {
       "carrierId": "CAR-POLAR",
       "name": "Polar Cold Logistics",
       "serviceLocations": ["SHA-WH1", "SHA-HUB", "HGH-DC2", "SZX-HUB", "CAN-CLINIC"],
       "qualifications": [
-        { "category": "GENERAL", "validUntil": "2027-12-31T23:59:59Z" },
-        { "category": "COLD_CHAIN", "validUntil": "2027-06-30T23:59:59Z" }
+        {
+          "category": "GENERAL",
+          "validUntil": "2027-12-31T23:59:59Z"
+        },
+        {
+          "category": "COLD_CHAIN",
+          "validUntil": "2027-06-30T23:59:59Z"
+        }
       ]
     },
     {
@@ -20,9 +31,37 @@
       "name": "Secura Controlled Transport",
       "serviceLocations": ["SHA-WH1", "SHA-HUB", "NKG-DC3", "CAN-CLINIC"],
       "qualifications": [
-        { "category": "GENERAL", "validUntil": "2027-12-31T23:59:59Z" },
-        { "category": "CONTROLLED", "validUntil": "2026-12-31T23:59:59Z" },
-        { "category": "COLD_CHAIN", "validUntil": "2027-03-31T23:59:59Z" }
+        {
+          "category": "GENERAL",
+          "validUntil": "2027-12-31T23:59:59Z"
+        },
+        {
+          "category": "CONTROLLED",
+          "validUntil": "2026-12-31T23:59:59Z"
+        },
+        {
+          "category": "COLD_CHAIN",
+          "validUntil": "2027-03-31T23:59:59Z"
+        }
+      ]
+    },
+    {
+      "carrierId": "CAR-GLACIER",
+      "name": "Glacier Secure Cold",
+      "serviceLocations": ["SHA-WH1", "SHA-HUB", "HGH-DC2", "NKG-DC3", "CAN-CLINIC"],
+      "qualifications": [
+        {
+          "category": "GENERAL",
+          "validUntil": "2027-12-31T23:59:59Z"
+        },
+        {
+          "category": "CONTROLLED",
+          "validUntil": "2027-06-30T23:59:59Z"
+        },
+        {
+          "category": "COLD_CHAIN",
+          "validUntil": "2027-06-30T23:59:59Z"
+        }
       ]
     }
   ],
@@ -50,7 +89,10 @@
       "cargoLengthMm": 5400,
       "cargoWidthMm": 2300,
       "cargoHeightMm": 2200,
-      "temperatureControl": { "minDeciCelsius": -250, "maxDeciCelsius": 250 }
+      "temperatureControl": {
+        "minDeciCelsius": -250,
+        "maxDeciCelsius": 250
+      }
     },
     {
       "vehicleId": "VEH-SC-REEFER-3T",
@@ -59,7 +101,22 @@
       "cargoLengthMm": 4200,
       "cargoWidthMm": 2100,
       "cargoHeightMm": 2000,
-      "temperatureControl": { "minDeciCelsius": 20, "maxDeciCelsius": 80 }
+      "temperatureControl": {
+        "minDeciCelsius": 20,
+        "maxDeciCelsius": 80
+      }
+    },
+    {
+      "vehicleId": "VEH-GL-REEFER-4T",
+      "carrierId": "CAR-GLACIER",
+      "maxPayloadGrams": 4000000,
+      "cargoLengthMm": 5000,
+      "cargoWidthMm": 2200,
+      "cargoHeightMm": 2100,
+      "temperatureControl": {
+        "minDeciCelsius": -200,
+        "maxDeciCelsius": 250
+      }
     }
   ],
   "hubs": [
