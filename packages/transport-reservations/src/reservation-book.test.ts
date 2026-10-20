@@ -22,11 +22,20 @@ describe('ensurePlanReservation', () => {
     )
   })
 
-  it('reserves again for a new route version', () => {
+  it('reserves the new route version and cancels the superseded one', () => {
     const database = openDatabase(':memory:', reservationMigrations)
     ensurePlanReservation(database, shipment)
     const rerouted = { ...shipment, entityVersions: { ...shipment.entityVersions, route: 2 } }
     ensurePlanReservation(database, rerouted)
+    ensurePlanReservation(database, rerouted)
     expect(countActiveReservations(database, shipment.caseId, 2)).toBe(1)
+    expect(countActiveReservations(database, shipment.caseId, 1)).toBe(0)
+    expect(
+      database
+        .prepare(
+          "SELECT COUNT(*) AS count FROM operations WHERE action_type = 'cancel_reservation'",
+        )
+        .get(),
+    ).toEqual({ count: 1 })
   })
 })

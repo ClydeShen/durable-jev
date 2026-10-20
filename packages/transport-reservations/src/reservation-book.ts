@@ -48,7 +48,41 @@ export function ensurePlanReservation(database: StoreDatabase, shipment: Shipmen
         ),
       ),
   )
+  cancelSupersededReservations(database, shipment.caseId, routeVersion)
   return countActiveReservations(database, shipment.caseId, routeVersion) === shipment.legs.length
+}
+
+function cancelSupersededReservations(
+  database: StoreDatabase,
+  caseId: string,
+  currentRouteVersion: number,
+): void {
+  const supersededVersions = database
+    .prepare(
+      `SELECT DISTINCT route_version FROM reservations
+       WHERE case_id = ? AND route_version < ? AND status = ?`,
+    )
+    .all(caseId, currentRouteVersion, reservationMachine.initial) as { route_version: number }[]
+  const cancel = database.prepare(
+    'UPDATE reservations SET status = ? WHERE case_id = ? AND route_version = ? AND status = ?',
+  )
+  for (const { route_version: routeVersion } of supersededVersions) {
+    executeOnce(
+      database,
+      {
+        operationId: `${caseId}:route-v${routeVersion}:cancel_reservation`,
+        actionType: 'cancel_reservation',
+        request: { routeVersion },
+      },
+      () =>
+        cancel.run(
+          reservationMachine.transition('RESERVED', 'CANCELLED'),
+          caseId,
+          routeVersion,
+          reservationMachine.initial,
+        ).changes,
+    )
+  }
 }
 
 export function countActiveReservations(
