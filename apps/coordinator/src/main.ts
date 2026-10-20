@@ -11,6 +11,7 @@ import { reservationMigrations } from '@durable-jev/transport-reservations'
 import { inProcessEvaluators, serviceEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
 import { createCoordinatorApp } from './http/coordinator-app.js'
+import { inProcessInvestigator } from './investigator.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..')
@@ -56,6 +57,7 @@ const coordinator = new CoordinatorService({
         ),
         judgeFor,
       ),
+  investigator: inProcessInvestigator(configuration, referenceData),
 })
 
 await startService(createCoordinatorApp(coordinator, referenceData), {
