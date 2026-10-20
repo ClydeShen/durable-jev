@@ -3,6 +3,8 @@ import {
   buildSemanticQuestions,
   CachingJudge,
   JevJudge,
+  JudgeUnavailableError,
+  RetryingJudge,
   ScriptedJudge,
   type SemanticJudge,
   semanticCacheMigrations,
@@ -13,6 +15,8 @@ import {
   evaluateBranch,
   rulesOfBranches,
 } from './evaluate-branch.js'
+
+export { JudgeUnavailableError }
 
 export type JudgeFor = (request: BranchEvaluationRequest) => SemanticJudge
 
@@ -26,7 +30,11 @@ export function judgeForModelMode(
 ): JudgeFor {
   if (mode !== 'live') return scriptedJudgeFor
   if (!options.apiKey) throw new Error('MODEL_MODE=live needs TYPESAFE_API_KEY')
-  const judge = new CachingJudge(new JevJudge({ apiKey: options.apiKey }), options.cacheDatabase)
+  // Only cache misses reach Jev, and only those are retried.
+  const judge = new CachingJudge(
+    new RetryingJudge(new JevJudge({ apiKey: options.apiKey })),
+    options.cacheDatabase,
+  )
   return () => judge
 }
 
