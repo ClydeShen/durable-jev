@@ -73,7 +73,7 @@
 | [x] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告 | T4.7, T5.2 |
 | [x] | T5.4 | F11–F18 | 同上 | T5.3 |
 | [x] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示 | T5.3 |
-| [ ] | T5.6 | 阶段 live 抽测：真实 Jev 跑全部案例（经 A2A 路径），记录并转成改进 | `docs/live-checks.md` 有 P5 条目，发现已转任务 | T5.2 |
+| [x] | T5.6 | 阶段 live 抽测：真实 Jev 跑全部案例（经 A2A 路径），记录并转成改进 | `docs/live-checks.md` 有 P5 条目，发现已转任务 | T5.2 |
 
 ## P6 可观测性与 Console
 
