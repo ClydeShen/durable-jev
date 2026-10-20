@@ -97,7 +97,17 @@ export function createCoordinatorApp(
 
   app.post('/cases/:caseId/changes', async (request, response) => {
     const change = PlanChange.parse(request.body)
-    response.json(await coordinator.applyChange(request.params.caseId, change, demoRoleOf(request)))
+    // If-Match: the revision the client based the change on, e.g. "2" or "r2".
+    const ifMatch = request.header('if-match')?.replace(/^"?r?|"$/g, '')
+    const expectedRevision = ifMatch ? z.coerce.number().int().positive().parse(ifMatch) : undefined
+    response.json(
+      await coordinator.applyChange(
+        request.params.caseId,
+        change,
+        demoRoleOf(request),
+        expectedRevision,
+      ),
+    )
   })
 
   app.post('/cases/:caseId/investigations', async (request, response) => {
