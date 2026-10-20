@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { ReferenceData } from '@durable-jev/contracts'
+import {
+  SemanticQuestionCatalog,
+  type SemanticQuestionTemplate,
+} from '@durable-jev/model-providers'
 import { type ConfigIssue, type RuleDefinition, validateRuleSet } from '@durable-jev/rule-engine'
 import { type DecisionTables, MixingMatrix } from './decision-tables.js'
 import type { PolicyParameters } from './evaluation-inputs.js'
@@ -10,11 +15,16 @@ export type RuleConfiguration = {
   rulesInEvaluationOrder: RuleDefinition[]
   policy: PolicyParameters
   decisionTables: DecisionTables
+  semanticQuestions: SemanticQuestionTemplate[]
 }
 
 export class InvalidRuleConfigurationError extends Error {
   constructor(
-    readonly issues: readonly (ConfigIssue | { kind: 'unknownEvaluator'; ref: string })[],
+    readonly issues: readonly (
+      | ConfigIssue
+      | { kind: 'unknownEvaluator'; ref: string }
+      | { kind: 'missingSemanticQuestion'; ruleId: string }
+    )[],
   ) {
     super(`rule configuration is invalid: ${JSON.stringify(issues)}`)
   }
@@ -23,7 +33,7 @@ export class InvalidRuleConfigurationError extends Error {
 export function buildRuleConfiguration(
   ruleSetFile: { ruleSetVersion: string; rules: unknown },
   policy: PolicyParameters,
-  decisionTables: { mixingMatrix: unknown },
+  tables: { mixingMatrix: unknown; semanticQuestions: unknown },
 ): RuleConfiguration {
   const validation = validateRuleSet(ruleSetFile.rules, policy)
   if (!validation.valid) throw new InvalidRuleConfigurationError(validation.issues)
@@ -35,6 +45,13 @@ export function buildRuleConfiguration(
     .map((rule) => ({ kind: 'unknownEvaluator' as const, ref: rule.evaluator.ref }))
   if (unknownEvaluators.length > 0) throw new InvalidRuleConfigurationError(unknownEvaluators)
 
+  const semanticQuestions = SemanticQuestionCatalog.parse(tables.semanticQuestions).questions
+  const askedRuleIds = new Set(semanticQuestions.map((question) => question.ruleId))
+  const unasked = validation.rules
+    .filter((rule) => rule.evaluator.kind === 'semantic' && !askedRuleIds.has(rule.ruleId))
+    .map((rule) => ({ kind: 'missingSemanticQuestion' as const, ruleId: rule.ruleId }))
+  if (unasked.length > 0) throw new InvalidRuleConfigurationError(unasked)
+
   const rulesById = new Map(validation.rules.map((rule) => [rule.ruleId, rule]))
   return {
     ruleSetVersion: ruleSetFile.ruleSetVersion,
@@ -42,21 +59,22 @@ export function buildRuleConfiguration(
       (ruleId) => rulesById.get(ruleId) as RuleDefinition,
     ),
     policy,
-    decisionTables: { mixingMatrix: MixingMatrix.parse(decisionTables.mixingMatrix) },
+    decisionTables: { mixingMatrix: MixingMatrix.parse(tables.mixingMatrix) },
+    semanticQuestions,
   }
 }
 
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'))
 
-export function loadRuleConfiguration(paths: {
-  rulesPath: string
-  policyPath: string
-  mixingMatrixPath: string
-}): RuleConfiguration {
+export function loadRuleConfiguration(materialsDirectory: string): RuleConfiguration {
+  const material = (path: string) => readJson(join(materialsDirectory, path))
   return buildRuleConfiguration(
-    readJson(paths.rulesPath) as { ruleSetVersion: string; rules: unknown },
-    readJson(paths.policyPath) as PolicyParameters,
-    { mixingMatrix: readJson(paths.mixingMatrixPath) },
+    material('rules.json') as { ruleSetVersion: string; rules: unknown },
+    material('mock-policy-parameters.json') as PolicyParameters,
+    {
+      mixingMatrix: material('decision-tables/mixing-matrix.json'),
+      semanticQuestions: material('semantic-questions.json'),
+    },
   )
 }
 

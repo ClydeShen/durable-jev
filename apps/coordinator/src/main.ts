@@ -29,11 +29,7 @@ const branchServiceUrls =
     : undefined
 
 const database = openDatabase(databasePath, coordinatorMigrations)
-const configuration = loadRuleConfiguration({
-  rulesPath: resolve(materialsDirectory, 'rules.json'),
-  policyPath: resolve(materialsDirectory, 'mock-policy-parameters.json'),
-  mixingMatrixPath: resolve(materialsDirectory, 'decision-tables/mixing-matrix.json'),
-})
+const configuration = loadRuleConfiguration(materialsDirectory)
 const referenceData = loadReferenceData(
   resolve(materialsDirectory, 'mock-data/reference-data.json'),
 )

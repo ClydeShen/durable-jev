@@ -1,7 +1,20 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts", "src/**/*.fixture.ts"],
-  "references": [{ "path": "../contracts" }, { "path": "../rule-engine" }]
+  "references": [
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../rule-engine"
+    },
+    {
+      "path": "../model-providers"
+    }
+  ]
 }

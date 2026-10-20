@@ -10,6 +10,7 @@ const configuration = buildRuleConfiguration(
   readJson('mock-policy-parameters.json'),
   {
     mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
+    semanticQuestions: readJson('semantic-questions.json'),
   },
 )
 const referenceData = readJson('mock-data/reference-data.json')

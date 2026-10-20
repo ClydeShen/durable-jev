@@ -206,6 +206,9 @@ importers:
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@durable-jev/model-providers':
+        specifier: workspace:*
+        version: link:../model-providers
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../rule-engine

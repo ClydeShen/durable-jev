@@ -16,7 +16,10 @@ function startCoordinator() {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),
-    { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+    {
+      mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
+      semanticQuestions: readJson('semantic-questions.json'),
+    },
   )
   return new CoordinatorService({
     database: openDatabase(':memory:', coordinatorMigrations),

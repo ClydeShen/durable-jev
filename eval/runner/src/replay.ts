@@ -51,6 +51,7 @@ const fixedNow = () => '2026-11-02T08:00:00.000Z'
 export function loadReplayConfiguration(): RuleConfiguration {
   return buildRuleConfiguration(loadRuleSetFile(), loadPolicyParameters() as never, {
     mixingMatrix: readMaterial('decision-tables/mixing-matrix.json'),
+    semanticQuestions: readMaterial('semantic-questions.json'),
   })
 }
 

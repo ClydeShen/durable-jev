@@ -7,7 +7,10 @@ import { baseShipment, logOne, readMaterial, referenceData } from './leaf-inputs
 const configuration = buildRuleConfiguration(
   readMaterial('rules.json'),
   readMaterial('mock-policy-parameters.json'),
-  { mixingMatrix: readMaterial('decision-tables/mixing-matrix.json') },
+  {
+    mixingMatrix: readMaterial('decision-tables/mixing-matrix.json'),
+    semanticQuestions: readMaterial('semantic-questions.json'),
+  },
 )
 
 const baseEvaluation = evaluateBranch(request([], []), {

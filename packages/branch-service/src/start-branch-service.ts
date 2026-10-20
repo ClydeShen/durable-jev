@@ -27,11 +27,7 @@ export async function startBranchService(options: {
   const app = createBranchServiceApp({
     serviceName: options.serviceName,
     branches: options.branches,
-    configuration: loadRuleConfiguration({
-      rulesPath: resolve(materialsDirectory, 'rules.json'),
-      policyPath: resolve(materialsDirectory, 'mock-policy-parameters.json'),
-      mixingMatrixPath: resolve(materialsDirectory, 'decision-tables/mixing-matrix.json'),
-    }),
+    configuration: loadRuleConfiguration(materialsDirectory),
     referenceData: loadReferenceData(resolve(materialsDirectory, 'mock-data/reference-data.json')),
     database,
     ...(ensurePlanReservation

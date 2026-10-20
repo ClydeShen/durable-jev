@@ -18,7 +18,10 @@ function startCoordinator() {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),
-    { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+    {
+      mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
+      semanticQuestions: readJson('semantic-questions.json'),
+    },
   )
   const coordinator = new CoordinatorService({
     database,
@@ -214,7 +217,10 @@ describe('branch service outage', () => {
     const configuration = buildRuleConfiguration(
       readJson('rules.json'),
       readJson('mock-policy-parameters.json'),
-      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+      {
+        mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
+        semanticQuestions: readJson('semantic-questions.json'),
+      },
     )
     const evaluators = inProcessEvaluators(configuration, readJson('mock-data/reference-data.json'))
     let commercialIsDown = true
@@ -253,7 +259,10 @@ describe('parallel evaluation', () => {
     const configuration = buildRuleConfiguration(
       readJson('rules.json'),
       readJson('mock-policy-parameters.json'),
-      { mixingMatrix: readJson('decision-tables/mixing-matrix.json') },
+      {
+        mixingMatrix: readJson('decision-tables/mixing-matrix.json'),
+        semanticQuestions: readJson('semantic-questions.json'),
+      },
     )
     const evaluators = inProcessEvaluators(configuration, readJson('mock-data/reference-data.json'))
     let commercialStarted: () => void = () => {}
