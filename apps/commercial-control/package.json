@@ -1,0 +1,12 @@
+{
+  "name": "@durable-jev/commercial-control",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@durable-jev/branch-service": "workspace:*"
+  }
+}

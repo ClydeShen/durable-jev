@@ -30,6 +30,12 @@ importers:
         specifier: workspace:*
         version: link:../../packages/branch-service
 
+  apps/commercial-control:
+    dependencies:
+      '@durable-jev/branch-service':
+        specifier: workspace:*
+        version: link:../../packages/branch-service
+
   apps/coordinator:
     dependencies:
       '@durable-jev/contracts':

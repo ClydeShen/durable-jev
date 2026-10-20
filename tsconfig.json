@@ -32,6 +32,9 @@
       "path": "apps/cargo-assurance"
     },
     {
+      "path": "apps/commercial-control"
+    },
+    {
       "path": "apps/coordinator"
     },
     {
