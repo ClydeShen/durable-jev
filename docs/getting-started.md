@@ -97,6 +97,8 @@ curl http://127.0.0.1:4000/processes                               # process sta
 | `pnpm lint` | Check formatting and lint |
 | `pnpm spikes` | Run the M0 technical spikes; findings in [m0-findings.md](m0-findings.md) |
 
+How the agent runtime is kept under control, with evidence for each control: [runtime-controls.md](runtime-controls.md).
+
 ## Model mode and API quota
 
 Copy `.env.example` to `.env`. The default `MODEL_MODE=scripted` means tests, spikes and the demo never send real requests.
