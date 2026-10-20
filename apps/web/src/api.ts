@@ -26,6 +26,8 @@ export type CaseView = CaseSummary & {
   investigations: Investigation[]
 }
 
+export type ProcessStatus = { name: string; state: 'running' | 'stopped' | 'exited'; pid?: number }
+
 export type RuleCatalog = { ruleSetVersion: string; rules: RuleDefinition[] }
 
 export class ApiError extends Error {
@@ -50,8 +52,20 @@ async function request<T>(
       ...(ifMatch ? { 'if-match': ifMatch } : {}),
     },
   })
-  const body = await response.json()
-  if (!response.ok) throw new ApiError(response.status, body)
+  // A stopped service answers through the dev proxy with an empty or non-JSON error page.
+  const text = await response.text()
+  let body: unknown
+  try {
+    body = text ? JSON.parse(text) : undefined
+  } catch {
+    body = undefined
+  }
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      (body as { error?: string; message?: string }) ?? { message: 'service not reachable' },
+    )
+  }
   return body as T
 }
 
@@ -107,5 +121,13 @@ export const api = {
     request<CaseView>(`/api/cases/${caseId}/reevaluate`, { method: 'POST' }),
   dispatch: (caseId: string, role: Role) =>
     request<CaseView>(`/api/cases/${caseId}/dispatch`, { method: 'POST', role }),
+  processes: () => request<ProcessStatus[]>('/control/processes'),
+  processAction: (name: string, action: 'kill' | 'start' | 'restart') =>
+    request<ProcessStatus>(`/control/processes/${name}/${action}`, { method: 'POST' }),
+  delayService: (name: string, ms: number) =>
+    request<{ delayMs: number }>(`/control/faults/${name}/delay`, {
+      method: 'POST',
+      body: JSON.stringify({ ms }),
+    }),
   resetDemo: () => request<{ loadedCaseIds: string[] }>('/control/demo/reset', { method: 'POST' }),
 }
