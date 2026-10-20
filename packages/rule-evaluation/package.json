@@ -14,6 +14,7 @@
     "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
     "@durable-jev/store": "workspace:*",
+    "@durable-jev/telemetry": "workspace:*",
     "zod": "4.6.7"
   }
 }

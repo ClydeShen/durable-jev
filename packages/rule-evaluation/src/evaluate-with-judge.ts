@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import type { BranchEvaluationRequest, BranchEvaluationResult } from '@durable-jev/contracts'
 import {
   buildSemanticQuestions,
@@ -10,6 +11,7 @@ import {
   semanticCacheMigrations,
 } from '@durable-jev/model-providers'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
+import type { Telemetry } from '@durable-jev/telemetry'
 import {
   type BranchEvaluationDependencies,
   evaluateBranch,
@@ -40,7 +42,7 @@ export function judgeForModelMode(
 
 export async function evaluateBranchWithJudge(
   request: BranchEvaluationRequest,
-  dependencies: BranchEvaluationDependencies & { judgeFor?: JudgeFor },
+  dependencies: BranchEvaluationDependencies & { judgeFor?: JudgeFor; telemetry?: Telemetry },
 ): Promise<BranchEvaluationResult> {
   const semanticRuleIds = new Set<string>(
     rulesOfBranches(dependencies.configuration.rulesInEvaluationOrder, dependencies.branches)
@@ -57,10 +59,55 @@ export async function evaluateBranchWithJudge(
       categoryDefinitions: dependencies.configuration.categoryDefinitions,
     },
   })
-  const judgements =
-    questions.length > 0
-      ? await (dependencies.judgeFor ?? scriptedJudgeFor)(request).ask(questions)
-      : []
+  const judge = (dependencies.judgeFor ?? scriptedJudgeFor)(request)
+  const telemetry = dependencies.telemetry
+  const caseFields = { caseId: request.caseId as string, caseRevision: request.caseRevision }
+  for (const question of questions) {
+    telemetry?.emit({
+      eventName: 'jev.requested',
+      ...caseFields,
+      attributes: {
+        ruleId: question.ruleId,
+        entityId: question.entityId,
+        kind: question.kind,
+        provider: judge.provider,
+        modelId: judge.modelId,
+        // A hash stands in for the text: the observation store never keeps case documents.
+        inputHash: createHash('sha256').update(JSON.stringify(question)).digest('hex').slice(0, 16),
+      },
+    })
+  }
+  const startedAt = Date.now()
+  let judgements: Awaited<ReturnType<typeof judge.ask>> = []
+  if (questions.length > 0) {
+    try {
+      judgements = await judge.ask(questions)
+    } catch (error) {
+      telemetry?.emit({
+        eventName: 'task.failed',
+        ...caseFields,
+        errorCode: 'JUDGE_UNAVAILABLE',
+        durationMs: Date.now() - startedAt,
+        attributes: { provider: judge.provider, modelId: judge.modelId, message: String(error) },
+      })
+      throw error
+    }
+  }
+  for (const judgement of judgements) {
+    telemetry?.emit({
+      eventName: 'jev.completed',
+      ...caseFields,
+      durationMs: Date.now() - startedAt,
+      attributes: {
+        ruleId: judgement.ruleId,
+        entityId: judgement.entityId,
+        provider: judgement.provider,
+        modelId: judgement.modelId,
+        // What the model returned, kept apart from what the rule makes of it.
+        answer: judgement.answer,
+      },
+    })
+  }
 
   const result = evaluateBranch(
     {
