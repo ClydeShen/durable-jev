@@ -691,3 +691,50 @@ section {
     border-right-color: currentcolor;
   }
 }
+
+.attention {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 32px;
+}
+
+.attention-headline {
+  flex: 1 1 100%;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.attention-group {
+  min-width: 220px;
+}
+
+.attention-group h3 {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.attention-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+}
+
+.attention-group li {
+  padding: 2px 0;
+}
+
+.you-tag {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+}

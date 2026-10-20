@@ -1,6 +1,8 @@
 import type { HumanTask, PlanChange, ReferenceData, Role } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
+import { attentionFor } from './attention.js'
+import { CaseAttention } from './CaseAttention.js'
 import { CaseList } from './CaseList.js'
 import { DemoControls } from './DemoControls.js'
 import { FlowDiagram } from './flow/FlowDiagram.js'
@@ -163,6 +165,15 @@ export function App() {
                 </button>
               )}
             </div>
+            <CaseAttention
+              attention={attentionFor({
+                orderStatus: selectedCase.orderStatus,
+                humanTasks: selectedCase.humanTasks,
+                checks: selectedCase.checks,
+                rules: catalog?.rules ?? [],
+                actingRole,
+              })}
+            />
             <section>
               <div className="view-tabs">
                 {(['flow', 'tree'] as const).map((option) => (
