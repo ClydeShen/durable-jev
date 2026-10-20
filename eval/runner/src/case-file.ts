@@ -20,7 +20,7 @@ const StageExpectation = z.object({
 })
 export type StageExpectation = z.infer<typeof StageExpectation>
 
-const taskTarget = { ruleId: RuleId, actor: Role }
+const taskTarget = { ruleId: RuleId, actor: Role, reuseLastTask: z.boolean().optional() }
 
 export const EventScriptStep = z.discriminatedUnion('step', [
   z.object({ step: z.literal('submit'), expect: StageExpectation }),

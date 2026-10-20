@@ -56,6 +56,7 @@ export function loadReplayConfiguration(): RuleConfiguration {
 
 class ReplayedCoordinator {
   private service: CoordinatorService
+  readonly lastTaskIds = new Map<string, string>()
 
   constructor(
     private readonly configuration: RuleConfiguration,
@@ -87,6 +88,18 @@ class ReplayedCoordinator {
   }
 }
 
+function taskIdFor(
+  replayed: ReplayedCoordinator,
+  caseId: string,
+  step: { ruleId: string; reuseLastTask?: boolean | undefined },
+): string {
+  const remembered = replayed.lastTaskIds.get(step.ruleId)
+  if (step.reuseLastTask && remembered) return remembered
+  const taskId = openTaskId(replayed.coordinator.getCase(caseId), step.ruleId)
+  replayed.lastTaskIds.set(step.ruleId, taskId)
+  return taskId
+}
+
 function openTaskId(view: CaseView, ruleId: string): string {
   const open = view.humanTasks.filter((task) => task.ruleId === ruleId && task.status === 'OPEN')
   if (open.length !== 1) throw new Error(`expected one open ${ruleId} task, found ${open.length}`)
@@ -110,25 +123,21 @@ async function performStep(
       return
     case 'completeHumanTask':
       await coordinator.completeHumanTask(
-        openTaskId(coordinator.getCase(caseId), step.ruleId),
+        taskIdFor(replayed, caseId, step),
         step.actor,
         step.fields,
       )
       return
     case 'approveHumanTask':
       await coordinator.approveHumanTask(
-        openTaskId(coordinator.getCase(caseId), step.ruleId),
+        taskIdFor(replayed, caseId, step),
         step.actor,
         undefined,
         step.conditions,
       )
       return
     case 'rejectHumanTask':
-      await coordinator.rejectHumanTask(
-        openTaskId(coordinator.getCase(caseId), step.ruleId),
-        step.actor,
-        step.reason,
-      )
+      await coordinator.rejectHumanTask(taskIdFor(replayed, caseId, step), step.actor, step.reason)
       return
     case 'changePlan':
       await coordinator.applyChange(caseId, step.change, step.actor)
