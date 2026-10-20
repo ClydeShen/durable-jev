@@ -42,3 +42,4 @@
 | 2026-10-20 | 验证 A2A 时发现 launcher 缺陷：旧 launcher 留下的服务进程仍占端口并通过新 launcher 的健康检查，demo reset 删除的库文件被旧进程继续写入（已删除 inode），重启即丢数据。修复：启动前若健康地址已有应答则拒绝启动，启动后确认子进程仍存活 | 故障场景 |
 | 2026-10-20 | T5.3：做故障清单时发现 F05 缺口——Jev SDK 重试已关，但项目里没有任何重试，进程内（base 分支 R03）判断失败会作为普通异常抛出，订单停在原状态。修复：`RetryingJudge`（仅瞬时错误、指数退避、最多 3 次）+ `JudgeUnavailableError` 映射为分支不可用 → TECHNICAL_FAILURE，可 reevaluate 恢复 | F05 |
 | 2026-10-20 | T5.3：`pnpm faults` 11/11 通过（F01–F10 + 崩溃循环）。F03 目前覆盖"等待人工审核时重启"，等待 agent 补资料（follow-up rounds）尚未实现；F06 为快照恢复与重复提交，SSE 在 T6.4；F09 用脚本化答案验证架构边界，真实 Jev 对注入文本的反应放到 T5.6 live 抽测 | T5.6、T6.4 |
+| 2026-10-20 | T5.4：F15 发现计划变更不带基准版本，看着 r1 的人可能把改动叠加到别人的 r2 上。新增乐观并发：`applyChange(…, expectedRevision)`，HTTP 用 `If-Match`，工作台发送当前显示的版本；不一致返回 CONFLICT。`pnpm faults` 19/19 通过。F18 中拒绝来自放行事务内"确认任务已被撤回"（NOT_READY_TO_DISPATCH）而非版本检查，二者在同一事务，均不放行 | F15、F18 |
