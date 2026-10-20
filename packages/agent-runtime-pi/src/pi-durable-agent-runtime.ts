@@ -16,6 +16,7 @@ import {
   type TranscriptEntry,
 } from '@durable-jev/agent-harness'
 import type { StoreDatabase } from '@durable-jev/store'
+import { currentTraceparent, type Telemetry, withSpan } from '@durable-jev/telemetry'
 import { BACKGROUND_CONTEXT } from '@earendil-works/chord/context'
 import { Type } from '@earendil-works/pi-ai'
 import { createModels } from '@earendil-works/pi-ai/models'
@@ -35,6 +36,8 @@ export type PiRuntimeOptions<Input> = AgentRunOptions<Input> & {
   storagePath: string
   // Holds the budget state and outcome of each run (see piRuntimeMigrations).
   stateDatabase: StoreDatabase
+  // Optional: run events and spans, written to the service's own outbox.
+  telemetry?: Telemetry
 }
 
 const context = BACKGROUND_CONTEXT
@@ -108,7 +111,10 @@ class PiDurableAgentSession<Input> implements AgentSession<Input> {
       budget: guard.snapshot(),
     })
     this.log.push({ type: 'run.started', runId })
-    return { runId, outcome: this.drive(runId, request.input, guard) }
+    return {
+      runId,
+      outcome: this.attempt(runId, 1, undefined, () => this.drive(runId, request.input, guard)),
+    }
   }
 
   // After the process died: continue the oldest unfinished run of this session, if any.
@@ -140,7 +146,60 @@ class PiDurableAgentSession<Input> implements AgentSession<Input> {
         outcome: Promise.resolve(this.escalate(stored.runId, decision.limit, decision.detail)),
       }
     }
-    return { runId: stored.runId, outcome: this.drive(stored.runId, stored.input as Input, guard) }
+    const attempt = guard.snapshot().restarts + 1
+    return {
+      runId: stored.runId,
+      outcome: this.attempt(stored.runId, attempt, stored.traceparent, () =>
+        this.drive(stored.runId, stored.input as Input, guard),
+      ),
+    }
+  }
+
+  // One span per attempt. A resumed attempt is a new trace with a link to the previous one, and
+  // its start is recorded as an event so the link has something to point at even though the
+  // killed attempt never finished its own span.
+  private attempt<T>(
+    runId: string,
+    attempt: number,
+    previousTraceparent: string | undefined,
+    work: () => Promise<T>,
+  ): Promise<T> {
+    const { caseId } = this.sessionKey
+    return withSpan(
+      attempt === 1 ? 'agent.run' : 'agent.run.resumed',
+      {
+        caseId,
+        caseRevision: this.sessionKey.caseRevision,
+        runId,
+        attempt,
+        root: attempt > 1,
+        ...(previousTraceparent
+          ? { links: [{ traceparent: previousTraceparent, relation: 'resumes' }] }
+          : {}),
+      },
+      () => {
+        const traceparent = currentTraceparent()
+        if (traceparent) this.runs.saveTraceparent(runId, traceparent)
+        const { telemetry } = this.options
+        if (attempt > 1) {
+          telemetry?.emit({
+            eventName: 'run.interrupted',
+            caseId,
+            runId,
+            attempt: attempt - 1,
+            severity: 'warn',
+            attributes: { detectedBy: 'restart' },
+          })
+        }
+        telemetry?.emit({
+          eventName: attempt === 1 ? 'run.started' : 'run.resumed',
+          caseId,
+          runId,
+          attempt,
+        })
+        return work()
+      },
+    )
   }
 
   private async drive(runId: string, input: Input, guard: RunBudgetGuard): Promise<RunOutcome> {

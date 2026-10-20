@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { ContextAssembler, defineTool, ToolRegistry } from '@durable-jev/agent-harness'
 import { PiDurableAgentRuntime, piRuntimeMigrations } from '@durable-jev/agent-runtime-pi'
 import { openDatabase } from '@durable-jev/store'
+import { initTracing, Telemetry } from '@durable-jev/telemetry'
 import { describeInvestigation, investigatorInstructions } from './investigation-runtime.js'
 import {
   type InvestigationRequest,
@@ -36,6 +37,10 @@ for (const tool of investigationTools(logFourDependencies).toolsFor('agent')) {
   )
 }
 
+const stateDatabase = openDatabase(join(workDirectory, 'runs.sqlite'), piRuntimeMigrations)
+const telemetry = new Telemetry('investigator', stateDatabase)
+initTracing(telemetry)
+
 const runtime = new PiDurableAgentRuntime<InvestigationRequest>({
   registry,
   model: new ScriptedInvestigatorModel(logFourDependencies.request.legId),
@@ -43,7 +48,8 @@ const runtime = new PiDurableAgentRuntime<InvestigationRequest>({
   describe: describeInvestigation,
   resultTool: resultToolName,
   storagePath: join(workDirectory, 'pi.sqlite'),
-  stateDatabase: openDatabase(join(workDirectory, 'runs.sqlite'), piRuntimeMigrations),
+  stateDatabase,
+  telemetry,
 })
 const session = await runtime.open({
   caseId: logFourDependencies.investigated.caseId,

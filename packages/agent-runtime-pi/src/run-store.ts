@@ -14,6 +14,10 @@ export const piRuntimeMigrations: readonly Migration[] = [
       outcome_json TEXT
     )`,
   },
+  {
+    id: 'pi-runtime-002-traceparent',
+    sql: 'ALTER TABLE agent_runs ADD COLUMN traceparent TEXT',
+  },
 ]
 
 export type StoredRun = {
@@ -22,6 +26,8 @@ export type StoredRun = {
   input: unknown
   budget: RunBudgetState
   outcome?: RunOutcome
+  // Trace context of the latest attempt: a resumed run starts a new trace and links back to it.
+  traceparent?: string
 }
 
 type RunRow = {
@@ -30,6 +36,7 @@ type RunRow = {
   input_json: string
   budget_json: string
   outcome_json: string | null
+  traceparent: string | null
 }
 
 const toStoredRun = (row: RunRow): StoredRun => ({
@@ -38,6 +45,7 @@ const toStoredRun = (row: RunRow): StoredRun => ({
   input: JSON.parse(row.input_json),
   budget: JSON.parse(row.budget_json),
   ...(row.outcome_json ? { outcome: JSON.parse(row.outcome_json) } : {}),
+  ...(row.traceparent ? { traceparent: row.traceparent } : {}),
 })
 
 export class RunStore {
@@ -65,6 +73,12 @@ export class RunStore {
       )
       .all(`${runIdPrefix}%`) as RunRow[]
     return rows.map(toStoredRun)
+  }
+
+  saveTraceparent(runId: string, traceparent: string): void {
+    this.database
+      .prepare('UPDATE agent_runs SET traceparent = ? WHERE run_id = ?')
+      .run(traceparent, runId)
   }
 
   saveBudget(runId: string, budget: RunBudgetState): void {

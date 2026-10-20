@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
 import { afterEach, describe, expect, it } from 'vitest'
 
 const script = new URL('./pi-investigation-process.fixture.ts', import.meta.url).pathname
@@ -63,5 +64,43 @@ describe('investigation on Pi Durable across a process kill', () => {
     const third = runProcess(directory, 'resume', 'check_candidate:1')
     expect(third.exitCode, third.stderr).toBe(0)
     expect(third.report.outcome).toMatchObject({ status: 'escalated', reason: 'restarts' })
+  }, 60_000)
+
+  it('resumes in a new trace that links back to the attempt that was killed', () => {
+    const directory = workDirectory()
+    expect(runProcess(directory, 'start', 'check_candidate:2').exitCode).toBe(137)
+    expect(runProcess(directory, 'resume').exitCode).toBe(0)
+
+    const recorded = readUnpublishedOutboxEvents(
+      openDatabase(join(directory, 'runs.sqlite')),
+      10_000,
+    ).map(
+      (row) =>
+        row.payload as {
+          kind: string
+          eventName: string
+          traceId?: string
+          spanId?: string
+          attempt?: number
+          correlationId: string
+          links?: { traceId: string; spanId: string; relation: string }[]
+        },
+    )
+    const started = recorded.find((event) => event.eventName === 'run.started')
+    const resumedSpan = recorded.find(
+      (event) => event.kind === 'span' && event.eventName === 'agent.run.resumed',
+    )
+    expect(recorded.map((event) => event.eventName)).toEqual(
+      expect.arrayContaining(['run.started', 'run.interrupted', 'run.resumed']),
+    )
+    // The killed attempt never finished its span; its start event is what the link points at.
+    expect(recorded.some((event) => event.kind === 'span' && event.eventName === 'agent.run')).toBe(
+      false,
+    )
+    expect(resumedSpan?.traceId).not.toBe(started?.traceId)
+    expect(resumedSpan?.links).toEqual([
+      { traceId: started?.traceId, spanId: started?.spanId, relation: 'resumes' },
+    ])
+    expect(new Set(recorded.map((event) => event.correlationId)).size).toBe(1)
   }, 60_000)
 })

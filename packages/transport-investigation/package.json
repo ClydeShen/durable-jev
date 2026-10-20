@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@durable-jev/agent-runtime-pi": "workspace:*",
-    "@durable-jev/store": "workspace:*"
+    "@durable-jev/store": "workspace:*",
+    "@durable-jev/telemetry": "workspace:*"
   }
 }
