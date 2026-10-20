@@ -5,6 +5,7 @@ import type {
   GateStatus,
   HumanDecision,
   ReferenceData,
+  SemanticAnswer,
   Shipment,
 } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
@@ -12,9 +13,7 @@ import type { DecisionTables } from './decision-tables.js'
 
 export type PolicyParameters = Readonly<Record<string, number | string>>
 
-export type SemanticAnswer =
-  | { type: 'noul'; noul: number }
-  | { type: 'choice'; choice: string; probabilities: Record<string, number> }
+export type { SemanticAnswer }
 
 export type EvaluationInputs = {
   shipment: Shipment

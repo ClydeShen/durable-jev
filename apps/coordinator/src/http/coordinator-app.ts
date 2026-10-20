@@ -1,4 +1,4 @@
-import { CaseEvidence, Role, Shipment } from '@durable-jev/contracts'
+import { CaseEvidence, Role, ScriptedSemanticAnswer, Shipment } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
@@ -8,22 +8,7 @@ import type { CoordinatorService } from '../coordinator-service.js'
 const SubmitCaseBody = z.object({
   shipment: Shipment,
   evidence: CaseEvidence.optional(),
-  scriptedSemanticAnswers: z
-    .array(
-      z.object({
-        ruleId: z.string(),
-        entityId: z.string(),
-        answer: z.discriminatedUnion('type', [
-          z.object({ type: z.literal('noul'), noul: z.number() }),
-          z.object({
-            type: z.literal('choice'),
-            choice: z.string(),
-            probabilities: z.record(z.string(), z.number()),
-          }),
-        ]),
-      }),
-    )
-    .optional(),
+  scriptedSemanticAnswers: z.array(ScriptedSemanticAnswer).optional(),
 })
 const ApproveBody = z.object({
   reason: z.string().optional(),

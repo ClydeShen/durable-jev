@@ -4,23 +4,10 @@ import {
   OrderStatus,
   Role,
   RuleId,
+  ScriptedSemanticAnswer,
   Shipment,
 } from '@durable-jev/contracts'
 import { z } from 'zod'
-
-export const ScriptedSemanticAnswer = z.object({
-  ruleId: RuleId,
-  entityId: z.string().min(1),
-  answer: z.discriminatedUnion('type', [
-    z.object({ type: z.literal('noul'), noul: z.number().min(0).max(1) }),
-    z.object({
-      type: z.literal('choice'),
-      choice: z.string().min(1),
-      probabilities: z.record(z.string(), z.number()),
-    }),
-  ]),
-})
-export type ScriptedSemanticAnswer = z.infer<typeof ScriptedSemanticAnswer>
 
 const StageExpectation = z.object({
   orderStatus: OrderStatus,

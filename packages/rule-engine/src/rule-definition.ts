@@ -1,4 +1,4 @@
-import { Role, RuleId, RuleScope } from '@durable-jev/contracts'
+import { Role, RuleBranch, RuleId, RuleScope } from '@durable-jev/contracts'
 import { z } from 'zod'
 import { Expression } from './expression.js'
 
@@ -11,15 +11,7 @@ export const EvaluatorKind = z.enum([
 ])
 export type EvaluatorKind = z.infer<typeof EvaluatorKind>
 
-export const RuleBranch = z.enum([
-  'base',
-  'controlled',
-  'coldChain',
-  'plan',
-  'commercial',
-  'release',
-])
-export type RuleBranch = z.infer<typeof RuleBranch>
+export { RuleBranch }
 
 export const RuleDefinition = z.object({
   ruleId: RuleId,
