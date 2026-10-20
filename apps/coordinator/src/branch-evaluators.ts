@@ -9,6 +9,7 @@ import type {
 import {
   evaluateBranchWithJudge,
   type JudgeFor,
+  JudgeUnavailableError,
   type RuleConfiguration,
   requiredUpstreamRuleIds,
   rulesOfBranches,
@@ -41,7 +42,16 @@ export function inProcessEvaluator(
   return {
     name,
     branches,
-    evaluate: (request) => evaluateBranchWithJudge(request, { ...dependencies, branches }),
+    evaluate: async (request) => {
+      try {
+        return await evaluateBranchWithJudge(request, { ...dependencies, branches })
+      } catch (error) {
+        // Same outcome as a service that is down: a technical state, never a pass.
+        if (error instanceof JudgeUnavailableError)
+          throw new BranchUnavailableError(name, error.message)
+        throw error
+      }
+    },
   }
 }
 
