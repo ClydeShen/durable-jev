@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { GateStatus, isPendingGateStatus, Shipment } from './index.js'
+import { GateStatus, isPendingGateStatus, ObservabilityEvent, Shipment } from './index.js'
 
 const validShipment = {
   caseId: 'CASE-001',
@@ -60,5 +60,47 @@ describe('GateStatus', () => {
   it('treats only waiting states as pending', () => {
     const pending = GateStatus.options.filter(isPendingGateStatus)
     expect(pending).toEqual(['UNKNOWN', 'BLOCKED_DEPENDENCY', 'WAITING_HUMAN', 'INVALIDATED'])
+  })
+})
+
+describe('observability events', () => {
+  const base = {
+    eventId: 'EV-1',
+    timestamp: '2026-11-02T08:00:00.000Z',
+    severity: 'info',
+    service: 'coordinator',
+    correlationId: 'corr-CASE-1',
+    caseId: 'CASE-1',
+  }
+
+  it('accepts a business event and a span, and omits what does not apply', () => {
+    expect(
+      ObservabilityEvent.parse({ ...base, kind: 'event', eventName: 'case.submitted' }),
+    ).toMatchObject({ kind: 'event' })
+    expect(
+      ObservabilityEvent.parse({
+        ...base,
+        kind: 'span',
+        eventName: 'branch.evaluate',
+        traceId: 'a'.repeat(32),
+        spanId: 'b'.repeat(16),
+        startedAt: base.timestamp,
+        links: [{ traceId: 'c'.repeat(32), spanId: 'd'.repeat(16), relation: 'resumes' }],
+      }),
+    ).toMatchObject({ kind: 'span' })
+  })
+
+  it('refuses an unknown event name and a span without trace ids', () => {
+    expect(() =>
+      ObservabilityEvent.parse({ ...base, kind: 'event', eventName: 'made.up' }),
+    ).toThrow()
+    expect(() =>
+      ObservabilityEvent.parse({
+        ...base,
+        kind: 'span',
+        eventName: 'x',
+        startedAt: base.timestamp,
+      }),
+    ).toThrow()
   })
 })
