@@ -5,7 +5,7 @@ import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
 import { inProcessEvaluators } from './branch-evaluators.js'
 import { CoordinatorService } from './coordinator-service.js'
-import { inProcessInvestigator } from './investigator.js'
+import { type Investigator, inProcessInvestigator } from './investigator.js'
 import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
@@ -13,7 +13,12 @@ const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materia
 const logFour = readJson('cases/LOG-004.json')
 const caseId = logFour.shipment.caseId as string
 
-async function submittedLogFour() {
+async function submittedLogFour(
+  wrapInvestigator: (
+    investigator: Investigator,
+    coordinator: () => CoordinatorService,
+  ) => Investigator = (investigator) => investigator,
+) {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),
@@ -27,7 +32,10 @@ async function submittedLogFour() {
     database: openDatabase(':memory:', coordinatorMigrations),
     configuration,
     evaluators: inProcessEvaluators(configuration, referenceData),
-    investigator: inProcessInvestigator(configuration, referenceData),
+    investigator: wrapInvestigator(
+      inProcessInvestigator(configuration, referenceData),
+      () => coordinator,
+    ),
     now: () => '2026-11-02T08:00:00.000Z',
   })
   await coordinator.submitCase({
@@ -111,6 +119,28 @@ describe('carrier investigation', () => {
       coordinator.acceptInvestigation(investigationId, 'TRANSPORT_PLANNER'),
     ).rejects.toMatchObject({ code: 'CONFLICT' })
     expect(coordinator.getCase(caseId).investigations[0]?.status).toBe('STALE')
+  })
+
+  it('archives a result that arrives after the order moved to a new revision', async () => {
+    const coordinator = await submittedLogFour((investigator, current) => async (input) => {
+      // The quote changes while the agent is still working on revision 1.
+      await current().applyChange(
+        caseId,
+        { kind: 'changeQuote', amountCents: 150_000 },
+        'COMMERCIAL_MANAGER',
+      )
+      return investigator(input)
+    })
+    const investigation = await coordinator.investigateCarrier(
+      caseId,
+      securaCancelled,
+      'TRANSPORT_PLANNER',
+    )
+    expect(investigation).toMatchObject({ status: 'STALE', caseRevision: 1 })
+    expect(coordinator.getCase(caseId).shipment.legs[0]?.carrierId).toBe('CAR-SECURA')
+    await expect(
+      coordinator.acceptInvestigation(investigation.investigationId, 'TRANSPORT_PLANNER'),
+    ).rejects.toMatchObject({ code: 'CONFLICT' })
   })
 
   it('records a rejection without touching the plan', async () => {
