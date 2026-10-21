@@ -35,6 +35,16 @@ const caseMigrations: readonly Migration[] = [
       CREATE INDEX human_tasks_open ON human_tasks (status);
     `,
   },
+  {
+    version: 11,
+    name: 'results reported by other agents',
+    sql: `
+      CREATE TABLE foreign_results (
+        case_id TEXT PRIMARY KEY REFERENCES cases (case_id),
+        outcomes_json TEXT NOT NULL
+      );
+    `,
+  },
 ]
 
 export interface CaseRecord {
@@ -116,6 +126,24 @@ export class CaseStore {
     for (const outcome of outcomes) {
       insert.run(caseId, outcome.ruleId, scopeKey(outcome.scope), JSON.stringify(outcome))
     }
+  }
+
+  foreignOutcomes(caseId: string): RuleOutcome[] {
+    const row = this.db
+      .prepare<[string], { outcomes_json: string }>(
+        'SELECT outcomes_json FROM foreign_results WHERE case_id = ?',
+      )
+      .get(caseId)
+    return row ? JSON.parse(row.outcomes_json) : []
+  }
+
+  replaceForeignOutcomes(caseId: string, outcomes: readonly RuleOutcome[]) {
+    this.db
+      .prepare(
+        `INSERT INTO foreign_results (case_id, outcomes_json) VALUES (?, ?)
+         ON CONFLICT (case_id) DO UPDATE SET outcomes_json = excluded.outcomes_json`,
+      )
+      .run(caseId, JSON.stringify(outcomes))
   }
 
   tasksOf(caseId: string): HumanTask[] {

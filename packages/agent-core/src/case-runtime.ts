@@ -1,4 +1,4 @@
-import type { HumanTask, HumanTaskTarget, Shipment } from '@durable-jev/contracts'
+import type { AgentId, HumanTask, HumanTaskTarget, Shipment } from '@durable-jev/contracts'
 import { type Decision, decideHumanTask, type HumanAction } from '@durable-jev/human-tasks'
 import type { SemanticJudge } from '@durable-jev/model-providers'
 import {
@@ -18,6 +18,7 @@ import type { RulePack } from './rule-pack.js'
 import { semanticEvaluator } from './semantic-evaluator.js'
 
 export interface CaseRuntimeOptions {
+  agentId?: AgentId
   store: CaseStore
   rulePack: RulePack
   judgeFor(shipment: Shipment): SemanticJudge
@@ -32,7 +33,7 @@ export interface CaseView {
   tasks: HumanTask[]
 }
 
-export class CaseNotFoundError extends Error {
+class CaseNotFoundError extends Error {
   constructor(readonly caseId: string) {
     super(`case ${caseId} does not exist`)
     this.name = 'CaseNotFoundError'
@@ -82,8 +83,11 @@ export class CaseRuntime {
     })
   }
 
-  evaluate(caseId: string): Promise<CaseView> {
-    return this.serialized(caseId, () => this.evaluateNow(caseId))
+  evaluate(caseId: string, foreign?: readonly RuleOutcome[]): Promise<CaseView> {
+    return this.serialized(caseId, () => {
+      if (foreign) this.options.store.replaceForeignOutcomes(caseId, foreign)
+      return this.evaluateNow(caseId)
+    })
   }
 
   decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
@@ -167,15 +171,30 @@ export class CaseRuntime {
       rulePack.ruleSet,
       factsOf(shipment),
       { evaluators: this.evaluatorsFor(gates, shipment), parameters: rulePack.parameters },
-      { previous: before.outcomes },
+      {
+        previous: before.outcomes,
+        provided: store.foreignOutcomes(caseId),
+        executes: (rule) =>
+          this.options.agentId === undefined || rule.owner === this.options.agentId,
+      },
     )
     gates.withdrawStale(graph.outcomes)
     const changeLabel = change && `${change.changeId} (${change.entities.join(', ')})`
-    const outcomes = graph.outcomes.map((outcome) =>
-      changeLabel && affected.has(outcome.ruleId) && !outcome.reused
-        ? { ...outcome, invalidatedBy: changeLabel }
-        : outcome,
+    const earlierLabels = new Map(
+      before.outcomes.map((outcome) => [
+        `${outcome.ruleId}@${scopeKey(outcome.scope)}`,
+        outcome.invalidatedBy,
+      ]),
     )
+    const labelOf = (outcome: RuleOutcome) => {
+      if (!changeLabel) return earlierLabels.get(`${outcome.ruleId}@${scopeKey(outcome.scope)}`)
+      return affected.has(outcome.ruleId) && !outcome.reused ? changeLabel : undefined
+    }
+    const outcomes = graph.outcomes.map((outcome) => {
+      const invalidatedBy = labelOf(outcome)
+      const { invalidatedBy: _stale, ...rest } = outcome
+      return invalidatedBy ? { ...rest, invalidatedBy } : rest
+    })
     const written = store.transaction(() => {
       const current = store.caseRecord(caseId)
       if (current?.shipment.caseRevision !== shipment.caseRevision) return false
