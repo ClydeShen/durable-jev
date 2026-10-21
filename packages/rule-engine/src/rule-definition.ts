@@ -65,7 +65,7 @@ const applicabilitySchema = z.object({
   customers: z.array(z.string().min(1)).min(1).optional(),
 })
 
-const ruleDefinitionSchema = z.object({
+export const ruleDefinitionSchema = z.object({
   ruleId: ruleIdSchema,
   version: z.string().min(1),
   title: z.string().min(1),

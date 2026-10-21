@@ -20,7 +20,8 @@
     "knip": "knip",
     "demo:reset": "node tools/launcher/dist/demo-reset.js",
     "replay": "node eval/runner/dist/main.js",
-    "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test"
+    "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test",
+    "author": "node tools/rule-authoring/dist/main.js"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

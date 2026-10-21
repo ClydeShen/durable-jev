@@ -13,6 +13,7 @@
     { "path": "apps/coordinator" },
     { "path": "apps/agent" },
     { "path": "tools/launcher" },
-    { "path": "eval/runner" }
+    { "path": "eval/runner" },
+    { "path": "tools/rule-authoring" }
   ]
 }
