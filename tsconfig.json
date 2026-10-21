@@ -6,6 +6,7 @@
     { "path": "packages/rule-engine" },
     { "path": "packages/store" },
     { "path": "packages/human-tasks" },
-    { "path": "packages/agent-core" }
+    { "path": "packages/agent-core" },
+    { "path": "packages/logistics" }
   ]
 }

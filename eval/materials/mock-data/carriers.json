@@ -1,0 +1,16 @@
+[
+  {
+    "carrierId": "CAR-HARBOUR",
+    "name": "Harbour Line Freight",
+    "serviceRegions": ["NORTH", "CENTRAL"],
+    "qualifications": [],
+    "qualificationsValidUntil": "2027-06-30T00:00:00Z"
+  },
+  {
+    "carrierId": "CAR-POLAR",
+    "name": "Polar Reefer Lines",
+    "serviceRegions": ["NORTH", "CENTRAL", "SOUTH"],
+    "qualifications": ["CTRL", "CTRL-COLD"],
+    "qualificationsValidUntil": "2027-03-31T00:00:00Z"
+  }
+]

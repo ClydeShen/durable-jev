@@ -1,0 +1,6 @@
+[
+  { "name": "Northport Warehouse A", "region": "NORTH" },
+  { "name": "Central Retail DC", "region": "CENTRAL" },
+  { "name": "Riverside Cross-dock", "region": "CENTRAL", "hubId": "HUB-RIV" },
+  { "name": "Southgate Clinic Store", "region": "SOUTH" }
+]

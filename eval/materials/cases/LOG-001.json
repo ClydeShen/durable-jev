@@ -1,0 +1,58 @@
+{
+  "story": "General cargo, one leg, complete documents. Every applicable rule passes; the warehouse loads and the dispatcher releases.",
+  "shipment": {
+    "caseId": "LOG-001",
+    "correlationId": "corr-LOG-001",
+    "shipmentId": "SHP-001",
+    "customerId": "CUS-ACME",
+    "caseRevision": 1,
+    "entityVersions": { "cargo": 1, "route": 1, "carrier": 1, "quote": 1 },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Flat-packed office chairs, 20 cartons, no hazardous components",
+        "declaredCategories": ["general"],
+        "quantity": 20,
+        "weightGrams": 360000,
+        "dimensionsMillimetres": { "length": 900, "width": 700, "height": 400 }
+      },
+      {
+        "cargoItemId": "ITEM-2",
+        "description": "A4 printer paper, 40 boxes on one pallet",
+        "declaredCategories": ["general"],
+        "quantity": 40,
+        "weightGrams": 480000,
+        "dimensionsMillimetres": { "length": 430, "width": 300, "height": 270 }
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-HARBOUR",
+        "vehicleId": "VEH-7",
+        "plannedDeparture": "2026-11-02T08:00:00Z",
+        "plannedArrival": "2026-11-02T14:30:00Z"
+      }
+    ],
+    "deliveryWindow": { "from": "2026-11-02T10:00:00Z", "to": "2026-11-02T18:00:00Z" },
+    "handover": "dock",
+    "quote": { "amountCents": 185000, "extraCostCents": 0, "currency": "EUR" },
+    "documents": [
+      {
+        "documentId": "DOC-001-PL",
+        "kind": "packingList",
+        "version": 1,
+        "text": "20 cartons office chairs (flat-packed); 40 boxes A4 paper on one pallet.",
+        "extractedFields": { "cartons": 60 },
+        "source": "customer upload"
+      }
+    ]
+  },
+  "scriptedJudgements": [
+    { "questionId": "R03", "judgement": { "kind": "noul", "probability": 0.97 } },
+    { "questionId": "R27", "judgement": { "kind": "noul", "probability": 0.98 } }
+  ]
+}

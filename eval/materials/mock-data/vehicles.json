@@ -1,0 +1,18 @@
+[
+  {
+    "vehicleId": "VEH-7",
+    "carrierId": "CAR-HARBOUR",
+    "maxPayloadGrams": 12000000,
+    "maxVolumeCubicCm": 40000000,
+    "temperatureControlled": false
+  },
+  {
+    "vehicleId": "VEH-12",
+    "carrierId": "CAR-POLAR",
+    "maxPayloadGrams": 8000000,
+    "maxVolumeCubicCm": 30000000,
+    "temperatureControlled": true,
+    "minDeciCelsius": -200,
+    "maxDeciCelsius": 120
+  }
+]

@@ -1,0 +1,10 @@
+[
+  {
+    "customerId": "CUS-ACME",
+    "name": "Acme Office Supplies",
+    "active": true,
+    "creditLimitCents": 5000000,
+    "outstandingCents": 1200000,
+    "restrictionsText": ""
+  }
+]

@@ -106,6 +106,7 @@ export const shipmentSchema = z
     cargoItems: z.array(cargoItemSchema).min(1),
     legs: z.array(legSchema).min(1).max(3),
     deliveryWindow: timeWindowSchema,
+    handover: z.enum(['dock', 'curbside', 'customerSite']),
     quote: quoteSchema,
     documents: z.array(caseDocumentSchema),
   })

@@ -37,6 +37,7 @@ const shipment = {
   ],
   legs: [leg(1)],
   deliveryWindow: { from: '2026-11-02T10:00:00Z', to: '2026-11-02T18:00:00Z' },
+  handover: 'dock',
   quote: { amountCents: 120_000, extraCostCents: 0, currency: 'EUR' },
   documents: [],
 }
