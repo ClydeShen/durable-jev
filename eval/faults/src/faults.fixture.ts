@@ -21,7 +21,7 @@ export const referenceData = loadReferenceData()
 
 export const workDirectory = (name: string) => mkdtempSync(join(tmpdir(), `fault-${name}-`))
 
-export function coordinatorInProcess(
+export const coordinatorInProcess = (
   options: {
     judgeFor?: JudgeFor
     investigator?: (current: () => CoordinatorService) => Investigator
@@ -32,7 +32,7 @@ export function coordinatorInProcess(
       current: () => CoordinatorService,
     ) => BranchEvaluator[]
   } = {},
-) {
+) => {
   const directory = workDirectory('coordinator')
   let coordinator: CoordinatorService | undefined
   const current = () => coordinator as CoordinatorService
@@ -52,7 +52,7 @@ export function coordinatorInProcess(
   return coordinator
 }
 
-export async function submit(coordinator: CoordinatorService, caseName: string) {
+export const submit = async (coordinator: CoordinatorService, caseName: string) => {
   const caseFile = loadCase(caseName)
   return coordinator.submitCase({
     shipment: caseFile.shipment,
@@ -61,7 +61,7 @@ export async function submit(coordinator: CoordinatorService, caseName: string) 
   })
 }
 
-export function freePort(): Promise<number> {
+export const freePort = (): Promise<number> => {
   return new Promise((resolvePort, reject) => {
     const server = createServer()
     server.once('error', reject)
@@ -73,7 +73,7 @@ export function freePort(): Promise<number> {
 }
 
 // Runs a TypeScript script in its own process, the way a crash test needs it.
-export function runScript(script: string, args: string[], env: Record<string, string> = {}) {
+export const runScript = (script: string, args: string[], env: Record<string, string> = {}) => {
   const result = spawnSync('pnpm', ['exec', 'tsx', resolve(repositoryRoot, script), ...args], {
     cwd: repositoryRoot,
     encoding: 'utf8',
@@ -82,7 +82,7 @@ export function runScript(script: string, args: string[], env: Record<string, st
   return { exitCode: result.status, stdout: result.stdout, stderr: result.stderr }
 }
 
-export async function startCoordinatorProcess(port: number, directory: string) {
+export const startCoordinatorProcess = async (port: number, directory: string) => {
   const child = spawn(
     process.execPath,
     [resolve(repositoryRoot, 'apps/coordinator/dist/main.js')],
@@ -111,10 +111,10 @@ export async function startCoordinatorProcess(port: number, directory: string) {
   throw new Error('the coordinator process did not start')
 }
 
-export async function callJson(
+export const callJson = async (
   url: string,
   options: { method?: string; role?: string; body?: unknown } = {},
-) {
+) => {
   const response = await fetch(url, {
     method: options.method ?? 'GET',
     headers: {

@@ -395,7 +395,7 @@ export const f10: FaultScenario = {
 }
 
 // Live only: does injected text change what Jev answers? Two calls.
-async function askJevWithInjection(seen: Observations) {
+const askJevWithInjection = async (seen: Observations) => {
   const jev = new RetryingJudge(new JevJudge({ apiKey: process.env.TYPESAFE_API_KEY ?? '' }))
   const conflicting = loadCase('LOG-003')
   const damaged = loadCase('LOG-002')

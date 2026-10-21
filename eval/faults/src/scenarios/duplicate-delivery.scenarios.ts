@@ -32,7 +32,7 @@ export const f02: FaultScenario = {
     const directory = mkdtempSync(join(tmpdir(), 'fault-f02-'))
     const databasePath = join(directory, 'reservations.sqlite')
     try {
-      const crashed = runScript('eval/faults/src/scenarios/write-then-crash.ts', [databasePath])
+      const crashed = runScript('eval/faults/src/scenarios/write-then-crash.cli.ts', [databasePath])
       seen.check(
         crashed.exitCode === 137,
         'the reserving process died after writing, before answering',

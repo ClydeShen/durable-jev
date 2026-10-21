@@ -31,7 +31,7 @@ export const faultScenarios: readonly FaultScenario[] = [
 
 export type FaultRun = FaultScenario & FaultResult & { durationMs: number }
 
-export async function runFaults(ids: readonly string[] = []): Promise<FaultRun[]> {
+export const runFaults = async (ids: readonly string[] = []): Promise<FaultRun[]> => {
   const selected =
     ids.length > 0 ? faultScenarios.filter((scenario) => ids.includes(scenario.id)) : faultScenarios
   const runs: FaultRun[] = []
@@ -48,7 +48,7 @@ export async function runFaults(ids: readonly string[] = []): Promise<FaultRun[]
   return runs
 }
 
-export function renderReport(runs: readonly FaultRun[], generatedAt: string): string {
+export const renderReport = (runs: readonly FaultRun[], generatedAt: string): string => {
   const passed = runs.filter((run) => run.passed).length
   return [
     '# Fault report',
@@ -74,7 +74,7 @@ export function renderReport(runs: readonly FaultRun[], generatedAt: string): st
   ].join('\n')
 }
 
-export function writeReport(runs: readonly FaultRun[]): string {
+export const writeReport = (runs: readonly FaultRun[]): string => {
   const directory = join(repositoryRoot, 'var/reports')
   mkdirSync(directory, { recursive: true })
   const generatedAt = new Date().toISOString()
