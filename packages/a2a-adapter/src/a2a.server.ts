@@ -21,11 +21,11 @@ export const evaluateSkillId = 'evaluate-branches'
 export const evaluationArtifactName = 'branch-evaluation'
 export const a2aJsonRpcPath = '/a2a/jsonrpc'
 
-export function branchAgentCard(options: {
+export const branchAgentCard = (options: {
   serviceName: string
   branches: readonly RuleBranch[]
   baseUrl: string
-}): AgentCard {
+}): AgentCard => {
   return {
     name: options.serviceName,
     description: `Evaluates the ${options.branches.join(' and ')} rules for one order revision`,
@@ -82,9 +82,9 @@ const agentMessage = (taskId: string, contextId: string, value: unknown): Messag
   }) as Message
 
 // Runs the same evaluation the native endpoint runs; the result travels as an artifact.
-export function evaluationExecutor(
+export const evaluationExecutor = (
   evaluate: (request: BranchEvaluationRequest) => Promise<BranchEvaluationResult>,
-): AgentExecutor {
+): AgentExecutor => {
   return {
     execute: async (requestContext, eventBus) => {
       const { taskId, contextId, userMessage } = requestContext
@@ -150,11 +150,11 @@ export function evaluationExecutor(
 
 // A2A has no request deduplication (M0): a resent message would start a second task. A message
 // id seen before returns the task it created instead, so a client retry never evaluates twice.
-function deduplicating(
+const deduplicating = (
   handler: A2ARequestHandler,
   store: SqliteTaskStore,
   card: () => AgentCard,
-): A2ARequestHandler {
+): A2ARequestHandler => {
   return new Proxy(handler, {
     get(target, property, receiver) {
       if (property === 'getAgentCard') return async () => card()
@@ -175,7 +175,7 @@ function deduplicating(
   })
 }
 
-export function mountA2a(
+export const mountA2a = (
   app: Express,
   // A function when the public URL is only known once the server listens.
   options: {
@@ -183,7 +183,7 @@ export function mountA2a(
     executor: AgentExecutor
     database: StoreDatabase
   },
-): void {
+): void => {
   const card = typeof options.card === 'function' ? options.card : () => options.card as AgentCard
   const store = new SqliteTaskStore(options.database)
   const handler = deduplicating(

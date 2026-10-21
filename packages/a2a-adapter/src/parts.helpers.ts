@@ -1,6 +1,6 @@
 import type { Message, Part } from '@a2a-js/sdk'
 
-export function dataPart(value: unknown): Part {
+export const dataPart = (value: unknown): Part => {
   return {
     content: { $case: 'data', value },
     metadata: undefined,
@@ -9,7 +9,7 @@ export function dataPart(value: unknown): Part {
   } as Part
 }
 
-export function readData(parts: readonly Part[]): Record<string, unknown> {
+export const readData = (parts: readonly Part[]): Record<string, unknown> => {
   return Object.assign(
     {},
     ...parts.flatMap((part) => (part.content?.$case === 'data' ? [part.content.value] : [])),

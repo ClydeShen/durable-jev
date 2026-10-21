@@ -45,13 +45,13 @@ const asTask = (result: unknown): Task | undefined => {
   return candidate && 'status' in candidate ? candidate : undefined
 }
 
-export function a2aBranchEvaluator(
+export const a2aBranchEvaluator = (
   name: string,
   branches: readonly RuleBranch[],
   baseUrl: string,
   links: A2aTaskLinks,
   timeoutMs = 10_000,
-) {
+) => {
   let client: Promise<Client> | undefined
   const connect = () => {
     client ??= new ClientFactory(
