@@ -14,3 +14,4 @@
 | 2026-10-21 | NVIDIA Nemotron 在 pi-ai 中不支持 strict JSON schema；StructuredOutputJudge 用强制 tool call + 本地 schema 校验，非法输出直接报错 | B1 需统计结构化输出的格式失败率 |
 | 2026-10-21 | pi-ai 目录中 NVIDIA 模型价格为 0（非 provider 实报），Jev 实际也返回 `output_tokens` | B1 成本按 token 数另行计价，不直接用 catalog cost |
 | 2026-10-21 | 评估把 Protégé/本体加入技术栈（本体+Jev vs 代码+Jev）：不做。限定 Node、不加 Java 后无成熟 OWL DL 推理，剩下的 RDF 规则/SHACL 与 JSON 决策表等价；规则规模小，收益不抵成本 | 无。保留其中有用的部分：类别与 Jev 标签单一来源（T3.1/T4.3），兼容矩阵矛盾检测（T1.3） |
+| 2026-10-21 | 明确核心概念 Durable Jev Agent（spec 8）：模块 = Jev + Pi Durable + 规则图 + 人工门槛，A2A 协作；结构化规则仍用代码。人工任务从 Coordinator 下放到模块 | 改 design 6、roadmap T1.7/T2.3/T3.2/T4.7；新增 T0.8 spike 与 T7.6（B7） |

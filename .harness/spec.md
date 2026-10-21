@@ -47,3 +47,15 @@
 - 现阶段只接 Jev（`TYPESAFE_API_KEY`，模型 `jev-1.14.0`）。
 - 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。key 已于 2026-10-21 到位；`MODEL_MODE=scripted` 时仍用脚本化模型（pi-ai faux provider）。
 - 除 Jev 与 NVIDIA 外不引入其他 LLM。
+
+## 8. 核心概念：Durable Jev Agent（2026-10-21）
+
+POC 的出发点：规则数量上来、结构化与非结构化规则交织、带状态和人工环节时，传统"代码 + rule engine + decision table"写起来太累。目标是用少数几个 Durable Jev Agent 承载各业务模块，模块之间用 A2A 协作。
+
+- 一个业务模块 = 一个 Durable Jev Agent：规则图（声明式配置：依赖、适用条件、状态、失效） + 叶子求值器 + 人工门槛 + Pi Durable 持久化，对外是 A2A agent。
+- 叶子求值器按规则性质分工：非结构化规则（描述、备注、文件、客户说明）由 Jev 回答；结构化规则（重量、时间、金额、矩阵）用代码，做代码最擅长的事。
+- 依据：2026-10-21 探针中，把结构化规则直接写成 Jev Noul 问题，12 个案例里 4 个稳定判错，且全部是错误放行（超载、超授信、温度超标、违规混装）。
+- 人工任务由各模块持有；Coordinator 只聚合各模块状态并执行最终放行事务。
+- 调查 Agent（生成式模型 + Pi Durable）只在规则给不出结论、需要找证据或替代方案时启用。
+- 要验证的问题：相对传统写法，实现量和变更成本下降多少；哪些规则可以交给 Jev（分界图）；盲测零错误放行。
+

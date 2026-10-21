@@ -14,6 +14,7 @@
 | [x] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
 | [x] | T0.5 | spike Jev：确定 TS 客户端或 HTTP 接口；Choice 与 Noul 各一次 | 有 key 时真实调用；无 key 时记录接口形状 | T0.1 |
 | [x] | T0.6 | spike trace：两个 Express 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
+| [ ] | T0.8 | spike：Pi Durable 承载一个模块级流程（确定性规则求值 + 等待人工 + 杀进程恢复），不经过 LLM 决定下一步 | 可行或明确不可行，结论写入 m0-findings 并回写 design | T0.3 |
 | [x] | T0.7 | `docs/m0-findings.md` + 锁定版本 + 回写 design | 每个依赖：版本、可行性、限制、对设计的影响 | T0.3–T0.6 |
 
 ## P1 确定性核心
@@ -26,7 +27,7 @@
 | [ ] | T1.4 | 图求值：作用域展开（cargoItem/leg）、blockedBy、appliesWhen | 多货件一件失败整单不过（F17） | T1.2 |
 | [ ] | T1.5 | 指纹与失效传播、增量重算 | 改车辆只失效预期集合 | T1.4 |
 | [ ] | T1.6 | `store`：SQLite 连接、迁移、幂等操作表、outbox | 同一 operationId 重复执行只写一条 | T0.1 |
-| [ ] | T1.7 | 人工任务状态机：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定 | 未授权、过期、旧版本不能生效（F11、F12） | T1.1 |
+| [ ] | T1.7 | 人工任务状态机（模块共用包）：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定 | 未授权、过期、旧版本不能生效（F11、F12） | T1.1 |
 
 ## P2 纵切面：LOG-001 端到端
 
@@ -34,7 +35,7 @@
 |---|---|---|---|---|
 | [ ] | T2.1 | `eval/materials`：policy 参数、LOG-001 所需规则子集的 rules.json | 通过配置校验 | T1.3 |
 | [ ] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | `demo:reset` 可载入 | T1.6 |
-| [ ] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务 | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
+| [ ] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务（纵切面先单进程；人工任务在 T3.2 下放到模块） | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
 | [ ] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
 | [ ] | T2.5 | `web` 最小版：案例列表、规则树（状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
 | [ ] | T2.6 | `docs/getting-started.md` | 新环境照做可演示 | T2.4, T2.5 |
@@ -44,7 +45,7 @@
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [ ] | T3.1 | 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力） | 全部 40 条通过配置校验 | T2.1 |
-| [ ] | T3.2 | 拆出 cargo-assurance、transport-planning、commercial-control，原生 HTTP 任务接口 | 各自 SQLite，launcher 启动 | T2.4 |
+| [ ] | T3.2 | 拆出 cargo-assurance、transport-planning、commercial-control 三个 Durable Jev Agent，各自持有规则图与人工任务，原生 HTTP 任务接口 | 各自 SQLite，launcher 启动 | T2.4 |
 | [ ] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
 | [ ] | T3.4 | 变更：改车辆/路线/报价触发失效，UI 显示"哪次变更导致失效" | LOG-004 失效集符合预期 | T1.5, T3.3 |
 | [ ] | T3.5 | LOG-002–008 案例、事件脚本、draft 标注 | 文件齐全，标 `reviewStatus: draft` | T3.1 |
@@ -60,7 +61,7 @@
 | [ ] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard、ContextAssembler | 预算与白名单测试 | T1.6 |
 | [ ] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完 | T4.4 |
 | [ ] | T4.6 | transport-planning 调查 Agent：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
-| [ ] | T4.7 | PiDurableAgentRuntime | 同一调查杀进程后恢复 | T0.3, T4.5 |
+| [ ] | T4.7 | PiDurableAgentRuntime；按 T0.8 结论扩展到模块级流程 | 同一调查、同一模块等待人工时杀进程后恢复 | T0.8, T4.5 |
 | [ ] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
 
 ## P5 A2A、持久化与故障
@@ -90,4 +91,5 @@
 | [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
 | [ ] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
-| [ ] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 结论与组件建议 | 每条假设有证据 | T7.1–T7.4 |
+| [ ] | T7.6 | B7 规则分界与实现量：结构化/非结构化规则各配代码与 Jev 两种实现；传统写法 vs Durable Jev Agent 的行数、文件数、政策变更改动量 | 分界图 + 实现量对比；错误放行单列 | T3.1, T4.3 |
+| [ ] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 与 Durable Jev Agent 结论、组件建议 | 每条假设有证据 | T7.1–T7.4, T7.6 |

@@ -21,10 +21,10 @@
 
 ```
 apps/
-  coordinator/            订单版本、规则图调度、人工任务、整单状态、放行事务
-  cargo-assurance/        货件规则 + Jev 判断
-  transport-planning/     运输段规则 + 调查 Agent
-  commercial-control/     授信与费用规则
+  coordinator/            订单版本、聚合各模块状态、整单规则（R08、R37–R40）、放行事务
+  cargo-assurance/        Durable Jev Agent：货件规则（代码 + Jev）、合规/质量/仓库人工任务
+  transport-planning/     Durable Jev Agent：运输段规则、调查 Agent、计划员确认
+  commercial-control/     Durable Jev Agent：授信与费用规则、商务审批
   web/                    工作台 + Console + 演示控制
 packages/
   contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
@@ -127,9 +127,11 @@ type RuleDefinition = {
 
 ## 6. 服务与流程
 
-- Coordinator 拥有订单版本和整单规则图（R01–R40 的聚合层），通过各服务接口获取分支结果；依赖调度是确定性状态机。
+- 每个业务模块是一个 Durable Jev Agent（spec 8）：持有本模块规则图、叶子求值、人工任务与等待状态，通过 Pi Durable 在等待人工和进程重启后恢复。
+- 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
+- Coordinator 拥有订单版本和整单聚合层（R08、R37–R40），通过 A2A / native 接口获取各模块结果；依赖调度是确定性状态机。
 - 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。
-- 人工任务由 Coordinator 持有；角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
+- 人工任务由所属模块持有（状态机复用 `packages` 中的实现）；跨模块等待通过 A2A `input-required` 表达。Web 汇总各模块任务队列。角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
 
 ## 7. Runtime harness
