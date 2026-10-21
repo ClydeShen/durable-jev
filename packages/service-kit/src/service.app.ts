@@ -1,7 +1,7 @@
 import type { Server } from 'node:http'
 import express, { type Express } from 'express'
 
-export function createServiceApp(serviceName: string): Express {
+export const createServiceApp = (serviceName: string): Express => {
   const app = express()
   app.use(express.json({ limit: '1mb' }))
   app.get('/health', (_request, response) => {
@@ -10,10 +10,10 @@ export function createServiceApp(serviceName: string): Express {
   return app
 }
 
-export function startService(
+export const startService = (
   app: Express,
   options: { serviceName: string; port: number; onClose?: () => void },
-): Promise<Server> {
+): Promise<Server> => {
   return new Promise((resolve) => {
     const server = app.listen(options.port, () => {
       console.log(`${options.serviceName} listening on http://localhost:${options.port}`)
