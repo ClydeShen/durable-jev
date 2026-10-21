@@ -1,8 +1,8 @@
-import { createControlApp } from './control-app.js'
-import { resetDemo } from './demo-reset.js'
+import { createControlApp } from './control.app.js'
+import { resetDemo } from './demo-reset.service.js'
 import { openInBrowser } from './open-browser.helpers.js'
-import { ProcessSupervisor } from './process-supervisor.js'
-import { ports, serviceManifest } from './service-manifest.js'
+import { ProcessSupervisor } from './process-supervisor.service.js'
+import { ports, serviceManifest } from './service.manifest.js'
 
 const supervisor = new ProcessSupervisor(serviceManifest)
 await supervisor.startAll()

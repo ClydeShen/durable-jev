@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import type { ManagedProcessDefinition } from './process-supervisor.js'
+import type { ManagedProcessDefinition } from './process-supervisor.service.js'
 
 export const repositoryRoot = resolve(import.meta.dirname, '../../..')
 export const dataDirectory = resolve(repositoryRoot, 'var/data')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ProcessSupervisor } from './process-supervisor.js'
+import { ProcessSupervisor } from './process-supervisor.service.js'
 
 const port = 4987
 const tinyServer = `require('node:http').createServer((_, res) => res.end('ok')).listen(${port})`

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ProcessSupervisor } from './process-supervisor.js'
+import type { ProcessSupervisor } from './process-supervisor.service.js'
 import { createRuntimeModes } from './runtime-modes.service.js'
 
 const fakeSupervisor = () => {

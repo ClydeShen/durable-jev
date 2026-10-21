@@ -1,4 +1,4 @@
-import type { ProcessSupervisor } from './process-supervisor.js'
+import type { ProcessSupervisor } from './process-supervisor.service.js'
 
 export type RuntimeModes = {
   branchProtocol: 'native' | 'a2a'

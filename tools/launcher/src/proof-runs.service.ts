@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process'
 import { type ProofItem, parseProofOutput } from './proof-output.helpers.js'
-import { repositoryRoot } from './service-manifest.js'
+import { repositoryRoot } from './service.manifest.js'
 
 export type ProofKind = 'replay' | 'faults'
 export const proofKinds: readonly ProofKind[] = ['replay', 'faults']

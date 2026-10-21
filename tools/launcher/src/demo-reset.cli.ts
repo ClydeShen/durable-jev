@@ -1,4 +1,4 @@
-import { ports } from './service-manifest.js'
+import { ports } from './service.manifest.js'
 
 try {
   const response = await fetch(`http://127.0.0.1:${ports.launcher}/demo/reset`, { method: 'POST' })

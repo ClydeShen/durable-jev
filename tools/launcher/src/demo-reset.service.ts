@@ -1,7 +1,7 @@
 import { rmSync } from 'node:fs'
 import { listCaseIds, loadCase } from '@durable-jev/eval-runner'
-import type { ProcessSupervisor } from './process-supervisor.js'
-import { dataServices, ports } from './service-manifest.js'
+import type { ProcessSupervisor } from './process-supervisor.service.js'
+import { dataServices, ports } from './service.manifest.js'
 
 export type DemoResetResult = { loadedCaseIds: string[] }
 

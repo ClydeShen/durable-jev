@@ -1,11 +1,11 @@
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { Express, Request, Response } from 'express'
 import { z } from 'zod'
-import { resetDemo } from './demo-reset.js'
-import type { ProcessSupervisor } from './process-supervisor.js'
+import { resetDemo } from './demo-reset.service.js'
+import type { ProcessSupervisor } from './process-supervisor.service.js'
 import { createProofRuns, type ProofKind, proofKinds } from './proof-runs.service.js'
 import { createRuntimeModes } from './runtime-modes.service.js'
-import { slowableServices } from './service-manifest.js'
+import { slowableServices } from './service.manifest.js'
 
 type ProcessAction = 'start' | 'stop' | 'restart' | 'kill'
 const processActions: readonly ProcessAction[] = ['start', 'stop', 'restart', 'kill']
