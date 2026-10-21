@@ -44,9 +44,6 @@ importers:
       '@durable-jev/model-providers':
         specifier: workspace:*
         version: link:../../packages/model-providers
-      '@durable-jev/rule-engine':
-        specifier: workspace:*
-        version: link:../../packages/rule-engine
       '@durable-jev/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
@@ -98,6 +95,21 @@ importers:
         specifier: 8.1.6
         version: 8.1.6(@types/node@22.20.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15)(yaml@2.9.1)
 
+  eval/runner:
+    dependencies:
+      '@durable-jev/agent-core':
+        specifier: workspace:*
+        version: link:../../packages/agent-core
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@durable-jev/logistics':
+        specifier: workspace:*
+        version: link:../../packages/logistics
+      '@durable-jev/model-providers':
+        specifier: workspace:*
+        version: link:../../packages/model-providers
+
   packages/agent-core:
     dependencies:
       '@durable-jev/contracts':
@@ -133,6 +145,9 @@ importers:
 
   packages/logistics:
     dependencies:
+      '@durable-jev/agent-core':
+        specifier: workspace:*
+        version: link:../agent-core
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -142,13 +157,12 @@ importers:
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../rule-engine
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
       zod:
         specifier: 4.6.7
         version: 4.6.7
-    devDependencies:
-      '@durable-jev/agent-core':
-        specifier: workspace:*
-        version: link:../agent-core
 
   packages/model-providers:
     dependencies:

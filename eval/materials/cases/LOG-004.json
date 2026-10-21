@@ -1,0 +1,320 @@
+{
+  "story": "冷链受控货，主承运商取消。改派到备用承运商后，温控、合规签核、预订和额外费用审批失效重做，客户基础状态不重跑。",
+  "shipment": {
+    "caseId": "LOG-004",
+    "correlationId": "corr-LOG-004",
+    "shipmentId": "SHP-004",
+    "customerId": "CUS-MEDI",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Insulin pens in insulated cartons, 2-8C, 30 cartons (controlled class C1)",
+        "declaredCategories": ["coldChain", "controlled"],
+        "quantity": 30,
+        "weightGrams": 90000,
+        "dimensionsMillimetres": {
+          "length": 500,
+          "width": 300,
+          "height": 300
+        },
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        },
+        "controlledClass": "C1"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 420000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [
+      {
+        "documentId": "DOC-004-SDS",
+        "kind": "safetyDataSheet",
+        "version": 1,
+        "text": "Safety data sheet: insulin pens, pharmaceutical product, store at 2-8C.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
+      },
+      {
+        "documentId": "DOC-004-DECL",
+        "kind": "controlledDeclaration",
+        "version": 1,
+        "text": "Controlled goods declaration C1 for 30 cartons of insulin pens.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
+      }
+    ],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Cartons intact, ice packs frozen, no damage noted.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
+          {
+            "at": "2026-11-02T18:30:00Z",
+            "deciCelsius": 45
+          },
+          {
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 48
+          }
+        ]
+      }
+    ]
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.94
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R10",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "no_risk"
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "初始：合规签核两步，先合规员",
+      "statuses": {
+        "R12": "PASS",
+        "R13@ITEM-1": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "合规审核员签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员签核（冷链追加）",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "签核完成，等待装载",
+      "statuses": {
+        "R13@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "revise",
+      "label": "主承运商取消，改派到 Frostline，产生额外费用",
+      "patch": {
+        "caseRevision": 2,
+        "entityVersions": {
+          "route": 2,
+          "carrier": 2,
+          "quote": 2
+        },
+        "legs": [
+          {
+            "legId": "LEG-1",
+            "sequence": 1,
+            "origin": "Northport Warehouse A",
+            "destination": "Southgate Clinic Store",
+            "carrierId": "CAR-FROST",
+            "vehicleId": "VEH-21",
+            "plannedDeparture": "2026-11-03T06:30:00Z",
+            "plannedArrival": "2026-11-03T12:30:00Z"
+          }
+        ],
+        "quote": {
+          "amountCents": 420000,
+          "extraCostCents": 80000,
+          "currency": "EUR"
+        }
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "改派后：签核与预订重做，额外费用需审批，客户状态复用",
+      "statuses": {
+        "R13@ITEM-1": "WAITING_HUMAN",
+        "R35": "WAITING_HUMAN",
+        "R29@LEG-1": "PASS",
+        "R31": "PASS",
+        "R39": "BLOCKED_DEPENDENCY"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1", "R35"],
+      "reused": ["R31"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管批准额外费用",
+      "task": "R35",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "合规审核员重新签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员重新签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "重新签核完成",
+      "statuses": {
+        "R13@ITEM-1": "PASS",
+        "R35": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}

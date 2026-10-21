@@ -14,5 +14,14 @@
     "temperatureControlled": true,
     "minDeciCelsius": -200,
     "maxDeciCelsius": 120
+  },
+  {
+    "vehicleId": "VEH-21",
+    "carrierId": "CAR-FROST",
+    "maxPayloadGrams": 6000000,
+    "maxVolumeCubicCm": 25000000,
+    "temperatureControlled": true,
+    "minDeciCelsius": -250,
+    "maxDeciCelsius": 150
   }
 ]

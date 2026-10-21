@@ -1,0 +1,244 @@
+{
+  "story": "冷链疫苗到仓检查发现外箱压损。Jev 读检查备注提示包装风险，仓库重新包装并复测后才解除阻塞，再装载发运。",
+  "shipment": {
+    "caseId": "LOG-002",
+    "correlationId": "corr-LOG-002",
+    "shipmentId": "SHP-002",
+    "customerId": "CUS-MEDI",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Influenza vaccine vials in an insulated shipper, keep at 2-8C",
+        "declaredCategories": ["coldChain"],
+        "quantity": 4,
+        "weightGrams": 40000,
+        "dimensionsMillimetres": {
+          "length": 600,
+          "width": 400,
+          "height": 400
+        },
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        }
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 240000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Outer carton crushed on one corner, condensation visible inside the shipper.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
+          {
+            "at": "2026-11-02T18:30:00Z",
+            "deciCelsius": 45
+          },
+          {
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 48
+          }
+        ]
+      }
+    ]
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "damaged_packaging"
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "初始：包装风险，等待仓库整改",
+      "statuses": {
+        "R18@ITEM-1": "FAIL",
+        "R21@ITEM-1": "WAITING_HUMAN",
+        "R22@ITEM-1": "BLOCKED_DEPENDENCY",
+        "R40": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R21@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "调度员不能代做整改",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-2001",
+          "photoRef": "photo-repack-1"
+        },
+        "evidenceRefs": ["photo-repack-1"]
+      },
+      "expectRefusal": "UNAUTHORIZED"
+    },
+    {
+      "kind": "act",
+      "label": "仓库重新包装",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-2001",
+          "photoRef": "photo-repack-1"
+        },
+        "evidenceRefs": ["photo-repack-1"]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "整改完成只解锁复测，不解锁发运",
+      "statuses": {
+        "R21@ITEM-1": "PASS",
+        "R22@ITEM-1": "WAITING_HUMAN",
+        "R39": "BLOCKED_DEPENDENCY"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R22@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库复测",
+      "task": "R22@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "retestDeciCelsius": "46",
+          "photoRef": "photo-retest-1"
+        },
+        "evidenceRefs": ["photo-retest-1"]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "复测通过，冷链分支就绪",
+      "statuses": {
+        "R23@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}

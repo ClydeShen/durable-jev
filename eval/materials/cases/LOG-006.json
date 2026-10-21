@@ -1,0 +1,244 @@
+{
+  "story": "温控越界 120 分钟且外包装受损：等待质量处置时可终止并重启服务恢复原任务；仓库重复提交整改事件不会重复记账。",
+  "shipment": {
+    "caseId": "LOG-006",
+    "correlationId": "corr-LOG-006",
+    "shipmentId": "SHP-006",
+    "customerId": "CUS-MEDI",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Blood sample kits in a temperature-controlled shipper, 2-8C",
+        "declaredCategories": ["coldChain"],
+        "quantity": 6,
+        "weightGrams": 30000,
+        "dimensionsMillimetres": {
+          "length": 500,
+          "width": 400,
+          "height": 350
+        },
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        }
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 260000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Shipper lid dented, seal tape torn on one side.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
+          {
+            "at": "2026-11-02T18:30:00Z",
+            "deciCelsius": 45
+          },
+          {
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 90
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
+            "deciCelsius": 95
+          },
+          {
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 96
+          },
+          {
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 92
+          },
+          {
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 47
+          }
+        ]
+      }
+    ]
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "damaged_packaging"
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "越界超出容许时长，等待质量处置与仓库整改",
+      "statuses": {
+        "R19@ITEM-1": "FAIL",
+        "R20@ITEM-1": "WAITING_HUMAN",
+        "R21@ITEM-1": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R20@ITEM-1", "R21@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库重新包装",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-6001",
+          "photoRef": "photo-repack-6"
+        },
+        "evidenceRefs": ["photo-repack-6"]
+      }
+    },
+    {
+      "kind": "act",
+      "label": "整改完成事件重发：不重复记账",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-6001",
+          "photoRef": "photo-repack-6"
+        },
+        "evidenceRefs": ["photo-repack-6"]
+      },
+      "expectRefusal": "NOT_OPEN"
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员处置：可继续发运",
+      "task": "R20@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "仓库复测",
+      "task": "R22@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "retestDeciCelsius": "49",
+          "photoRef": "photo-retest-6"
+        },
+        "evidenceRefs": ["photo-retest-6"]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "质量处置与整改链完成",
+      "statuses": {
+        "R20@ITEM-1": "PASS",
+        "R23@ITEM-1": "PASS"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}

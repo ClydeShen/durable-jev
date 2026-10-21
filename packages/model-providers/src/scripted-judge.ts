@@ -11,6 +11,7 @@ import {
 export interface ScriptedJudgement {
   questionId: string
   inputHash?: string
+  stateIncludes?: string
   judgement: SemanticJudgement
 }
 
@@ -22,7 +23,7 @@ export class ScriptedJudge implements SemanticJudge {
 
   async ask(question: SemanticQuestion, state: SemanticState): Promise<SemanticAnswer> {
     const inputHash = semanticInputHash(question, state)
-    const entry = this.findEntry(question.questionId, inputHash)
+    const entry = this.findEntry(question.questionId, inputHash, state)
     if (!entry) {
       throw new SemanticJudgeError(this.provider, question.questionId, `no script for ${inputHash}`)
     }
@@ -39,11 +40,22 @@ export class ScriptedJudge implements SemanticJudge {
     }
   }
 
-  private findEntry(questionId: string, inputHash: string): ScriptedJudgement | undefined {
+  private findEntry(
+    questionId: string,
+    inputHash: string,
+    state: SemanticState,
+  ): ScriptedJudgement | undefined {
     const forQuestion = this.script.filter((entry) => entry.questionId === questionId)
+    const serializedState = JSON.stringify(state)
     return (
       forQuestion.find((entry) => entry.inputHash === inputHash) ??
-      forQuestion.find((entry) => entry.inputHash === undefined)
+      forQuestion.find(
+        (entry) =>
+          entry.stateIncludes !== undefined && serializedState.includes(entry.stateIncludes),
+      ) ??
+      forQuestion.find(
+        (entry) => entry.inputHash === undefined && entry.stateIncludes === undefined,
+      )
     )
   }
 }

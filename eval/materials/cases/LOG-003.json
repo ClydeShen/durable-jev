@@ -1,0 +1,223 @@
+{
+  "story": "受控货的安全说明与货物描述冲突。补交正确的安全说明后，合规审核员签核；商务主管批准不能替代合规签核。",
+  "shipment": {
+    "caseId": "LOG-003",
+    "correlationId": "corr-LOG-003",
+    "shipmentId": "SHP-003",
+    "customerId": "CUS-ACME",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Industrial descaling concentrate, corrosive, 12 drums of 25 L (controlled class C2)",
+        "declaredCategories": ["controlled"],
+        "quantity": 12,
+        "weightGrams": 360000,
+        "dimensionsMillimetres": {
+          "length": 400,
+          "width": 400,
+          "height": 600
+        },
+        "controlledClass": "C2"
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-04T07:00:00Z",
+        "plannedArrival": "2026-11-04T13:00:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-04T10:00:00Z",
+      "to": "2026-11-04T18:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 310000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [
+      {
+        "documentId": "DOC-003-SDS",
+        "kind": "safetyDataSheet",
+        "version": 1,
+        "text": "Safety data sheet: lithium-ion battery packs, UN3480, class 9 dangerous goods.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
+      },
+      {
+        "documentId": "DOC-003-DECL",
+        "kind": "controlledDeclaration",
+        "version": 1,
+        "text": "Controlled goods declaration C2 for 12 drums of descaling concentrate.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
+      }
+    ],
+    "warehouseRecords": []
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.97
+      }
+    },
+    {
+      "questionId": "R10",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.08
+      }
+    },
+    {
+      "questionId": "R10",
+      "stateIncludes": "citric acid",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.94
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "初始：文件与货物不一致，不能放行",
+      "statuses": {
+        "R09@ITEM-1": "PASS",
+        "R10@ITEM-1": "FAIL",
+        "R13@ITEM-1": "BLOCKED_DEPENDENCY",
+        "R40": "FAIL"
+      },
+      "orderStatus": "ON_HOLD",
+      "openTasks": []
+    },
+    {
+      "kind": "revise",
+      "label": "客户补交正确的安全说明",
+      "patch": {
+        "caseRevision": 2,
+        "documents": [
+          {
+            "documentId": "DOC-003-SDS",
+            "kind": "safetyDataSheet",
+            "version": 2,
+            "text": "Safety data sheet: citric acid descaling concentrate, corrosive liquid, 12 x 25 L drums.",
+            "extractedFields": {},
+            "source": "customer upload",
+            "cargoItemId": "ITEM-1"
+          },
+          {
+            "documentId": "DOC-003-DECL",
+            "kind": "controlledDeclaration",
+            "version": 1,
+            "text": "Controlled goods declaration C2 for 12 drums of descaling concentrate.",
+            "extractedFields": {},
+            "source": "customer upload",
+            "cargoItemId": "ITEM-1"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "文件一致，等待合规签核",
+      "statuses": {
+        "R10@ITEM-1": "PASS",
+        "R13@ITEM-1": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管不能代替合规签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      },
+      "expectRefusal": "UNAUTHORIZED"
+    },
+    {
+      "kind": "act",
+      "label": "合规审核员签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "受控分支就绪",
+      "statuses": {
+        "R14@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}

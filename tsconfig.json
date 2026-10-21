@@ -10,6 +10,7 @@
     { "path": "packages/logistics" },
     { "path": "packages/service-kit" },
     { "path": "apps/coordinator" },
-    { "path": "tools/launcher" }
+    { "path": "tools/launcher" },
+    { "path": "eval/runner" }
   ]
 }

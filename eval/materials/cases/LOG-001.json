@@ -89,5 +89,83 @@
         "probability": 0.98
       }
     }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "所有适用规则通过，等待仓库装载",
+      "orderStatus": "AWAITING_HUMAN",
+      "statuses": {
+        "R40": "WAITING_HUMAN",
+        "R39": "WAITING_HUMAN"
+      },
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "dispatch",
+      "label": "装载前调度员不能放行",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": true
+    },
+    {
+      "kind": "act",
+      "label": "缺少封条号被拒绝",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-001"
+        },
+        "evidenceRefs": []
+      },
+      "expectRefusal": "MISSING_EVIDENCE"
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-001",
+          "sealNumber": "SEAL-77"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "可发运",
+      "orderStatus": "READY_TO_DISPATCH",
+      "statuses": {
+        "R40": "PASS"
+      },
+      "openTasks": []
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "orderStatus": "DISPATCHED"
+    }
   ]
 }

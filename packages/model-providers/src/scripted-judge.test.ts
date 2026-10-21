@@ -27,6 +27,26 @@ describe('ScriptedJudge', () => {
     expect(other.judgement).toEqual({ kind: 'choice', choice: 'no_risk' })
   })
 
+  it('matches an entry by text contained in the state', async () => {
+    const byText = new ScriptedJudge([
+      {
+        questionId: documentMatchQuestion.questionId,
+        judgement: { kind: 'noul', probability: 0.1 },
+      },
+      {
+        questionId: documentMatchQuestion.questionId,
+        stateIncludes: 'corrected',
+        judgement: { kind: 'noul', probability: 0.95 },
+      },
+    ])
+    const corrected = await byText.ask(documentMatchQuestion, {
+      sheet: 'corrected safety data sheet',
+    })
+    expect(corrected.judgement).toEqual({ kind: 'noul', probability: 0.95 })
+    const original = await byText.ask(documentMatchQuestion, { sheet: 'original sheet' })
+    expect(original.judgement).toEqual({ kind: 'noul', probability: 0.1 })
+  })
+
   it('fails instead of guessing when nothing is scripted', async () => {
     await expect(judge.ask(documentMatchQuestion, inspectionState)).rejects.toBeInstanceOf(
       SemanticJudgeError,

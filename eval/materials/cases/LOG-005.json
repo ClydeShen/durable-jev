@@ -1,0 +1,225 @@
+{
+  "story": "改派后超授信并增加费用：授信例外（超二级额度需两名商务主管）与额外费用是两个独立审批，只通过一个仍不得放行。",
+  "shipment": {
+    "caseId": "LOG-005",
+    "correlationId": "corr-LOG-005",
+    "shipmentId": "SHP-005",
+    "customerId": "CUS-BRISK",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Garden furniture sets, flat-packed, 18 cartons",
+        "declaredCategories": ["general"],
+        "quantity": 18,
+        "weightGrams": 540000,
+        "dimensionsMillimetres": {
+          "length": 1200,
+          "width": 800,
+          "height": 300
+        }
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-HARBOUR",
+        "vehicleId": "VEH-7",
+        "plannedDeparture": "2026-11-05T07:00:00Z",
+        "plannedArrival": "2026-11-05T13:30:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-05T10:00:00Z",
+      "to": "2026-11-05T18:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 900000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [],
+    "warehouseRecords": []
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.96
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.98
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "初始：授信内，等待装载",
+      "statuses": {
+        "R32": "PASS",
+        "R33": "NOT_APPLICABLE",
+        "R34": "NOT_APPLICABLE",
+        "R35": "NOT_APPLICABLE"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "revise",
+      "label": "改派绕行，额外费用 13,000",
+      "patch": {
+        "caseRevision": 2,
+        "entityVersions": {
+          "route": 2,
+          "quote": 2
+        },
+        "legs": [
+          {
+            "legId": "LEG-1",
+            "sequence": 1,
+            "origin": "Northport Warehouse A",
+            "destination": "Central Retail DC",
+            "carrierId": "CAR-HARBOUR",
+            "vehicleId": "VEH-7",
+            "plannedDeparture": "2026-11-05T09:00:00Z",
+            "plannedArrival": "2026-11-05T16:30:00Z"
+          }
+        ],
+        "quote": {
+          "amountCents": 900000,
+          "extraCostCents": 1300000,
+          "currency": "EUR"
+        }
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "超授信：授信例外与额外费用两个审批",
+      "statuses": {
+        "R32": "FAIL",
+        "R33": "PASS",
+        "R34": "WAITING_HUMAN",
+        "R35": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R34", "R35"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管批准额外费用",
+      "task": "R35",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "只通过额外费用仍不能放行",
+      "statuses": {
+        "R35": "PASS",
+        "R36": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R34"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管 carol 批准授信例外第一步",
+      "task": "R34",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "同一人不能批第二步",
+      "task": "R34",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      },
+      "expectRefusal": "SAME_ACTOR"
+    },
+    {
+      "kind": "act",
+      "label": "另一名商务主管 dave 批准第二步",
+      "task": "R34",
+      "actor": {
+        "id": "dave",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "商务分支就绪",
+      "statuses": {
+        "R34": "PASS",
+        "R36": "PASS"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}

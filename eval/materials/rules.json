@@ -875,7 +875,7 @@
       "unknownPolicy": "block",
       "inputPaths": [],
       "parameters": [],
-      "invalidationTriggers": ["quote"],
+      "invalidationTriggers": [],
       "expression": {
         "passWhen": "order.customer.active = true"
       }

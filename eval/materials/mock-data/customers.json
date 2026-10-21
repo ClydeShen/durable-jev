@@ -6,5 +6,21 @@
     "creditLimitCents": 5000000,
     "outstandingCents": 1200000,
     "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-BRISK",
+    "name": "Brisk Retail Group",
+    "active": true,
+    "creditLimitCents": 3000000,
+    "outstandingCents": 2000000,
+    "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-MEDI",
+    "name": "Southgate Clinics",
+    "active": true,
+    "creditLimitCents": 8000000,
+    "outstandingCents": 500000,
+    "restrictionsText": "Deliveries to clinic stores must use the rear loading dock between 07:00 and 16:00 UTC. No curbside handover."
   }
 ]

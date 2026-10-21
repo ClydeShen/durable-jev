@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-const checkStatusSchema = z.enum([
+export const checkStatusSchema = z.enum([
   'PASS',
   'FAIL',
   'UNKNOWN',
@@ -24,7 +24,7 @@ export function isPendingCheckStatus(status: CheckStatus): status is PendingChec
   return (pendingCheckStatuses as readonly CheckStatus[]).includes(status)
 }
 
-const orderStatusSchema = z.enum([
+export const orderStatusSchema = z.enum([
   'SUBMITTED',
   'EVALUATING',
   'ON_HOLD',

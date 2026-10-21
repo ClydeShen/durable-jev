@@ -1,0 +1,225 @@
+{
+  "story": "两段运输，中转站不支持冷链：第一段本身没问题也不能整单发运；改经支持冷藏的中转站后重算通过。",
+  "shipment": {
+    "caseId": "LOG-007",
+    "correlationId": "corr-LOG-007",
+    "shipmentId": "SHP-007",
+    "customerId": "CUS-MEDI",
+    "caseRevision": 1,
+    "entityVersions": {
+      "cargo": 1,
+      "route": 1,
+      "carrier": 1,
+      "quote": 1
+    },
+    "cargoItems": [
+      {
+        "cargoItemId": "ITEM-1",
+        "description": "Chilled diagnostic reagents, 2-8C, 10 boxes",
+        "declaredCategories": ["coldChain"],
+        "quantity": 10,
+        "weightGrams": 50000,
+        "dimensionsMillimetres": {
+          "length": 400,
+          "width": 300,
+          "height": 300
+        },
+        "temperatureRange": {
+          "minDeciCelsius": 20,
+          "maxDeciCelsius": 80
+        }
+      }
+    ],
+    "legs": [
+      {
+        "legId": "LEG-1",
+        "sequence": 1,
+        "origin": "Northport Warehouse A",
+        "destination": "Riverside Cross-dock",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-06T05:00:00Z",
+        "plannedArrival": "2026-11-06T08:00:00Z"
+      },
+      {
+        "legId": "LEG-2",
+        "sequence": 2,
+        "origin": "Riverside Cross-dock",
+        "destination": "Southgate Clinic Store",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-06T09:30:00Z",
+        "plannedArrival": "2026-11-06T13:00:00Z"
+      }
+    ],
+    "deliveryWindow": {
+      "from": "2026-11-06T09:00:00Z",
+      "to": "2026-11-06T15:00:00Z"
+    },
+    "handover": "dock",
+    "quote": {
+      "amountCents": 280000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Boxes intact, cool packs in place.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-05T22:00:00Z"
+        },
+        "temperatureReadings": [
+          {
+            "at": "2026-11-05T18:30:00Z",
+            "deciCelsius": 45
+          },
+          {
+            "at": "2026-11-05T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-05T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-05T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-05T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-05T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-05T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-05T22:00:00Z",
+            "deciCelsius": 48
+          }
+        ]
+      }
+    ]
+  },
+  "scriptedJudgements": [
+    {
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "no_risk"
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "中转站不支持冷链，整单不能放行",
+      "statuses": {
+        "R24@LEG-1": "PASS",
+        "R24@LEG-2": "PASS",
+        "R26@LEG-1": "FAIL",
+        "R30": "FAIL",
+        "R40": "FAIL"
+      },
+      "orderStatus": "ON_HOLD",
+      "openTasks": []
+    },
+    {
+      "kind": "revise",
+      "label": "改经 Glacier Cold Hub 中转",
+      "patch": {
+        "caseRevision": 2,
+        "entityVersions": {
+          "route": 2
+        },
+        "legs": [
+          {
+            "legId": "LEG-1",
+            "sequence": 1,
+            "origin": "Northport Warehouse A",
+            "destination": "Glacier Cold Hub",
+            "carrierId": "CAR-POLAR",
+            "vehicleId": "VEH-12",
+            "plannedDeparture": "2026-11-06T05:00:00Z",
+            "plannedArrival": "2026-11-06T08:00:00Z"
+          },
+          {
+            "legId": "LEG-2",
+            "sequence": 2,
+            "origin": "Glacier Cold Hub",
+            "destination": "Southgate Clinic Store",
+            "carrierId": "CAR-POLAR",
+            "vehicleId": "VEH-12",
+            "plannedDeparture": "2026-11-06T09:30:00Z",
+            "plannedArrival": "2026-11-06T13:00:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "重算通过，等待装载",
+      "statuses": {
+        "R26@LEG-1": "PASS",
+        "R30": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
+    }
+  ]
+}
