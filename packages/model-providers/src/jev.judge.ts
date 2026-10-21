@@ -1,7 +1,7 @@
 import type { SemanticAnswer } from '@durable-jev/contracts'
 import { choice, noul, TypeSafeClient } from '@typesafe-ai/sdk'
-import type { SemanticJudge, SemanticJudgement } from './semantic-judge.js'
-import type { SemanticQuestion } from './semantic-question.js'
+import type { SemanticJudge, SemanticJudgement } from './semantic-judge.types.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 export const pinnedJevModel = 'jev-1.14.0'
 

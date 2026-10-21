@@ -1,7 +1,7 @@
 import { APITimeoutError, AuthenticationError, RateLimitError } from '@typesafe-ai/sdk'
 import { describe, expect, it } from 'vitest'
-import { JudgeUnavailableError, RetryingJudge } from './retrying-judge.js'
-import type { SemanticJudge } from './semantic-judge.js'
+import { JudgeUnavailableError, RetryingJudge } from './retrying.judge.js'
+import type { SemanticJudge } from './semantic-judge.types.js'
 
 function flakyJudge(failures: unknown[]) {
   const calls = { count: 0 }

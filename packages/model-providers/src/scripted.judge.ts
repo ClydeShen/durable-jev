@@ -1,6 +1,6 @@
 import type { ScriptedSemanticAnswer } from '@durable-jev/contracts'
-import type { SemanticJudge, SemanticJudgement } from './semantic-judge.js'
-import type { SemanticQuestion } from './semantic-question.js'
+import type { SemanticJudge, SemanticJudgement } from './semantic-judge.types.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 export class ScriptedJudge implements SemanticJudge {
   readonly provider = 'scripted'

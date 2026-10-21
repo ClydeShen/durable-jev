@@ -1,6 +1,6 @@
 import { APIConnectionError, APIError } from '@typesafe-ai/sdk'
-import type { SemanticJudge, SemanticJudgement } from './semantic-judge.js'
-import type { SemanticQuestion } from './semantic-question.js'
+import type { SemanticJudge, SemanticJudgement } from './semantic-judge.types.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 export class JudgeUnavailableError extends Error {
   constructor(

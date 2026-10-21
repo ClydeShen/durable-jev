@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import type { Migration, StoreDatabase } from '@durable-jev/store'
-import type { SemanticJudge, SemanticJudgement } from './semantic-judge.js'
-import type { SemanticQuestion } from './semantic-question.js'
+import type { SemanticJudge, SemanticJudgement } from './semantic-judge.types.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 export const semanticCacheMigrations: readonly Migration[] = [
   {

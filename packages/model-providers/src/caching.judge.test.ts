@@ -1,8 +1,8 @@
 import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
-import { CachingJudge, semanticCacheMigrations } from './caching-judge.js'
-import type { SemanticJudge } from './semantic-judge.js'
-import type { SemanticQuestion } from './semantic-question.js'
+import { CachingJudge, semanticCacheMigrations } from './caching.judge.js'
+import type { SemanticJudge } from './semantic-judge.types.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 function countingJudge() {
   const asked: string[] = []

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { JevJudge, pinnedJevModel } from './jev-judge.js'
+import { JevJudge, pinnedJevModel } from './jev.judge.js'
 
 function recordedFetch(answer: unknown, requests: unknown[] = []) {
   return async (_url: string, init?: RequestInit) => {

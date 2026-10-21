@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import type { CaseEvidence, Shipment } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { ScriptedJudge } from './scripted-judge.js'
-import { buildSemanticQuestions, SemanticQuestionCatalog } from './semantic-question.js'
+import { ScriptedJudge } from './scripted.judge.js'
+import { buildSemanticQuestions, SemanticQuestionCatalog } from './semantic-question.helpers.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

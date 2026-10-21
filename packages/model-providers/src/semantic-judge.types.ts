@@ -1,5 +1,5 @@
 import type { SemanticAnswer } from '@durable-jev/contracts'
-import type { SemanticQuestion } from './semantic-question.js'
+import type { SemanticQuestion } from './semantic-question.helpers.js'
 
 export type SemanticJudgement = {
   ruleId: string
