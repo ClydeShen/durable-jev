@@ -16,11 +16,13 @@
     "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/store": "workspace:*",
     "@durable-jev/transport-reservations": "workspace:*",
-    "zod": "4.6.7"
+    "zod": "4.6.7",
+    "@durable-jev/model-providers": "workspace:*"
   },
   "scripts": {
     "policy:render": "node dist/render-policy.js",
     "replay": "node dist/replay-cli.js",
-    "event-schema:render": "node dist/render-event-schema.js"
+    "event-schema:render": "node dist/render-event-schema.js",
+    "accuracy": "node dist/accuracy.cli.js"
   }
 }

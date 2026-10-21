@@ -89,7 +89,7 @@
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [ ] | T7.0 | 落实此前 live 抽测的改进（如 R27 问法、阈值缓冲带），用真实 Jev 复测 | 复测结果记入 `docs/live-checks.md` | T5.6, T6.5 |
+| [~] | T7.0 | 落实此前 live 抽测的改进（如 R27 问法、阈值缓冲带），用真实 Jev 复测 | 复测结果记入 `docs/live-checks.md` | T5.6, T6.5 |
 | [ ] | T7.1 | B1 Jev vs 结构化输出（即 P7 的 live 抽测） | 报告 macro-F1、成本、p95 | T4.2 |
 | [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
 | [ ] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |

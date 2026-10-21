@@ -132,6 +132,10 @@ Open "Demo controls" under the case list.
 3. `curl -X POST http://127.0.0.1:4000/processes/commercial-control/start`
 4. Click "Re-evaluate" next to the order status. The order returns to its normal state.
 
+## Measuring the model
+
+`MODEL_MODE=live pnpm --filter @durable-jev/eval-runner accuracy` asks real Jev every labelled question of the eight cases (three runs each, uses quota) and prints how often it answers without a person, how often those answers match the expected ones, and how stable they are, with and without the review band. The report is written to `var/reports/accuracy.md`. Results are in [live-checks.md](live-checks.md).
+
 ## Other commands
 
 | Command | What |

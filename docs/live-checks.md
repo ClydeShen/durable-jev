@@ -92,3 +92,28 @@ What this adds:
 - Three of the readings now sit on a line (0.80 for R27 on LOG-002, 0.81 for R03 on LOG-005, 0.20 for R10 on LOG-003). Jev returns two decimals, so a value of exactly 0.80 means somewhere between 0.795 and 0.805: whether it passes depends on rounding, not on the answer. This is the strongest argument yet for a review band around each line (T7.0).
 - The Console made the point visible: for LOG-008, R18 shows "the model returned cold_chain_risk" next to "the rule decided Pass". That is correct (R18 only classifies; the follow-up is R18-RISK and the repack task), but it reads oddly. The judgement view should show what the rule made of the answer, not only its gate status. Added to the improvement list.
 - Using the Console on live data found a bug in the Console itself: moving from one case to another merged the new case's events into the previous case's list. Fixed with a tested reconcile step.
+
+## P8 · 2026-10-21 · accuracy and automation of the semantic checks, with a review band
+
+Asked after the first demo review: how often is Jev right, and how much does it save? `pnpm --filter @durable-jev/eval-runner accuracy` (needs `MODEL_MODE=live`) asks every labelled semantic question of the eight cases three times against real Jev (18 questions, 54 readings, no cache) and scores the answers against what the draft reviewer labels expect. Changes tried at the same time: a 0.05 review band around both lines (readings within it go to a person), the R27 question reworded so that silence counts as allowed, and the LOG-008 inspection note rewritten to match its "no risk" label.
+
+| | Without a review band | With a 0.05 review band |
+|---|---|---|
+| Readings answered without a person | 89% | 67% |
+| Of those, matching the expected answer | 96% (2 wrong) | 100% (0 wrong) |
+| Readings sent to a person that did not need one | 5 | 15 |
+| Questions decided differently between the three runs | 3 of 18 | 0 of 18 |
+
+What it shows:
+
+- The band trades speed for safety: about a fifth of the readings move from automatic to a person, and the 2 wrong automatic answers and all 3 unstable questions disappear.
+- The 2 "wrong" readings are LOG-003 R10, where the draft label says 0.50 (unclear) and Jev says 0.20 (the documents conflict). That matches the story of the case, so the label is probably the weak side. With the band, a person decides in both views.
+- R27 improved with the new wording (LOG-001 moved from 0.58 to 0.77 to 0.81) but still sits on the pass line, so it goes to a person with the band on. LOG-002 R27 stays at 0.72 to 0.77.
+- R03 on LOG-001 item 1 read 0.82 to 0.84 this time (0.94 to 0.98 in earlier runs); LOG-004 and LOG-005 R03 read 0.79 to 0.83. Each goes to a person with the band on.
+- LOG-008 R18 now reads no_risk with 0.99, so the rewritten note and the label agree. This was a data fix on our side, not a model change.
+- The sample is 18 labelled questions from synthetic cases whose labels are still drafts. These are rates for this set, not for production.
+
+End to end (live mode, demo reset): LOG-001 now opens R03 and R27 for a person, LOG-002 R21 and R27, LOG-004 and LOG-005 R03, LOG-003 stays on hold, LOG-007 on hold without a task. In scripted mode only the intended tasks open, so a live run has more human work than the guides describe.
+
+Still open from T7.0: the Console judgement view should show what the rule made of the answer (a choice such as cold_chain_risk next to "Pass" reads oddly).
+
