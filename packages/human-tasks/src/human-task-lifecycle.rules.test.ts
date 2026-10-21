@@ -13,7 +13,7 @@ import {
   humanGateStatus,
   supersedeForNewTarget,
   supersedeTask,
-} from './human-task-lifecycle.js'
+} from './human-task-lifecycle.rules.js'
 
 const target: HumanTaskTarget = {
   caseRevision: 1,
