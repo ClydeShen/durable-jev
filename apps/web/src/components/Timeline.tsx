@@ -45,7 +45,7 @@ export function Timeline({ entries }: Props) {
   const visible = entries.filter((entry) => showRuleChanges || entry.eventName !== 'rule.evaluated')
   return (
     <section className="timeline">
-      <label>
+      <label className="timeline-filter">
         <input
           type="checkbox"
           checked={showRuleChanges}
