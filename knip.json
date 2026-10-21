@@ -3,6 +3,9 @@
   "includeEntryExports": true,
   "workspaces": {
     "packages/*": { "project": ["src/**/*.ts"] },
+    "apps/coordinator": { "entry": ["src/main.ts"], "project": ["src/**/*.ts"] },
+    "apps/web": { "entry": ["src/main.tsx"], "project": ["src/**/*.{ts,tsx}"] },
+    "tools/launcher": { "entry": ["src/main.ts", "src/demo-reset.ts"], "project": ["src/**/*.ts"] },
     "spikes/*": { "entry": ["src/*.ts"], "project": ["src/**/*.ts"] }
   }
 }
