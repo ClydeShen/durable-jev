@@ -27,7 +27,7 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
   response.status(500).json({ error: 'INTERNAL', message: String(error) })
 }
 
-export function createObservabilityApp(store: ObservationStore): Express {
+export const createObservabilityApp = (store: ObservationStore): Express => {
   const app = createServiceApp('observability')
 
   // Ingest is for the services' relays; everything else is read only.

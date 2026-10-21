@@ -30,7 +30,7 @@ beforeAll(async () => {
 afterAll(() => close())
 
 // A tiny SSE client: collects messages until it has `count` of them, then hangs up.
-async function read(path: string, count: number, headers: Record<string, string> = {}) {
+const read = async (path: string, count: number, headers: Record<string, string> = {}) => {
   const controller = new AbortController()
   const response = await fetch(`${baseUrl}${path}`, { headers, signal: controller.signal })
   const reader = response.body?.getReader()

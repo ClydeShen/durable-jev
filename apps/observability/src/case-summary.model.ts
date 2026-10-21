@@ -22,7 +22,7 @@ export type CaseSummary = {
 
 const ms = (timestamp: string) => Date.parse(timestamp)
 
-export function unionDurationMs(intervals: readonly [number, number][]): number {
+export const unionDurationMs = (intervals: readonly [number, number][]): number => {
   const sorted = [...intervals].sort((left, right) => left[0] - right[0])
   let total = 0
   let currentEnd = Number.NEGATIVE_INFINITY
@@ -37,7 +37,7 @@ export function unionDurationMs(intervals: readonly [number, number][]): number 
 const eventTimes = (event: ObservabilityEvent): number[] =>
   event.kind === 'span' ? [ms(event.startedAt), ms(event.timestamp)] : [ms(event.timestamp)]
 
-export function summarizeCase(events: readonly ObservabilityEvent[]): CaseSummary | undefined {
+export const summarizeCase = (events: readonly ObservabilityEvent[]): CaseSummary | undefined => {
   // Services send their events independently, so arrival order is not time order.
   const ordered = [...events].sort((left, right) => ms(left.timestamp) - ms(right.timestamp))
   const first = ordered[0]
