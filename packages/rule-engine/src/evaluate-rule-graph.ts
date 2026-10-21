@@ -11,6 +11,7 @@ import type { CollectionScope, Expression } from './expression.js'
 import {
   evaluateFeel,
   feelContext,
+  feelInputs,
   type PolicyParameters,
   semanticState,
   statusOfPredicate,
@@ -188,8 +189,14 @@ class GraphState implements ExpressionContext {
   }
 
   private inputsOf(rule: RuleDefinition, scope: CheckScope): Record<string, unknown> {
-    if (rule.expression || rule.mixing) {
-      return { context: feelContext(this.facts, scope, this.parameters) }
+    const feelSources = [
+      rule.expression?.passWhen,
+      rule.expression?.observe,
+      rule.mixing?.categories,
+      rule.mixing?.qualifications,
+    ].filter((source): source is string => source !== undefined)
+    if (feelSources.length > 0) {
+      return feelInputs(feelSources, feelContext(this.facts, scope, this.parameters))
     }
     if (rule.semantic) {
       return semanticState(rule.semantic.state, feelContext(this.facts, scope, this.parameters))

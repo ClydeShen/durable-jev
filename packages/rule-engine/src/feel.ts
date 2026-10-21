@@ -68,3 +68,24 @@ export function parametersReferencedBy(expression: string): string[] {
     ),
   ]
 }
+
+const contextRoots = /\b(order|cargoItems|legs|item|leg|params)((?:\.[A-Za-z_][A-Za-z0-9_]*)*)/g
+
+function readContextPath(context: Facts, path: string): unknown {
+  return path.split('.').reduce<unknown>((value, key) => {
+    if (Array.isArray(value)) return value.map((element) => (element as Facts | undefined)?.[key])
+    return value !== null && typeof value === 'object' ? (value as Facts)[key] : undefined
+  }, context)
+}
+
+export function feelInputs(
+  expressions: readonly string[],
+  context: Facts,
+): Record<string, unknown> {
+  const paths = new Set(
+    expressions.flatMap((expression) =>
+      [...expression.matchAll(contextRoots)].map((match) => match[0]),
+    ),
+  )
+  return Object.fromEntries([...paths].sort().map((path) => [path, readContextPath(context, path)]))
+}
