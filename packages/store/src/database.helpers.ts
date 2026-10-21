@@ -5,10 +5,10 @@ import { coreMigrations, type Migration, runMigrations } from './migrations.help
 
 export type StoreDatabase = Database.Database
 
-export function openDatabase(
+export const openDatabase = (
   filePath: string,
   serviceMigrations: readonly Migration[] = [],
-): StoreDatabase {
+): StoreDatabase => {
   if (filePath !== ':memory:') mkdirSync(dirname(filePath), { recursive: true })
   const database = new Database(filePath)
   database.pragma('journal_mode = WAL')

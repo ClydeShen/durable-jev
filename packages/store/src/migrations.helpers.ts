@@ -27,7 +27,7 @@ export const coreMigrations: readonly Migration[] = [
   },
 ]
 
-export function runMigrations(database: Database.Database, migrations: readonly Migration[]) {
+export const runMigrations = (database: Database.Database, migrations: readonly Migration[]) => {
   database.exec(`CREATE TABLE IF NOT EXISTS schema_migrations (
     id TEXT PRIMARY KEY,
     applied_at TEXT NOT NULL

@@ -15,7 +15,7 @@ const reservationsMigration = {
   sql: 'CREATE TABLE reservations (reservation_id INTEGER PRIMARY KEY, vehicle_id TEXT NOT NULL)',
 }
 
-function reserveVehicle(database: StoreDatabase, vehicleId: string) {
+const reserveVehicle = (database: StoreDatabase, vehicleId: string) => {
   const { lastInsertRowid } = database
     .prepare('INSERT INTO reservations (vehicle_id) VALUES (?)')
     .run(vehicleId)

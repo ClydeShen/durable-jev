@@ -18,7 +18,7 @@ type OutboxRow = {
   recorded_at: string
 }
 
-export function appendOutboxEvent(database: StoreDatabase, event: OutboxEvent): void {
+export const appendOutboxEvent = (database: StoreDatabase, event: OutboxEvent): void => {
   database
     .prepare(
       `INSERT INTO outbox (event_id, event_type, correlation_id, payload_json, recorded_at)
@@ -34,20 +34,20 @@ export function appendOutboxEvent(database: StoreDatabase, event: OutboxEvent): 
     )
 }
 
-export function readUnpublishedOutboxEvents(
+export const readUnpublishedOutboxEvents = (
   database: StoreDatabase,
   limit = 100,
-): RecordedOutboxEvent[] {
+): RecordedOutboxEvent[] => {
   const rows = database
     .prepare('SELECT * FROM outbox WHERE published_at IS NULL ORDER BY sequence LIMIT ?')
     .all(limit) as OutboxRow[]
   return rows.map(toRecordedEvent)
 }
 
-export function markOutboxEventsPublished(
+export const markOutboxEventsPublished = (
   database: StoreDatabase,
   sequences: readonly number[],
-): void {
+): void => {
   const markPublished = database.prepare(
     'UPDATE outbox SET published_at = ? WHERE sequence = ? AND published_at IS NULL',
   )
@@ -57,7 +57,7 @@ export function markOutboxEventsPublished(
   })()
 }
 
-function toRecordedEvent(row: OutboxRow): RecordedOutboxEvent {
+const toRecordedEvent = (row: OutboxRow): RecordedOutboxEvent => {
   return {
     sequence: row.sequence,
     eventId: row.event_id,

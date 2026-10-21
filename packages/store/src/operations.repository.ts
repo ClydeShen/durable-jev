@@ -23,11 +23,11 @@ export class OperationConflictError extends Error {
   }
 }
 
-export function executeOnce<Result>(
+export const executeOnce = <Result>(
   database: StoreDatabase,
   operation: OperationRequest,
   applySideEffect: () => Result,
-): OperationOutcome<Result> {
+): OperationOutcome<Result> => {
   const run = database.transaction((): OperationOutcome<Result> => {
     const existing = findOperationRow(database, operation.operationId)
     if (existing) {
@@ -68,10 +68,10 @@ export type OperationStatus<Result> =
   | { status: 'APPLIED'; actionType: string; result: Result; appliedAt: string }
   | { status: 'NOT_FOUND' }
 
-export function getOperationStatus<Result>(
+export const getOperationStatus = <Result>(
   database: StoreDatabase,
   operationId: string,
-): OperationStatus<Result> {
+): OperationStatus<Result> => {
   const row = findOperationRow(database, operationId)
   if (!row) return { status: 'NOT_FOUND' }
   return {
@@ -82,7 +82,10 @@ export function getOperationStatus<Result>(
   }
 }
 
-function findOperationRow(database: StoreDatabase, operationId: string): OperationRow | undefined {
+const findOperationRow = (
+  database: StoreDatabase,
+  operationId: string,
+): OperationRow | undefined => {
   return database
     .prepare('SELECT result_json, applied_at, action_type FROM operations WHERE operation_id = ?')
     .get(operationId) as OperationRow | undefined
