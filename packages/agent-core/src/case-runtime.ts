@@ -17,7 +17,7 @@ import { semanticEvaluator } from './semantic-evaluator.js'
 export interface CaseRuntimeOptions {
   store: CaseStore
   rulePack: RulePack
-  judge: SemanticJudge
+  judgeFor(shipment: Shipment): SemanticJudge
   codeEvaluators: ReadonlyMap<string, LeafEvaluator>
   factsOf(shipment: Shipment): CaseFacts
   now(): string
@@ -48,12 +48,9 @@ function changedOutcomes(previous: readonly RuleOutcome[], next: readonly RuleOu
 }
 
 export class CaseRuntime {
-  private readonly semantic: LeafEvaluator
   private readonly queues = new Map<string, Promise<unknown>>()
 
-  constructor(private readonly options: CaseRuntimeOptions) {
-    this.semantic = semanticEvaluator(options.judge)
-  }
+  constructor(private readonly options: CaseRuntimeOptions) {}
 
   view(caseId: string): CaseView {
     const record = this.options.store.caseRecord(caseId)
@@ -127,16 +124,21 @@ export class CaseRuntime {
     }
   }
 
-  private evaluatorFor(rule: RuleDefinition, gates: HumanGateSession): LeafEvaluator | undefined {
-    if (rule.evaluator.kind === 'semantic') return this.semantic
+  private evaluatorFor(
+    rule: RuleDefinition,
+    gates: HumanGateSession,
+    semantic: LeafEvaluator,
+  ): LeafEvaluator | undefined {
+    if (rule.evaluator.kind === 'semantic') return semantic
     if (rule.evaluator.kind === 'humanGate') return gates.evaluator
     return this.options.codeEvaluators.get(rule.evaluator.ref)
   }
 
-  private evaluatorsFor(gates: HumanGateSession): Map<string, LeafEvaluator> {
+  private evaluatorsFor(gates: HumanGateSession, shipment: Shipment): Map<string, LeafEvaluator> {
+    const semantic = semanticEvaluator(this.options.judgeFor(shipment))
     return new Map(
       this.options.rulePack.ruleSet.rules.flatMap((rule) => {
-        const evaluator = this.evaluatorFor(rule, gates)
+        const evaluator = this.evaluatorFor(rule, gates, semantic)
         return evaluator ? [[rule.evaluator.ref, evaluator] as const] : []
       }),
     )
@@ -150,7 +152,7 @@ export class CaseRuntime {
     const graph = await evaluateRuleGraph(
       rulePack.ruleSet,
       factsOf(shipment),
-      { evaluators: this.evaluatorsFor(gates), parameters: rulePack.parameters },
+      { evaluators: this.evaluatorsFor(gates, shipment), parameters: rulePack.parameters },
       { previous: before.outcomes },
     )
     const written = store.transaction(() => {

@@ -75,3 +75,15 @@ export function openStore(path: string, serviceMigrations: readonly Migration[] 
   migrate(db, [...storeMigrations, ...serviceMigrations])
   return db
 }
+
+export function clearData(db: Db) {
+  const tables = db
+    .prepare<[], { name: string }>(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT IN ('schema_migrations', 'sqlite_sequence')",
+    )
+    .all()
+  db.transaction(() => {
+    db.pragma('defer_foreign_keys = ON')
+    for (const { name } of tables) db.exec(`DELETE FROM "${name}"`)
+  })()
+}

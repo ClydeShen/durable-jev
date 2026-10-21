@@ -7,6 +7,8 @@
     { "path": "packages/store" },
     { "path": "packages/human-tasks" },
     { "path": "packages/agent-core" },
-    { "path": "packages/logistics" }
+    { "path": "packages/logistics" },
+    { "path": "packages/service-kit" },
+    { "path": "apps/coordinator" }
   ]
 }
