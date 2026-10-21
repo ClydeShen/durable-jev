@@ -1,6 +1,6 @@
 import type { AddressInfo } from 'node:net'
 import { describe, expect, it } from 'vitest'
-import { createServiceApp } from './service-app.js'
+import { createServiceApp } from './service.app.js'
 
 describe('createServiceApp', () => {
   it('reports health with the service name', async () => {
