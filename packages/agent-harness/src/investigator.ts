@@ -52,7 +52,6 @@ export interface ToolCallRecord<Scope> {
   scope: Scope
   tool: string
   args: unknown
-  result?: unknown
   blocked?: string
 }
 
@@ -147,8 +146,8 @@ export class DurableInvestigator<Scope> {
         replay: 'safe',
         execute: async (args, api) => {
           const scope = scopeOf(api.conversationId)
+          options.onToolCall?.({ scope, tool: tool.name, args })
           const result = await tool.execute(args, scope)
-          options.onToolCall?.({ scope, tool: tool.name, args, result })
           return { output: [{ type: 'text', text: JSON.stringify(result) }] }
         },
       }),

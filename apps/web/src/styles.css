@@ -453,3 +453,63 @@ button.small {
   font-size: 12px;
   color: var(--muted);
 }
+
+.investigations {
+  padding: 0 16px 8px;
+}
+
+.investigation {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.investigation p {
+  margin: 6px 0;
+}
+
+.investigation .rationale {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.investigation-status {
+  margin-left: 8px;
+  font-size: 12px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--border);
+}
+
+.investigation-status.PROPOSED {
+  background: #f5d58a;
+}
+
+.investigation-status.CONFIRMED {
+  background: #b7e4c7;
+}
+
+.investigation .checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  align-items: center;
+}
+
+.investigation .check {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e6f4ea;
+}
+
+.investigation .check.FAIL {
+  background: #fde2e1;
+}
+
+.investigation .actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}

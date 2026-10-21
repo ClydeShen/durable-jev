@@ -12,6 +12,12 @@ const scopeSuffix = (scope: unknown) => {
 
 const statusLabel = (status: unknown) => checkStatusLabels[status as CheckStatus] ?? String(status)
 
+const investigationOutcomes: Record<string, string> = {
+  'investigation.confirmed': '已由计划员确认',
+  'investigation.rejected': '被计划员否决',
+  'investigation.stale': '已过期',
+}
+
 function describe(entry: TimelineEntry): string {
   const payload = entry.payload
   switch (entry.eventName) {
@@ -29,6 +35,22 @@ function describe(entry: TimelineEntry): string {
       return `${payload.ruleId} 人工任务 ${payload.status}`
     case 'human_task.closed':
       return `${payload.ruleId} 人工任务结束：${payload.status}`
+    case 'investigation.started':
+      return `调查助手开始调查 ${payload.investigationId}`
+    case 'investigation.tool_called':
+      return payload.blocked
+        ? `调查助手调用 ${payload.tool} 被拦截：${payload.blocked}`
+        : `调查助手调用 ${payload.tool} ${JSON.stringify(payload.args)}`
+    case 'investigation.proposed':
+      return `调查助手提议改派：${(payload.proposal as { offerId?: string } | undefined)?.offerId}`
+    case 'investigation.escalated':
+      return `调查助手转人工：${payload.escalation}`
+    case 'investigation.confirmed':
+    case 'investigation.rejected':
+    case 'investigation.stale': {
+      const decidedBy = payload.decidedBy as { id: string } | undefined
+      return `改派提议${investigationOutcomes[entry.eventName]}（${decidedBy?.id ?? ''}）`
+    }
     case 'case.dispatched':
       return `调度员 ${payload.confirmedBy} 确认发运 r${payload.caseRevision}`
     default:

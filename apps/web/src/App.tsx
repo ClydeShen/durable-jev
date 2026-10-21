@@ -5,6 +5,7 @@ import { AgentOverview } from './components/AgentOverview'
 import { AgentPanel } from './components/AgentPanel'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseList } from './components/CaseList'
+import { InvestigationPanel } from './components/InvestigationPanel'
 import { RoleBar } from './components/RoleBar'
 import { RuleDetail } from './components/RuleDetail'
 import { RuleGraph } from './components/RuleGraph'
@@ -99,7 +100,25 @@ export function App() {
               onRevise={(index) =>
                 report(() => api.revise(detail.data?.caseId ?? '', index), '已应用变更并重新评估')
               }
+              onReportIncident={(index) =>
+                report(
+                  () => api.reportIncident(detail.data?.caseId ?? '', index),
+                  '已通知运输 agent，调查助手开始调查',
+                )
+              }
             />
+            {detail.data.investigations.length > 0 && (
+              <InvestigationPanel
+                investigations={detail.data.investigations}
+                actor={actor}
+                onDecide={(investigation, type) =>
+                  report(
+                    () => api.decideProposal(investigation.investigationId, type, actor),
+                    type === 'confirm' ? '已确认改派，相关 agent 正在重新评估' : '已否决改派提议',
+                  )
+                }
+              />
+            )}
             <nav className="view-tabs">
               {viewModes.map(([mode, label]) => (
                 <button

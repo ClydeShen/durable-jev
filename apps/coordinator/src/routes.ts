@@ -19,6 +19,7 @@ import { actorOf, HttpError } from '@durable-jev/service-kit'
 import { Router } from 'express'
 import { z } from 'zod'
 import type { TimelineEntry } from './event-log.js'
+import type { InvestigationClient } from './investigation-client.js'
 
 export type AgentStatus = { agentId: string; available: boolean; summary?: AgentSummary }
 
@@ -27,6 +28,7 @@ export interface CoordinatorDependencies {
   orchestrator: CaseOrchestrator
   catalog: CaseCatalog
   rulePack: RulePack
+  investigations: InvestigationClient
   agentStatuses(): Promise<AgentStatus[]>
   controlUrl?: string
   timeline(caseId: string): TimelineEntry[]
@@ -61,8 +63,16 @@ function scriptedRevisions(catalog: CaseCatalog, caseId: string) {
   )
 }
 
+function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
+  return (catalog.get(caseId)?.events ?? []).flatMap((event) =>
+    event.kind === 'incident' ? [{ label: event.label, incident: event.incident }] : [],
+  )
+}
+
+const actorHeaderNames = ['x-demo-role', 'x-demo-user']
+
 export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router {
-  const { coordination, orchestrator, catalog, rulePack } = dependencies
+  const { coordination, orchestrator, catalog, rulePack, investigations } = dependencies
   const router = Router()
 
   async function caseView(caseId: string): Promise<CaseView> {
@@ -91,6 +101,11 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
         label: revision.label,
         applied: view.record.shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
       })),
+      incidents: scriptedIncidents(catalog, view.record.shipment.caseId).map((incident, index) => ({
+        index,
+        label: incident.label,
+      })),
+      investigations: await investigations.ofCase(view.record.shipment.caseId).catch(() => []),
     })
   })
 
@@ -104,6 +119,27 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
     const revision = scriptedRevisions(catalog, shipment.caseId)[Number(request.params.index)]
     if (!revision) throw new HttpError(404, `no scripted revision ${request.params.index}`)
     await orchestrator.submit(applyRevision(shipment, revision.patch))
+    response.json(summaryOf(await caseView(shipment.caseId), catalog))
+  })
+
+  router.post('/cases/:caseId/incidents/:index', async (request, response) => {
+    const { caseId } = (await caseView(request.params.caseId)).record.shipment
+    const scripted = scriptedIncidents(catalog, caseId)[Number(request.params.index)]
+    if (!scripted) throw new HttpError(404, `no scripted incident ${request.params.index}`)
+    response.status(202).json(await investigations.report(caseId, scripted.incident))
+  })
+
+  router.post('/investigations/:investigationId/decision', async (request, response) => {
+    const { type } = z.object({ type: z.enum(['confirm', 'reject']) }).parse(request.body)
+    const headers = Object.fromEntries(
+      actorHeaderNames.flatMap((name) => {
+        const value = request.header(name)
+        return value ? [[name, value]] : []
+      }),
+    )
+    const result = await investigations.decide(request.params.investigationId, type, headers)
+    const { shipment } = (await caseView(result.investigation.caseId)).record
+    if (result.patch) await orchestrator.submit(applyRevision(shipment, result.patch))
     response.json(summaryOf(await caseView(shipment.caseId), catalog))
   })
 

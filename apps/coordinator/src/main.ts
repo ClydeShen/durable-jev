@@ -7,13 +7,14 @@ import {
   LocalAgentClient,
 } from '@durable-jev/agent-core'
 import { HttpAgentClient } from '@durable-jev/agent-transport'
-import { agentIdSchema } from '@durable-jev/contracts'
+import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
 import { createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
 import express from 'express'
 import { watchAgents } from './agent-watch.js'
 import { collectEvents, EventLog } from './event-log.js'
+import { InvestigationClient } from './investigation-client.js'
 import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
 const repositoryRoot = new URL('../../../', import.meta.url).pathname
@@ -23,12 +24,14 @@ const webDist = process.env.WEB_DIST ?? join(repositoryRoot, 'apps/web/dist')
 const port = Number(process.env.PORT ?? 4100)
 const now = () => new Date().toISOString()
 
-function remoteAgents(endpoints: string | undefined): HttpAgentClient[] {
+function agentEndpoints(endpoints: string | undefined): Map<AgentId, string> {
   if (!endpoints) throw new Error('AGENT_ENDPOINTS is required; start the demo with pnpm start')
-  return endpoints.split(',').map((entry) => {
-    const [agentId, url] = entry.split('=')
-    return new HttpAgentClient(agentIdSchema.parse(agentId), url ?? '')
-  })
+  return new Map(
+    endpoints.split(',').map((entry) => {
+      const [agentId, url] = entry.split('=')
+      return [agentIdSchema.parse(agentId), url ?? '']
+    }),
+  )
 }
 
 const catalog = loadCaseCatalog(join(materials, 'cases'))
@@ -43,7 +46,10 @@ const { runtime, rulePack } = createLogisticsRuntime({
     liveJudge ?? new ScriptedJudge(catalog.get(shipment.caseId)?.scriptedJudgements ?? []),
   now,
 })
-const remotes = remoteAgents(process.env.AGENT_ENDPOINTS)
+const endpoints = agentEndpoints(process.env.AGENT_ENDPOINTS)
+const remotes = [...endpoints].map(([agentId, url]) => new HttpAgentClient(agentId, url))
+const transportUrl = endpoints.get('transport-planning')
+if (!transportUrl) throw new Error('AGENT_ENDPOINTS must include transport-planning')
 const agents = [new LocalAgentClient('order-coordination', runtime, store), ...remotes]
 const eventLog = EventLog.open(join(dataDirectory, 'observability.sqlite'))
 const orchestrator = new CaseOrchestrator(
@@ -90,6 +96,7 @@ service.app.use(
     orchestrator,
     catalog,
     rulePack,
+    investigations: new InvestigationClient(transportUrl),
     agentStatuses,
     controlUrl: process.env.CONTROL_URL,
     timeline: (caseId) => eventLog.timeline(caseId),

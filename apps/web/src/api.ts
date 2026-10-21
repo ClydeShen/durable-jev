@@ -1,4 +1,11 @@
-import type { HumanTask, OrderStatus, Role, RuleEngineKind, Shipment } from '@durable-jev/contracts'
+import type {
+  CheckStatus,
+  HumanTask,
+  OrderStatus,
+  Role,
+  RuleEngineKind,
+  Shipment,
+} from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 
 export interface CaseSummary {
@@ -15,6 +22,28 @@ export interface CaseDetail extends CaseSummary {
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
   revisions: { index: number; label: string; applied: boolean }[]
+  incidents: { index: number; label: string }[]
+  investigations: Investigation[]
+}
+
+export interface Investigation {
+  investigationId: string
+  caseRevision: number
+  incident: { type: string; legId: string }
+  status: 'RUNNING' | 'PROPOSED' | 'ESCALATED' | 'CONFIRMED' | 'REJECTED' | 'STALE'
+  proposal?: {
+    legId: string
+    offerId: string
+    carrierId: string
+    vehicleId: string
+    plannedDeparture: string
+    plannedArrival: string
+    extraCostCents: number
+    rationale: string
+    checks: { ruleId: string; scope: string; status: CheckStatus }[]
+  }
+  escalation?: string
+  decidedBy?: { id: string; role: Role; at: string }
 }
 
 export interface RuleInfo {
@@ -82,6 +111,16 @@ export const api = {
   revise: (caseId: string, index: number) =>
     request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/revisions/${index}`, {
       method: 'POST',
+    }),
+  reportIncident: (caseId: string, index: number) =>
+    request<unknown>(`/cases/${encodeURIComponent(caseId)}/incidents/${index}`, {
+      method: 'POST',
+    }),
+  decideProposal: (investigationId: string, type: 'confirm' | 'reject', actor: Actor) =>
+    request<CaseSummary>(`/investigations/${encodeURIComponent(investigationId)}/decision`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...asActor(actor) },
+      body: JSON.stringify({ type }),
     }),
   timeline: (caseId: string) =>
     request<TimelineEntry[]>(`/cases/${encodeURIComponent(caseId)}/timeline`),

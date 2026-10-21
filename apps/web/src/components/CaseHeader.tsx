@@ -6,11 +6,13 @@ interface Props {
   actor: Actor
   onDispatch(): void
   onRevise(index: number): void
+  onReportIncident(index: number): void
 }
 
-export function CaseHeader({ detail, actor, onDispatch, onRevise }: Props) {
+export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncident }: Props) {
   const canDispatch = actor.role === 'dispatcher' && detail.status === 'READY_TO_DISPATCH'
   const nextRevision = detail.revisions.find((revision) => !revision.applied)
+  const nextIncident = detail.incidents[detail.investigations.length]
   return (
     <section className="case-header">
       <div>
@@ -29,6 +31,15 @@ export function CaseHeader({ detail, actor, onDispatch, onRevise }: Props) {
       {nextRevision && detail.status !== 'DISPATCHED' && (
         <button type="button" className="secondary" onClick={() => onRevise(nextRevision.index)}>
           演示变更：{nextRevision.label}
+        </button>
+      )}
+      {nextIncident && detail.status !== 'DISPATCHED' && (
+        <button
+          type="button"
+          className="secondary"
+          onClick={() => onReportIncident(nextIncident.index)}
+        >
+          演示事件：{nextIncident.label}
         </button>
       )}
       {canDispatch && (
