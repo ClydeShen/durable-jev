@@ -8,7 +8,7 @@ import {
   passOrFail,
 } from './leaf.helpers.js'
 
-function creditPosition(inputs: EvaluationInputs) {
+const creditPosition = (inputs: EvaluationInputs) => {
   const customer = inputs.referenceData.customers.find(
     (known) => known.customerId === inputs.shipment.customerId,
   )

@@ -26,10 +26,10 @@ export const scriptedJudgeFor: JudgeFor = (request) => new ScriptedJudge(request
 
 export const judgeMigrations: readonly Migration[] = semanticCacheMigrations
 
-export function judgeForModelMode(
+export const judgeForModelMode = (
   mode: string | undefined,
   options: { apiKey?: string | undefined; cacheDatabase: StoreDatabase },
-): JudgeFor {
+): JudgeFor => {
   if (mode !== 'live') return scriptedJudgeFor
   if (!options.apiKey) throw new Error('MODEL_MODE=live needs TYPESAFE_API_KEY')
   // Only cache misses reach Jev, and only those are retried.
@@ -40,10 +40,10 @@ export function judgeForModelMode(
   return () => judge
 }
 
-export async function evaluateBranchWithJudge(
+export const evaluateBranchWithJudge = async (
   request: BranchEvaluationRequest,
   dependencies: BranchEvaluationDependencies & { judgeFor?: JudgeFor; telemetry?: Telemetry },
-): Promise<BranchEvaluationResult> {
+): Promise<BranchEvaluationResult> => {
   const semanticRuleIds = new Set<string>(
     rulesOfBranches(dependencies.configuration.rulesInEvaluationOrder, dependencies.branches)
       .filter((rule) => rule.evaluator.kind === 'semantic')

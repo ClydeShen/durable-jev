@@ -10,24 +10,27 @@ export const outcome = (gateStatus: GateStatus, observedValue?: unknown): LeafOu
 export const passOrFail = (condition: boolean, observedValue?: unknown) =>
   outcome(condition ? 'PASS' : 'FAIL', observedValue)
 
-export function numericParameter(policy: PolicyParameters, name: string): number {
+export const numericParameter = (policy: PolicyParameters, name: string): number => {
   const value = policy[name]
   if (typeof value !== 'number') throw new Error(`policy parameter ${name} must be a number`)
   return value
 }
 
-export function cargoItemOf(
+export const cargoItemOf = (
   subject: CheckSubject,
   inputs: EvaluationInputs,
-): CargoItem | undefined {
+): CargoItem | undefined => {
   return inputs.shipment.cargoItems.find((item) => item.cargoItemId === subject.entityId)
 }
 
-export function legOf(subject: CheckSubject, inputs: EvaluationInputs): TransportLeg | undefined {
+export const legOf = (
+  subject: CheckSubject,
+  inputs: EvaluationInputs,
+): TransportLeg | undefined => {
   return inputs.shipment.legs.find((leg) => leg.legId === subject.entityId)
 }
 
-export function legsInSequence(inputs: EvaluationInputs): TransportLeg[] {
+export const legsInSequence = (inputs: EvaluationInputs): TransportLeg[] => {
   return [...inputs.shipment.legs].sort((left, right) => left.sequence - right.sequence)
 }
 
@@ -42,12 +45,12 @@ export const notApplicable = (observedValue?: unknown) => outcome('NOT_APPLICABL
 export const conditionHolds = (holds: boolean, observedValue?: unknown) =>
   outcome(holds ? 'PASS' : 'NOT_APPLICABLE', observedValue)
 
-export function semanticNoulOutcome(
+export const semanticNoulOutcome = (
   ruleId: string,
   entityId: string,
   inputs: EvaluationInputs,
   observedKey: string,
-): LeafOutcome {
+): LeafOutcome => {
   const answer = inputs.semanticAnswerFor(ruleId, entityId)
   if (answer?.type !== 'noul') return outcome('UNKNOWN', { answer: answer ?? null })
   const passAtLeast = numericParameter(inputs.policy, 'semanticNoulPassAtLeast')
@@ -70,11 +73,11 @@ export function semanticNoulOutcome(
 
 export type ConfidentChoice = { choice: string; probability: number }
 
-export function confidentChoice(
+export const confidentChoice = (
   ruleId: string,
   entityId: string,
   inputs: EvaluationInputs,
-): ConfidentChoice | undefined {
+): ConfidentChoice | undefined => {
   const answer = inputs.semanticAnswerFor(ruleId, entityId)
   if (answer?.type !== 'choice') return undefined
   const probability = answer.probabilities[answer.choice] ?? 0
@@ -82,15 +85,15 @@ export function confidentChoice(
   return probability >= minimum ? { choice: answer.choice, probability } : undefined
 }
 
-export function documentsFor(subject: CheckSubject, inputs: EvaluationInputs) {
+export const documentsFor = (subject: CheckSubject, inputs: EvaluationInputs) => {
   return inputs.evidence.documents.filter((document) => document.cargoItemId === subject.entityId)
 }
 
-export function temperatureLogFor(subject: CheckSubject, inputs: EvaluationInputs) {
+export const temperatureLogFor = (subject: CheckSubject, inputs: EvaluationInputs) => {
   return inputs.evidence.temperatureLogs.find((log) => log.cargoItemId === subject.entityId)
 }
 
-export function cargoTokens(item: CargoItem): string[] {
+export const cargoTokens = (item: CargoItem): string[] => {
   return item.declaredCategories.map((category) =>
     category === 'CONTROLLED' && item.controlledClass
       ? `CONTROLLED:${item.controlledClass}`

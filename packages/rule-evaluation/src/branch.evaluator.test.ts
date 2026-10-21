@@ -17,23 +17,11 @@ const configuration = buildRuleConfiguration(
   },
 )
 
-const baseEvaluation = evaluateBranch(request([], []), {
-  configuration,
-  referenceData,
-  branches: ['base'],
-})
-const cargoEvaluation = evaluateBranch(request(baseEvaluation.evaluations, []), {
-  configuration,
-  referenceData,
-  branches: ['controlled', 'coldChain'],
-})
-const beforePlan = [...baseEvaluation.evaluations, ...cargoEvaluation.evaluations]
-
-function request(
+const request = (
   upstreamResults: RuleEvaluationRecord[],
   humanGates: BranchEvaluationRequest['humanGates'],
   overrides: Partial<BranchEvaluationRequest> = {},
-): BranchEvaluationRequest {
+): BranchEvaluationRequest => {
   return {
     caseId: baseShipment.caseId,
     caseRevision: baseShipment.caseRevision,
@@ -45,6 +33,18 @@ function request(
     ...overrides,
   }
 }
+
+const baseEvaluation = evaluateBranch(request([], []), {
+  configuration,
+  referenceData,
+  branches: ['base'],
+})
+const cargoEvaluation = evaluateBranch(request(baseEvaluation.evaluations, []), {
+  configuration,
+  referenceData,
+  branches: ['controlled', 'coldChain'],
+})
+const beforePlan = [...baseEvaluation.evaluations, ...cargoEvaluation.evaluations]
 
 const statusOf = (evaluations: RuleEvaluationRecord[], ruleId: string) =>
   evaluations.find((evaluation) => evaluation.ruleId === ruleId)?.gateStatus

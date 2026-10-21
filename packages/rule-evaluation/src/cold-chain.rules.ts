@@ -20,7 +20,7 @@ const reworkRequired = 'REWORK_REQUIRED'
 const isWithin = (deciCelsius: number, range: TemperatureRange) =>
   deciCelsius >= range.minDeciCelsius && deciCelsius <= range.maxDeciCelsius
 
-export function longestExcursionMinutes(log: TemperatureLog, range: TemperatureRange): number {
+export const longestExcursionMinutes = (log: TemperatureLog, range: TemperatureRange): number => {
   const readings = [...log.readings].sort(
     (left, right) => Date.parse(left.at) - Date.parse(right.at),
   )
@@ -40,7 +40,7 @@ export function longestExcursionMinutes(log: TemperatureLog, range: TemperatureR
   return longest
 }
 
-function excursionFacts(subject: CheckSubject, inputs: EvaluationInputs) {
+const excursionFacts = (subject: CheckSubject, inputs: EvaluationInputs) => {
   const range = cargoItemOf(subject, inputs)?.temperatureRange
   const log = temperatureLogFor(subject, inputs)
   if (!range || !log || log.readings.length === 0) return undefined
@@ -53,7 +53,7 @@ function excursionFacts(subject: CheckSubject, inputs: EvaluationInputs) {
   }
 }
 
-function riskSignal(subject: CheckSubject, inputs: EvaluationInputs) {
+const riskSignal = (subject: CheckSubject, inputs: EvaluationInputs) => {
   const automated = confidentChoice('R18', subject.entityId, inputs)
   if (automated)
     return { source: 'jev', risk: automated.choice !== noRiskChoice, signal: automated.choice }

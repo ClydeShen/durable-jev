@@ -13,10 +13,10 @@ const policy = readJson('mock-policy-parameters.json')
 const rules: RuleDefinition[] = readJson('rules.json').rules
 const ruleById = (ruleId: string) => rules.find((rule) => rule.ruleId === ruleId) as RuleDefinition
 
-function inputsFor(
+const inputsFor = (
   shipment: Shipment,
   overrides: Partial<EvaluationInputs> = {},
-): EvaluationInputs {
+): EvaluationInputs => {
   return {
     shipment,
     evidence: { documents: [], temperatureLogs: [], inspectionNotes: [] },

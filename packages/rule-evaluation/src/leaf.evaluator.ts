@@ -21,15 +21,15 @@ const leafRulesByRef: Readonly<Record<string, LeafRule>> = {
   ...commercialLeafRules,
 }
 
-export function knownLeafRefs(): string[] {
+export const knownLeafRefs = (): string[] => {
   return Object.keys(leafRulesByRef)
 }
 
-export function evaluateLeafRule(
+export const evaluateLeafRule = (
   rule: RuleDefinition,
   subject: CheckSubject,
   inputs: EvaluationInputs,
-): LeafOutcome {
+): LeafOutcome => {
   if (rule.evaluator.kind === 'humanGate') return humanGate(rule)(subject, inputs)
   const leafRule = leafRulesByRef[rule.evaluator.ref]
   if (!leafRule) return outcome('ERROR', { reason: `no evaluator for ${rule.evaluator.ref}` })

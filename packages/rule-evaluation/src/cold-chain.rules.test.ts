@@ -16,10 +16,10 @@ const vaccines = {
 const item = itemSubject('ITEM-1')
 const departureAt = baseShipment.legs[0]?.plannedDepartureAt as string
 
-function logWith(
+const logWith = (
   readings: [string, number][],
   calibrationValidUntil = '2027-01-01T00:00:00Z',
-): TemperatureLog {
+): TemperatureLog => {
   return {
     cargoItemId: 'ITEM-1' as never,
     sensorId: 'SENSOR-1',

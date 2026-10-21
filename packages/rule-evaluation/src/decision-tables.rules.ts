@@ -11,7 +11,7 @@ export type MixingMatrix = z.infer<typeof MixingMatrix>
 
 export type DecisionTables = { mixingMatrix: MixingMatrix }
 
-export function forbiddenMixes(matrix: MixingMatrix, tokens: ReadonlySet<string>) {
+export const forbiddenMixes = (matrix: MixingMatrix, tokens: ReadonlySet<string>) => {
   return matrix.forbiddenPairs.filter(
     ({ tokens: [first, second] }) => tokens.has(first) && tokens.has(second),
   )

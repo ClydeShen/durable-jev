@@ -26,35 +26,35 @@ export type BranchEvaluationDependencies = {
 
 const gateKey = (ruleId: string, entityId: string) => `${ruleId}@${entityId}`
 
-export function rulesOfBranches(
+export const rulesOfBranches = (
   rules: readonly RuleDefinition[],
   branches: readonly RuleBranch[],
-): RuleDefinition[] {
+): RuleDefinition[] => {
   return rules.filter((rule) => rule.branch !== undefined && branches.includes(rule.branch))
 }
 
-export function requiredUpstreamRuleIds(
+export const requiredUpstreamRuleIds = (
   rules: readonly RuleDefinition[],
   branches: readonly RuleBranch[],
-): string[] {
+): string[] => {
   const owned = rulesOfBranches(rules, branches)
   const ownedIds = new Set(owned.map((rule) => rule.ruleId as string))
   return [...new Set(owned.flatMap(upstreamRuleIds))].filter((ruleId) => !ownedIds.has(ruleId))
 }
 
-export function humanGateRuleIds(
+export const humanGateRuleIds = (
   rules: readonly RuleDefinition[],
   branches: readonly RuleBranch[],
-) {
+) => {
   return rulesOfBranches(rules, branches)
     .filter((rule) => rule.humanGate !== undefined)
     .map((rule) => rule.ruleId as string)
 }
 
-export function evaluateBranch(
+export const evaluateBranch = (
   request: BranchEvaluationRequest,
   dependencies: BranchEvaluationDependencies,
-): BranchEvaluationResult {
+): BranchEvaluationResult => {
   return evaluateOwnedRules(
     request,
     dependencies,
@@ -65,12 +65,12 @@ export function evaluateBranch(
 
 // Re-evaluates only the given rules and takes every other result from the request, e.g.
 // "with everything else as it is now, would this carrier fit?". Nothing is reserved.
-export function evaluateSelectedRules(
+export const evaluateSelectedRules = (
   request: BranchEvaluationRequest,
   dependencies: Omit<BranchEvaluationDependencies, 'branches' | 'ensurePlanReservation'> & {
     ruleIds: readonly string[]
   },
-): BranchEvaluationResult {
+): BranchEvaluationResult => {
   const selected = new Set(dependencies.ruleIds)
   return evaluateOwnedRules(
     request,
@@ -80,12 +80,12 @@ export function evaluateSelectedRules(
   )
 }
 
-function evaluateOwnedRules(
+const evaluateOwnedRules = (
   request: BranchEvaluationRequest,
   dependencies: Omit<BranchEvaluationDependencies, 'branches'>,
   owned: readonly RuleDefinition[],
   owner: string,
-): BranchEvaluationResult {
+): BranchEvaluationResult => {
   const { configuration } = dependencies
   const ownedIds = new Set(owned.map((rule) => rule.ruleId))
   const gates = new Map<string, HumanGateState>(
@@ -142,11 +142,11 @@ function evaluateOwnedRules(
   return { evaluations: graph.evaluations, humanGateRequests: [...gateRequests.values()] }
 }
 
-function evaluateLeafOrEscalate(
+const evaluateLeafOrEscalate = (
   rule: RuleDefinition,
   subject: CheckSubject,
   inputs: EvaluationInputs,
-): LeafOutcome {
+): LeafOutcome => {
   const outcome = evaluateLeafRule(rule, subject, inputs)
   const escalates =
     outcome.gateStatus === 'UNKNOWN' &&

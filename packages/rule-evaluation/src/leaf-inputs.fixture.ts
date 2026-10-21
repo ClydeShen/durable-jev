@@ -24,7 +24,7 @@ export const order: CheckSubject = { scope: 'order', entityId: 'order' }
 export const itemSubject = (entityId: string): CheckSubject => ({ scope: 'cargoItem', entityId })
 export const legSubject = (entityId: string): CheckSubject => ({ scope: 'leg', entityId })
 
-export function withItems(items: Partial<CargoItem>[]): Shipment {
+export const withItems = (items: Partial<CargoItem>[]): Shipment => {
   const [template] = baseShipment.cargoItems as [CargoItem]
   return {
     ...baseShipment,
@@ -36,13 +36,13 @@ export function withItems(items: Partial<CargoItem>[]): Shipment {
   }
 }
 
-export function inputsFor(
+export const inputsFor = (
   shipment: Shipment,
   overrides: Partial<EvaluationInputs> & {
     answers?: Record<string, SemanticAnswer>
     evidence?: Partial<CaseEvidence>
   } = {},
-): EvaluationInputs {
+): EvaluationInputs => {
   const { answers = {}, evidence = {}, ...rest } = overrides
   return {
     shipment,
@@ -63,7 +63,7 @@ export function inputsFor(
   }
 }
 
-export function evaluateWith(ref: string, subject: CheckSubject, inputs: EvaluationInputs) {
+export const evaluateWith = (ref: string, subject: CheckSubject, inputs: EvaluationInputs) => {
   const rule = { ruleId: ref, evaluator: { kind: 'code', ref } } as unknown as RuleDefinition
   return evaluateLeafRule(rule, subject, inputs)
 }

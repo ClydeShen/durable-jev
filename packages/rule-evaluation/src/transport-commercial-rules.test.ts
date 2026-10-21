@@ -14,7 +14,7 @@ const coldItem = {
   temperatureRange: { minDeciCelsius: 20, maxDeciCelsius: 80 },
 }
 
-function twoLegsVia(hubLocation: string) {
+const twoLegsVia = (hubLocation: string) => {
   const [leg] = baseShipment.legs as [(typeof baseShipment.legs)[number]]
   return {
     ...withItems([coldItem]),

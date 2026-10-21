@@ -31,11 +31,11 @@ export class InvalidRuleConfigurationError extends Error {
   }
 }
 
-export function buildRuleConfiguration(
+export const buildRuleConfiguration = (
   ruleSetFile: { ruleSetVersion: string; rules: unknown },
   policy: PolicyParameters,
   tables: { mixingMatrix: unknown; semanticQuestions: unknown },
-): RuleConfiguration {
+): RuleConfiguration => {
   const validation = validateRuleSet(ruleSetFile.rules, policy)
   if (!validation.valid) throw new InvalidRuleConfigurationError(validation.issues)
 
@@ -70,7 +70,7 @@ export function buildRuleConfiguration(
 
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8'))
 
-export function loadRuleConfiguration(materialsDirectory: string): RuleConfiguration {
+export const loadRuleConfiguration = (materialsDirectory: string): RuleConfiguration => {
   const material = (path: string) => readJson(join(materialsDirectory, path))
   return buildRuleConfiguration(
     material('rules.json') as { ruleSetVersion: string; rules: unknown },
@@ -82,6 +82,6 @@ export function loadRuleConfiguration(materialsDirectory: string): RuleConfigura
   )
 }
 
-export function loadReferenceData(path: string): ReferenceData {
+export const loadReferenceData = (path: string): ReferenceData => {
   return ReferenceData.parse(readJson(path))
 }
