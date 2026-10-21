@@ -7,9 +7,11 @@
     { "path": "packages/store" },
     { "path": "packages/human-tasks" },
     { "path": "packages/agent-core" },
+    { "path": "packages/agent-transport" },
     { "path": "packages/logistics" },
     { "path": "packages/service-kit" },
     { "path": "apps/coordinator" },
+    { "path": "apps/agent" },
     { "path": "tools/launcher" },
     { "path": "eval/runner" }
   ]

@@ -19,7 +19,8 @@
     "typecheck": "tsc -b && tsc -p tsconfig.typecheck.json",
     "knip": "knip",
     "demo:reset": "node tools/launcher/dist/demo-reset.js",
-    "replay": "node eval/runner/dist/main.js"
+    "replay": "node eval/runner/dist/main.js",
+    "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

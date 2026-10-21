@@ -1,8 +1,8 @@
-import type { CaseRuntime, CaseStore, CaseView } from '@durable-jev/agent-core'
+import type { CaseOrchestrator, CaseStore } from '@durable-jev/agent-core'
 import type { Role } from '@durable-jev/contracts'
 
 export type DispatchResult =
-  | { ok: true; view: CaseView }
+  | { ok: true }
   | {
       ok: false
       reason: 'NOT_DISPATCHER' | 'ALREADY_DISPATCHED' | 'CHANGED' | 'NOT_RELEASABLE'
@@ -14,12 +14,12 @@ type Refusal = Extract<DispatchResult, { ok: false }>
 function releaseRefusal(
   store: CaseStore,
   caseId: string,
-  evaluatedRevision: number,
+  reviewedRevision: number | undefined,
 ): Refusal | undefined {
   const current = store.caseRecord(caseId)
   if (current?.dispatchedAt)
     return { ok: false, reason: 'ALREADY_DISPATCHED', message: `${caseId} is already dispatched` }
-  if (current?.shipment.caseRevision !== evaluatedRevision) {
+  if (current?.shipment.caseRevision !== reviewedRevision) {
     return {
       ok: false,
       reason: 'CHANGED',
@@ -38,8 +38,8 @@ function releaseRefusal(
 }
 
 export async function dispatchCase(
-  runtime: CaseRuntime,
-  store: CaseStore,
+  orchestrator: CaseOrchestrator,
+  coordinationStore: CaseStore,
   caseId: string,
   actor: { id: string; role: Role },
   now: () => string,
@@ -51,17 +51,18 @@ export async function dispatchCase(
       message: 'only a dispatcher confirms the release',
     }
   }
-  const evaluated = await runtime.evaluate(caseId)
-  const refusal = store.transaction(() => {
-    const blocked = releaseRefusal(store, caseId, evaluated.record.shipment.caseRevision)
+  const reviewedRevision = coordinationStore.caseRecord(caseId)?.shipment.caseRevision
+  await orchestrator.propagate(caseId)
+  const refusal = coordinationStore.transaction(() => {
+    const blocked = releaseRefusal(coordinationStore, caseId, reviewedRevision)
     if (blocked) return blocked
-    store.markDispatched(caseId, now())
-    store.record({
+    coordinationStore.markDispatched(caseId, now())
+    coordinationStore.record({
       caseId,
       eventName: 'case.dispatched',
-      payload: { caseRevision: evaluated.record.shipment.caseRevision, confirmedBy: actor.id },
+      payload: { caseRevision: reviewedRevision, confirmedBy: actor.id },
     })
     return undefined
   })
-  return refusal ?? { ok: true, view: runtime.view(caseId) }
+  return refusal ?? { ok: true }
 }

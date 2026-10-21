@@ -14,7 +14,7 @@ function prefixLines(stream: NodeJS.ReadableStream | null, name: string) {
 function start(service: ServiceDefinition): ChildProcess {
   const child = spawn(process.execPath, [service.entry], {
     cwd: repositoryRoot,
-    env: { ...process.env, PORT: String(service.port) },
+    env: { ...process.env, ...service.env, PORT: String(service.port) },
     stdio: ['ignore', 'pipe', 'pipe'],
   })
   prefixLines(child.stdout, service.name)

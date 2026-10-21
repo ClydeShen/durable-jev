@@ -37,6 +37,7 @@ const caseEventSchema = z.discriminatedUnion('kind', [
     statuses: z.record(z.string(), checkStatusSchema).default({}),
     openTasks: z.array(z.string()).optional(),
     reused: z.array(z.string()).optional(),
+    invalidatedBy: z.record(z.string(), z.string()).optional(),
   }),
   z.object({
     kind: z.literal('act'),

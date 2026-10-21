@@ -1,13 +1,13 @@
-import { type CaseRuntime, CaseStore, type CaseView } from '@durable-jev/agent-core'
+import type { CaseView } from '@durable-jev/agent-core'
 import type { HumanTask } from '@durable-jev/contracts'
 import {
   applyRevision,
   type CaseEvent,
   type CaseFile,
-  createLogisticsRuntime,
+  createLocalLogisticsAgents,
   dispatchCase,
+  type LocalLogisticsAgents,
   orderStatusOf,
-  reservationMigrations,
 } from '@durable-jev/logistics'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 
@@ -53,6 +53,11 @@ function checkExpectation(view: CaseView, event: Extract<CaseEvent, { kind: 'exp
     if (actual.join() !== expected.join())
       problems.push(`open tasks are [${actual}], expected [${expected}]`)
   }
+  for (const [key, change] of Object.entries(event.invalidatedBy ?? {})) {
+    const actual = outcomes.get(key)?.invalidatedBy
+    if (actual !== change)
+      problems.push(`${key} was invalidated by ${actual ?? 'nothing'}, expected ${change}`)
+  }
   for (const ruleId of event.reused ?? []) {
     const notReused = view.outcomes.filter(
       (outcome) => outcome.ruleId === ruleId && !outcome.reused,
@@ -71,43 +76,53 @@ function taskFor(view: CaseView, key: string): HumanTask | undefined {
 class CaseReplayer {
   private clock = replayStart
   private shipment: CaseFile['shipment']
-  private readonly store = CaseStore.open(':memory:', reservationMigrations)
-  private readonly runtime: CaseRuntime
+  private readonly agents: LocalLogisticsAgents
 
   constructor(
     private readonly caseFile: CaseFile,
     materialsDirectory: string,
   ) {
     this.shipment = caseFile.shipment
-    this.runtime = createLogisticsRuntime({
+    this.agents = createLocalLogisticsAgents({
       materialsDirectory,
-      store: this.store,
       judgeFor: () => new ScriptedJudge(caseFile.scriptedJudgements),
       now: () => new Date(this.clock).toISOString(),
-    }).runtime
+    })
   }
 
   private get caseId() {
     return this.caseFile.shipment.caseId
   }
 
+  private async view(): Promise<CaseView> {
+    const { outcomes, tasks } = await this.agents.orchestrator.state(this.caseId)
+    return { record: this.agents.coordination.runtime.view(this.caseId).record, outcomes, tasks }
+  }
+
   async start() {
-    await this.runtime.submit(this.shipment)
+    await this.agents.orchestrator.submit(this.shipment)
   }
 
   async run(event: CaseEvent): Promise<string[]> {
+    const { orchestrator, coordination } = this.agents
     switch (event.kind) {
       case 'expect':
-        return checkExpectation(this.runtime.view(this.caseId), event)
+        return checkExpectation(await this.view(), event)
       case 'act':
         return this.act(event)
       case 'revise':
         this.shipment = applyRevision(this.shipment, event.patch)
-        await this.runtime.submit(this.shipment)
+        await orchestrator.submit(this.shipment)
         return []
       case 'dispatch': {
         const now = () => new Date(this.clock).toISOString()
-        const result = await dispatchCase(this.runtime, this.store, this.caseId, event.actor, now)
+        const result = await dispatchCase(
+          orchestrator,
+          coordination.store,
+          this.caseId,
+          event.actor,
+          now,
+        )
         if (event.expectRefusal === result.ok) {
           return [
             result.ok
@@ -119,15 +134,15 @@ class CaseReplayer {
       }
       case 'advanceClock':
         this.clock += event.hours * 3_600_000
-        await this.runtime.evaluate(this.caseId)
+        await orchestrator.propagate(this.caseId)
         return []
     }
   }
 
   private async act(event: Extract<CaseEvent, { kind: 'act' }>): Promise<string[]> {
-    const task = taskFor(this.runtime.view(this.caseId), event.task)
+    const task = taskFor(await this.view(), event.task)
     if (!task) return [`no task ${event.task}`]
-    const decision = await this.runtime.decide(task.humanTaskId, {
+    const decision = await this.agents.orchestrator.decide(task.humanTaskId, {
       ...event.decision,
       actor: event.actor,
     })

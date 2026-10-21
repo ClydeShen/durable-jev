@@ -5,11 +5,11 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     { "path": "../../packages/agent-core" },
+    { "path": "../../packages/agent-transport" },
     { "path": "../../packages/contracts" },
     { "path": "../../packages/human-tasks" },
     { "path": "../../packages/logistics" },
     { "path": "../../packages/model-providers" },
-    { "path": "../../packages/service-kit" },
-    { "path": "../../packages/store" }
+    { "path": "../../packages/service-kit" }
   ]
 }

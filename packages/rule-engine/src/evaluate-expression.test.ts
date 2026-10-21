@@ -20,8 +20,7 @@ function contextWith(
     statusOf: (ruleId: RuleId, scope: CheckScope) =>
       statuses[`${ruleId}@${scopeKey(scope)}`] ?? statuses[ruleId] ?? 'UNKNOWN',
     observedValueOf: () => undefined,
-    feel: (expression: string) =>
-      expression === 'true' ? true : expression === 'false' ? false : null,
+    feel: (expression: string) => feelValues[expression] ?? null,
     membersOf: (scope) =>
       (members[scope] ?? []).map((id) =>
         scope === 'cargoItem' ? { kind: 'cargoItem', cargoItemId: id } : { kind: 'leg', legId: id },

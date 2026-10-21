@@ -251,6 +251,15 @@
       }
     },
     {
+      "kind": "expect",
+      "label": "失效原因可追溯到这次改派",
+      "statuses": {},
+      "invalidatedBy": {
+        "R13@ITEM-1": "r2 (route, carrier, quote)",
+        "R29@LEG-1": "r2 (route, carrier, quote)"
+      }
+    },
+    {
       "kind": "act",
       "label": "合规审核员重新签核",
       "task": "R13@ITEM-1",
