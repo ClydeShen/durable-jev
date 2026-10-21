@@ -17,3 +17,4 @@
 | 2026-10-21 | 明确核心概念 Durable Jev Agent（spec 8）：模块 = Jev + Pi Durable + 规则图 + 人工门槛，A2A 协作；结构化规则仍用代码。人工任务从 Coordinator 下放到模块 | 改 design 6、roadmap T1.7/T2.3/T3.2/T4.7；新增 T0.8 spike 与 T7.6（B7） |
 | 2026-10-21 | 方向澄清：尽可能让 agent 做，目标是"小团队 + Durable Jev Agent 替代大团队多年开发的规则引擎"。新增规则编写 agent（T3.0），T3.1 改为生成 + 审核；B7 改为面向 CEO 的成本指标。业务场景与已完成部分不变 | roadmap T3.0/T3.1/T7.6 |
 | 2026-10-21 | 人工审批支持 2–3 个角色的审批链（顺序/并行、四眼原则、条件追加步骤） | contracts humanTask 增加 `approvalChain`；design 5.2/5.5；T1.7 范围扩大；T2.1/T3.1 政策中为 R13、R20、R34 等设计审批链 |
+| 2026-10-21 | 加入扩展包（agent 生成 100–200 条附录规则）与适用规则筛选；规则 ID 放宽为 `R\d{2}` 或 `CUST-*`/`DEST-*` 形式；新增 R41 目的地进口要求聚合 | roadmap T1.3/T3.7/T3.8/T7.6 |
