@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { CargoItemId, CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.js'
-import { TransportLeg } from './shipment.js'
-import { Role } from './statuses.js'
+import { CargoItemId, CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.schema.js'
+import { TransportLeg } from './shipment.schema.js'
+import { Role } from './statuses.schema.js'
 
 export const PlanChange = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('reassignVehicle'), legId: LegId, vehicleId: VehicleId }),

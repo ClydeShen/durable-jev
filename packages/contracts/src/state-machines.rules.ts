@@ -1,7 +1,7 @@
-import type { HumanTaskStatus } from './human-task.js'
-import type { InvestigationStatus } from './investigation.js'
-import { defineStateMachine } from './state-machine.js'
-import type { OrderStatus } from './statuses.js'
+import type { HumanTaskStatus } from './human-task.schema.js'
+import type { InvestigationStatus } from './investigation.schema.js'
+import { defineStateMachine } from './state-machine.types.js'
+import type { OrderStatus } from './statuses.schema.js'
 
 const reEvaluableOrderStatuses = [
   'EVALUATING',

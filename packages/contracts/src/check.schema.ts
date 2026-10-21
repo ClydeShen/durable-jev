@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { CheckResultId, EvidenceRef, RuleId, UtcTimestamp } from './ids.js'
-import { GateStatus, RuleScope } from './statuses.js'
+import { CheckResultId, EvidenceRef, RuleId, UtcTimestamp } from './ids.schema.js'
+import { GateStatus, RuleScope } from './statuses.schema.js'
 
 export const CheckEngine = z.enum(['code', 'decisionTable', 'semantic', 'humanGate', 'combinator'])
 export type CheckEngine = z.infer<typeof CheckEngine>

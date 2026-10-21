@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { CaseId, EvidenceRef, HumanTaskId, RuleId, UtcTimestamp } from './ids.js'
-import { EntityVersions } from './shipment.js'
-import { Role } from './statuses.js'
+import { CaseId, EvidenceRef, HumanTaskId, RuleId, UtcTimestamp } from './ids.schema.js'
+import { EntityVersions } from './shipment.schema.js'
+import { Role } from './statuses.schema.js'
 
 export const HumanTaskType = z.enum(['APPROVAL', 'OPERATION'])
 export type HumanTaskType = z.infer<typeof HumanTaskType>

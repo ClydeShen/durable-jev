@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CargoItemId, UtcTimestamp } from './ids.js'
+import { CargoItemId, UtcTimestamp } from './ids.schema.js'
 
 export const DocumentKind = z.enum([
   'SAFETY_DATA_SHEET',

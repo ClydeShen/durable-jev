@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { CarrierId, CustomerId, UtcTimestamp, VehicleId } from './ids.js'
-import { CargoCategory, TemperatureRange } from './shipment.js'
+import { CarrierId, CustomerId, UtcTimestamp, VehicleId } from './ids.schema.js'
+import { CargoCategory, TemperatureRange } from './shipment.schema.js'
 
 const positiveInteger = z.int().positive()
 const nonNegativeInteger = z.int().nonnegative()

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { RuleId } from './ids.js'
+import { RuleId } from './ids.schema.js'
 
 export const SemanticAnswer = z.discriminatedUnion('type', [
   z.object({ type: z.literal('noul'), noul: z.number().min(0).max(1) }),

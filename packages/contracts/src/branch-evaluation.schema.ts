@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { CaseEvidence } from './evidence.js'
-import { HumanDecision } from './human-task.js'
-import { CaseId, RuleId } from './ids.js'
-import { ScriptedSemanticAnswer } from './semantic-answer.js'
-import { Shipment } from './shipment.js'
-import { GateStatus, RuleScope } from './statuses.js'
+import { CaseEvidence } from './evidence.schema.js'
+import { HumanDecision } from './human-task.schema.js'
+import { CaseId, RuleId } from './ids.schema.js'
+import { ScriptedSemanticAnswer } from './semantic-answer.schema.js'
+import { Shipment } from './shipment.schema.js'
+import { GateStatus, RuleScope } from './statuses.schema.js'
 
 export const RuleBranch = z.enum([
   'base',

@@ -8,7 +8,7 @@ import {
   ShipmentId,
   UtcTimestamp,
   VehicleId,
-} from './ids.js'
+} from './ids.schema.js'
 
 const nonNegativeInteger = z.int().nonnegative()
 const positiveInteger = z.int().positive()

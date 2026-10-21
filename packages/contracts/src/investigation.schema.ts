@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.js'
-import { Role } from './statuses.js'
+import { CarrierId, CaseId, LegId, UtcTimestamp, VehicleId } from './ids.schema.js'
+import { Role } from './statuses.schema.js'
 
 export const InvestigationStatus = z.enum([
   'RUNNING',
