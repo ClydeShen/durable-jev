@@ -10,11 +10,11 @@ import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
 import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
 import { reservationMigrations } from '@durable-jev/transport-reservations'
-import { inProcessEvaluators, serviceEvaluators } from './branch-evaluators.js'
-import { CoordinatorService } from './coordinator-service.js'
-import { createCoordinatorApp } from './http/coordinator-app.js'
-import { inProcessInvestigator } from './investigator.js'
-import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
+import { inProcessEvaluators, serviceEvaluators } from './branch.evaluator.js'
+import { CoordinatorService } from './coordinator.service.js'
+import { createCoordinatorApp } from './http/coordinator.app.js'
+import { inProcessInvestigator } from './investigator.service.js'
+import { coordinatorMigrations } from './persistence/coordinator.migrations.js'
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..')
 const materialsDirectory = resolve(

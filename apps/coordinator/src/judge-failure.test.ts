@@ -7,9 +7,9 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
-import { inProcessEvaluators } from './branch-evaluators.js'
-import { CoordinatorService } from './coordinator-service.js'
-import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
+import { inProcessEvaluators } from './branch.evaluator.js'
+import { CoordinatorService } from './coordinator.service.js'
+import { coordinatorMigrations } from './persistence/coordinator.migrations.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

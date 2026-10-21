@@ -1,7 +1,7 @@
 import { orderStatusMachine } from '@durable-jev/contracts'
 import type { RuleEvaluation } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
-import { deriveOrderStatus, gatesBeforeDispatchConfirmation } from './order-status.js'
+import { deriveOrderStatus, gatesBeforeDispatchConfirmation } from './order-status.rules.js'
 
 const passing = (ruleId: string): RuleEvaluation =>
   ({

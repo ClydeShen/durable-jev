@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { Shipment } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { applyPlanChange } from './plan-change.js'
+import { applyPlanChange } from './plan-change.rules.js'
 
 const shipment: Shipment = JSON.parse(
   readFileSync(new URL('../../../eval/materials/cases/LOG-001.json', import.meta.url), 'utf8'),

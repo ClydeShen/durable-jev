@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { describe, expect, it } from 'vitest'
-import { inProcessEvaluators, planEvaluationLayers } from './branch-evaluators.js'
+import { inProcessEvaluators, planEvaluationLayers } from './branch.evaluator.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

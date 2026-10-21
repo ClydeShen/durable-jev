@@ -3,11 +3,11 @@ import type { AddressInfo } from 'node:net'
 import { buildRuleConfiguration } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { inProcessEvaluators } from '../branch-evaluators.js'
-import { CoordinatorService } from '../coordinator-service.js'
-import { inProcessInvestigator } from '../investigator.js'
-import { coordinatorMigrations } from '../persistence/coordinator-migrations.js'
-import { createCoordinatorApp } from './coordinator-app.js'
+import { inProcessEvaluators } from '../branch.evaluator.js'
+import { CoordinatorService } from '../coordinator.service.js'
+import { inProcessInvestigator } from '../investigator.service.js'
+import { coordinatorMigrations } from '../persistence/coordinator.migrations.js'
+import { createCoordinatorApp } from './coordinator.app.js'
 
 const materials = new URL('../../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

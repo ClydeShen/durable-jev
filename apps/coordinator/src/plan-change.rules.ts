@@ -1,5 +1,5 @@
 import type { PlanChange, Role, Shipment } from '@durable-jev/contracts'
-import { CoordinatorError } from './coordinator-errors.js'
+import { CoordinatorError } from './coordinator.errors.js'
 
 export const roleForChange: Record<PlanChange['kind'], Role> = {
   reassignVehicle: 'TRANSPORT_PLANNER',

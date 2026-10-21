@@ -55,17 +55,17 @@ import {
   type Telemetry,
   withSpan,
 } from '@durable-jev/telemetry'
-import { type BranchEvaluator, planEvaluationLayers } from './branch-evaluators.js'
-import { CoordinatorError } from './coordinator-errors.js'
-import type { Investigator } from './investigator.js'
+import { type BranchEvaluator, planEvaluationLayers } from './branch.evaluator.js'
+import { CoordinatorError } from './coordinator.errors.js'
+import type { Investigator } from './investigator.service.js'
 import {
   deriveOrderStatus,
   dispatchConfirmationRuleId,
   finalGateRuleId,
   gatesBeforeDispatchConfirmation,
-} from './order-status.js'
-import { CoordinatorRepository, type StoredCase } from './persistence/coordinator-repository.js'
-import { applyPlanChange, roleForChange } from './plan-change.js'
+} from './order-status.rules.js'
+import { CoordinatorRepository, type StoredCase } from './persistence/coordinator.repository.js'
+import { applyPlanChange, roleForChange } from './plan-change.rules.js'
 
 export type CoordinatorDependencies = {
   database: StoreDatabase

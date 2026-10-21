@@ -8,9 +8,9 @@ import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
 import { initTracing, Telemetry } from '@durable-jev/telemetry'
 import { ensurePlanReservation, reservationMigrations } from '@durable-jev/transport-reservations'
 import { afterAll, describe, expect, it } from 'vitest'
-import { type BranchProtocol, branchesByService, serviceEvaluators } from './branch-evaluators.js'
-import { type CaseView, CoordinatorService } from './coordinator-service.js'
-import { coordinatorMigrations } from './persistence/coordinator-migrations.js'
+import { type BranchProtocol, branchesByService, serviceEvaluators } from './branch.evaluator.js'
+import { type CaseView, CoordinatorService } from './coordinator.service.js'
+import { coordinatorMigrations } from './persistence/coordinator.migrations.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

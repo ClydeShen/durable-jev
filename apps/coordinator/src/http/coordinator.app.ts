@@ -11,8 +11,8 @@ import { createServiceApp } from '@durable-jev/service-kit'
 import { annotateActiveSpan, tracingMiddleware } from '@durable-jev/telemetry'
 import type { ErrorRequestHandler, Express, Request } from 'express'
 import { z } from 'zod'
-import { CoordinatorError, type CoordinatorErrorCode } from '../coordinator-errors.js'
-import type { CoordinatorService } from '../coordinator-service.js'
+import { CoordinatorError, type CoordinatorErrorCode } from '../coordinator.errors.js'
+import type { CoordinatorService } from '../coordinator.service.js'
 
 const SubmitCaseBody = z.object({
   shipment: Shipment,
