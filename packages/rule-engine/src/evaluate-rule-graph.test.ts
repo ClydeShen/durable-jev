@@ -1,6 +1,11 @@
 import type { CheckStatus } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { type CaseFacts, evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
+import {
+  type CaseFacts,
+  type EvaluationEnvironment,
+  evaluateRuleGraph,
+  type LeafEvaluator,
+} from './evaluate-rule-graph.js'
 import { allOf, and, observed, ref } from './expression.js'
 import type { RuleDefinition, RuleSet } from './rule-definition.js'
 import { validateRuleSet } from './validate-rule-set.js'
@@ -39,7 +44,15 @@ const ruleSet: RuleSet = {
   ],
   rules: [
     rule('R01', { scope: 'order', owner: 'order-coordination' }),
-    rule('R02', { dependsOn: ['R01'], parameters: ['maxItemWeightGrams'] }),
+    rule('R02', {
+      dependsOn: ['R01'],
+      parameters: ['maxItemWeightGrams'],
+      evaluator: { kind: 'expression', ref: 'R02' },
+      expression: {
+        passWhen: 'item.weightGrams <= params.maxItemWeightGrams',
+        observe: 'item.weightGrams',
+      },
+    }),
     rule('R04', { dependsOn: ['R02'], unknownPolicy: 'escalateToHuman' }),
     rule('R09', { dependsOn: ['R04'], appliesWhen: controlledBranch }),
     rule('R13', {
@@ -51,6 +64,8 @@ const ruleSet: RuleSet = {
         steps: [{ requiredRole: 'complianceReviewer' }],
         mode: 'sequential',
         distinctActors: true,
+        evidenceRequirements: [],
+        expiresAfterHours: 12,
       },
     }),
     combinator('R14', {
@@ -82,7 +97,7 @@ const ruleSet: RuleSet = {
 
 const pass = (): { status: CheckStatus } => ({ status: 'PASS' })
 
-function evaluatorsWith(overrides: Record<string, LeafEvaluator> = {}): Map<string, LeafEvaluator> {
+function evaluatorsWith(overrides: Record<string, LeafEvaluator> = {}): EvaluationEnvironment {
   const defaults: Record<string, LeafEvaluator> = {
     R01: pass,
     R02: ({ scopeFacts }) => ({
@@ -94,7 +109,10 @@ function evaluatorsWith(overrides: Record<string, LeafEvaluator> = {}): Map<stri
     R13: pass,
     R24: pass,
   }
-  return new Map(Object.entries({ ...defaults, ...overrides }))
+  return {
+    evaluators: new Map(Object.entries({ ...defaults, ...overrides })),
+    parameters: { maxItemWeightGrams: 500_000 },
+  }
 }
 
 function caseWith(
@@ -178,6 +196,22 @@ describe('evaluateRuleGraph', () => {
     })
     expect(graph.escalations).toContainEqual({ ruleId: 'R04', scope: item('ITEM-1') })
     expect(graph.outcomeOf('R40')?.status).not.toBe('PASS')
+  })
+
+  it('evaluates expression rules with FEEL and keeps the observed value', async () => {
+    const graph = await evaluateRuleGraph(ruleSet, generalItems, evaluatorsWith())
+    expect(graph.outcomeOf('R02', item('ITEM-2'))).toMatchObject({
+      status: 'PASS',
+      observedValue: 300_000,
+    })
+  })
+
+  it('treats a missing input to an expression as unknown', async () => {
+    const facts = caseWith([{ id: 'ITEM-1', weightGrams: 0, categories: ['general'] }])
+    const [first] = facts.cargoItems
+    if (first) first.facts = { categories: ['general'] }
+    const graph = await evaluateRuleGraph(ruleSet, facts, evaluatorsWith())
+    expect(graph.outcomeOf('R02', item('ITEM-1'))?.status).toBe('UNKNOWN')
   })
 
   it('treats an order without legs as unknown, not as a valid plan', async () => {

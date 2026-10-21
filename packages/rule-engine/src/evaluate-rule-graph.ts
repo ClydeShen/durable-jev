@@ -8,6 +8,7 @@ import {
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import type { CollectionScope } from './expression.js'
+import { evaluateFeel, feelContext, type PolicyParameters, statusOfPredicate } from './feel.js'
 import { ruleInputFingerprint } from './fingerprint.js'
 import type { InvalidationTrigger, RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
 import { referencedRules } from './validate-rule-set.js'
@@ -31,6 +32,7 @@ export interface LeafInput {
   scope: CheckScope
   facts: CaseFacts
   scopeFacts: Facts
+  parameters: PolicyParameters
   resultOf(ruleId: RuleId): RuleOutcome | undefined
 }
 
@@ -46,6 +48,11 @@ export interface RuleOutcome {
   reused?: boolean
   invalidatedBy?: string
   error?: string
+}
+
+export interface EvaluationEnvironment {
+  evaluators: ReadonlyMap<string, LeafEvaluator>
+  parameters: PolicyParameters
 }
 
 export interface EvaluationOptions {
@@ -206,30 +213,50 @@ function blockingDependencies(
   })
 }
 
+function evaluateExpressionRule(
+  rule: RuleDefinition,
+  scope: CheckScope,
+  state: GraphState,
+  parameters: PolicyParameters,
+): LeafEvaluation {
+  const expression = rule.expression
+  if (!expression) throw new Error(`${rule.ruleId} has no expression`)
+  const context = feelContext(state.facts, scope, parameters)
+  return {
+    status: statusOfPredicate(evaluateFeel(expression.passWhen, context)),
+    ...(expression.observe ? { observedValue: evaluateFeel(expression.observe, context) } : {}),
+  }
+}
+
+function runLeaf(
+  rule: RuleDefinition,
+  scope: CheckScope,
+  state: GraphState,
+  environment: EvaluationEnvironment,
+): LeafEvaluation | Promise<LeafEvaluation> {
+  if (rule.evaluator.kind === 'expression') {
+    return evaluateExpressionRule(rule, scope, state, environment.parameters)
+  }
+  const evaluator = environment.evaluators.get(rule.evaluator.ref)
+  if (!evaluator) throw new Error(`no evaluator ${rule.evaluator.ref}`)
+  return evaluator({
+    rule,
+    scope,
+    facts: state.facts,
+    scopeFacts: factsOf(state.facts, scope),
+    parameters: environment.parameters,
+    resultOf: (ruleId) => state.resultOf(ruleId, scope),
+  })
+}
+
 async function evaluateLeaf(
   rule: RuleDefinition,
   scope: CheckScope,
   state: GraphState,
-  evaluators: ReadonlyMap<string, LeafEvaluator>,
+  environment: EvaluationEnvironment,
 ): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
-  const evaluator = evaluators.get(rule.evaluator.ref)
-  if (!evaluator) {
-    return {
-      ruleId: rule.ruleId,
-      scope,
-      status: 'ERROR',
-      blockedBy: [],
-      error: `no evaluator ${rule.evaluator.ref}`,
-    }
-  }
   try {
-    const evaluation = await evaluator({
-      rule,
-      scope,
-      facts: state.facts,
-      scopeFacts: factsOf(state.facts, scope),
-      resultOf: (ruleId) => state.resultOf(ruleId, scope),
-    })
+    const evaluation = await runLeaf(rule, scope, state, environment)
     return { ruleId: rule.ruleId, scope, blockedBy: [], ...evaluation }
   } catch (error) {
     return { ruleId: rule.ruleId, scope, status: 'ERROR', blockedBy: [], error: String(error) }
@@ -240,7 +267,7 @@ async function evaluateRuleInstance(
   rule: RuleDefinition,
   scope: CheckScope,
   state: GraphState,
-  evaluators: ReadonlyMap<string, LeafEvaluator>,
+  environment: EvaluationEnvironment,
 ): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
   if (rule.appliesWhen) {
     const applicability = evaluateExpression(rule.appliesWhen, state, scope)
@@ -264,10 +291,15 @@ async function evaluateRuleInstance(
   if (blockedBy.length > 0) {
     return { ruleId: rule.ruleId, scope, status: 'BLOCKED_DEPENDENCY', blockedBy }
   }
-  return evaluateLeaf(rule, scope, state, evaluators)
+  return evaluateLeaf(rule, scope, state, environment)
 }
 
-const defaultReusableKinds: readonly RuleEngineKind[] = ['code', 'decisionTable', 'semantic']
+const defaultReusableKinds: readonly RuleEngineKind[] = [
+  'expression',
+  'code',
+  'decisionTable',
+  'semantic',
+]
 
 function reusableOutcome(
   previous: RuleOutcome | undefined,
@@ -282,7 +314,7 @@ function reusableOutcome(
 export async function evaluateRuleGraph(
   ruleSet: RuleSet,
   facts: CaseFacts,
-  evaluators: ReadonlyMap<string, LeafEvaluator>,
+  environment: EvaluationEnvironment,
   options: EvaluationOptions = {},
 ): Promise<RuleGraphEvaluation> {
   const state = new GraphState(ruleSet.rules, facts)
@@ -302,7 +334,7 @@ export async function evaluateRuleGraph(
           ? reusableOutcome(previous.get(`${rule.ruleId}@${scopeKey(scope)}`), inputFingerprint)
           : undefined
         if (reused) return reused
-        const result = await evaluateRuleInstance(rule, scope, state, evaluators)
+        const result = await evaluateRuleInstance(rule, scope, state, environment)
         return { ...result, inputFingerprint }
       }),
     )

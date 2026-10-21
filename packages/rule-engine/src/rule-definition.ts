@@ -22,8 +22,34 @@ export const humanGateSchema = z.object({
     .max(3),
   mode: z.enum(['sequential', 'parallel']),
   distinctActors: z.boolean(),
+  evidenceRequirements: z.array(z.string().min(1)),
+  expiresAfterHours: z.number().positive(),
 })
 export type HumanGate = z.infer<typeof humanGateSchema>
+
+export const expressionRuleSchema = z.object({
+  passWhen: z.string().min(1),
+  observe: z.string().min(1).optional(),
+})
+
+export const semanticRuleSchema = z.object({
+  promptVersion: z.string().min(1),
+  question: z.discriminatedUnion('kind', [
+    z.object({
+      kind: z.literal('choice'),
+      text: z.string().min(1),
+      options: z.record(z.string(), z.string().min(1)),
+    }),
+    z.object({ kind: z.literal('noul'), text: z.string().min(1) }),
+  ]),
+  state: z.record(z.string(), z.string().min(1)),
+  passWhen: z.union([
+    z.object({ choiceIn: z.array(z.string().min(1)).min(1) }),
+    z.object({ probabilityAtLeast: z.number().min(0).max(1) }),
+    z.object({ probabilityAtMost: z.number().min(0).max(1) }),
+  ]),
+})
+export type SemanticRule = z.infer<typeof semanticRuleSchema>
 
 export const applicabilitySchema = z.object({
   destinations: z.array(z.string().min(1)).min(1).optional(),
@@ -43,6 +69,8 @@ export const ruleDefinitionSchema = z.object({
   dependsOn: z.array(ruleIdSchema),
   evaluator: z.object({ kind: ruleEngineKindSchema, ref: z.string().min(1) }),
   combiner: expressionSchema.optional(),
+  expression: expressionRuleSchema.optional(),
+  semantic: semanticRuleSchema.optional(),
   unknownPolicy: z.enum(['block', 'escalateToHuman']),
   inputPaths: z.array(z.string().min(1)),
   parameters: z.array(z.string().min(1)),

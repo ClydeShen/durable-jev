@@ -35,8 +35,22 @@ const completeMixingMatrix: MixingRule[] = [
 
 const baseRules: RuleDefinition[] = [
   rule('R01', { scope: 'order', owner: 'order-coordination' }),
-  rule('R02', { dependsOn: ['R01'], parameters: ['maxItemWeightGrams'] }),
-  rule('R03', { dependsOn: ['R01'], evaluator: { kind: 'semantic', ref: 'R03' } }),
+  rule('R02', {
+    dependsOn: ['R01'],
+    parameters: ['maxItemWeightGrams'],
+    evaluator: { kind: 'expression', ref: 'R02' },
+    expression: { passWhen: 'item.weightGrams <= params.maxItemWeightGrams' },
+  }),
+  rule('R03', {
+    dependsOn: ['R01'],
+    evaluator: { kind: 'semantic', ref: 'R03' },
+    semantic: {
+      promptVersion: 'v1',
+      question: { kind: 'noul', text: 'The description matches the declared category' },
+      state: { description: 'item.description' },
+      passWhen: { probabilityAtLeast: 0.8 },
+    },
+  }),
   rule('R13', {
     dependsOn: ['R03'],
     evaluator: { kind: 'humanGate', ref: 'R13' },
@@ -45,6 +59,8 @@ const baseRules: RuleDefinition[] = [
       steps: [{ requiredRole: 'complianceReviewer' }, { requiredRole: 'qualityReviewer' }],
       mode: 'sequential',
       distinctActors: true,
+      evidenceRequirements: [],
+      expiresAfterHours: 12,
     },
   }),
   rule('R37', {
@@ -57,7 +73,8 @@ const baseRules: RuleDefinition[] = [
   rule('CUST-C07-001', {
     scope: 'order',
     owner: 'commercial-control',
-    evaluator: { kind: 'semantic', ref: 'CUST-C07-001' },
+    evaluator: { kind: 'expression', ref: 'CUST-C07-001' },
+    expression: { passWhen: 'order.handover = "dock"' },
     applicability: { customers: ['CUS-7'] },
   }),
 ]
@@ -70,7 +87,7 @@ const ruleSet: RuleSet = {
 
 const environment: ValidationEnvironment = {
   policyParameters: new Set(['maxItemWeightGrams']),
-  evaluatorRefs: new Set(['R01', 'R02', 'R03', 'CUST-C07-001']),
+  evaluatorRefs: new Set(['R01']),
 }
 
 function withRules(...rules: RuleDefinition[]): RuleSet {
@@ -128,7 +145,7 @@ describe('validateRuleSet', () => {
 
   it('requires every policy parameter to exist', () => {
     expect(
-      codesOf(withRules(rule('R02', { dependsOn: ['R01'], parameters: ['maxItemWeightKg'] }))),
+      codesOf(withRules(rule('R01', { scope: 'order', parameters: ['maxItemWeightKg'] }))),
     ).toEqual(['MISSING_PARAMETER'])
   })
 
@@ -142,17 +159,50 @@ describe('validateRuleSet', () => {
     ).toEqual(['EVALUATOR_SHAPE'])
     expect(
       codesOf(
-        withRules(
-          rule('R03', { dependsOn: ['R01'], evaluator: { kind: 'semantic', ref: 'R03-v2' } }),
-        ),
+        withRules(rule('R01', { scope: 'order', evaluator: { kind: 'code', ref: 'R01-v2' } })),
       ),
     ).toEqual(['UNKNOWN_EVALUATOR'])
+  })
+
+  it('checks FEEL syntax and the parameters an expression reads', () => {
+    const broken = rule('R02', {
+      dependsOn: ['R01'],
+      parameters: ['maxItemWeightGrams'],
+      evaluator: { kind: 'expression', ref: 'R02' },
+      expression: { passWhen: 'item.weightGrams <= ' },
+    })
+    expect(codesOf(withRules(broken))).toEqual(['EXPRESSION_SYNTAX'])
+    const undeclared = rule('R02', {
+      dependsOn: ['R01'],
+      evaluator: { kind: 'expression', ref: 'R02' },
+      expression: { passWhen: 'item.weightGrams <= params.maxItemWeightGrams' },
+    })
+    expect(codesOf(withRules(undeclared))).toEqual(['UNDECLARED_PARAMETER'])
+  })
+
+  it('requires semantic pass labels to be options of the question', () => {
+    const mislabelled = rule('R03', {
+      dependsOn: ['R01'],
+      evaluator: { kind: 'semantic', ref: 'R03' },
+      semantic: {
+        promptVersion: 'v1',
+        question: {
+          kind: 'choice',
+          text: 'Risk signal?',
+          options: { no_risk: 'None', damaged: 'Damage' },
+        },
+        state: { note: 'item.inspectionNote' },
+        passWhen: { choiceIn: ['none'] },
+      },
+    })
+    expect(codesOf(withRules(mislabelled))).toEqual(['EVALUATOR_SHAPE'])
   })
 
   it('requires extension rules to declare applicability', () => {
     const unselectable = rule('CUST-C07-001', {
       scope: 'order',
-      evaluator: { kind: 'semantic', ref: 'CUST-C07-001' },
+      evaluator: { kind: 'expression', ref: 'CUST-C07-001' },
+      expression: { passWhen: 'order.handover = "dock"' },
     })
     expect(codesOf(withRules(unselectable))).toEqual(['MISSING_APPLICABILITY'])
   })
@@ -171,6 +221,8 @@ describe('validateRuleSet', () => {
         ],
         mode: 'sequential',
         distinctActors: true,
+        evidenceRequirements: [],
+        expiresAfterHours: 12,
       },
     })
     expect(codesOf(withRules(fourSteps))).toEqual(['SCHEMA'])

@@ -1,5 +1,6 @@
 import { type CargoCategory, cargoCategorySchema, type RuleId } from '@durable-jev/contracts'
 import type { CollectionScope, Expression } from './expression.js'
+import { feelSyntaxError, parametersReferencedBy } from './feel.js'
 import {
   type MixingRule,
   type RuleDefinition,
@@ -17,6 +18,8 @@ export type ValidationIssueCode =
   | 'EVALUATOR_SHAPE'
   | 'UNKNOWN_EVALUATOR'
   | 'MISSING_PARAMETER'
+  | 'UNDECLARED_PARAMETER'
+  | 'EXPRESSION_SYNTAX'
   | 'CYCLE'
   | 'MISSING_APPLICABILITY'
   | 'MIXING_CONFLICT'
@@ -143,22 +146,30 @@ function referenceIssues(
   return [...missing, ...undeclared, ...scopes]
 }
 
+const configByKind = {
+  combinator: 'combiner',
+  humanGate: 'humanGate',
+  expression: 'expression',
+  semantic: 'semantic',
+} as const
+
 function evaluatorIssues(
   rule: RuleDefinition,
   environment: ValidationEnvironment,
 ): ValidationIssue[] {
   const issues: ValidationIssue[] = []
   const { kind, ref } = rule.evaluator
-  const shapeIssue = (message: string) =>
-    issues.push({ code: 'EVALUATOR_SHAPE', ruleId: rule.ruleId, message })
-  if ((kind === 'combinator') !== Boolean(rule.combiner)) {
-    shapeIssue('combinator rules need a combiner and other rules must not have one')
+  for (const [configuredKind, field] of Object.entries(configByKind)) {
+    if ((kind === configuredKind) !== Boolean(rule[field])) {
+      issues.push({
+        code: 'EVALUATOR_SHAPE',
+        ruleId: rule.ruleId,
+        message: `${configuredKind} rules need ${field} and other rules must not have it`,
+      })
+    }
   }
-  if ((kind === 'humanGate') !== Boolean(rule.humanGate)) {
-    shapeIssue('humanGate rules need a humanGate and other rules must not have one')
-  }
-  const needsImplementation = kind === 'code' || kind === 'decisionTable' || kind === 'semantic'
-  if (needsImplementation && environment.evaluatorRefs && !environment.evaluatorRefs.has(ref)) {
+  const registered = kind === 'code' || kind === 'decisionTable'
+  if (registered && environment.evaluatorRefs && !environment.evaluatorRefs.has(ref)) {
     issues.push({
       code: 'UNKNOWN_EVALUATOR',
       ruleId: rule.ruleId,
@@ -166,6 +177,51 @@ function evaluatorIssues(
     })
   }
   return issues
+}
+
+function feelExpressionsOf(rule: RuleDefinition): string[] {
+  return [
+    rule.expression?.passWhen,
+    rule.expression?.observe,
+    ...Object.values(rule.semantic?.state ?? {}),
+  ].filter((expression): expression is string => expression !== undefined)
+}
+
+function feelIssues(rule: RuleDefinition): ValidationIssue[] {
+  const declared = new Set(rule.parameters)
+  return feelExpressionsOf(rule).flatMap((expression): ValidationIssue[] => {
+    const syntaxError = feelSyntaxError(expression)
+    const undeclared = parametersReferencedBy(expression).filter((name) => !declared.has(name))
+    return [
+      ...(syntaxError
+        ? [
+            {
+              code: 'EXPRESSION_SYNTAX' as const,
+              ruleId: rule.ruleId,
+              message: `${expression}: ${syntaxError}`,
+            },
+          ]
+        : []),
+      ...undeclared.map((name) => ({
+        code: 'UNDECLARED_PARAMETER' as const,
+        ruleId: rule.ruleId,
+        message: `${expression} reads params.${name} which is not in parameters`,
+      })),
+    ]
+  })
+}
+
+function semanticIssues(rule: RuleDefinition): ValidationIssue[] {
+  const semantic = rule.semantic
+  if (!semantic || !('choiceIn' in semantic.passWhen)) return []
+  const labels = semantic.question.kind === 'choice' ? Object.keys(semantic.question.options) : []
+  return semantic.passWhen.choiceIn
+    .filter((label) => !labels.includes(label))
+    .map((label) => ({
+      code: 'EVALUATOR_SHAPE',
+      ruleId: rule.ruleId,
+      message: `passWhen label ${label} is not an option of the question`,
+    }))
 }
 
 function parameterIssues(
@@ -283,6 +339,8 @@ export function validateRuleSet(
       ...referenceIssues(rule, scopeOf),
       ...evaluatorIssues(rule, environment),
       ...parameterIssues(rule, environment),
+      ...feelIssues(rule),
+      ...semanticIssues(rule),
       ...applicabilityIssues(rule),
     ]),
     ...cycles,

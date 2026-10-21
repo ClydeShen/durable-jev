@@ -103,6 +103,18 @@ type RuleDefinition = {
 }
 ```
 
+叶子求值方式：
+
+| kind | 配置 | 由谁执行 | 谁来写 |
+|---|---|---|---|
+| `expression` | `expression.passWhen`（FEEL，true/false/null → PASS/FAIL/UNKNOWN），可选 `observe` | rule-engine 内置 | 编写 agent 生成，人工审核 |
+| `semantic` | `semantic`：问题（choice / noul）、`state`（FEEL 取值）、`passWhen`（choiceIn / probabilityAtLeast / probabilityAtMost） | agent 层用 SemanticJudge（Jev） | 编写 agent 生成 |
+| `humanGate` | `humanGate`：步骤、模式、四眼、`evidenceRequirements`、`expiresAfterHours` | agent 层用人工任务状态机 | 编写 agent 生成 |
+| `combinator` | `combiner` 表达式树 | rule-engine 内置 | 编写 agent 生成 |
+| `code` / `decisionTable` | `evaluator.ref` 指向注册的函数 | agent 层注册的手写代码 | 人；计入"手写代码"指标 |
+
+FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`、`params`（政策参数）。表达式里的 `params.X` 必须在规则的 `parameters` 中声明，且存在于政策参数；FEEL 语法在启动校验时检查。
+
 `Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。另有两个叶子：`fact(path, equals|includes)` 读输入事实（`order.` 前缀读订单级，否则读当前作用域成员），`observed(ruleId, equals|includes)` 读上游规则的 observedValue（如 R04 判定的分支）；值缺失为 UNKNOWN。
 
 ### 5.3 组合语义

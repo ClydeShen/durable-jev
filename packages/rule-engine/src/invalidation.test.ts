@@ -56,6 +56,8 @@ const ruleSet: RuleSet = {
         steps: [{ requiredRole: 'complianceReviewer' }],
         mode: 'sequential',
         distinctActors: true,
+        evidenceRequirements: [],
+        expiresAfterHours: 12,
       },
       invalidationTriggers: ['carrier'],
     }),
@@ -82,7 +84,7 @@ function countingEvaluators() {
     return { status: 'PASS' }
   }
   const evaluators = new Map(['R02', 'R05', 'R16', 'R31', 'R13'].map((id) => [id, passing]))
-  return { calls, evaluators }
+  return { calls, environment: { evaluators, parameters: {} } }
 }
 
 const original: CaseFacts = {
@@ -111,8 +113,8 @@ describe('invalidateDependentsOf', () => {
   })
 
   it('marks affected results with the change that caused it', async () => {
-    const { evaluators } = countingEvaluators()
-    const first = await evaluateRuleGraph(ruleSet, original, evaluators)
+    const { environment } = countingEvaluators()
+    const first = await evaluateRuleGraph(ruleSet, original, environment)
     const marked = markInvalidated(first.outcomes, ruleSet, {
       changeId: 'chg-1',
       entities: ['route'],
@@ -127,10 +129,10 @@ describe('invalidateDependentsOf', () => {
 
 describe('incremental evaluation', () => {
   it('reuses unchanged code and Jev results but always rechecks human gates', async () => {
-    const { calls, evaluators } = countingEvaluators()
-    const first = await evaluateRuleGraph(ruleSet, original, evaluators)
+    const { calls, environment } = countingEvaluators()
+    const first = await evaluateRuleGraph(ruleSet, original, environment)
     calls.length = 0
-    const second = await evaluateRuleGraph(ruleSet, original, evaluators, {
+    const second = await evaluateRuleGraph(ruleSet, original, environment, {
       previous: first.outcomes,
     })
     expect(calls).toEqual(['R13'])
@@ -138,14 +140,14 @@ describe('incremental evaluation', () => {
   })
 
   it('re-evaluates only what the vehicle change touches', async () => {
-    const { calls, evaluators } = countingEvaluators()
-    const first = await evaluateRuleGraph(ruleSet, original, evaluators)
+    const { calls, environment } = countingEvaluators()
+    const first = await evaluateRuleGraph(ruleSet, original, environment)
     const marked = markInvalidated(first.outcomes, ruleSet, {
       changeId: 'chg-1',
       entities: ['route'],
     })
     calls.length = 0
-    const second = await evaluateRuleGraph(ruleSet, vehicleChanged, evaluators, {
+    const second = await evaluateRuleGraph(ruleSet, vehicleChanged, environment, {
       previous: marked,
     })
     expect(calls.sort()).toEqual(['R05', 'R05', 'R13', 'R16', 'R16'])
@@ -154,9 +156,9 @@ describe('incremental evaluation', () => {
   })
 
   it('gives the compliance approval a new fingerprint when its inputs change', async () => {
-    const { evaluators } = countingEvaluators()
-    const first = await evaluateRuleGraph(ruleSet, original, evaluators)
-    const second = await evaluateRuleGraph(ruleSet, vehicleChanged, evaluators, {
+    const { environment } = countingEvaluators()
+    const first = await evaluateRuleGraph(ruleSet, original, environment)
+    const second = await evaluateRuleGraph(ruleSet, vehicleChanged, environment, {
       previous: first.outcomes,
     })
     expect(second.outcomeOf('R13')?.inputFingerprint).not.toBe(

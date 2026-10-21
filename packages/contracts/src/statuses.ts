@@ -71,6 +71,7 @@ export const humanTaskStatusSchema = z.enum([
 export type HumanTaskStatus = z.infer<typeof humanTaskStatusSchema>
 
 export const ruleEngineKindSchema = z.enum([
+  'expression',
   'code',
   'decisionTable',
   'semantic',
