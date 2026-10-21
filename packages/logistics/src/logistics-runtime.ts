@@ -44,12 +44,13 @@ export interface LogisticsRuntime {
   reference: ReferenceData
 }
 
+export function loadLogisticsRulePack(materialsDirectory: string): RulePack {
+  return loadRulePack(materialsDirectory, new Set(Object.keys(codeEvaluatorOwners)))
+}
+
 export function createLogisticsRuntime(options: LogisticsRuntimeOptions): LogisticsRuntime {
   const reference = loadReferenceData(join(options.materialsDirectory, 'mock-data'))
-  const rulePack = loadRulePack(
-    options.materialsDirectory,
-    new Set(Object.keys(codeEvaluatorOwners)),
-  )
+  const rulePack = loadLogisticsRulePack(options.materialsDirectory)
   const runtime = new CaseRuntime({
     agentId: options.agentId,
     store: options.store,
@@ -72,10 +73,9 @@ export interface LocalLogisticsAgents {
 export function createLocalLogisticsAgents(
   options: Omit<LogisticsRuntimeOptions, 'agentId' | 'store'>,
 ): LocalLogisticsAgents {
-  const owners = loadRulePack(
-    options.materialsDirectory,
-    new Set(Object.keys(codeEvaluatorOwners)),
-  ).ruleSet.rules.map((rule) => rule.owner)
+  const owners = loadLogisticsRulePack(options.materialsDirectory).ruleSet.rules.map(
+    (rule) => rule.owner,
+  )
   const agents = [...new Set(owners)].map((agentId) => {
     const store = CaseStore.open(':memory:', agentMigrations(agentId))
     const { runtime, rulePack, reference } = createLogisticsRuntime({ ...options, agentId, store })

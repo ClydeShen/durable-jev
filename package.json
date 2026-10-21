@@ -21,6 +21,7 @@
     "knip": "knip",
     "demo:reset": "node tools/launcher/dist/demo-reset.js",
     "replay": "node eval/runner/dist/main.js",
+    "screening": "node eval/runner/dist/screening-main.js",
     "check": "pnpm lint && pnpm typecheck && pnpm knip && pnpm test",
     "author": "node tools/rule-authoring/dist/main.js"
   },

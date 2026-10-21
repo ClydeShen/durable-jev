@@ -7,6 +7,7 @@ import {
   Handle,
   type Node,
   type NodeProps,
+  Panel,
   Position,
   ReactFlow,
 } from '@xyflow/react'
@@ -65,7 +66,33 @@ interface Props {
   onSelect(ruleId: string): void
 }
 
-function visibleRules(rules: readonly RuleInfo[], focusAgent: string | undefined) {
+const isExtensionRule = (ruleId: string) => !/^R\d{2}$/.test(ruleId)
+
+/** Extension rules that rule selection filtered out for every scope of this case. */
+function filteredRuleIds(outcomes: readonly RuleOutcome[]): string {
+  const kept = new Set(
+    outcomes.filter((outcome) => !outcome.filtered).map((outcome) => outcome.ruleId),
+  )
+  return [
+    ...new Set(
+      outcomes
+        .filter((outcome) => outcome.filtered && !kept.has(outcome.ruleId))
+        .map((outcome) => outcome.ruleId),
+    ),
+  ].join()
+}
+
+function visibleRules(
+  allRules: readonly RuleInfo[],
+  focusAgent: string | undefined,
+  filtered: ReadonlySet<string>,
+) {
+  const rules = allRules
+    .filter((rule) => !filtered.has(rule.ruleId))
+    .map((rule) => ({
+      ...rule,
+      dependsOn: rule.dependsOn.filter((dependency) => !filtered.has(dependency)),
+    }))
   if (!focusAgent) return rules.map((rule) => ({ rule, boundary: false }))
   const owned = rules.filter((rule) => rule.owner === focusAgent)
   const needed = new Set(owned.flatMap((rule) => rule.dependsOn))
@@ -78,7 +105,13 @@ function visibleRules(rules: readonly RuleInfo[], focusAgent: string | undefined
 
 export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
   const [positions, setPositions] = useState<Positions>({})
-  const shown = useMemo(() => visibleRules(rules, focusAgent), [rules, focusAgent])
+  const filteredKey = filteredRuleIds(outcomes)
+  const shown = useMemo(
+    () => visibleRules(rules, focusAgent, new Set(filteredKey.split(','))),
+    [rules, focusAgent, filteredKey],
+  )
+  const filteredCount = filteredKey ? filteredKey.split(',').length : 0
+  const selectedCount = rules.filter((rule) => isExtensionRule(rule.ruleId)).length - filteredCount
   useEffect(() => {
     setPositions({})
     layoutGraph(shown.map(({ rule }) => ({ id: rule.ruleId, dependsOn: rule.dependsOn }))).then(
@@ -129,6 +162,12 @@ export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
       >
         <Background />
         <Controls showInteractive={false} />
+        {filteredCount > 0 && (
+          <Panel position="top-left" className="graph-hint">
+            扩展规则：本单命中 {selectedCount} 条 · 已按目的地、客户与货物分类筛掉 {filteredCount}{' '}
+            条
+          </Panel>
+        )}
       </ReactFlow>
     </div>
   )

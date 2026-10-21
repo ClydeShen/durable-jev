@@ -20,6 +20,7 @@ const agents = [
   agentService('cargo-assurance', 4101),
   agentService('transport-planning', 4102),
   agentService('commercial-control', 4103),
+  agentService('destination-compliance', 4104),
 ]
 
 const coordinator: ServiceDefinition = {

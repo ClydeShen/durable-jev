@@ -7,6 +7,7 @@
     "@durable-jev/agent-core": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/logistics": "workspace:*",
-    "@durable-jev/model-providers": "workspace:*"
+    "@durable-jev/model-providers": "workspace:*",
+    "@durable-jev/rule-engine": "workspace:*"
   }
 }

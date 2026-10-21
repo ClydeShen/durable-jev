@@ -1,12 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": { "rootDir": "src", "outDir": "dist" },
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist"
+  },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
-    { "path": "../../packages/agent-core" },
-    { "path": "../../packages/contracts" },
-    { "path": "../../packages/logistics" },
-    { "path": "../../packages/model-providers" }
+    {
+      "path": "../../packages/agent-core"
+    },
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/logistics"
+    },
+    {
+      "path": "../../packages/model-providers"
+    },
+    {
+      "path": "../../packages/rule-engine"
+    }
   ]
 }
