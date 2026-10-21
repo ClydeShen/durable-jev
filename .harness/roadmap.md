@@ -66,7 +66,7 @@
 | [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完（脚本化模型直接跑在 Pi Durable 内存存储上，不另做 InMemory 运行时） | T4.4 |
 | [x] | T4.6 | 运输计划 agent 的调查助手：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算（LOG-004：三个备选运力经规则预检，计划员确认后成为 r2） | T4.5, T3.4 |
 | [x] | T4.7 | PiDurableAgentRuntime；按 T0.8 结论扩展到模块级流程 | 同一调查、同一模块等待人工时杀进程后恢复（同进程重开存储的恢复测试；杀进程恢复放进故障 runner） | T0.8, T4.5 |
-| [ ] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
+| [x] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
 
 ## P5 A2A、持久化与故障
 
@@ -99,5 +99,5 @@
 | [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
 | [ ] | T7.6 | B7 Durable Jev Agent 成本：手写代码占比、Jev/编写 agent 承担的规则占比、现场政策变更耗时、单条规则实现成本、筛选正确率与漏选率、扩展规则中 Jev 占比；附规则分界图 | CEO 版指标表；错误放行单列且为 0 | T3.1, T4.3 |
-| [ ] | T7.7 | `docs/agent-architecture.md`（技术 CEO 视角） | 每节链接到实现与证据 | T5.2a, T6.3a |
-| [ ] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 与 Durable Jev Agent 结论、组件建议 | 每条假设有证据 | T7.1–T7.4, T7.6 |
+| [x] | T7.7 | `docs/agent-architecture.md`（技术 CEO 视角） | 每节链接到实现与证据（先以 scripted 证据写成，live 指标出来后补） | T5.2a, T6.3a |
+| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 与 Durable Jev Agent 结论、组件建议 | 每条假设有证据（`docs/demo-guide.md` 已写；`docs/report.md` 待 benchmark） | T7.1–T7.4, T7.6 |

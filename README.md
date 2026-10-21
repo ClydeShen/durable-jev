@@ -7,4 +7,4 @@ pnpm bootstrap
 pnpm start
 ```
 
-详细说明见 [docs/getting-started.md](docs/getting-started.md)。
+详细说明见 [docs/getting-started.md](docs/getting-started.md)；演示脚本见 [docs/demo-guide.md](docs/demo-guide.md)，架构说明见 [docs/agent-architecture.md](docs/agent-architecture.md)。
