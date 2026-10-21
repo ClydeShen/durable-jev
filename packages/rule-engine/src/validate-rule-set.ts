@@ -168,6 +168,13 @@ function evaluatorIssues(
       })
     }
   }
+  if (rule.humanGate?.taskType === 'OPERATION' && rule.humanGate.steps.length !== 1) {
+    issues.push({
+      code: 'EVALUATOR_SHAPE',
+      ruleId: rule.ruleId,
+      message: 'an operation gate has exactly one step; only approvals form chains',
+    })
+  }
   const registered = kind === 'code' || kind === 'decisionTable'
   if (registered && environment.evaluatorRefs && !environment.evaluatorRefs.has(ref)) {
     issues.push({

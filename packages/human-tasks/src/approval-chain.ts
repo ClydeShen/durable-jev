@@ -1,65 +1,56 @@
 import type { ApprovalMode, CheckStatus, HumanTask } from '@durable-jev/contracts'
 
 export interface ChainShape {
-  chainId: string
   mode: ApprovalMode
   stepCount: number
 }
 
+export type ChainSteps = ReadonlyMap<number, HumanTask>
+
 export type ChainOutcome =
-  | { status: 'APPROVED' }
+  | { status: 'DONE' }
   | { status: 'REJECTED'; stepIndex: number }
   | { status: 'EXPIRED'; stepIndex: number }
   | { status: 'ENDED'; reason: 'CANCELLED' | 'SUPERSEDED' }
   | { status: 'PENDING'; waitingOn: number[] }
 
-function activeTasks(chain: ChainShape, tasks: readonly HumanTask[]): Map<number, HumanTask> {
-  const byStep = new Map<number, HumanTask>()
-  for (const task of tasks) {
-    const step = task.approvalChain
-    if (step?.chainId === chain.chainId) byStep.set(step.stepIndex, task)
-  }
-  return byStep
+const isDone = (task: HumanTask | undefined) =>
+  task?.status === 'APPROVED' || task?.status === 'COMPLETED'
+
+const stepIndexes = (chain: ChainShape) =>
+  Array.from({ length: chain.stepCount }, (_, index) => index)
+
+function firstStepWith(steps: ChainSteps, statuses: readonly HumanTask['status'][]) {
+  return [...steps.entries()]
+    .sort(([left], [right]) => left - right)
+    .find(([, task]) => statuses.includes(task.status))
 }
 
-export function chainOutcome(chain: ChainShape, tasks: readonly HumanTask[]): ChainOutcome {
-  const byStep = activeTasks(chain, tasks)
-  const steps = [...byStep.entries()].sort(([left], [right]) => left - right)
-  const rejected = steps.find(([, task]) => task.status === 'REJECTED')
+export function chainOutcome(chain: ChainShape, steps: ChainSteps): ChainOutcome {
+  const rejected = firstStepWith(steps, ['REJECTED'])
   if (rejected) return { status: 'REJECTED', stepIndex: rejected[0] }
-  const expired = steps.find(([, task]) => task.status === 'EXPIRED')
+  const expired = firstStepWith(steps, ['EXPIRED'])
   if (expired) return { status: 'EXPIRED', stepIndex: expired[0] }
-  const ended = steps.find(
-    ([, task]) => task.status === 'CANCELLED' || task.status === 'SUPERSEDED',
-  )
+  const ended = firstStepWith(steps, ['CANCELLED', 'SUPERSEDED'])
   if (ended) return { status: 'ENDED', reason: ended[1].status as 'CANCELLED' | 'SUPERSEDED' }
-  const approved = steps.filter(([, task]) => task.status === 'APPROVED').length
-  if (approved === chain.stepCount) return { status: 'APPROVED' }
-  const waitingOn = Array.from({ length: chain.stepCount }, (_, index) => index).filter(
-    (index) => byStep.get(index)?.status !== 'APPROVED',
-  )
-  return { status: 'PENDING', waitingOn }
+  const waitingOn = stepIndexes(chain).filter((index) => !isDone(steps.get(index)))
+  return waitingOn.length === 0 ? { status: 'DONE' } : { status: 'PENDING', waitingOn }
 }
 
-export function stepsToOpen(chain: ChainShape, tasks: readonly HumanTask[]): number[] {
-  if (chainOutcome(chain, tasks).status !== 'PENDING') return []
-  const byStep = activeTasks(chain, tasks)
-  const missing = Array.from({ length: chain.stepCount }, (_, index) => index).filter(
-    (index) => !byStep.has(index),
-  )
+export function stepsToOpen(chain: ChainShape, steps: ChainSteps): number[] {
+  if (chainOutcome(chain, steps).status !== 'PENDING') return []
+  const missing = stepIndexes(chain).filter((index) => !steps.has(index))
   if (chain.mode === 'parallel') return missing
   const next = missing[0]
   if (next === undefined) return []
-  const earlierApproved = Array.from(
-    { length: next },
-    (_, index) => byStep.get(index)?.status,
-  ).every((status) => status === 'APPROVED')
-  return earlierApproved ? [next] : []
+  return stepIndexes({ ...chain, stepCount: next }).every((index) => isDone(steps.get(index)))
+    ? [next]
+    : []
 }
 
 export function gateStatusOf(outcome: ChainOutcome): CheckStatus {
   switch (outcome.status) {
-    case 'APPROVED':
+    case 'DONE':
       return 'PASS'
     case 'REJECTED':
       return 'FAIL'

@@ -32,12 +32,18 @@ importers:
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@durable-jev/human-tasks':
+        specifier: workspace:*
+        version: link:../human-tasks
       '@durable-jev/model-providers':
         specifier: workspace:*
         version: link:../model-providers
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../rule-engine
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
       zod:
         specifier: 4.6.7
         version: 4.6.7

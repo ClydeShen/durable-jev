@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@durable-jev/contracts": "workspace:*",
+    "@durable-jev/human-tasks": "workspace:*",
+    "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
-    "zod": "4.6.7",
-    "@durable-jev/model-providers": "workspace:*"
+    "@durable-jev/store": "workspace:*",
+    "zod": "4.6.7"
   }
 }

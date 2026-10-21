@@ -2,6 +2,10 @@ import type { HumanTask, HumanTaskTarget } from '@durable-jev/contracts'
 import { humanTaskSchema } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
 import { type ChainShape, chainOutcome, gateStatusOf, stepsToOpen } from './approval-chain.js'
+
+const stepsOf = (...tasks: HumanTask[]) =>
+  new Map(tasks.map((task) => [task.approvalChain?.stepIndex ?? 0, task]))
+
 import { type ActionContext, type Actor, decideHumanTask } from './decide-human-task.js'
 
 const target: HumanTaskTarget = {
@@ -135,24 +139,25 @@ describe('decideHumanTask', () => {
 })
 
 describe('approval chains', () => {
-  const sequential: ChainShape = { chainId: 'LOG-003:R13', mode: 'sequential', stepCount: 2 }
+  const sequential: ChainShape = { mode: 'sequential', stepCount: 2 }
+  const chainId = 'LOG-003:R13'
   const step = (stepIndex: number, overrides: Partial<HumanTask> = {}) =>
     task({
       humanTaskId: `HT-${stepIndex + 1}`,
       requiredRole: stepIndex === 0 ? 'complianceReviewer' : 'qualityReviewer',
-      approvalChain: { ...sequential, distinctActors: true, stepIndex },
+      approvalChain: { chainId, ...sequential, distinctActors: true, stepIndex },
       ...overrides,
     })
 
   it('opens sequential steps one at a time', () => {
-    expect(stepsToOpen(sequential, [])).toEqual([0])
+    expect(stepsToOpen(sequential, stepsOf())).toEqual([0])
     const first = step(0)
-    expect(stepsToOpen(sequential, [first])).toEqual([])
+    expect(stepsToOpen(sequential, stepsOf(first))).toEqual([])
     const firstApproved = approved(
       decideHumanTask(first, { type: 'approve', actor: compliance }, morning),
     )
-    expect(stepsToOpen(sequential, [firstApproved])).toEqual([1])
-    expect(gateStatusOf(chainOutcome(sequential, [firstApproved]))).toBe('WAITING_HUMAN')
+    expect(stepsToOpen(sequential, stepsOf(firstApproved))).toEqual([1])
+    expect(gateStatusOf(chainOutcome(sequential, stepsOf(firstApproved)))).toBe('WAITING_HUMAN')
   })
 
   it('refuses a later step before the earlier one is approved', () => {
@@ -175,18 +180,18 @@ describe('approval chains', () => {
         at(morning.now, { chainTasks: [first] }),
       ),
     )
-    expect(gateStatusOf(chainOutcome(sequential, [first, second]))).toBe('PASS')
+    expect(gateStatusOf(chainOutcome(sequential, stepsOf(first, second)))).toBe('PASS')
   })
 
   it('does not let the same person sign two steps (four eyes)', () => {
-    const credit: ChainShape = { chainId: 'LOG-005:R34', mode: 'sequential', stepCount: 2 }
+    const credit: ChainShape = { mode: 'sequential', stepCount: 2 }
     const manager = (id: string): Actor => ({ id, role: 'commercialManager' })
     const creditStep = (stepIndex: number) =>
       task({
         humanTaskId: `CR-${stepIndex + 1}`,
         ruleId: 'R34',
         requiredRole: 'commercialManager',
-        approvalChain: { ...credit, distinctActors: true, stepIndex },
+        approvalChain: { chainId: 'LOG-005:R34', ...credit, distinctActors: true, stepIndex },
       })
     const first = approved(
       decideHumanTask(creditStep(0), { type: 'approve', actor: manager('carol') }, morning),
@@ -207,23 +212,23 @@ describe('approval chains', () => {
   it('fails the gate as soon as any step is rejected', () => {
     const parallel: ChainShape = { ...sequential, mode: 'parallel' }
     const parallelStep = (stepIndex: number) =>
-      step(stepIndex, { approvalChain: { ...parallel, distinctActors: true, stepIndex } })
-    expect(stepsToOpen(parallel, [])).toEqual([0, 1])
+      step(stepIndex, { approvalChain: { chainId, ...parallel, distinctActors: true, stepIndex } })
+    expect(stepsToOpen(parallel, stepsOf())).toEqual([0, 1])
     const rejected = approved(
       decideHumanTask(parallelStep(1), { type: 'reject', actor: quality }, morning),
     )
-    expect(chainOutcome(parallel, [parallelStep(0), rejected])).toEqual({
+    expect(chainOutcome(parallel, stepsOf(parallelStep(0), rejected))).toEqual({
       status: 'REJECTED',
       stepIndex: 1,
     })
-    expect(gateStatusOf(chainOutcome(parallel, [parallelStep(0), rejected]))).toBe('FAIL')
-    expect(stepsToOpen(parallel, [parallelStep(0), rejected])).toEqual([])
+    expect(gateStatusOf(chainOutcome(parallel, stepsOf(parallelStep(0), rejected)))).toBe('FAIL')
+    expect(stepsToOpen(parallel, stepsOf(parallelStep(0), rejected))).toEqual([])
   })
 
   it('treats an expired step as no approval', () => {
     const expired = approved(
       decideHumanTask(step(0), { type: 'expire' }, at('2026-11-02T00:00:00.000Z')),
     )
-    expect(gateStatusOf(chainOutcome(sequential, [expired]))).toBe('UNKNOWN')
+    expect(gateStatusOf(chainOutcome(sequential, stepsOf(expired)))).toBe('UNKNOWN')
   })
 })

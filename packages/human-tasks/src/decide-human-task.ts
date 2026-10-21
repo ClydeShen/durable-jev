@@ -29,6 +29,7 @@ export interface ActionContext {
 }
 
 export type RefusalReason =
+  | 'NOT_FOUND'
   | 'NOT_OPEN'
   | 'UNAUTHORIZED'
   | 'EXPIRED'

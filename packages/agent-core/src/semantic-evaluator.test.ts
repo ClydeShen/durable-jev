@@ -45,7 +45,9 @@ describe('semanticEvaluator', () => {
       facts,
       scopeFacts: facts.cargoItems[0]?.facts ?? {},
       parameters: {},
+      inputFingerprint: 'fp',
       resultOf: () => undefined,
+      holds: () => ({ status: 'PASS', blockedBy: [] }),
     })
     expect(evaluation).toEqual({ status: 'FAIL', observedValue: 'damaged_packaging' })
   })

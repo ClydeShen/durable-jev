@@ -6,6 +6,8 @@
   "references": [
     { "path": "../contracts" },
     { "path": "../rule-engine" },
-    { "path": "../model-providers" }
+    { "path": "../model-providers" },
+    { "path": "../store" },
+    { "path": "../human-tasks" }
   ]
 }

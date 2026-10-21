@@ -7,7 +7,7 @@ import {
 } from '@durable-jev/contracts'
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
-import type { CollectionScope } from './expression.js'
+import type { CollectionScope, Expression } from './expression.js'
 import {
   evaluateFeel,
   feelContext,
@@ -39,7 +39,9 @@ export interface LeafInput {
   facts: CaseFacts
   scopeFacts: Facts
   parameters: PolicyParameters
+  inputFingerprint: string
   resultOf(ruleId: RuleId): RuleOutcome | undefined
+  holds(expression: Expression): Outcome
 }
 
 export type LeafEvaluator = (input: LeafInput) => LeafEvaluation | Promise<LeafEvaluation>
@@ -248,6 +250,7 @@ function runLeaf(
   scope: CheckScope,
   state: GraphState,
   environment: EvaluationEnvironment,
+  inputFingerprint: string,
 ): LeafEvaluation | Promise<LeafEvaluation> {
   if (rule.evaluator.kind === 'expression') {
     return evaluateExpressionRule(rule, scope, state, environment.parameters)
@@ -260,7 +263,9 @@ function runLeaf(
     facts: state.facts,
     scopeFacts: factsOf(state.facts, scope),
     parameters: environment.parameters,
+    inputFingerprint,
     resultOf: (ruleId) => state.resultOf(ruleId, scope),
+    holds: (expression) => evaluateExpression(expression, state, scope),
   })
 }
 
@@ -269,9 +274,10 @@ async function evaluateLeaf(
   scope: CheckScope,
   state: GraphState,
   environment: EvaluationEnvironment,
+  inputFingerprint: string,
 ): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
   try {
-    const evaluation = await runLeaf(rule, scope, state, environment)
+    const evaluation = await runLeaf(rule, scope, state, environment, inputFingerprint)
     return { ruleId: rule.ruleId, scope, blockedBy: [], ...evaluation }
   } catch (error) {
     return { ruleId: rule.ruleId, scope, status: 'ERROR', blockedBy: [], error: String(error) }
@@ -283,6 +289,7 @@ async function evaluateRuleInstance(
   scope: CheckScope,
   state: GraphState,
   environment: EvaluationEnvironment,
+  inputFingerprint: string,
 ): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
   if (rule.appliesWhen) {
     const applicability = evaluateExpression(rule.appliesWhen, state, scope)
@@ -306,7 +313,7 @@ async function evaluateRuleInstance(
   if (blockedBy.length > 0) {
     return { ruleId: rule.ruleId, scope, status: 'BLOCKED_DEPENDENCY', blockedBy }
   }
-  return evaluateLeaf(rule, scope, state, environment)
+  return evaluateLeaf(rule, scope, state, environment, inputFingerprint)
 }
 
 const defaultReusableKinds: readonly RuleEngineKind[] = [
@@ -349,7 +356,7 @@ export async function evaluateRuleGraph(
           ? reusableOutcome(previous.get(`${rule.ruleId}@${scopeKey(scope)}`), inputFingerprint)
           : undefined
         if (reused) return reused
-        const result = await evaluateRuleInstance(rule, scope, state, environment)
+        const result = await evaluateRuleInstance(rule, scope, state, environment, inputFingerprint)
         return { ...result, inputFingerprint }
       }),
     )
