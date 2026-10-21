@@ -15,10 +15,10 @@ export type RuleSetValidation =
   | { valid: true; rules: RuleSet; evaluationOrder: RuleId[] }
   | { valid: false; issues: ConfigIssue[] }
 
-export function validateRuleSet(
+export const validateRuleSet = (
   rawRules: unknown,
   policyParameters: Readonly<Record<string, unknown>>,
-): RuleSetValidation {
+): RuleSetValidation => {
   const parsed = RuleSet.safeParse(rawRules)
   if (!parsed.success) {
     return {
@@ -48,7 +48,7 @@ export function validateRuleSet(
     : { valid: false, issues }
 }
 
-function findDuplicateRules(rules: readonly RuleDefinition[]): ConfigIssue[] {
+const findDuplicateRules = (rules: readonly RuleDefinition[]): ConfigIssue[] => {
   const seen = new Set<RuleId>()
   const duplicates = new Set<RuleId>()
   for (const rule of rules) {
@@ -58,28 +58,28 @@ function findDuplicateRules(rules: readonly RuleDefinition[]): ConfigIssue[] {
   return [...duplicates].map((ruleId) => ({ kind: 'duplicateRule', ruleId }))
 }
 
-function findMissingReferences(
+const findMissingReferences = (
   rule: RuleDefinition,
   rulesById: ReadonlyMap<RuleId, RuleDefinition>,
-): ConfigIssue[] {
+): ConfigIssue[] => {
   return upstreamRuleIds(rule)
     .filter((upstreamRuleId) => !rulesById.has(upstreamRuleId))
     .map((missingRuleId) => ({ kind: 'missingReference', ruleId: rule.ruleId, missingRuleId }))
 }
 
-function findMissingParameters(
+const findMissingParameters = (
   rule: RuleDefinition,
   policyParameters: Readonly<Record<string, unknown>>,
-): ConfigIssue[] {
+): ConfigIssue[] => {
   return rule.parameters
     .filter((parameter) => !Object.hasOwn(policyParameters, parameter))
     .map((parameter) => ({ kind: 'missingParameter', ruleId: rule.ruleId, parameter }))
 }
 
-function findTypeMismatches(
+const findTypeMismatches = (
   rule: RuleDefinition,
   rulesById: ReadonlyMap<RuleId, RuleDefinition>,
-): ConfigIssue[] {
+): ConfigIssue[] => {
   const mismatch = (message: string): ConfigIssue => ({
     kind: 'typeMismatch',
     ruleId: rule.ruleId,
@@ -110,11 +110,11 @@ function findTypeMismatches(
   return issues
 }
 
-function findScopeMismatches(
+const findScopeMismatches = (
   expression: Expression,
   evaluationScope: RuleScope,
   rulesById: ReadonlyMap<RuleId, RuleDefinition>,
-): string[] {
+): string[] => {
   const recurse = (inner: Expression) => findScopeMismatches(inner, evaluationScope, rulesById)
   switch (expression.kind) {
     case 'ref': {

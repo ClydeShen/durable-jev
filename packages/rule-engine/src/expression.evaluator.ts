@@ -15,7 +15,10 @@ export type ExpressionContext = {
   membersOf(scope: CollectionScope): readonly string[]
 }
 
-export function evaluateExpression(expression: Expression, context: ExpressionContext): GateStatus {
+export const evaluateExpression = (
+  expression: Expression,
+  context: ExpressionContext,
+): GateStatus => {
   const evaluate = (inner: Expression) => evaluateExpression(inner, context)
   switch (expression.kind) {
     case 'ref':
@@ -35,11 +38,11 @@ export function evaluateExpression(expression: Expression, context: ExpressionCo
   }
 }
 
-function evaluateForEachMember(
+const evaluateForEachMember = (
   scope: CollectionScope,
   expression: Expression,
   context: ExpressionContext,
-): GateStatus[] {
+): GateStatus[] => {
   return context
     .membersOf(scope)
     .map((entityId) => evaluateExpression(expression, { ...context, subject: { scope, entityId } }))

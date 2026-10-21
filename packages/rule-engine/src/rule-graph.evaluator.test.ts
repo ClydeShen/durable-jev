@@ -6,7 +6,7 @@ import { evaluateRuleGraph, type LeafOutcome } from './rule-graph.evaluator.js'
 
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 
-function rule(ruleId: string, overrides: Partial<RuleDefinition> = {}): RuleDefinition {
+const rule = (ruleId: string, overrides: Partial<RuleDefinition> = {}): RuleDefinition => {
   return {
     ruleId: ruleId as RuleId,
     version: '1',
@@ -21,7 +21,7 @@ function rule(ruleId: string, overrides: Partial<RuleDefinition> = {}): RuleDefi
   }
 }
 
-function leafStatuses(statuses: Record<string, GateStatus>) {
+const leafStatuses = (statuses: Record<string, GateStatus>) => {
   return (definition: RuleDefinition, subject: CheckSubject): LeafOutcome => ({
     gateStatus:
       statuses[`${definition.ruleId}@${subject.entityId}`] ?? statuses[definition.ruleId] ?? 'PASS',

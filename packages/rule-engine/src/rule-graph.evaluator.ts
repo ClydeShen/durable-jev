@@ -30,17 +30,17 @@ export type RuleGraphEvaluation = {
 
 export const orderSubject: CheckSubject = { scope: 'order', entityId: 'order' }
 
-export function subjectKey(ruleId: RuleId, subject: CheckSubject): string {
+export const subjectKey = (ruleId: RuleId, subject: CheckSubject): string => {
   return `${ruleId}@${subject.scope}:${subject.entityId}`
 }
 
-export function evaluateRuleGraph(input: {
+export const evaluateRuleGraph = (input: {
   rulesInEvaluationOrder: readonly RuleDefinition[]
   subjects: GraphSubjects
   evaluateLeaf: LeafEvaluator
   upstreamRules?: readonly RuleDefinition[]
   upstreamResults?: readonly RuleEvaluation[]
-}): RuleGraphEvaluation {
+}): RuleGraphEvaluation => {
   const { rulesInEvaluationOrder, subjects, evaluateLeaf } = input
   const rulesById = new Map(
     [...(input.upstreamRules ?? []), ...rulesInEvaluationOrder].map((rule) => [rule.ruleId, rule]),
@@ -91,7 +91,7 @@ export function evaluateRuleGraph(input: {
   }
 }
 
-function subjectsInScope(rule: RuleDefinition, subjects: GraphSubjects): CheckSubject[] {
+const subjectsInScope = (rule: RuleDefinition, subjects: GraphSubjects): CheckSubject[] => {
   if (rule.scope === 'order') return [orderSubject]
   return subjects[rule.scope].map((entityId) => ({ scope: rule.scope, entityId }))
 }
@@ -103,11 +103,11 @@ type RuleEvaluationDependencies = {
   evaluateLeaf: LeafEvaluator
 }
 
-function evaluateRule(
+const evaluateRule = (
   rule: RuleDefinition,
   subject: CheckSubject,
   dependencies: RuleEvaluationDependencies,
-): RuleEvaluation {
+): RuleEvaluation => {
   const { statusOf, hasSubjects, subjects, evaluateLeaf } = dependencies
   const expressionContext: ExpressionContext = {
     subject,
@@ -153,10 +153,10 @@ function evaluateRule(
   return result(gateStatus, [], outcome.observedValue)
 }
 
-function isSatisfied(status: GateStatus): boolean {
+const isSatisfied = (status: GateStatus): boolean => {
   return status === 'PASS' || status === 'NOT_APPLICABLE'
 }
 
-function isDecided(status: GateStatus): boolean {
+const isDecided = (status: GateStatus): boolean => {
   return !isPendingGateStatus(status)
 }

@@ -6,10 +6,10 @@ import type { Expression } from './expression.types.js'
 
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 
-function contextWith(
+const contextWith = (
   statuses: Record<string, GateStatus>,
   members: { cargoItem?: string[]; leg?: string[] } = {},
-) {
+) => {
   return {
     subject: { scope: 'order', entityId: 'order' } as CheckSubject,
     statusOf: (ruleId: RuleId, subject: CheckSubject) =>

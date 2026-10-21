@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { RuleDefinition } from './rule-definition.schema.js'
 import { validateRuleSet } from './rule-set-validation.rules.js'
 
-function rule(ruleId: string, overrides: Partial<Record<keyof RuleDefinition, unknown>> = {}) {
+const rule = (ruleId: string, overrides: Partial<Record<keyof RuleDefinition, unknown>> = {}) => {
   return {
     ruleId,
     version: '1',

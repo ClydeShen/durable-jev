@@ -13,7 +13,7 @@ import { evaluateRuleGraph, type LeafEvaluator } from './rule-graph.evaluator.js
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 const and = (...ruleIds: string[]): Expression => ({ kind: 'and', operands: ruleIds.map(ref) })
 
-function rule(ruleId: string, overrides: Partial<RuleDefinition> = {}): RuleDefinition {
+const rule = (ruleId: string, overrides: Partial<RuleDefinition> = {}): RuleDefinition => {
   return {
     ruleId: ruleId as RuleId,
     version: '1',

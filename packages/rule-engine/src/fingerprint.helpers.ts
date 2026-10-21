@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
 import type { CheckResultId, EntityVersions } from '@durable-jev/contracts'
 
-export function valueAtPath(document: unknown, path: string): unknown {
+export const valueAtPath = (document: unknown, path: string): unknown => {
   return path.split('.').reduce<unknown>(readSegment, document)
 }
 
-function readSegment(value: unknown, segment: string): unknown {
+const readSegment = (value: unknown, segment: string): unknown => {
   if (Array.isArray(value)) return value.map((element) => readSegment(element, segment))
   if (value !== null && typeof value === 'object') {
     return (value as Record<string, unknown>)[segment]
@@ -13,12 +13,12 @@ function readSegment(value: unknown, segment: string): unknown {
   return undefined
 }
 
-export function computeInputFingerprint(input: {
+export const computeInputFingerprint = (input: {
   document: unknown
   inputPaths: readonly string[]
   entityVersions: Partial<EntityVersions>
   upstreamResultIds: readonly CheckResultId[]
-}): string {
+}): string => {
   const canonical = canonicalJson({
     inputs: input.inputPaths.map((path) => [path, valueAtPath(input.document, path) ?? null]),
     entityVersions: input.entityVersions,
@@ -27,7 +27,7 @@ export function computeInputFingerprint(input: {
   return createHash('sha256').update(canonical).digest('hex')
 }
 
-function canonicalJson(value: unknown): string {
+const canonicalJson = (value: unknown): string => {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`
   if (value !== null && typeof value === 'object') {
     const entries = Object.entries(value as Record<string, unknown>)
@@ -53,10 +53,10 @@ const entityByTrigger: Readonly<Record<string, readonly (keyof EntityVersions)[]
   loading: ['cargo', 'route', 'carrier', 'quote'],
 }
 
-export function relevantEntityVersions(
+export const relevantEntityVersions = (
   invalidationTriggers: readonly string[],
   entityVersions: EntityVersions,
-): Partial<EntityVersions> {
+): Partial<EntityVersions> => {
   const entities = new Set(
     invalidationTriggers.flatMap((trigger) => entityByTrigger[trigger] ?? []),
   )

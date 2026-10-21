@@ -2,7 +2,7 @@ import type { RuleId } from '@durable-jev/contracts'
 import { referencedRuleIds } from './expression.types.js'
 import type { RuleDefinition } from './rule-definition.schema.js'
 
-export function upstreamRuleIds(rule: RuleDefinition): RuleId[] {
+export const upstreamRuleIds = (rule: RuleDefinition): RuleId[] => {
   const referenced = [
     ...rule.dependsOn,
     ...(rule.combiner ? referencedRuleIds(rule.combiner) : []),
@@ -13,7 +13,7 @@ export function upstreamRuleIds(rule: RuleDefinition): RuleId[] {
 
 export type TopologicalOrder = { order: RuleId[]; cyclicRuleIds: RuleId[] }
 
-export function orderRulesTopologically(rules: readonly RuleDefinition[]): TopologicalOrder {
+export const orderRulesTopologically = (rules: readonly RuleDefinition[]): TopologicalOrder => {
   const knownRuleIds = new Set(rules.map((rule) => rule.ruleId))
   const remainingUpstreamCount = new Map<RuleId, number>()
   const downstreamOf = new Map<RuleId, RuleId[]>()

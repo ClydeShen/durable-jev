@@ -12,10 +12,10 @@ import {
 
 export type ChangeSet = { changeId: string; triggers: readonly string[] }
 
-export function invalidateDependentsOf(
+export const invalidateDependentsOf = (
   rules: readonly RuleDefinition[],
   change: ChangeSet,
-): Set<RuleId> {
+): Set<RuleId> => {
   const directlyAffected = rules
     .filter((rule) =>
       rule.invalidationTriggers.some((trigger) => change.triggers.includes(trigger)),
@@ -42,11 +42,11 @@ export function invalidateDependentsOf(
 
 export type InvalidatedEvaluation = RuleEvaluation & { invalidatedByChange?: string }
 
-export function markInvalidated(
+export const markInvalidated = (
   evaluations: readonly RuleEvaluation[],
   invalidatedRuleIds: ReadonlySet<RuleId>,
   change: ChangeSet,
-): InvalidatedEvaluation[] {
+): InvalidatedEvaluation[] => {
   return evaluations.map((evaluation) =>
     invalidatedRuleIds.has(evaluation.ruleId)
       ? { ...evaluation, gateStatus: 'INVALIDATED', invalidatedByChange: change.changeId }
@@ -54,13 +54,13 @@ export function markInvalidated(
   )
 }
 
-export function recomputeInvalidated(input: {
+export const recomputeInvalidated = (input: {
   rulesInEvaluationOrder: readonly RuleDefinition[]
   subjects: GraphSubjects
   previous: RuleGraphEvaluation
   invalidatedRuleIds: ReadonlySet<RuleId>
   evaluateLeaf: LeafEvaluator
-}): RuleGraphEvaluation {
+}): RuleGraphEvaluation => {
   const previousByKey = new Map(
     input.previous.evaluations.map((evaluation) => [
       subjectKey(evaluation.ruleId, evaluation.subject),

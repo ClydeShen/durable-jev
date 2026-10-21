@@ -25,7 +25,7 @@ export const Expression: z.ZodType<Expression> = z.lazy(() =>
   ]),
 )
 
-export function referencedRuleIds(expression: Expression): RuleId[] {
+export const referencedRuleIds = (expression: Expression): RuleId[] => {
   switch (expression.kind) {
     case 'ref':
       return [expression.ruleId]
