@@ -83,10 +83,10 @@
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [ ] | T6.1 | 事件 schema、各服务 outbox、收集器 | 事件汇入观察库 | T1.6 |
+| [x] | T6.1 | 事件 schema、各服务 outbox、收集器 | 事件汇入观察库 | T1.6 |
 | [ ] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
-| [ ] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
-| [ ] | T6.3a | Overview：agent 级图（design 9.1），节点卡片基础信息，A2A 关系与实时叠加；双击进入 agent 内部规则图 | 一屏看清 5 个 agent 状态；选中案例后显示其 A2A 往来 | T6.3, T5.2a |
+| [~] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
+| [~] | T6.3a | Overview：agent 级图（design 9.1），节点卡片基础信息，A2A 关系与实时叠加；单击进入 agent 内部规则图 | 一屏看清 5 个 agent 状态；选中案例后显示其 A2A 往来 | T6.3, T5.2a |
 | [ ] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
 
 ## P7 Benchmark 与结论

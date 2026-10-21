@@ -1,4 +1,9 @@
-export const nodeSize = { width: 200, height: 64 }
+export interface NodeSize {
+  width: number
+  height: number
+}
+
+export const nodeSize: NodeSize = { width: 200, height: 64 }
 
 export interface GraphNode {
   id: string
@@ -9,7 +14,10 @@ export type Positions = Record<string, { x: number; y: number }>
 
 const loadElk = async () => new (await import('elkjs/lib/elk.bundled.js')).default()
 
-export async function layoutGraph(nodes: readonly GraphNode[]): Promise<Positions> {
+export async function layoutGraph(
+  nodes: readonly GraphNode[],
+  size: NodeSize = nodeSize,
+): Promise<Positions> {
   const known = new Set(nodes.map((node) => node.id))
   const elk = await loadElk()
   const graph = await elk.layout({
@@ -20,7 +28,7 @@ export async function layoutGraph(nodes: readonly GraphNode[]): Promise<Position
       'elk.spacing.nodeNode': '20',
       'elk.layered.spacing.nodeNodeBetweenLayers': '56',
     },
-    children: nodes.map((node) => ({ id: node.id, ...nodeSize })),
+    children: nodes.map((node) => ({ id: node.id, ...size })),
     edges: nodes.flatMap((node) =>
       node.dependsOn
         .filter((dependency) => known.has(dependency))

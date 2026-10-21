@@ -20,12 +20,16 @@ type RuleNodeData = {
   status?: CheckStatus
   count: number
   invalidatedBy?: string
+  boundary: boolean
 }
 
 function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
-  const { rule, status, count, invalidatedBy } = data
+  const { rule, status, count, invalidatedBy, boundary } = data
   return (
-    <div className={`rule-node check-status ${status ?? 'NONE'}`} style={nodeSize}>
+    <div
+      className={`rule-node check-status ${status ?? 'NONE'}${boundary ? ' boundary' : ''}`}
+      style={nodeSize}
+    >
       <Handle type="target" position={Position.Left} />
       <div className="rule-node-title">
         <strong>{rule.ruleId}</strong> {rule.title}
@@ -38,7 +42,10 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
       </div>
       <div className="rule-node-meta">
         <span>{kindLabels[rule.kind]}</span>
-        <span>{agentLabels[rule.owner] ?? rule.owner}</span>
+        <span>
+          {boundary ? '→ ' : ''}
+          {agentLabels[rule.owner] ?? rule.owner}
+        </span>
         <span>
           {status ? checkStatusLabels[status] : '未评估'}
           {count > 1 ? ` ×${count}` : ''}
@@ -54,19 +61,33 @@ const nodeTypes = { rule: RuleNode }
 interface Props {
   rules: RuleInfo[]
   outcomes: RuleOutcome[]
+  focusAgent?: string
   onSelect(ruleId: string): void
 }
 
-export function RuleGraph({ rules, outcomes, onSelect }: Props) {
+function visibleRules(rules: readonly RuleInfo[], focusAgent: string | undefined) {
+  if (!focusAgent) return rules.map((rule) => ({ rule, boundary: false }))
+  const owned = rules.filter((rule) => rule.owner === focusAgent)
+  const needed = new Set(owned.flatMap((rule) => rule.dependsOn))
+  const boundary = rules.filter((rule) => rule.owner !== focusAgent && needed.has(rule.ruleId))
+  return [
+    ...owned.map((rule) => ({ rule, boundary: false })),
+    ...boundary.map((rule) => ({ rule: { ...rule, dependsOn: [] }, boundary: true })),
+  ]
+}
+
+export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
   const [positions, setPositions] = useState<Positions>({})
+  const shown = useMemo(() => visibleRules(rules, focusAgent), [rules, focusAgent])
   useEffect(() => {
-    layoutGraph(rules.map((rule) => ({ id: rule.ruleId, dependsOn: rule.dependsOn }))).then(
+    setPositions({})
+    layoutGraph(shown.map(({ rule }) => ({ id: rule.ruleId, dependsOn: rule.dependsOn }))).then(
       setPositions,
     )
-  }, [rules])
+  }, [shown])
   const nodes = useMemo<Node<RuleNodeData>[]>(
     () =>
-      rules.map((rule) => {
+      shown.map(({ rule, boundary }) => {
         const own = outcomes.filter((outcome) => outcome.ruleId === rule.ruleId)
         return {
           id: rule.ruleId,
@@ -77,21 +98,22 @@ export function RuleGraph({ rules, outcomes, onSelect }: Props) {
             status: mostSevere(own.map((outcome) => outcome.status)),
             count: own.length,
             invalidatedBy: own.find((outcome) => outcome.invalidatedBy)?.invalidatedBy,
+            boundary,
           },
         }
       }),
-    [rules, outcomes, positions],
+    [shown, outcomes, positions],
   )
   const edges = useMemo<Edge[]>(
     () =>
-      rules.flatMap((rule) =>
+      shown.flatMap(({ rule }) =>
         rule.dependsOn.map((dependency) => ({
           id: `${dependency}->${rule.ruleId}`,
           source: dependency,
           target: rule.ruleId,
         })),
       ),
-    [rules],
+    [shown],
   )
   if (Object.keys(positions).length === 0) return <div className="rule-graph" />
   return (

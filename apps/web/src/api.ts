@@ -29,6 +29,12 @@ export interface RuleInfo {
 export interface AgentStatus {
   agentId: string
   available: boolean
+  summary?: {
+    rulePackVersion: string
+    rulesByKind: Partial<Record<RuleEngineKind, number>>
+    cases: number
+    openTasksByRole: Partial<Record<Role, number>>
+  }
 }
 
 export interface TimelineEntry {

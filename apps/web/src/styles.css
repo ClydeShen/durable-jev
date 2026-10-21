@@ -412,3 +412,44 @@ button.small {
 .agent-chip.destination-compliance {
   background: #7f8c8d;
 }
+
+.agent-node {
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid var(--status, var(--border));
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+}
+
+.agent-node header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.agent-node p {
+  margin: 6px 0 0;
+}
+
+.agent-node .agent-meta {
+  color: var(--muted);
+}
+
+.agent-case-status {
+  margin-left: auto;
+  color: var(--status, var(--muted));
+  font-weight: 600;
+}
+
+.rule-node.boundary {
+  border-style: dashed;
+  opacity: 0.75;
+}
+
+.graph-hint {
+  font-size: 12px;
+  color: var(--muted);
+}

@@ -1,6 +1,7 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { type Actor, api, type RuleInfo, type TaskDecision } from './api'
+import { AgentOverview } from './components/AgentOverview'
 import { AgentPanel } from './components/AgentPanel'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseList } from './components/CaseList'
@@ -9,7 +10,16 @@ import { RuleDetail } from './components/RuleDetail'
 import { RuleGraph } from './components/RuleGraph'
 import { TaskPanel } from './components/TaskPanel'
 import { Timeline } from './components/Timeline'
+import { agentLabels } from './labels'
 import { usePolling } from './use-polling'
+
+type CaseViewMode = 'overview' | 'graph' | 'timeline'
+
+const viewModes: [CaseViewMode, string][] = [
+  ['overview', 'Agent 总览'],
+  ['graph', '规则图'],
+  ['timeline', '时间线'],
+]
 
 export function App() {
   const [actor, setActor] = useState<Actor>({ id: 'wen', role: 'warehouseOperator' })
@@ -17,7 +27,8 @@ export function App() {
   const [selectedRule, setSelectedRule] = useState<string>()
   const [message, setMessage] = useState<string>()
   const [rules, setRules] = useState<RuleInfo[]>([])
-  const [view, setView] = useState<'graph' | 'timeline'>('graph')
+  const [view, setView] = useState<CaseViewMode>('overview')
+  const [focusAgent, setFocusAgent] = useState<string>()
 
   useEffect(() => {
     api.rules().then((response) => setRules(response.rules))
@@ -90,26 +101,46 @@ export function App() {
               }
             />
             <nav className="view-tabs">
-              <button
-                type="button"
-                className={view === 'graph' ? '' : 'secondary'}
-                onClick={() => setView('graph')}
-              >
-                规则图
-              </button>
-              <button
-                type="button"
-                className={view === 'timeline' ? '' : 'secondary'}
-                onClick={() => setView('timeline')}
-              >
-                时间线
-              </button>
+              {viewModes.map(([mode, label]) => (
+                <button
+                  type="button"
+                  key={mode}
+                  className={view === mode ? '' : 'secondary'}
+                  onClick={() => setView(mode)}
+                >
+                  {label}
+                </button>
+              ))}
+              {view === 'graph' && focusAgent && (
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setFocusAgent(undefined)}
+                >
+                  仅 {agentLabels[focusAgent] ?? focusAgent} ✕
+                </button>
+              )}
             </nav>
-            {view === 'graph' ? (
-              <RuleGraph rules={rules} outcomes={detail.data.outcomes} onSelect={setSelectedRule} />
-            ) : (
-              <Timeline entries={timeline.data ?? []} />
+            {view === 'overview' && (
+              <AgentOverview
+                agents={agents.data ?? []}
+                rules={rules}
+                outcomes={detail.data.outcomes}
+                onOpenAgent={(agentId) => {
+                  setFocusAgent(agentId)
+                  setView('graph')
+                }}
+              />
             )}
+            {view === 'graph' && (
+              <RuleGraph
+                rules={rules}
+                outcomes={detail.data.outcomes}
+                focusAgent={focusAgent}
+                onSelect={setSelectedRule}
+              />
+            )}
+            {view === 'timeline' && <Timeline entries={timeline.data ?? []} />}
             {rule && (
               <RuleDetail
                 rule={rule}
