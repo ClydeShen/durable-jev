@@ -11,13 +11,13 @@ afterEach(() => {
   for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true })
 })
 
-function workDirectory() {
+const workDirectory = () => {
   const directory = mkdtempSync(join(tmpdir(), 'pi-investigation-'))
   directories.push(directory)
   return directory
 }
 
-function runProcess(directory: string, phase: 'start' | 'resume', crashAt?: string) {
+const runProcess = (directory: string, phase: 'start' | 'resume', crashAt?: string) => {
   const result = spawnSync('pnpm', ['exec', 'tsx', script, directory, phase], {
     encoding: 'utf8',
     env: { ...process.env, CRASH_AT: crashAt ?? '' },

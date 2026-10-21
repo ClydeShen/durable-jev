@@ -23,7 +23,7 @@ export const referenceData: ReferenceData = readJson('mock-data/reference-data.j
 const logFour = readJson('cases/LOG-004.json')
 
 // LOG-004 as submitted: every branch evaluated once, as the coordinator would have done.
-function currentChecks(): RuleEvaluationRecord[] {
+const currentChecks = (): RuleEvaluationRecord[] => {
   const request = (upstreamResults: RuleEvaluationRecord[]): BranchEvaluationRequest => ({
     caseId: logFour.shipment.caseId,
     caseRevision: 1,

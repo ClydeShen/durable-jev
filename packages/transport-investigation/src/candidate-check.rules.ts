@@ -36,11 +36,11 @@ export type CandidateCheck = {
 
 const settled = new Set<GateStatus>(['PASS', 'NOT_APPLICABLE'])
 
-export function checkCandidate(
+export const checkCandidate = (
   investigated: InvestigationCase,
   candidate: Candidate,
   dependencies: { configuration: RuleConfiguration; referenceData: ReferenceData },
-): CandidateCheck {
+): CandidateCheck => {
   const vehicle = dependencies.referenceData.vehicles.find(
     (known) => known.vehicleId === candidate.vehicleId,
   )

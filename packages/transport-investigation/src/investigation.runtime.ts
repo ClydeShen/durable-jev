@@ -18,20 +18,20 @@ export const investigatorInstructions = [
   'You cannot change the plan, approve anything or contact carriers. The planner decides.',
 ]
 
-export function describeInvestigation(request: InvestigationRequest) {
+export const describeInvestigation = (request: InvestigationRequest) => {
   return {
     task: `Leg ${request.legId} needs a replacement for ${request.unavailableCarrierIds.join(', ')}.`,
     data: [{ source: 'reportedReason', content: request.reason }],
   }
 }
 
-export function createInvestigationRuntime(
+export const createInvestigationRuntime = (
   dependencies: InvestigationDependencies & {
     model?: AgentModel
     budget?: RunBudget
     now?: () => number
   },
-) {
+) => {
   return new InMemoryAgentRuntime<InvestigationRequest>({
     registry: investigationTools(dependencies),
     model: dependencies.model ?? new ScriptedInvestigatorModel(dependencies.request.legId),

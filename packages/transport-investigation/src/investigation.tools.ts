@@ -30,7 +30,7 @@ export type InvestigationDependencies = {
 export const resultToolName = 'submit_investigation_result'
 
 // The agent may read and propose. Changing the plan stays with the transport planner.
-export function investigationTools(dependencies: InvestigationDependencies): ToolRegistry {
+export const investigationTools = (dependencies: InvestigationDependencies): ToolRegistry => {
   const { investigated, request, referenceData } = dependencies
   const legOf = (legId: string) => investigated.shipment.legs.find((leg) => leg.legId === legId)
 
