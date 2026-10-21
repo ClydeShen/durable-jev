@@ -29,7 +29,7 @@ import {
 import { createRegistry, defineExtension, defineTool, Harness } from '@earendil-works/pi-durable'
 import { openNodeSqliteStorage } from '@earendil-works/pi-durable/storage/sqlite/node'
 import { z } from 'zod'
-import { RunStore, type StoredRun } from './run-store.js'
+import { RunStore, type StoredRun } from './run.repository.js'
 
 export type PiRuntimeOptions<Input> = AgentRunOptions<Input> & {
   // Pi Durable's own store; one process may own it at a time.

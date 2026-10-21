@@ -11,8 +11,8 @@ import {
 import { openDatabase } from '@durable-jev/store'
 import { afterEach, describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { PiDurableAgentRuntime } from './pi-durable-agent-runtime.js'
-import { piRuntimeMigrations } from './run-store.js'
+import { PiDurableAgentRuntime } from './pi-durable-agent.runtime.js'
+import { piRuntimeMigrations } from './run.repository.js'
 
 const registry = () =>
   new ToolRegistry()
