@@ -2,15 +2,17 @@ import type { Role } from '@durable-jev/contracts'
 import { useState } from 'react'
 import { Icon } from '../icons.js'
 import { roleLabels } from '../roles.js'
-import { currentStepIndex, type GuideState, type Scenario } from './scenarios.model.js'
+import { currentStepIndex, type GuideState, nameRules, type Scenario } from './scenarios.model.js'
 
 export const GuidePanel = (props: {
   scenario: Scenario
   state: GuideState
   actingRole: Role
   setActingRole: (role: Role) => void
+  ruleTitles: ReadonlyMap<string, string>
 }) => {
   const { scenario, state } = props
+  const named = (text: string) => nameRules(text, props.ruleTitles)
   const [acknowledged, setAcknowledged] = useState<ReadonlySet<string>>(new Set())
   const [open, setOpen] = useState(true)
   const current = currentStepIndex(scenario, state, acknowledged)
@@ -43,10 +45,10 @@ export const GuidePanel = (props: {
                     />
                   </span>
                   <div>
-                    <strong>{step.title}</strong>
+                    <strong>{named(step.title)}</strong>
                     {status === 'current' && (
                       <>
-                        <p>{step.instruction}</p>
+                        <p>{named(step.instruction)}</p>
                         {step.fill && (
                           <p className="small">
                             Type:{' '}
@@ -57,7 +59,7 @@ export const GuidePanel = (props: {
                             ))}
                           </p>
                         )}
-                        <p className="muted small">You should see: {step.expect}</p>
+                        <p className="muted small">You should see: {named(step.expect)}</p>
                         <div className="row">
                           {step.role && (
                             <button

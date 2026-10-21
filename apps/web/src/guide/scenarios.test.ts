@@ -1,6 +1,12 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { currentStepIndex, type GuideState, scenarioFor, scenarios } from './scenarios.model.js'
+import {
+  currentStepIndex,
+  type GuideState,
+  nameRules,
+  scenarioFor,
+  scenarios,
+} from './scenarios.model.js'
 
 const task = (ruleId: string, status: string, createdAt: string) =>
   ({ ruleId, status, createdAt, humanTaskId: `${ruleId}-${createdAt}` }) as unknown as HumanTask
@@ -76,5 +82,15 @@ describe('guided scenarios', () => {
         new Set(),
       ),
     ).toBe(4)
+  })
+
+  it('puts the rule name before its code', () => {
+    const titles = new Map([
+      ['R10', 'Documents match cargo'],
+      ['R39-LOAD', 'Loading'],
+    ])
+    expect(nameRules('Approve R10, then R39-LOAD. R99 stays.', titles)).toBe(
+      'Approve Documents match cargo (R10), then Loading (R39-LOAD). R99 stays.',
+    )
   })
 })

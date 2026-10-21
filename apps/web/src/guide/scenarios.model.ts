@@ -59,7 +59,7 @@ const loadFields = { loadScanRef: 'SCAN-01', physicalCheckBy: 'warehouse-op-02' 
 const load = (): GuideStep => ({
   id: 'load',
   title: 'Load the cargo',
-  instruction: 'Complete the loading task R39-LOAD and submit the evidence.',
+  instruction: 'Complete the loading task and submit the evidence.',
   expect: 'The order becomes "Ready to dispatch"; the line now stops at the dispatcher.',
   role: 'WAREHOUSE_OPERATOR',
   fill: loadFields,
@@ -119,13 +119,13 @@ export const scenarios: readonly Scenario[] = [
         instruction:
           'R18 passed because the model read the packaging note as damaged. Open the rule, then open Judgements in the Console from its link.',
         expect:
-          'R21 (repack) waits for the warehouse operator; the retest and loading are blocked behind it.',
+          'R21 waits for the warehouse operator to repack; the retest and loading are blocked behind it.',
       },
       {
         id: 'repack',
         title: 'Repack',
         instruction: 'Complete R21 with the photo and the new packaging id.',
-        expect: 'The retest R22-CAPTURE opens.',
+        expect: 'The retest opens.',
         role: 'WAREHOUSE_OPERATOR',
         fill: { repackPhotoRef: 'PHOTO-002-1', packagingId: 'PKG-002-2' },
         done: taskResolved('R21'),
@@ -245,7 +245,7 @@ export const scenarios: readonly Scenario[] = [
         id: 'quote',
         title: 'Change the quote',
         instruction: 'Under "Plan changes" set the quote to 2400.00 and apply it.',
-        expect: 'R32 fails. R34 (credit exception) and R35 (extra cost) both wait.',
+        expect: 'R32 fails. R34 and R35 both wait.',
         role: 'COMMERCIAL_MANAGER',
         done: planChanged('changeQuote'),
       },
@@ -358,7 +358,7 @@ export const scenarios: readonly Scenario[] = [
         id: 'rework',
         title: 'Approve with rework',
         instruction: 'Click "Approve, rework required".',
-        expect: 'R21 (repack) opens for the warehouse operator.',
+        expect: 'R21 opens for the warehouse operator to repack.',
         role: 'QUALITY_REVIEWER',
         done: taskResolved('R20'),
       },
@@ -366,7 +366,7 @@ export const scenarios: readonly Scenario[] = [
         id: 'repack',
         title: 'Repack',
         instruction: 'Complete R21.',
-        expect: 'The retest R22-CAPTURE opens.',
+        expect: 'The retest opens.',
         role: 'WAREHOUSE_OPERATOR',
         fill: { repackPhotoRef: 'PHOTO-008-1', packagingId: 'PKG-008-2' },
         done: taskResolved('R21'),
@@ -435,3 +435,10 @@ export const currentStepIndex = (
   )
   return index === -1 ? scenario.steps.length : index
 }
+
+// Screens lead with what a rule is about; the code stays next to it for anyone who needs it.
+export const nameRules = (text: string, titles: ReadonlyMap<string, string>): string =>
+  text.replace(/\bR\d\d(?:-[A-Z]+)?\b/g, (code) => {
+    const title = titles.get(code)
+    return title ? `${title} (${code})` : code
+  })

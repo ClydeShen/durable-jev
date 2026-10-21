@@ -144,6 +144,11 @@ function Workbench() {
   }
 
   const caseId = selectedCase?.caseId ?? ''
+  const ruleTitles = new Map<string, string>(
+    (catalog?.rules ?? []).flatMap((rule) =>
+      rule.title ? [[rule.ruleId as string, rule.title]] : [],
+    ),
+  )
   const scenario = selectedCase && scenarioFor(selectedCase.shipment.shipmentId)
   const taskActions = {
     approve: (task: HumanTask, conditions?: string[]) =>
@@ -251,6 +256,7 @@ function Workbench() {
                 state={selectedCase}
                 actingRole={actingRole}
                 setActingRole={setActingRole}
+                ruleTitles={ruleTitles}
               />
             )}
             <CaseAttention
@@ -304,6 +310,7 @@ function Workbench() {
                     tasks={selectedCase.humanTasks}
                     actingRole={actingRole}
                     actions={taskActions}
+                    ruleTitles={ruleTitles}
                     decisionConditionsByRule={
                       new Map(
                         (catalog?.rules ?? []).map((rule) => [

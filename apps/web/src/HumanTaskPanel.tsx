@@ -20,6 +20,7 @@ export function HumanTaskPanel(props: {
   actingRole: Role
   actions: HumanTaskActions
   decisionConditionsByRule: ReadonlyMap<string, readonly string[]>
+  ruleTitles: ReadonlyMap<string, string>
 }) {
   const openTasks = props.tasks.filter((task) => task.status === 'OPEN')
   const closedTasks = props.tasks.filter((task) => task.status !== 'OPEN')
@@ -36,6 +37,7 @@ export function HumanTaskPanel(props: {
           actingRole={props.actingRole}
           actions={props.actions}
           decisionConditions={props.decisionConditionsByRule.get(task.ruleId) ?? []}
+          title={props.ruleTitles.get(task.ruleId)}
         />
       ))}
       {closedTasks.length > 0 && (
@@ -44,7 +46,9 @@ export function HumanTaskPanel(props: {
           <ul className="closed-tasks">
             {closedTasks.map((task) => (
               <li key={task.humanTaskId}>
-                {task.ruleId} <StatusBadge status={task.status} /> {roleLabels[task.requiredRole]}
+                {props.ruleTitles.get(task.ruleId) ?? task.ruleId}{' '}
+                <span className="muted small">{task.ruleId}</span>{' '}
+                <StatusBadge status={task.status} /> {roleLabels[task.requiredRole]}
                 {task.supersededBy && (
                   <span className="muted small">
                     {' '}
@@ -65,8 +69,9 @@ function OpenTaskCard(props: {
   actingRole: Role
   actions: HumanTaskActions
   decisionConditions: readonly string[]
+  title: string | undefined
 }) {
-  const { task, actingRole, actions, decisionConditions } = props
+  const { task, actingRole, actions, decisionConditions, title } = props
   const [fields, setFields] = useState<Record<string, string>>({})
   const [reason, setReason] = useState('')
   const roleMismatch = actingRole !== task.requiredRole
@@ -74,7 +79,8 @@ function OpenTaskCard(props: {
   return (
     <article className="task-card">
       <header>
-        <strong>{task.ruleId}</strong>
+        <strong>{title ?? task.ruleId}</strong>
+        {title && <span className="muted small">{task.ruleId}</span>}
         <span className="tag">{task.taskType === 'APPROVAL' ? 'approval' : 'operation'}</span>
         <span className="muted small">requires {roleLabels[task.requiredRole]}</span>
       </header>
