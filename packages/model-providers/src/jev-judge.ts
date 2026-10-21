@@ -6,6 +6,7 @@ import {
 } from '@typesafe-ai/sdk'
 import { semanticInputHash } from './input-hash.js'
 import {
+  assertLiveModelMode,
   type SemanticAnswer,
   type SemanticJudge,
   SemanticJudgeError,
@@ -50,6 +51,7 @@ export class JevJudge implements SemanticJudge {
   private readonly client: TypeSafeClient
 
   constructor(options: JevJudgeOptions = {}) {
+    if (!options.fetch) assertLiveModelMode('jev')
     this.modelId = options.model ?? pinnedJevModel
     this.client = new TypeSafeClient({
       apiKey: options.apiKey,

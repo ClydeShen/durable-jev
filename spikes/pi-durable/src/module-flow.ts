@@ -46,14 +46,15 @@ const packagingRiskQuestion: SemanticQuestion = {
   },
 }
 
-const judge: SemanticJudge = process.env.TYPESAFE_API_KEY
-  ? new JevJudge()
-  : new ScriptedJudge([
-      {
-        questionId: packagingRiskQuestion.questionId,
-        judgement: { kind: 'choice', choice: 'damaged_packaging' },
-      },
-    ])
+const judge: SemanticJudge =
+  process.env.MODEL_MODE === 'live'
+    ? new JevJudge()
+    : new ScriptedJudge([
+        {
+          questionId: packagingRiskQuestion.questionId,
+          judgement: { kind: 'choice', choice: 'damaged_packaging' },
+        },
+      ])
 
 const HumanDecisions = defineDoc<{ decisions: Record<string, Decision> }>({
   kind: 'cargo.human-decisions',

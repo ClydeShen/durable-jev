@@ -1,7 +1,7 @@
 import { choice, noul, TypeSafeClient } from '@typesafe-ai/sdk'
 
 const pinnedModel = 'jev-1.14.0'
-const hasApiKey = Boolean(process.env.TYPESAFE_API_KEY)
+const hasApiKey = process.env.MODEL_MODE === 'live'
 
 const recordedResponse = {
   model: pinnedModel,

@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "live-check": "tsx src/live-check.ts"
+    "live-check": "MODEL_MODE=live tsx src/live-check.ts"
   },
   "dependencies": {
     "@durable-jev/contracts": "workspace:*",

@@ -74,3 +74,11 @@ export class SemanticJudgeError extends Error {
     this.name = 'SemanticJudgeError'
   }
 }
+
+export function assertLiveModelMode(provider: SemanticProvider, env = process.env) {
+  if (env.MODEL_MODE !== 'live') {
+    throw new Error(
+      `${provider} calls a real model; set MODEL_MODE=live to allow it (current: ${env.MODEL_MODE || 'scripted'})`,
+    )
+  }
+}

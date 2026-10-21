@@ -10,6 +10,7 @@ import {
 import { nvidiaProvider } from '@earendil-works/pi-ai/providers/nvidia'
 import { semanticInputHash } from './input-hash.js'
 import {
+  assertLiveModelMode,
   type SemanticAnswer,
   type SemanticJudge,
   SemanticJudgeError,
@@ -107,6 +108,7 @@ export class StructuredOutputJudge implements SemanticJudge {
   private readonly options: StructuredOutputJudgeOptions
 
   constructor(options: StructuredOutputJudgeOptions = {}) {
+    if (!options.models) assertLiveModelMode('structured-output')
     this.options = options
     this.providerId = options.provider ?? pinnedStructuredOutputModel.provider
     this.modelId = options.model ?? pinnedStructuredOutputModel.id

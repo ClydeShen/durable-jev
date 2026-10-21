@@ -62,6 +62,16 @@ describe('JevJudge', () => {
     expect(answer.judgement).toEqual({ kind: 'noul', probability: 0.12 })
   })
 
+  it('refuses to call the real API outside live mode', () => {
+    const mode = process.env.MODEL_MODE
+    delete process.env.MODEL_MODE
+    try {
+      expect(() => new JevJudge()).toThrow(/MODEL_MODE=live/)
+    } finally {
+      if (mode !== undefined) process.env.MODEL_MODE = mode
+    }
+  })
+
   it('leaves retries to the harness', async () => {
     const { fetch, requests } = recordedFetch(429, { error: { message: 'rate limited' } })
     await expect(

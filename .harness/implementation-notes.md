@@ -19,3 +19,4 @@
 | 2026-10-21 | 人工审批支持 2–3 个角色的审批链（顺序/并行、四眼原则、条件追加步骤） | contracts humanTask 增加 `approvalChain`；design 5.2/5.5；T1.7 范围扩大；T2.1/T3.1 政策中为 R13、R20、R34 等设计审批链 |
 | 2026-10-21 | 加入扩展包（agent 生成 100–200 条附录规则）与适用规则筛选；规则 ID 放宽为 `R\d{2}` 或 `CUST-*`/`DEST-*` 形式；新增 R41 目的地进口要求聚合 | roadmap T1.3/T3.7/T3.8/T7.6 |
 | 2026-10-21 | agent 清单定为订单协调/货物合规/运输计划/商务 + 目的地合规（扩展演示）；"agent" 只指 Durable Jev Agent，LLM 循环称调查助手；加点对点协作；Console 增加 agent 级 Overview，与规则级视图共用图组件 | design 2/6/9.1；roadmap T2.5/T3.2/T3.2a/T5.2a/T6.3a/T7.7 |
+| 2026-10-21 | 开发阶段关闭真实模型调用：只有 `MODEL_MODE=live` 才调用 Jev/NVIDIA，真实判断器在非 live 下拒绝构造；新增 T7.0 live 调优（不微调模型） | spec 1；roadmap T7.0；spike 改为看 MODEL_MODE |
