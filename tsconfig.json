@@ -9,6 +9,7 @@
     { "path": "packages/agent-core" },
     { "path": "packages/logistics" },
     { "path": "packages/service-kit" },
-    { "path": "apps/coordinator" }
+    { "path": "apps/coordinator" },
+    { "path": "tools/launcher" }
   ]
 }

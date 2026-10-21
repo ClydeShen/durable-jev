@@ -34,9 +34,9 @@
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [x] | T2.1 | `eval/materials`：policy 参数、LOG-001 所需规则子集的 rules.json | 通过配置校验 | T1.3 |
-| [~] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | `demo:reset` 可载入 | T1.6 |
+| [x] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | `demo:reset` 可载入 | T1.6 |
 | [x] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务（纵切面先单进程；人工任务在 T3.2 下放到模块） | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
-| [ ] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
+| [x] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
 | [ ] | T2.5 | `web` 最小版：案例列表、规则图（共用图组件，design 9.1 内部视图；状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
 | [ ] | T2.6 | `docs/getting-started.md` | 新环境照做可演示 | T2.4, T2.5 |
 
