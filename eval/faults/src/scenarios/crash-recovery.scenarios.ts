@@ -1,8 +1,8 @@
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { type FaultScenario, Observations } from '../fault.js'
-import { runScript } from '../fixtures.js'
+import { type FaultScenario, Observations } from '../fault.types.js'
+import { runScript } from '../faults.fixture.js'
 
 const investigationProcess =
   'packages/transport-investigation/src/pi-investigation-process.fixture.ts'

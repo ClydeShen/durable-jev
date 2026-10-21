@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderReport, runFaults } from './faults.js'
+import { renderReport, runFaults } from './faults.service.js'
 
 describe('fault runner', () => {
   it('runs the in-process scenarios and reports each check', async () => {

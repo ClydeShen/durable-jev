@@ -19,7 +19,7 @@ import {
   investigatorInstructions,
   resultToolName,
 } from '@durable-jev/transport-investigation'
-import { type FaultScenario, Observations } from '../fault.js'
+import { type FaultScenario, Observations } from '../fault.types.js'
 import {
   callJson,
   configuration,
@@ -29,7 +29,7 @@ import {
   startCoordinatorProcess,
   submit,
   workDirectory,
-} from '../fixtures.js'
+} from '../faults.fixture.js'
 
 type Case = {
   orderStatus: string

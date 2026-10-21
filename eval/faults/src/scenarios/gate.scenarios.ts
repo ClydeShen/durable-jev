@@ -1,8 +1,8 @@
 import { type CaseView, CoordinatorError } from '@durable-jev/coordinator'
 import { loadPolicyParameters, loadRuleSetFile, readMaterial } from '@durable-jev/eval-runner'
 import { buildRuleConfiguration, InvalidRuleConfigurationError } from '@durable-jev/rule-evaluation'
-import { type FaultScenario, Observations } from '../fault.js'
-import { coordinatorInProcess, submit } from '../fixtures.js'
+import { type FaultScenario, Observations } from '../fault.types.js'
+import { coordinatorInProcess, submit } from '../faults.fixture.js'
 
 const openTask = (view: CaseView, ruleId: string) =>
   view.humanTasks.find((task) => task.ruleId === ruleId && task.status === 'OPEN')

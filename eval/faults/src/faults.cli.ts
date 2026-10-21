@@ -1,4 +1,4 @@
-import { runFaults, writeReport } from './faults.js'
+import { runFaults, writeReport } from './faults.service.js'
 
 const runs = await runFaults(process.argv.slice(2))
 for (const run of runs) {

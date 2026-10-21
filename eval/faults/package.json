@@ -21,6 +21,6 @@
     "@types/express": "5.0.6"
   },
   "scripts": {
-    "faults": "node dist/faults-cli.js"
+    "faults": "node dist/faults.cli.js"
   }
 }

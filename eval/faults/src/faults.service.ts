@@ -1,11 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import type { FaultResult, FaultScenario } from './fault.js'
-import { repositoryRoot } from './fixtures.js'
-import { f03, f05, f06, f07, f08, f09, f10 } from './scenarios/coordinator-faults.js'
-import { f01, restartLoop } from './scenarios/crash-recovery.js'
-import { f02, f04 } from './scenarios/duplicate-delivery.js'
-import { f11, f12, f13, f14, f15, f16, f17, f18 } from './scenarios/gate-faults.js'
+import type { FaultResult, FaultScenario } from './fault.types.js'
+import { repositoryRoot } from './faults.fixture.js'
+import { f03, f05, f06, f07, f08, f09, f10 } from './scenarios/coordinator.scenarios.js'
+import { f01, restartLoop } from './scenarios/crash-recovery.scenarios.js'
+import { f02, f04 } from './scenarios/duplicate-delivery.scenarios.js'
+import { f11, f12, f13, f14, f15, f16, f17, f18 } from './scenarios/gate.scenarios.js'
 
 export const faultScenarios: readonly FaultScenario[] = [
   f01,

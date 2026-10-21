@@ -20,8 +20,8 @@ import {
   reservationOperationId,
 } from '@durable-jev/transport-reservations'
 import express from 'express'
-import { type FaultScenario, Observations } from '../fault.js'
-import { runScript } from '../fixtures.js'
+import { type FaultScenario, Observations } from '../fault.types.js'
+import { runScript } from '../faults.fixture.js'
 
 export const f02: FaultScenario = {
   id: 'F02',
