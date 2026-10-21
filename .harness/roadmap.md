@@ -14,7 +14,7 @@
 | [x] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
 | [x] | T0.5 | spike Jev：确定 TS 客户端或 HTTP 接口；Choice 与 Noul 各一次 | 有 key 时真实调用；无 key 时记录接口形状 | T0.1 |
 | [x] | T0.6 | spike trace：两个 Express 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
-| [ ] | T0.8 | spike：Pi Durable 承载一个模块级流程（确定性规则求值 + 等待人工 + 杀进程恢复），不经过 LLM 决定下一步 | 可行或明确不可行，结论写入 m0-findings 并回写 design | T0.3 |
+| [x] | T0.8 | spike：Pi Durable 承载一个模块级流程（确定性规则求值 + 等待人工 + 杀进程恢复），不经过 LLM 决定下一步 | 可行或明确不可行，结论写入 m0-findings 并回写 design | T0.3 |
 | [x] | T0.7 | `docs/m0-findings.md` + 锁定版本 + 回写 design | 每个依赖：版本、可行性、限制、对设计的影响 | T0.3–T0.6 |
 
 ## P1 确定性核心

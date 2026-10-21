@@ -128,6 +128,7 @@ type RuleDefinition = {
 ## 6. 服务与流程
 
 - 每个业务模块是一个 Durable Jev Agent（spec 8）：持有本模块规则图、叶子求值、人工任务与等待状态，通过 Pi Durable 在等待人工和进程重启后恢复。
+- 模块流程实现为 Pi Durable durable task（不经 LLM）：分阶段检查点，人工审批为子任务 + 决定文档，详见 `docs/m0-findings.md` T0.8。
 - 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
 - Coordinator 拥有订单版本和整单聚合层（R08、R37–R40），通过 A2A / native 接口获取各模块结果；依赖调度是确定性状态机。
 - 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。

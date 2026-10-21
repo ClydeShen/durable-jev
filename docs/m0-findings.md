@@ -34,6 +34,33 @@
 - SQLite 存储依赖 Node 内置 `node:sqlite`（运行时打印 ExperimentalWarning）。
 - 断电或主机故障可能丢最新一次提交（`synchronous = NORMAL`），与 PRD 只承诺进程崩溃恢复一致。
 
+### 模块级流程（T0.8，Durable Jev Agent）
+
+复现：`pnpm --filter @durable-jev/spike-pi-durable module-flow`（有 `TYPESAFE_API_KEY` 时 R18 走真实 Jev，否则脚本化）
+
+场景：Cargo 模块流程不经过 LLM，用 Pi Durable 的 durable task（`defineTask`，分阶段检查点）执行：代码规则 R02 → Jev 规则 R18 → 创建合规审批子任务 R13 并等待 → 杀进程 → 重启 → 再杀 → 重启后人工批准 → 求出 R14。
+
+| 验证项 | 结果 |
+|---|---|
+| 不经 LLM 的持久化流程 | 通过。`defineTask` + `createModels()` 空 provider 即可，流程逻辑全在代码里 |
+| 已完成的规则不重算 | 通过。两次崩溃后 R02、R18 各只执行一次（Jev 只调用一次），结果从检查点读出 |
+| 等待人工跨进程重启 | 通过。父任务以 `waiting` 挂在审批子任务上；子任务重启后重新监听决定文档 |
+| 人工决定送达 | 通过。外部用 `harness.commit` 写 session 文档，子任务 `watchDoc` 收到后终结，父任务自动进入 `decide` 阶段 |
+| 审批过期 | 结构上支持（子任务里 `runtime.sleep(expiresAt)` 与决定竞速），本次未实测 |
+
+注意事项：
+
+- `watchDoc` 不会创建文档。必须在发起审批的同一次提交里 `tx.doc()` 创建决定文档，否则监听为空、任务永远等待。
+- **`Harness.waitForTask` 在重启后对处于 `waiting` 的任务会立即返回非终态记录**（类型声明为终态）。原因是该任务尚不在调度器的内存 live 集合中，直接读了存储。调用方需检查 `state.status` 并重试，或改用 `watchTaskGraph`。
+- 一个阶段在提交检查点前崩溃会整体重跑；Jev 调用可能重复计费（符合 FR-17），有副作用的步骤仍需 operationId 幂等。
+- 子任务终结后记录被回收，`getTask` 返回 `undefined`；结果只能通过父任务的 `outcomes()` 读取。
+
+### 对设计的影响（模块级）
+
+- Durable Jev Agent 的模块流程可以直接建在 Pi Durable 的 durable task 上，规则求值仍是确定性代码；调查 Agent 是同一 Harness 里的另一个对话，按需启用。
+- 人工任务 = 一个 durable 子任务 + 一份决定文档；业务侧的人工任务状态机（T1.7）负责角色、版本、过期校验，校验通过后才写入决定文档。
+- 整单规则图的依赖调度可映射为父任务的阶段与 `waiting on` 子任务，但规则图本身仍由 `rule-engine` 计算，Pi Durable 只负责持久化与唤醒。
+
 ## A2A SDK `@a2a-js/sdk` 1.3.0（协议 v1.0）
 
 复现：`pnpm --filter @durable-jev/spike-a2a round-trip`
@@ -114,7 +141,7 @@
 
 | 依赖 | 可行性 | 主要限制 |
 |---|---|---|
-| Pi Durable | 可行 | Experimental；单进程占有存储；`callers` 与 `restartLimit` 尚未验证 |
+| Pi Durable | 可行（agent 与模块级流程） | Experimental；单进程占有存储；重启后 `waitForTask` 可能返回非终态；`callers` 与 `restartLimit` 尚未验证 |
 | A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
 | Jev | 可行 | 限流行为未验证 |
 | OpenTelemetry | 可行 | 无 |
