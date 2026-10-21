@@ -22,6 +22,7 @@ type ValidationIssueCode =
   | 'EXPRESSION_SYNTAX'
   | 'CYCLE'
   | 'MISSING_APPLICABILITY'
+  | 'SELECTION'
   | 'MIXING_CONFLICT'
   | 'MIXING_INCOMPLETE'
   | 'MIXING_QUALIFICATION'
@@ -224,7 +225,11 @@ function semanticThresholdParameter(rule: RuleDefinition): string[] {
   const passWhen = rule.semantic?.passWhen
   if (!passWhen || 'choiceIn' in passWhen) return []
   const threshold =
-    'probabilityAtLeast' in passWhen ? passWhen.probabilityAtLeast : passWhen.probabilityAtMost
+    'probabilityAtLeast' in passWhen
+      ? passWhen.probabilityAtLeast
+      : 'probabilityAtMost' in passWhen
+        ? passWhen.probabilityAtMost
+        : passWhen.selectChoicesAtLeast
   return typeof threshold === 'string' ? [threshold] : []
 }
 
@@ -296,6 +301,49 @@ function applicabilityIssues(rule: RuleDefinition): ValidationIssue[] {
       ruleId: rule.ruleId,
       message: 'extension rules must declare applicability so they can be selected',
     },
+  ]
+}
+
+function classifierLabels(ruleSet: RuleSet): string[] | undefined {
+  const classifierId = ruleSet.selection?.classifierRuleId
+  const classifier = ruleSet.rules.find((rule) => rule.ruleId === classifierId)
+  const semantic = classifier?.semantic
+  if (semantic?.question.kind !== 'choice' || !('selectChoicesAtLeast' in semantic.passWhen)) {
+    return undefined
+  }
+  return Object.keys(semantic.question.options)
+}
+
+function selectionIssues(ruleSet: RuleSet): ValidationIssue[] {
+  const labels = classifierLabels(ruleSet)
+  const classifierId = ruleSet.selection?.classifierRuleId
+  const issue = (ruleId: RuleId | undefined, message: string): ValidationIssue => ({
+    code: 'SELECTION',
+    ...(ruleId ? { ruleId } : {}),
+    message,
+  })
+  const classifierExists = ruleSet.rules.some((rule) => rule.ruleId === classifierId)
+  const setIssues =
+    classifierId && classifierExists && !labels
+      ? [issue(classifierId, 'the classifier must be a choice question that selects choices')]
+      : []
+  return [
+    ...setIssues,
+    ...ruleSet.rules.flatMap((rule) => {
+      const groups = rule.applicability?.commodityGroups
+      if (!groups) return []
+      if (!classifierId || !labels) {
+        return [issue(rule.ruleId, 'commodity groups need a rule set classifier')]
+      }
+      return [
+        ...(rule.dependsOn.includes(classifierId)
+          ? []
+          : [issue(rule.ruleId, `selection by commodity group must depend on ${classifierId}`)]),
+        ...groups
+          .filter((group) => !labels.includes(group))
+          .map((group) => issue(rule.ruleId, `${group} is not a label of ${classifierId}`)),
+      ]
+    }),
   ]
 }
 
@@ -395,6 +443,7 @@ export function validateRuleSet(
       ...applicabilityIssues(rule),
     ]),
     ...cycles,
+    ...selectionIssues(ruleSet),
     ...mixingMatrixIssues(ruleSet.mixingMatrix),
   ]
   return { valid: issues.length === 0, issues, ...(issues.length === 0 ? { ruleSet } : {}) }

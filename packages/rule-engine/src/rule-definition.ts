@@ -55,15 +55,19 @@ const semanticRuleSchema = z.object({
     z.object({ choiceIn: z.array(z.string().min(1)).min(1) }),
     z.object({ probabilityAtLeast: probabilityThresholdSchema }),
     z.object({ probabilityAtMost: probabilityThresholdSchema }),
+    // Classification: every label at or above the threshold is selected; the rule always passes.
+    z.object({ selectChoicesAtLeast: probabilityThresholdSchema }),
   ]),
 })
 export type SemanticRule = z.infer<typeof semanticRuleSchema>
 
+/** Index keys of an extension rule: it is selected only when every declared dimension matches. */
 const applicabilitySchema = z.object({
   destinations: z.array(z.string().min(1)).min(1).optional(),
-  cargoCategories: z.array(cargoCategorySchema).min(1).optional(),
+  commodityGroups: z.array(z.string().min(1)).min(1).optional(),
   customers: z.array(z.string().min(1)).min(1).optional(),
 })
+export type Applicability = z.infer<typeof applicabilitySchema>
 
 export const ruleDefinitionSchema = z.object({
   ruleId: ruleIdSchema,
@@ -98,5 +102,7 @@ export const ruleSetSchema = z.object({
   ruleSetVersion: z.string().min(1),
   rules: z.array(ruleDefinitionSchema).min(1),
   mixingMatrix: z.array(mixingRuleSchema),
+  /** The semantic rule whose selected labels are the order's commodity groups. */
+  selection: z.object({ classifierRuleId: ruleIdSchema }).optional(),
 })
 export type RuleSet = z.infer<typeof ruleSetSchema>

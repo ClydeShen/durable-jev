@@ -22,5 +22,45 @@
     "creditLimitCents": 8000000,
     "outstandingCents": 500000,
     "restrictionsText": "Deliveries to clinic stores must use the rear loading dock between 07:00 and 16:00 UTC. No curbside handover."
+  },
+  {
+    "customerId": "CUS-NORDA",
+    "name": "Norda Foods",
+    "active": true,
+    "creditLimitCents": 3000000,
+    "outstandingCents": 200000,
+    "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-VOLT",
+    "name": "Voltaic Devices",
+    "active": true,
+    "creditLimitCents": 5000000,
+    "outstandingCents": 0,
+    "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-KAPA",
+    "name": "Kapa Chemicals",
+    "active": true,
+    "creditLimitCents": 2500000,
+    "outstandingCents": 400000,
+    "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-HARU",
+    "name": "Haru Trading",
+    "active": true,
+    "creditLimitCents": 1500000,
+    "outstandingCents": 0,
+    "restrictionsText": ""
+  },
+  {
+    "customerId": "CUS-OAK",
+    "name": "Oakline Furniture",
+    "active": true,
+    "creditLimitCents": 1000000,
+    "outstandingCents": 100000,
+    "restrictionsText": ""
   }
 ]

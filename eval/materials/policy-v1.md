@@ -153,3 +153,270 @@ records the load scan id and the seal number.
 **R40 Release allowed.** (order) R08, R30, R36, R37, R38 and R39 pass. A dispatcher confirms the
 release; the confirmation re-evaluates R40 against the current versions in the same transaction
 and only then marks the order dispatched.
+
+## Appendix G. Destination import requirements
+
+Extension pack modelled on import health standards. Each requirement applies only to
+shipments to its destination whose cargo falls in its commodity group, so an order meets a
+handful of the requirements and the rest are filtered out by lookup.
+
+**R42 Commodity group.** (cargo item) Classify each cargo item into the commodity groups
+pharmaceutical, food, lithiumBattery, chemical or general. Every group whose likelihood is at least
+`commodityInclusionThreshold` is selected, so an uncertain item selects more requirements,
+never fewer.
+
+**R41 Destination requirements met.** (order) Every selected destination requirement passes.
+
+**R40** additionally requires R41.
+
+### G.NZ New Zealand (Ministry for Primary Industries / Medsafe)
+
+**DEST-NZ-PHARMA-1 Import permit for medicines.** (pharmaceutical) An import permit (`importPermit`) is on file.
+
+**DEST-NZ-PHARMA-2 Cold chain at 8 °C or colder.** (pharmaceutical) Every cold-chain item declares a maximum temperature of 8 °C or colder.
+
+**DEST-NZ-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-NZ-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-NZ-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `certificateOfOrigin`.
+
+**DEST-NZ-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-NZ-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-NZ-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-NZ-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-NZ-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-NZ-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`importPermit`) is on file.
+
+**DEST-NZ-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+### G.AU Australia (Department of Agriculture / TGA)
+
+**DEST-AU-PHARMA-1 Import permit for medicines.** (pharmaceutical) An import permit (`importPermit`) is on file.
+
+**DEST-AU-PHARMA-2 Product registration.** (pharmaceutical) The product registration (`productRegistration`) is on file.
+
+**DEST-AU-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-AU-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-AU-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `certificateOfOrigin`.
+
+**DEST-AU-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-AU-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-AU-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-AU-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-AU-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-AU-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`importPermit`) is on file.
+
+**DEST-AU-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+### G.SG Singapore (Health Sciences Authority / Singapore Food Agency)
+
+**DEST-SG-PHARMA-1 Import licence above 20 units.** (pharmaceutical) Shipments of more than 20 units carry an import licence (`importPermit`).
+
+**DEST-SG-PHARMA-2 Product registration.** (pharmaceutical) The product registration (`productRegistration`) is on file.
+
+**DEST-SG-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-SG-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-SG-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `commercialInvoice`.
+
+**DEST-SG-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-SG-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-SG-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-SG-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-SG-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-SG-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`controlledDeclaration`) is on file.
+
+**DEST-SG-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+### G.JP Japan (Ministry of Health, Labour and Welfare)
+
+**DEST-JP-PHARMA-1 Import licence above 20 units.** (pharmaceutical) Shipments of more than 20 units carry an import licence (`importPermit`).
+
+**DEST-JP-PHARMA-2 Product registration.** (pharmaceutical) The product registration (`productRegistration`) is on file.
+
+**DEST-JP-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-JP-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-JP-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `certificateOfOrigin`.
+
+**DEST-JP-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-JP-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-JP-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-JP-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-JP-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-JP-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`controlledDeclaration`) is on file.
+
+**DEST-JP-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+### G.US United States (FDA / Customs and Border Protection)
+
+**DEST-US-PHARMA-1 Import permit for medicines.** (pharmaceutical) An import permit (`importPermit`) is on file.
+
+**DEST-US-PHARMA-2 Cold chain at 8 °C or colder.** (pharmaceutical) Every cold-chain item declares a maximum temperature of 8 °C or colder.
+
+**DEST-US-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-US-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-US-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `certificateOfOrigin`.
+
+**DEST-US-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-US-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-US-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-US-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-US-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-US-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`controlledDeclaration`) is on file.
+
+**DEST-US-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+### G.DE Germany (BfArM / Zoll)
+
+**DEST-DE-PHARMA-1 Import permit for medicines.** (pharmaceutical) An import permit (`importPermit`) is on file.
+
+**DEST-DE-PHARMA-2 Cold chain at 8 °C or colder.** (pharmaceutical) Every cold-chain item declares a maximum temperature of 8 °C or colder.
+
+**DEST-DE-PHARMA-3 Medicine and manufacturer named.** (pharmaceutical) The documents name the medicine and its manufacturer.
+
+**DEST-DE-FOOD-1 Health certificate.** (food) An official health certificate (`healthCertificate`) is on file.
+
+**DEST-DE-FOOD-2 Origin evidence.** (food) Origin is evidenced by a `certificateOfOrigin`.
+
+**DEST-DE-FOOD-3 Storage condition stated.** (food) The goods description or documents state the storage condition or shelf life.
+
+**DEST-DE-LIBAT-1 UN38.3 test summary.** (lithiumBattery) A UN38.3 test summary (`batteryTestSummary`) is on file.
+
+**DEST-DE-LIBAT-2 Dangerous goods carrier.** (lithiumBattery) Every leg uses a carrier qualified for dangerous goods (`DG`).
+
+**DEST-DE-LIBAT-3 Battery rating stated.** (lithiumBattery) The documents state the watt-hour rating or lithium content.
+
+**DEST-DE-CHEM-1 Safety data sheet.** (chemical) A safety data sheet (`safetyDataSheet`) is on file.
+
+**DEST-DE-CHEM-2 Hazardous substance clearance.** (chemical) The hazardous substance clearance (`importPermit`) is on file.
+
+**DEST-DE-CHEM-3 Hazard class named.** (chemical) The safety data sheet names the hazard class of the substance.
+
+## Appendix H. Customer contract terms
+
+Clauses from customer framework agreements. A clause applies only to its own customer.
+
+**R43 Contract terms met.** (order) Every clause of the order's customer passes.
+
+**R36** additionally requires R43.
+
+### H.ACME Acme Office Supplies (CUS-ACME)
+
+**CUST-ACME-1 Handover.** Handover is one of dock, customerSite.
+
+**CUST-ACME-2 Arrival margin.** The last leg arrives at least 30 minutes before the delivery window closes.
+
+**CUST-ACME-3 Extra cost cap.** Extra costs stay at or below 50000 cents.
+
+**CUST-ACME-4 Invoice currency.** The quote is in EUR.
+
+### H.BRISK Brisk Retail Group (CUS-BRISK)
+
+**CUST-BRISK-1 Handover.** Handover is one of dock, curbside.
+
+**CUST-BRISK-2 Arrival margin.** The last leg arrives at least 0 minutes before the delivery window closes.
+
+**CUST-BRISK-3 Extra cost cap.** Extra costs stay at or below 1500000 cents.
+
+**CUST-BRISK-4 Invoice currency.** The quote is in EUR.
+
+### H.MEDI Southgate Clinics (CUS-MEDI)
+
+**CUST-MEDI-1 Handover.** Handover is one of dock.
+
+**CUST-MEDI-2 Arrival margin.** The last leg arrives at least 60 minutes before the delivery window closes.
+
+**CUST-MEDI-3 Extra cost cap.** Extra costs stay at or below 100000 cents.
+
+**CUST-MEDI-4 Invoice currency.** The quote is in EUR.
+
+**CUST-MEDI-5 Contract clause.** Medical goods are handed to named clinic staff at the rear dock and are never left unattended.
+
+### H.NORDA Norda Foods (CUS-NORDA)
+
+**CUST-NORDA-1 Handover.** Handover is one of dock.
+
+**CUST-NORDA-2 Arrival margin.** The last leg arrives at least 120 minutes before the delivery window closes.
+
+**CUST-NORDA-3 Extra cost cap.** Extra costs stay at or below 20000 cents.
+
+**CUST-NORDA-4 Invoice currency.** The quote is in NZD.
+
+**CUST-NORDA-5 Contract clause.** Chilled food goes straight to the cold room and never through a cross-dock.
+
+### H.VOLT Voltaic Devices (CUS-VOLT)
+
+**CUST-VOLT-1 Handover.** Handover is one of dock, customerSite.
+
+**CUST-VOLT-2 Arrival margin.** The last leg arrives at least 30 minutes before the delivery window closes.
+
+**CUST-VOLT-3 Extra cost cap.** Extra costs stay at or below 50000 cents.
+
+**CUST-VOLT-4 Invoice currency.** The quote is in USD.
+
+**CUST-VOLT-5 Contract clause.** Battery-powered devices travel only with carriers approved for dangerous goods.
+
+### H.KAPA Kapa Chemicals (CUS-KAPA)
+
+**CUST-KAPA-1 Handover.** Handover is one of dock.
+
+**CUST-KAPA-2 Arrival margin.** The last leg arrives at least 60 minutes before the delivery window closes.
+
+**CUST-KAPA-3 Extra cost cap.** Extra costs stay at or below 40000 cents.
+
+**CUST-KAPA-4 Invoice currency.** The quote is in EUR.
+
+**CUST-KAPA-5 Contract clause.** Corrosive products are delivered to the chemical store entrance, not the main reception.
+
+### H.HARU Haru Trading (CUS-HARU)
+
+**CUST-HARU-1 Handover.** Handover is one of dock, curbside, customerSite.
+
+**CUST-HARU-2 Arrival margin.** The last leg arrives at least 0 minutes before the delivery window closes.
+
+**CUST-HARU-3 Extra cost cap.** Extra costs stay at or below 30000 cents.
+
+**CUST-HARU-4 Invoice currency.** The quote is in JPY.
+
+### H.OAK Oakline Furniture (CUS-OAK)
+
+**CUST-OAK-1 Handover.** Handover is one of curbside, customerSite.
+
+**CUST-OAK-2 Arrival margin.** The last leg arrives at least 0 minutes before the delivery window closes.
+
+**CUST-OAK-3 Extra cost cap.** Extra costs stay at or below 25000 cents.
+
+**CUST-OAK-4 Invoice currency.** The quote is in EUR.

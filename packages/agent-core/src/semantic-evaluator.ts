@@ -28,11 +28,22 @@ function threshold(value: number | string, parameters: PolicyParameters): number
   return typeof value === 'number' ? value : Number(parameters[value])
 }
 
+/** Every label at or above the threshold, most likely first; the answer's choice at least. */
+function selectedChoices(judgement: SemanticJudgement, threshold: number): string[] {
+  if (judgement.kind !== 'choice') return []
+  const likely = Object.entries(judgement.probabilities ?? {})
+    .filter(([, probability]) => probability >= threshold)
+    .sort(([, left], [, right]) => right - left)
+    .map(([label]) => label)
+  return likely.includes(judgement.choice) ? likely : [judgement.choice, ...likely]
+}
+
 function gateStatusOf(
   passWhen: SemanticRule['passWhen'],
   judgement: SemanticJudgement,
   parameters: PolicyParameters,
 ): CheckStatus {
+  if ('selectChoicesAtLeast' in passWhen) return judgement.kind === 'choice' ? 'PASS' : 'ERROR'
   if ('choiceIn' in passWhen) {
     if (judgement.kind !== 'choice') return 'ERROR'
     return passWhen.choiceIn.includes(judgement.choice) ? 'PASS' : 'FAIL'
@@ -48,7 +59,14 @@ function gateStatusOf(
     : 'FAIL'
 }
 
-function observedValueOf(judgement: SemanticJudgement): string | number {
+function observedValueOf(
+  passWhen: SemanticRule['passWhen'],
+  judgement: SemanticJudgement,
+  parameters: PolicyParameters,
+): string | number | string[] {
+  if ('selectChoicesAtLeast' in passWhen) {
+    return selectedChoices(judgement, threshold(passWhen.selectChoicesAtLeast, parameters))
+  }
   return judgement.kind === 'choice' ? judgement.choice : judgement.probability
 }
 
@@ -63,7 +81,7 @@ export function semanticEvaluator(judge: SemanticJudge): LeafEvaluator {
     const answer = await judge.ask(questionFor(rule.ruleId, semantic), state)
     return {
       status: gateStatusOf(semantic.passWhen, answer.judgement, parameters),
-      observedValue: observedValueOf(answer.judgement),
+      observedValue: observedValueOf(semantic.passWhen, answer.judgement, parameters),
     }
   }
 }

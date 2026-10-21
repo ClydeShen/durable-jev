@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-001",
     "shipmentId": "SHP-001",
     "customerId": "CUS-ACME",
+    "destinationCountry": "AU",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -89,6 +90,17 @@
         "kind": "noul",
         "probability": 0.98
       }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "general",
+        "probabilities": {
+          "general": 0.95,
+          "chemical": 0.02
+        }
+      }
     }
   ],
   "events": [
@@ -98,7 +110,9 @@
       "orderStatus": "AWAITING_HUMAN",
       "statuses": {
         "R40": "WAITING_HUMAN",
-        "R39": "WAITING_HUMAN"
+        "R39": "WAITING_HUMAN",
+        "R41": "NOT_APPLICABLE",
+        "CUST-ACME-1": "PASS"
       },
       "openTasks": ["R39"]
     },

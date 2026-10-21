@@ -9,6 +9,7 @@
     "extraCostApprovalThresholdCents": 50000,
     "semanticMatchThreshold": 0.8,
     "approvalExpiryHours": 24,
-    "operationExpiryHours": 12
+    "operationExpiryHours": 12,
+    "commodityInclusionThreshold": 0.25
   }
 }

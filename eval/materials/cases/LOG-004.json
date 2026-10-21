@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-004",
     "shipmentId": "SHP-004",
     "customerId": "CUS-MEDI",
+    "destinationCountry": "NZ",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -72,6 +73,14 @@
         "extractedFields": {},
         "source": "customer upload",
         "cargoItemId": "ITEM-1"
+      },
+      {
+        "documentId": "DOC-004-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit NZ-MED-2026-0377 issued by Medsafe for insulin pens manufactured by NovaPharm Ltd.",
+        "extractedFields": {},
+        "source": "customs broker"
       }
     ],
     "warehouseRecords": [
@@ -148,6 +157,31 @@
         "kind": "choice",
         "choice": "no_risk"
       }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
+        "probabilities": {
+          "pharmaceutical": 0.97,
+          "general": 0.02
+        }
+      }
+    },
+    {
+      "questionId": "DEST-NZ-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
+      }
+    },
+    {
+      "questionId": "CUST-MEDI-5",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
+      }
     }
   ],
   "events": [
@@ -156,7 +190,9 @@
       "label": "初始：合规签核两步，先合规员",
       "statuses": {
         "R12": "PASS",
-        "R13@ITEM-1": "WAITING_HUMAN"
+        "R13@ITEM-1": "WAITING_HUMAN",
+        "DEST-NZ-PHARMA-1": "PASS",
+        "CUST-MEDI-5": "PASS"
       },
       "orderStatus": "AWAITING_HUMAN",
       "openTasks": ["R13@ITEM-1"]

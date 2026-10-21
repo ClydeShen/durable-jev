@@ -1,0 +1,1147 @@
+{
+  "section": "Appendix H. Customer contract terms",
+  "note": "Draft stand-in for the authoring model, prepared while live models are off. Re-record with MODEL_MODE=live before tuning (T7.0).",
+  "attempts": [
+    {
+      "rules": [
+        {
+          "ruleId": "CUST-ACME-1",
+          "version": "1",
+          "title": "Acme Office Supplies: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-ACME"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-ACME-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\", \"customerSite\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-ACME-2",
+          "version": "1",
+          "title": "Acme Office Supplies: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-ACME"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-ACME-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT30M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-ACME-3",
+          "version": "1",
+          "title": "Acme Office Supplies: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-ACME"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-ACME-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 50000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-ACME-4",
+          "version": "1",
+          "title": "Acme Office Supplies: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-ACME"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-ACME-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"EUR\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-BRISK-1",
+          "version": "1",
+          "title": "Brisk Retail Group: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-BRISK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-BRISK-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\", \"curbside\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-BRISK-2",
+          "version": "1",
+          "title": "Brisk Retail Group: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-BRISK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-BRISK-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT0M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-BRISK-3",
+          "version": "1",
+          "title": "Brisk Retail Group: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-BRISK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-BRISK-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 1500000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-BRISK-4",
+          "version": "1",
+          "title": "Brisk Retail Group: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-BRISK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-BRISK-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"EUR\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-MEDI-1",
+          "version": "1",
+          "title": "Southgate Clinics: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-MEDI"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-MEDI-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-MEDI-2",
+          "version": "1",
+          "title": "Southgate Clinics: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-MEDI"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-MEDI-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT60M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-MEDI-3",
+          "version": "1",
+          "title": "Southgate Clinics: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-MEDI"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-MEDI-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 100000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-MEDI-4",
+          "version": "1",
+          "title": "Southgate Clinics: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-MEDI"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-MEDI-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"EUR\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-MEDI-5",
+          "version": "1",
+          "title": "Southgate Clinics: contract clause",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-MEDI"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "CUST-MEDI-5"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["route", "cargo"],
+          "semantic": {
+            "promptVersion": "cust-medi-5-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The planned handover and route comply with this contract clause: \"Medical goods are handed to named clinic staff at the rear dock and are never left unattended.\""
+            },
+            "state": {
+              "handover": "order.handover",
+              "route": "for l in legs return l.origin + \" -> \" + l.destination",
+              "carriers": "for l in legs return l.carrier.qualifications",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "CUST-NORDA-1",
+          "version": "1",
+          "title": "Norda Foods: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-NORDA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-NORDA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-NORDA-2",
+          "version": "1",
+          "title": "Norda Foods: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-NORDA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-NORDA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT120M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-NORDA-3",
+          "version": "1",
+          "title": "Norda Foods: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-NORDA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-NORDA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 20000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-NORDA-4",
+          "version": "1",
+          "title": "Norda Foods: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-NORDA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-NORDA-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"NZD\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-NORDA-5",
+          "version": "1",
+          "title": "Norda Foods: contract clause",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-NORDA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "CUST-NORDA-5"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["route", "cargo"],
+          "semantic": {
+            "promptVersion": "cust-norda-5-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The planned handover and route comply with this contract clause: \"Chilled food goes straight to the cold room and never through a cross-dock.\""
+            },
+            "state": {
+              "handover": "order.handover",
+              "route": "for l in legs return l.origin + \" -> \" + l.destination",
+              "carriers": "for l in legs return l.carrier.qualifications",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "CUST-VOLT-1",
+          "version": "1",
+          "title": "Voltaic Devices: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-VOLT"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-VOLT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\", \"customerSite\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-VOLT-2",
+          "version": "1",
+          "title": "Voltaic Devices: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-VOLT"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-VOLT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT30M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-VOLT-3",
+          "version": "1",
+          "title": "Voltaic Devices: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-VOLT"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-VOLT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 50000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-VOLT-4",
+          "version": "1",
+          "title": "Voltaic Devices: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-VOLT"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-VOLT-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"USD\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-VOLT-5",
+          "version": "1",
+          "title": "Voltaic Devices: contract clause",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-VOLT"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "CUST-VOLT-5"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["route", "cargo"],
+          "semantic": {
+            "promptVersion": "cust-volt-5-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The planned handover and route comply with this contract clause: \"Battery-powered devices travel only with carriers approved for dangerous goods.\""
+            },
+            "state": {
+              "handover": "order.handover",
+              "route": "for l in legs return l.origin + \" -> \" + l.destination",
+              "carriers": "for l in legs return l.carrier.qualifications",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "CUST-KAPA-1",
+          "version": "1",
+          "title": "Kapa Chemicals: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-KAPA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-KAPA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-KAPA-2",
+          "version": "1",
+          "title": "Kapa Chemicals: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-KAPA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-KAPA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT60M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-KAPA-3",
+          "version": "1",
+          "title": "Kapa Chemicals: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-KAPA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-KAPA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 40000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-KAPA-4",
+          "version": "1",
+          "title": "Kapa Chemicals: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-KAPA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-KAPA-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"EUR\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-KAPA-5",
+          "version": "1",
+          "title": "Kapa Chemicals: contract clause",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-KAPA"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "CUST-KAPA-5"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["route", "cargo"],
+          "semantic": {
+            "promptVersion": "cust-kapa-5-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The planned handover and route comply with this contract clause: \"Corrosive products are delivered to the chemical store entrance, not the main reception.\""
+            },
+            "state": {
+              "handover": "order.handover",
+              "route": "for l in legs return l.origin + \" -> \" + l.destination",
+              "carriers": "for l in legs return l.carrier.qualifications",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "CUST-HARU-1",
+          "version": "1",
+          "title": "Haru Trading: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-HARU"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-HARU-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"dock\", \"curbside\", \"customerSite\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-HARU-2",
+          "version": "1",
+          "title": "Haru Trading: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-HARU"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-HARU-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT0M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-HARU-3",
+          "version": "1",
+          "title": "Haru Trading: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-HARU"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-HARU-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 30000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-HARU-4",
+          "version": "1",
+          "title": "Haru Trading: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-HARU"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-HARU-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"JPY\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "CUST-OAK-1",
+          "version": "1",
+          "title": "Oakline Furniture: handover",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-OAK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-OAK-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "list contains([\"curbside\", \"customerSite\"], order.handover)",
+            "observe": "order.handover"
+          }
+        },
+        {
+          "ruleId": "CUST-OAK-2",
+          "version": "1",
+          "title": "Oakline Furniture: arrival margin",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-OAK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-OAK-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) + duration(\"PT0M\") <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "CUST-OAK-3",
+          "version": "1",
+          "title": "Oakline Furniture: extra cost cap",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-OAK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-OAK-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.extraCostCents <= 25000",
+            "observe": "order.quote.extraCostCents"
+          }
+        },
+        {
+          "ruleId": "CUST-OAK-4",
+          "version": "1",
+          "title": "Oakline Furniture: invoice currency",
+          "owner": "commercial-control",
+          "scope": "order",
+          "applicability": {
+            "customers": ["CUS-OAK"]
+          },
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "CUST-OAK-4"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["quote"],
+          "expression": {
+            "passWhen": "order.quote.currency = \"EUR\"",
+            "observe": "order.quote.currency"
+          }
+        },
+        {
+          "ruleId": "R43",
+          "version": "1",
+          "title": "Contract terms met",
+          "owner": "commercial-control",
+          "scope": "order",
+          "dependsOn": [
+            "CUST-ACME-1",
+            "CUST-ACME-2",
+            "CUST-ACME-3",
+            "CUST-ACME-4",
+            "CUST-BRISK-1",
+            "CUST-BRISK-2",
+            "CUST-BRISK-3",
+            "CUST-BRISK-4",
+            "CUST-MEDI-1",
+            "CUST-MEDI-2",
+            "CUST-MEDI-3",
+            "CUST-MEDI-4",
+            "CUST-MEDI-5",
+            "CUST-NORDA-1",
+            "CUST-NORDA-2",
+            "CUST-NORDA-3",
+            "CUST-NORDA-4",
+            "CUST-NORDA-5",
+            "CUST-VOLT-1",
+            "CUST-VOLT-2",
+            "CUST-VOLT-3",
+            "CUST-VOLT-4",
+            "CUST-VOLT-5",
+            "CUST-KAPA-1",
+            "CUST-KAPA-2",
+            "CUST-KAPA-3",
+            "CUST-KAPA-4",
+            "CUST-KAPA-5",
+            "CUST-HARU-1",
+            "CUST-HARU-2",
+            "CUST-HARU-3",
+            "CUST-HARU-4",
+            "CUST-OAK-1",
+            "CUST-OAK-2",
+            "CUST-OAK-3",
+            "CUST-OAK-4"
+          ],
+          "evaluator": {
+            "kind": "combinator",
+            "ref": "R43"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": [],
+          "combiner": {
+            "op": "and",
+            "of": [
+              {
+                "op": "ref",
+                "ruleId": "CUST-ACME-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-ACME-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-ACME-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-ACME-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-BRISK-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-BRISK-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-BRISK-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-BRISK-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-MEDI-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-MEDI-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-MEDI-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-MEDI-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-MEDI-5"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-NORDA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-NORDA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-NORDA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-NORDA-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-NORDA-5"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-VOLT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-VOLT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-VOLT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-VOLT-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-VOLT-5"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-KAPA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-KAPA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-KAPA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-KAPA-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-KAPA-5"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-HARU-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-HARU-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-HARU-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-HARU-4"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-OAK-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-OAK-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-OAK-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "CUST-OAK-4"
+              }
+            ]
+          }
+        },
+        {
+          "ruleId": "R36",
+          "version": "2",
+          "title": "Commercial ready",
+          "owner": "commercial-control",
+          "scope": "order",
+          "dependsOn": ["R27", "R31", "R32", "R33", "R34", "R35", "R43"],
+          "evaluator": {
+            "kind": "combinator",
+            "ref": "R36"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": [],
+          "combiner": {
+            "op": "and",
+            "of": [
+              {
+                "op": "ref",
+                "ruleId": "R31"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R27"
+              },
+              {
+                "op": "or",
+                "of": [
+                  {
+                    "op": "ref",
+                    "ruleId": "R32"
+                  },
+                  {
+                    "op": "and",
+                    "of": [
+                      {
+                        "op": "ref",
+                        "ruleId": "R33"
+                      },
+                      {
+                        "op": "ref",
+                        "ruleId": "R34"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "op": "ref",
+                "ruleId": "R35"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R43"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

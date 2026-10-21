@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-003",
     "shipmentId": "SHP-003",
     "customerId": "CUS-ACME",
+    "destinationCountry": "SG",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -100,6 +101,24 @@
       "judgement": {
         "kind": "noul",
         "probability": 0.94
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "chemical",
+        "probabilities": {
+          "chemical": 0.94,
+          "general": 0.04
+        }
+      }
+    },
+    {
+      "questionId": "DEST-SG-CHEM-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.88
       }
     }
   ],

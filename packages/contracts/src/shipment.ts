@@ -70,6 +70,12 @@ const documentKindSchema = z.enum([
   'temperatureLog',
   'customerRestrictions',
   'controlledDeclaration',
+  'importPermit',
+  'productRegistration',
+  'healthCertificate',
+  'certificateOfOrigin',
+  'batteryTestSummary',
+  'commercialInvoice',
 ])
 
 const caseDocumentSchema = z.object({
@@ -108,6 +114,8 @@ export const shipmentSchema = z
     correlationId: correlationIdSchema,
     shipmentId: shipmentIdSchema,
     customerId: customerIdSchema,
+    /** ISO 3166 alpha-2 code of the country whose import requirements apply. */
+    destinationCountry: z.string().regex(/^[A-Z]{2}$/),
     caseRevision: revisionSchema,
     entityVersions: entityVersionsSchema,
     cargoItems: z.array(cargoItemSchema).min(1),

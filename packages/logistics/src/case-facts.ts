@@ -62,6 +62,7 @@ export function buildCaseFacts(shipment: Shipment, reference: ReferenceData): Ca
       shipmentId: shipment.shipmentId,
       customerId: shipment.customerId,
       customer: reference.customers.get(shipment.customerId),
+      destinationCountry: shipment.destinationCountry,
       deliveryWindow: shipment.deliveryWindow,
       handover: shipment.handover,
       quote: shipment.quote,

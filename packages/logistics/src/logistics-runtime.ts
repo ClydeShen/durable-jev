@@ -16,13 +16,6 @@ import { loadReferenceData, type ReferenceData } from './reference-data.js'
 import { investigationMigrations } from './reroute/investigation-store.js'
 import { reservationMigrations, reserveTransport } from './transport-reservation.js'
 
-const logisticsAgents = [
-  'order-coordination',
-  'cargo-assurance',
-  'transport-planning',
-  'commercial-control',
-] as const satisfies readonly AgentId[]
-
 export function agentMigrations(agentId: AgentId): readonly Migration[] {
   return agentId === 'transport-planning'
     ? [...reservationMigrations, ...investigationMigrations]
@@ -79,7 +72,11 @@ export interface LocalLogisticsAgents {
 export function createLocalLogisticsAgents(
   options: Omit<LogisticsRuntimeOptions, 'agentId' | 'store'>,
 ): LocalLogisticsAgents {
-  const agents = logisticsAgents.map((agentId) => {
+  const owners = loadRulePack(
+    options.materialsDirectory,
+    new Set(Object.keys(codeEvaluatorOwners)),
+  ).ruleSet.rules.map((rule) => rule.owner)
+  const agents = [...new Set(owners)].map((agentId) => {
     const store = CaseStore.open(':memory:', agentMigrations(agentId))
     const { runtime, rulePack, reference } = createLogisticsRuntime({ ...options, agentId, store })
     return {

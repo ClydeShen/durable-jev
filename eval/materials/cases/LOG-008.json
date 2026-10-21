@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-008",
     "shipmentId": "SHP-008",
     "customerId": "CUS-MEDI",
+    "destinationCountry": "NZ",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -53,7 +54,16 @@
       "extraCostCents": 0,
       "currency": "EUR"
     },
-    "documents": [],
+    "documents": [
+      {
+        "documentId": "DOC-008-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit NZ-MED-2026-0455 issued by Medsafe for allergy vaccine vials manufactured by Kestrel Biologics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      }
+    ],
     "warehouseRecords": [
       {
         "cargoItemId": "ITEM-1",
@@ -128,6 +138,31 @@
       "judgement": {
         "kind": "choice",
         "choice": "damaged_packaging"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
+        "probabilities": {
+          "pharmaceutical": 0.95,
+          "general": 0.04
+        }
+      }
+    },
+    {
+      "questionId": "DEST-NZ-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
+      }
+    },
+    {
+      "questionId": "CUST-MEDI-5",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
       }
     }
   ],

@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-005",
     "shipmentId": "SHP-005",
     "customerId": "CUS-BRISK",
+    "destinationCountry": "JP",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -65,6 +66,16 @@
       "judgement": {
         "kind": "noul",
         "probability": 0.98
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "general",
+        "probabilities": {
+          "general": 0.97
+        }
       }
     }
   ],

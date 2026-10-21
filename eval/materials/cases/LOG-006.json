@@ -6,6 +6,7 @@
     "correlationId": "corr-LOG-006",
     "shipmentId": "SHP-006",
     "customerId": "CUS-MEDI",
+    "destinationCountry": "AU",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -53,7 +54,24 @@
       "extraCostCents": 0,
       "currency": "EUR"
     },
-    "documents": [],
+    "documents": [
+      {
+        "documentId": "DOC-006-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit AU-BIO-2026-1190 for blood sample collection kits manufactured by Meridian Diagnostics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      },
+      {
+        "documentId": "DOC-006-PRODUC",
+        "kind": "productRegistration",
+        "version": 1,
+        "text": "ARTG registration 331245: blood sample collection kit, Meridian Diagnostics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      }
+    ],
     "warehouseRecords": [
       {
         "cargoItemId": "ITEM-1",
@@ -120,6 +138,31 @@
       "judgement": {
         "kind": "choice",
         "choice": "damaged_packaging"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
+        "probabilities": {
+          "pharmaceutical": 0.81,
+          "general": 0.12
+        }
+      }
+    },
+    {
+      "questionId": "DEST-AU-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.9
+      }
+    },
+    {
+      "questionId": "CUST-MEDI-5",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
       }
     }
   ],

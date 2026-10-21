@@ -1,0 +1,2398 @@
+{
+  "section": "Appendix G. Destination import requirements",
+  "note": "Draft stand-in for the authoring model, prepared while live models are off. Re-record with MODEL_MODE=live before tuning (T7.0).",
+  "attempts": [
+    {
+      "rules": [
+        {
+          "ruleId": "R42",
+          "version": "1",
+          "title": "Commodity group",
+          "owner": "destination-compliance",
+          "scope": "cargoItem",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "R42"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["commodityInclusionThreshold"],
+          "invalidationTriggers": ["cargo"],
+          "semantic": {
+            "promptVersion": "r42-v1",
+            "question": {
+              "kind": "choice",
+              "text": "Which commodity group describes this cargo item?",
+              "options": {
+                "pharmaceutical": "Medicines, vaccines, medical or diagnostic products",
+                "food": "Food, beverages or dietary supplements",
+                "lithiumBattery": "Lithium batteries or devices that contain them",
+                "chemical": "Chemicals, reagents, cleaning or industrial substances",
+                "general": "Anything else"
+              }
+            },
+            "state": {
+              "description": "item.description",
+              "declaredCategories": "item.declaredCategories"
+            },
+            "passWhen": {
+              "selectChoicesAtLeast": "commodityInclusionThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-PHARMA-1",
+          "version": "1",
+          "title": "NZ Import permit for medicines",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-PHARMA-2",
+          "version": "1",
+          "title": "NZ Cold chain at 8 °C or colder",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "every i in cargoItems satisfies (not(list contains(i.declaredCategories, \"coldChain\")) or i.temperatureRange.maxDeciCelsius <= 80)"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-PHARMA-3",
+          "version": "1",
+          "title": "NZ Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-NZ-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-nz-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-FOOD-1",
+          "version": "1",
+          "title": "NZ Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-FOOD-2",
+          "version": "1",
+          "title": "NZ Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"certificateOfOrigin\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-FOOD-3",
+          "version": "1",
+          "title": "NZ Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-NZ-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-nz-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-LIBAT-1",
+          "version": "1",
+          "title": "NZ UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-LIBAT-2",
+          "version": "1",
+          "title": "NZ Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-LIBAT-3",
+          "version": "1",
+          "title": "NZ Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-NZ-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-nz-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-CHEM-1",
+          "version": "1",
+          "title": "NZ Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-CHEM-2",
+          "version": "1",
+          "title": "NZ Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-NZ-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-NZ-CHEM-3",
+          "version": "1",
+          "title": "NZ Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["NZ"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-NZ-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-nz-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-AU-PHARMA-1",
+          "version": "1",
+          "title": "AU Import permit for medicines",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-PHARMA-2",
+          "version": "1",
+          "title": "AU Product registration",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"productRegistration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-PHARMA-3",
+          "version": "1",
+          "title": "AU Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-AU-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-au-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-AU-FOOD-1",
+          "version": "1",
+          "title": "AU Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-FOOD-2",
+          "version": "1",
+          "title": "AU Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"certificateOfOrigin\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-FOOD-3",
+          "version": "1",
+          "title": "AU Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-AU-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-au-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-AU-LIBAT-1",
+          "version": "1",
+          "title": "AU UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-LIBAT-2",
+          "version": "1",
+          "title": "AU Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-LIBAT-3",
+          "version": "1",
+          "title": "AU Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-AU-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-au-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-AU-CHEM-1",
+          "version": "1",
+          "title": "AU Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-CHEM-2",
+          "version": "1",
+          "title": "AU Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-AU-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-AU-CHEM-3",
+          "version": "1",
+          "title": "AU Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["AU"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-AU-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-au-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-SG-PHARMA-1",
+          "version": "1",
+          "title": "SG Import licence above 20 units",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "sum(cargoItems.quantity) <= 20 or list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-PHARMA-2",
+          "version": "1",
+          "title": "SG Product registration",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"productRegistration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-PHARMA-3",
+          "version": "1",
+          "title": "SG Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-SG-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-sg-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-SG-FOOD-1",
+          "version": "1",
+          "title": "SG Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-FOOD-2",
+          "version": "1",
+          "title": "SG Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"commercialInvoice\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-FOOD-3",
+          "version": "1",
+          "title": "SG Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-SG-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-sg-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-SG-LIBAT-1",
+          "version": "1",
+          "title": "SG UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-LIBAT-2",
+          "version": "1",
+          "title": "SG Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-LIBAT-3",
+          "version": "1",
+          "title": "SG Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-SG-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-sg-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-SG-CHEM-1",
+          "version": "1",
+          "title": "SG Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-CHEM-2",
+          "version": "1",
+          "title": "SG Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-SG-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"controlledDeclaration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-SG-CHEM-3",
+          "version": "1",
+          "title": "SG Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["SG"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-SG-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-sg-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-JP-PHARMA-1",
+          "version": "1",
+          "title": "JP Import licence above 20 units",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "sum(cargoItems.quantity) <= 20 or list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-PHARMA-2",
+          "version": "1",
+          "title": "JP Product registration",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"productRegistration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-PHARMA-3",
+          "version": "1",
+          "title": "JP Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-JP-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-jp-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-JP-FOOD-1",
+          "version": "1",
+          "title": "JP Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-FOOD-2",
+          "version": "1",
+          "title": "JP Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"certificateOfOrigin\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-FOOD-3",
+          "version": "1",
+          "title": "JP Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-JP-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-jp-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-JP-LIBAT-1",
+          "version": "1",
+          "title": "JP UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-LIBAT-2",
+          "version": "1",
+          "title": "JP Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-LIBAT-3",
+          "version": "1",
+          "title": "JP Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-JP-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-jp-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-JP-CHEM-1",
+          "version": "1",
+          "title": "JP Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-CHEM-2",
+          "version": "1",
+          "title": "JP Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-JP-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"controlledDeclaration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-JP-CHEM-3",
+          "version": "1",
+          "title": "JP Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["JP"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-JP-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-jp-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-US-PHARMA-1",
+          "version": "1",
+          "title": "US Import permit for medicines",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-PHARMA-2",
+          "version": "1",
+          "title": "US Cold chain at 8 °C or colder",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "every i in cargoItems satisfies (not(list contains(i.declaredCategories, \"coldChain\")) or i.temperatureRange.maxDeciCelsius <= 80)"
+          }
+        },
+        {
+          "ruleId": "DEST-US-PHARMA-3",
+          "version": "1",
+          "title": "US Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-US-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-us-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-US-FOOD-1",
+          "version": "1",
+          "title": "US Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-FOOD-2",
+          "version": "1",
+          "title": "US Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"certificateOfOrigin\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-FOOD-3",
+          "version": "1",
+          "title": "US Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-US-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-us-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-US-LIBAT-1",
+          "version": "1",
+          "title": "US UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-LIBAT-2",
+          "version": "1",
+          "title": "US Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-LIBAT-3",
+          "version": "1",
+          "title": "US Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-US-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-us-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-US-CHEM-1",
+          "version": "1",
+          "title": "US Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-CHEM-2",
+          "version": "1",
+          "title": "US Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-US-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"controlledDeclaration\")"
+          }
+        },
+        {
+          "ruleId": "DEST-US-CHEM-3",
+          "version": "1",
+          "title": "US Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["US"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-US-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-us-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-DE-PHARMA-1",
+          "version": "1",
+          "title": "DE Import permit for medicines",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-PHARMA-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-PHARMA-2",
+          "version": "1",
+          "title": "DE Cold chain at 8 °C or colder",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-PHARMA-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "every i in cargoItems satisfies (not(list contains(i.declaredCategories, \"coldChain\")) or i.temperatureRange.maxDeciCelsius <= 80)"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-PHARMA-3",
+          "version": "1",
+          "title": "DE Medicine and manufacturer named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["pharmaceutical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-DE-PHARMA-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-de-pharma-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents name the medicine being shipped and its manufacturer."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-DE-FOOD-1",
+          "version": "1",
+          "title": "DE Health certificate",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-FOOD-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"healthCertificate\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-FOOD-2",
+          "version": "1",
+          "title": "DE Origin evidence",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-FOOD-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"certificateOfOrigin\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-FOOD-3",
+          "version": "1",
+          "title": "DE Storage condition stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["food"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-DE-FOOD-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-de-food-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The goods description or the documents state how the food must be stored or its shelf life."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-DE-LIBAT-1",
+          "version": "1",
+          "title": "DE UN38.3 test summary",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-LIBAT-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"batteryTestSummary\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-LIBAT-2",
+          "version": "1",
+          "title": "DE Dangerous goods carrier",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-LIBAT-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents", "carrier", "route"],
+          "expression": {
+            "passWhen": "every l in legs satisfies list contains(l.carrier.qualifications, \"DG\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-LIBAT-3",
+          "version": "1",
+          "title": "DE Battery rating stated",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["lithiumBattery"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-DE-LIBAT-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-de-libat-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The documents state the watt-hour rating or the lithium content of the batteries."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "DEST-DE-CHEM-1",
+          "version": "1",
+          "title": "DE Safety data sheet",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-CHEM-1"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"safetyDataSheet\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-CHEM-2",
+          "version": "1",
+          "title": "DE Hazardous substance clearance",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "DEST-DE-CHEM-2"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "documents"],
+          "expression": {
+            "passWhen": "list contains(order.documents.kind, \"importPermit\")"
+          }
+        },
+        {
+          "ruleId": "DEST-DE-CHEM-3",
+          "version": "1",
+          "title": "DE Hazard class named",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "applicability": {
+            "destinations": ["DE"],
+            "commodityGroups": ["chemical"]
+          },
+          "dependsOn": ["R42"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "DEST-DE-CHEM-3"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "dest-de-chem-3-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The safety data sheet names the hazard class of the substance being shipped."
+            },
+            "state": {
+              "documents": "for d in order.documents return d.kind + \": \" + d.text",
+              "goods": "for i in cargoItems return i.description"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "R41",
+          "version": "1",
+          "title": "Destination requirements met",
+          "owner": "destination-compliance",
+          "scope": "order",
+          "dependsOn": [
+            "DEST-NZ-PHARMA-1",
+            "DEST-NZ-PHARMA-2",
+            "DEST-NZ-PHARMA-3",
+            "DEST-NZ-FOOD-1",
+            "DEST-NZ-FOOD-2",
+            "DEST-NZ-FOOD-3",
+            "DEST-NZ-LIBAT-1",
+            "DEST-NZ-LIBAT-2",
+            "DEST-NZ-LIBAT-3",
+            "DEST-NZ-CHEM-1",
+            "DEST-NZ-CHEM-2",
+            "DEST-NZ-CHEM-3",
+            "DEST-AU-PHARMA-1",
+            "DEST-AU-PHARMA-2",
+            "DEST-AU-PHARMA-3",
+            "DEST-AU-FOOD-1",
+            "DEST-AU-FOOD-2",
+            "DEST-AU-FOOD-3",
+            "DEST-AU-LIBAT-1",
+            "DEST-AU-LIBAT-2",
+            "DEST-AU-LIBAT-3",
+            "DEST-AU-CHEM-1",
+            "DEST-AU-CHEM-2",
+            "DEST-AU-CHEM-3",
+            "DEST-SG-PHARMA-1",
+            "DEST-SG-PHARMA-2",
+            "DEST-SG-PHARMA-3",
+            "DEST-SG-FOOD-1",
+            "DEST-SG-FOOD-2",
+            "DEST-SG-FOOD-3",
+            "DEST-SG-LIBAT-1",
+            "DEST-SG-LIBAT-2",
+            "DEST-SG-LIBAT-3",
+            "DEST-SG-CHEM-1",
+            "DEST-SG-CHEM-2",
+            "DEST-SG-CHEM-3",
+            "DEST-JP-PHARMA-1",
+            "DEST-JP-PHARMA-2",
+            "DEST-JP-PHARMA-3",
+            "DEST-JP-FOOD-1",
+            "DEST-JP-FOOD-2",
+            "DEST-JP-FOOD-3",
+            "DEST-JP-LIBAT-1",
+            "DEST-JP-LIBAT-2",
+            "DEST-JP-LIBAT-3",
+            "DEST-JP-CHEM-1",
+            "DEST-JP-CHEM-2",
+            "DEST-JP-CHEM-3",
+            "DEST-US-PHARMA-1",
+            "DEST-US-PHARMA-2",
+            "DEST-US-PHARMA-3",
+            "DEST-US-FOOD-1",
+            "DEST-US-FOOD-2",
+            "DEST-US-FOOD-3",
+            "DEST-US-LIBAT-1",
+            "DEST-US-LIBAT-2",
+            "DEST-US-LIBAT-3",
+            "DEST-US-CHEM-1",
+            "DEST-US-CHEM-2",
+            "DEST-US-CHEM-3",
+            "DEST-DE-PHARMA-1",
+            "DEST-DE-PHARMA-2",
+            "DEST-DE-PHARMA-3",
+            "DEST-DE-FOOD-1",
+            "DEST-DE-FOOD-2",
+            "DEST-DE-FOOD-3",
+            "DEST-DE-LIBAT-1",
+            "DEST-DE-LIBAT-2",
+            "DEST-DE-LIBAT-3",
+            "DEST-DE-CHEM-1",
+            "DEST-DE-CHEM-2",
+            "DEST-DE-CHEM-3"
+          ],
+          "evaluator": {
+            "kind": "combinator",
+            "ref": "R41"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": [],
+          "combiner": {
+            "op": "and",
+            "of": [
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-NZ-CHEM-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-AU-CHEM-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-SG-CHEM-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-JP-CHEM-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-US-CHEM-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-PHARMA-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-PHARMA-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-PHARMA-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-FOOD-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-FOOD-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-FOOD-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-LIBAT-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-LIBAT-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-LIBAT-3"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-CHEM-1"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-CHEM-2"
+              },
+              {
+                "op": "ref",
+                "ruleId": "DEST-DE-CHEM-3"
+              }
+            ]
+          }
+        },
+        {
+          "ruleId": "R40",
+          "version": "2",
+          "title": "Release allowed",
+          "owner": "order-coordination",
+          "scope": "order",
+          "dependsOn": ["R08", "R30", "R36", "R37", "R38", "R39", "R41"],
+          "evaluator": {
+            "kind": "combinator",
+            "ref": "R40"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": [],
+          "combiner": {
+            "op": "and",
+            "of": [
+              {
+                "op": "ref",
+                "ruleId": "R08"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R30"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R36"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R37"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R38"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R39"
+              },
+              {
+                "op": "ref",
+                "ruleId": "R41"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

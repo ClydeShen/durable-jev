@@ -54,6 +54,7 @@ const shipment = {
   correlationId: 'corr-LOG-T',
   shipmentId: 'SHP-T',
   customerId: 'CUS-1',
+  destinationCountry: 'NZ',
   caseRevision: 1,
   entityVersions: { cargo: 1, route: 1, carrier: 1, quote: 1 },
   cargoItems: [{ cargoItemId: 'ITEM-1' }],

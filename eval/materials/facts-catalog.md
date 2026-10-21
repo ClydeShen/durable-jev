@@ -22,6 +22,9 @@ tenths of a degree Celsius (`DeciCelsius`), cents; timestamps are UTC ISO string
 `quote.amountCents`, `quote.extraCostCents`, `quote.currency`,
 `customer.name`, `customer.active`, `customer.creditLimitCents`, `customer.outstandingCents`,
 `customer.restrictionsText` (free text, empty when none).
+`destinationCountry` (ISO 3166 alpha-2, the country whose import requirements apply),
+`documents` (all case documents; each `documentId`, `kind`, `cargoItemId`, `text`;
+`documents.kind` is the list of kinds).
 
 ## item
 
@@ -58,3 +61,7 @@ temperatureControlled|minDeciCelsius|maxDeciCelsius`.
   or condition)` instead.
 - Every rule read in an expression is listed in `dependsOn`; every `params.X` is listed in
   `parameters`.
+- Extension rules (`DEST-*`, `CUST-*`) declare `applicability` (`destinations`, `customers`,
+  `commodityGroups`); only rules whose every declared dimension matches the order are evaluated,
+  the rest are filtered by index lookup. Commodity groups are the labels R42 selects, so a rule
+  selected by commodity group lists R42 in `dependsOn`.

@@ -25,6 +25,7 @@ import type {
   RuleScope,
   RuleSet,
 } from './rule-definition.js'
+import { RuleIndex, type SelectionDecision, type SelectionProfile } from './rule-selection.js'
 import { referencedRules } from './validate-rule-set.js'
 
 export type Facts = Record<string, unknown>
@@ -64,6 +65,8 @@ export interface RuleOutcome {
   reused?: boolean
   invalidatedBy?: string
   error?: string
+  /** Set when rule selection filtered this extension rule out without evaluating it. */
+  filtered?: true
 }
 
 export interface EvaluationEnvironment {
@@ -366,6 +369,55 @@ async function evaluateRuleInstance(
   return evaluateLeaf(rule, scope, state, environment, inputFingerprint)
 }
 
+const indexes = new WeakMap<RuleSet, RuleIndex>()
+
+function indexOf(ruleSet: RuleSet): RuleIndex {
+  const existing = indexes.get(ruleSet)
+  if (existing) return existing
+  const index = new RuleIndex(ruleSet.rules)
+  indexes.set(ruleSet, index)
+  return index
+}
+
+function selectionProfile(ruleSet: RuleSet, state: GraphState): SelectionProfile {
+  const classifier = ruleSet.selection?.classifierRuleId
+  const classifications = classifier
+    ? membersOf(state.facts, 'cargoItem').map((scope) => state.resultOf(classifier, scope))
+    : []
+  const decided = classifications.every((result) => result?.status === 'PASS')
+  return {
+    destination: state.facts.order.destinationCountry,
+    customer: state.facts.order.customerId,
+    commodityGroups: decided
+      ? new Set(classifications.flatMap((result) => result?.observedValue as string[]))
+      : undefined,
+  }
+}
+
+function selectionOutcome(
+  rule: RuleDefinition,
+  scope: CheckScope,
+  decision: Exclude<SelectionDecision, 'selected'>,
+  classifier: RuleId | undefined,
+): RuleOutcome {
+  return decision === 'filtered'
+    ? {
+        ruleId: rule.ruleId,
+        scope,
+        status: 'NOT_APPLICABLE',
+        blockedBy: [],
+        inputFingerprint: 'filtered',
+        filtered: true,
+      }
+    : {
+        ruleId: rule.ruleId,
+        scope,
+        status: 'BLOCKED_DEPENDENCY',
+        blockedBy: classifier ? [classifier] : [],
+        inputFingerprint: 'awaiting-classification',
+      }
+}
+
 const defaultReusableKinds: readonly RuleEngineKind[] = [
   'expression',
   'code',
@@ -395,10 +447,18 @@ export async function evaluateRuleGraph(
   const provided = new Map((options.provided ?? []).map((result) => [outcomeKey(result), result]))
   const executes = options.executes ?? (() => true)
   const reusableKinds = new Set(options.reusableKinds ?? defaultReusableKinds)
+  const index = indexOf(ruleSet)
   for (const rule of topologicalOrder(ruleSet.rules)) {
+    const selection =
+      rule.applicability && executes(rule)
+        ? index.decide(rule.ruleId, selectionProfile(ruleSet, state))
+        : 'selected'
     const results = await Promise.all(
       membersOf(facts, rule.scope).map(async (scope): Promise<RuleOutcome> => {
         if (!executes(rule)) return providedOutcome(provided, rule.ruleId, scope)
+        if (selection !== 'selected') {
+          return selectionOutcome(rule, scope, selection, ruleSet.selection?.classifierRuleId)
+        }
         const inputFingerprint = state.fingerprintOf(rule, scope)
         const reused = reusableKinds.has(rule.evaluator.kind)
           ? reusableOutcome(

@@ -52,3 +52,44 @@ describe('semanticEvaluator', () => {
     expect(evaluation).toEqual({ status: 'FAIL', observedValue: 'damaged_packaging' })
   })
 })
+
+describe('semanticEvaluator as a classifier', () => {
+  it('selects every label at or above the threshold, most likely first', async () => {
+    const classifier: RuleDefinition = {
+      ...inspection,
+      ruleId: 'R42',
+      evaluator: { kind: 'semantic', ref: 'R42' },
+      semantic: {
+        promptVersion: 'r42-v1',
+        question: {
+          kind: 'choice',
+          text: 'Which commodity group describes this cargo item?',
+          options: { pharmaceutical: 'Medicines', chemical: 'Chemicals', general: 'Other' },
+        },
+        state: { note: 'item.inspectionNote' },
+        passWhen: { selectChoicesAtLeast: 0.25 },
+      },
+    }
+    const judge = new ScriptedJudge([
+      {
+        questionId: 'R42',
+        judgement: {
+          kind: 'choice',
+          choice: 'pharmaceutical',
+          probabilities: { pharmaceutical: 0.62, chemical: 0.31, general: 0.07 },
+        },
+      },
+    ])
+    const evaluation = await semanticEvaluator(judge)({
+      rule: classifier,
+      scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' },
+      facts,
+      scopeFacts: facts.cargoItems[0]?.facts ?? {},
+      parameters: {},
+      inputFingerprint: 'fp',
+      resultOf: () => undefined,
+      holds: () => ({ status: 'PASS', blockedBy: [] }),
+    })
+    expect(evaluation).toEqual({ status: 'PASS', observedValue: ['pharmaceutical', 'chemical'] })
+  })
+})
