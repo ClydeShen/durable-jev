@@ -17,11 +17,11 @@ export const reservationMigrations: readonly Migration[] = [
   },
 ]
 
-export function reservationOperationId(shipment: Shipment): string {
+export const reservationOperationId = (shipment: Shipment): string => {
   return `${shipment.caseId}:route-v${shipment.entityVersions.route}:reserve_transport`
 }
 
-export function ensurePlanReservation(database: StoreDatabase, shipment: Shipment): boolean {
+export const ensurePlanReservation = (database: StoreDatabase, shipment: Shipment): boolean => {
   const routeVersion = shipment.entityVersions.route
   const insert = database.prepare(
     `INSERT INTO reservations (case_id, route_version, leg_id, carrier_id, vehicle_id, status)
@@ -52,11 +52,11 @@ export function ensurePlanReservation(database: StoreDatabase, shipment: Shipmen
   return countActiveReservations(database, shipment.caseId, routeVersion) === shipment.legs.length
 }
 
-function cancelSupersededReservations(
+const cancelSupersededReservations = (
   database: StoreDatabase,
   caseId: string,
   currentRouteVersion: number,
-): void {
+): void => {
   const supersededVersions = database
     .prepare(
       `SELECT DISTINCT route_version FROM reservations
@@ -85,11 +85,11 @@ function cancelSupersededReservations(
   }
 }
 
-export function countActiveReservations(
+export const countActiveReservations = (
   database: StoreDatabase,
   caseId: string,
   routeVersion: number,
-): number {
+): number => {
   const row = database
     .prepare(
       'SELECT COUNT(*) AS count FROM reservations WHERE case_id = ? AND route_version = ? AND status = ?',
