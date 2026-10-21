@@ -21,10 +21,11 @@
 
 ```
 apps/
-  coordinator/            订单版本、聚合各模块状态、整单规则（R08、R37–R40）、放行事务
-  cargo-assurance/        Durable Jev Agent：货件规则（代码 + Jev）、合规/质量/仓库人工任务
-  transport-planning/     Durable Jev Agent：运输段规则、调查 Agent、计划员确认
-  commercial-control/     Durable Jev Agent：授信与费用规则、商务审批
+  coordinator/            订单协调 agent：接单、订单版本、汇总、整单规则（R01、R02、R08、R37–R40）、放行、调度员确认
+  cargo-assurance/        货物合规 agent：R03、R04、R09–R15、R17–R23；合规/质量/仓库人工任务
+  transport-planning/     运输计划 agent：R05–R07、R16、R24–R26、R28–R30；调查助手、计划员确认
+  commercial-control/     商务 agent：R27、R31–R36 + CUST-* 扩展规则；商务审批
+  destination-compliance/ 目的地合规 agent（扩展演示）：R41 + DEST-* 扩展规则，用 agent 模板新增
   web/                    工作台 + Console + 演示控制
 packages/
   contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
@@ -133,6 +134,9 @@ type RuleDefinition = {
 
 ## 6. 服务与流程
 
+- 术语："agent" 只指 Durable Jev Agent（对外 A2A 身份 + 内部 Jev + Pi Durable + 规则包）。会自己选工具的 LLM 循环称"调查助手"，是 agent 内部的可选部件。
+- 协作模式（均走 A2A）：派单与汇总（订单协调 agent ↔ 各 agent，每个"订单版本 × 能力"一个 A2A Task）；点对点请求（运输 → 商务：改派额外费用审批 R35；运输 → 货物：候选计划的冷链/受控复核 R28/R16/R26）；变更通知与失效（换承运商 → 货物 agent 的 R13 审批链失效重发）；人工/补材料统一为 `input-required`。agent 之间不共享数据库、不调用对方内部代码，约定只有 Agent Card 与 `contracts` 中的业务结果契约。
+- 扩展：新 agent 用同一模板（service-kit + 规则包 + Agent Card）起服务，订单协调 agent 经 Agent Card 发现，R40 增加一个依赖；已有 agent 不改代码。拆分依据是业务责任、审批人、发布节奏、数据归属，不是规则数量。
 - 每个业务模块是一个 Durable Jev Agent（spec 8）：持有本模块规则图、叶子求值、人工任务与等待状态，通过 Pi Durable 在等待人工和进程重启后恢复。
 - 模块流程实现为 Pi Durable durable task（不经 LLM）：分阶段检查点，人工审批为子任务 + 决定文档，详见 `docs/m0-findings.md` T0.8。
 - 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
@@ -194,6 +198,19 @@ interface SemanticJudge {
 实现：`JevJudge`（官方 SDK，`jev-1.14.0`）、`StructuredOutputJudge`（pi-ai NVIDIA `nemotron-3.5-lightning-30b-a3b`，强制调用 `submit_answer` 工具并按 schema 校验）、`ScriptedJudge`（按 questionId + 输入哈希回放，无精确匹配时用该问题的默认条目）。三者都关闭 SDK 自带重试，由 harness 统一重试。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
 
 ## 9. 可观测性
+
+### 9.1 两级图视图（Console）
+
+同一个图组件（`@xyflow/react` 12.12.0 + `elkjs` 0.12.0 自动分层布局）用于两个层级，交互一致：点节点看摘要，双击 zoom in，面包屑返回。
+
+| 层级 | 节点 | 连线 | 节点卡片（不展开内部细节） |
+|---|---|---|---|
+| Overview（agent 级） | 每个 Durable Jev Agent | A2A 协作关系：静态来自 Agent Card 声明的依赖，实时叠加 A2A Task 数与等待状态 | 名称、负责的业务流程、健康（运行/重启中/离线）、规则包版本与规则数（代码 / Jev 占比）、固定的模型版本、进行中案例数、待处理人工任务数（按角色）、最近错误、Agent Card 链接 |
+| Agent 内部（规则级） | 规则、人工门槛（含审批链）、调查助手、指向其他 agent 的边界节点（如"→ 商务 agent R35"） | `dependsOn` | 规则 ID 与名称、求值方式（代码 / Jev / 人工）、所选案例下的状态与 blockedBy |
+| 节点详情 | — | — | 规则结果、Jev 原始答案与业务映射、审批链进度、证据（即 T6.3 判断详情） |
+
+- 选中某个案例时，两级视图都按该案例着色：Overview 显示这单在各 agent 的状态与 A2A 往来，内部视图显示规则状态。未选案例时，Overview 显示架构与汇总指标。
+- 数据来源：Agent Card（静态）、各 agent 的 `GET /agent/summary`（service-kit 提供，`contracts` 定义 `AgentSummary`）、规则包配置（内部图）、观察库（A2A Task、事件）。
 
 - 事件写各服务 outbox 表，`observability` 收集器汇入 `var/data/observability.sqlite`；Console 通过查询 API + SSE 读取。
 - 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
