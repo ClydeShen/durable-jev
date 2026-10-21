@@ -27,19 +27,19 @@ const investigationRequestId = 'case-1:r1:investigate'
 
 type LedgerRecord = { operationId: string; legId: string }
 
-function readLedger(): LedgerRecord[] {
+const readLedger = (): LedgerRecord[] => {
   if (!existsSync(businessLedgerPath)) return []
   return JSON.parse(readFileSync(businessLedgerPath, 'utf8'))
 }
 
-function recordReservationOnce(record: LedgerRecord): 'created' | 'duplicate' {
+const recordReservationOnce = (record: LedgerRecord): 'created' | 'duplicate' => {
   const ledger = readLedger()
   if (ledger.some((existing) => existing.operationId === record.operationId)) return 'duplicate'
   writeFileSync(businessLedgerPath, JSON.stringify([...ledger, record]))
   return 'created'
 }
 
-function reservationOperationId(legId: string): string {
+const reservationOperationId = (legId: string): string => {
   return `case-1:r1:reserve_transport:${legId}`
 }
 

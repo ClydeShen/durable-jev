@@ -51,7 +51,7 @@ const cargoAssuranceCard: AgentCard = {
   signatures: [],
 }
 
-function dataPart(value: unknown): Part {
+const dataPart = (value: unknown): Part => {
   return {
     content: { $case: 'data', value },
     metadata: undefined,
@@ -60,7 +60,7 @@ function dataPart(value: unknown): Part {
   }
 }
 
-function readDataParts(message: Message): Record<string, unknown> {
+const readDataParts = (message: Message): Record<string, unknown> => {
   return Object.assign(
     {},
     ...message.parts.flatMap((part) =>
@@ -69,7 +69,7 @@ function readDataParts(message: Message): Record<string, unknown> {
   )
 }
 
-function agentMessage(taskId: string, contextId: string, value: unknown): Message {
+const agentMessage = (taskId: string, contextId: string, value: unknown): Message => {
   return {
     messageId: randomUUID(),
     taskId,
@@ -173,7 +173,7 @@ app.use(
 )
 const server = app.listen(port)
 
-function userMessage(messageId: string, value: unknown, taskId = '', contextId = ''): Message {
+const userMessage = (messageId: string, value: unknown, taskId = '', contextId = ''): Message => {
   return {
     messageId,
     taskId,
@@ -186,11 +186,11 @@ function userMessage(messageId: string, value: unknown, taskId = '', contextId =
   }
 }
 
-function sendRequest(message: Message) {
+const sendRequest = (message: Message) => {
   return { tenant: '', message, configuration: undefined, metadata: undefined }
 }
 
-function summarize(result: unknown) {
+const summarize = (result: unknown) => {
   const task = (result as { task?: Task }).task ?? (result as Task)
   return {
     id: task.id,

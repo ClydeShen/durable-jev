@@ -17,7 +17,7 @@ const recordedResponse = {
   usage: { input_tokens: 440, output_tokens: 77 },
 }
 
-async function recordedFetch(url: string, init?: RequestInit): Promise<Response> {
+const recordedFetch = async (url: string, init?: RequestInit): Promise<Response> => {
   console.log(`[recorded] POST ${url}`)
   console.log(`[recorded] body: ${init?.body}`)
   return new Response(JSON.stringify(recordedResponse), {

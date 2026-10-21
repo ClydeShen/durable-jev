@@ -29,7 +29,7 @@ cargoAssurance.post('/tasks', (request, response) => {
 })
 const cargoServer = cargoAssurance.listen(cargoPort)
 
-async function dispatchCargoTask(): Promise<SpanContext> {
+const dispatchCargoTask = async (): Promise<SpanContext> => {
   return coordinatorTracer.startActiveSpan(
     'task.dispatched',
     { attributes: { correlationId, service: 'shipment-coordinator' } },
@@ -47,7 +47,7 @@ async function dispatchCargoTask(): Promise<SpanContext> {
   )
 }
 
-function resumeAfterRestart(previousAttempt: SpanContext) {
+const resumeAfterRestart = (previousAttempt: SpanContext) => {
   const span = coordinatorTracer.startSpan(
     'run.resumed',
     {
