@@ -102,6 +102,7 @@ function caseWith(
   legCount = 1,
 ): CaseFacts {
   return {
+    entityVersions: {},
     order: {},
     cargoItems: items.map(({ id, ...facts }) => ({ cargoItemId: id, facts })),
     legs: Array.from({ length: legCount }, (_, index) => ({

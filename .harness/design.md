@@ -138,6 +138,7 @@ type RuleDefinition = {
 - 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
 - 多角色审批链：每一步是一个独立的 APPROVAL 人工任务（单一角色，带 `approvalChain` 的 chainId/stepIndex/stepCount/mode）。顺序模式下前一步批准后才创建下一步；并行模式下同时创建。全部批准 → 门槛 PASS；任一拒绝 → FAIL 并取消其余步骤；任一过期 → 该链失效，需重新发起；失效时整条链被新链替代。`distinctActors` 时同一人不能批准同链两步，同角色两步即"双人复核"。步骤可带 `appliesWhen`（如受控货追加合规审核员、超二级额度追加第二名商务主管）。在 Pi Durable 中，一条链是父任务依次等待的子任务。
 - 晚到结果的指纹与当前不符时只归档。
+- 实现：`markInvalidated` 先把受影响结果标为 INVALIDATED 并记 `invalidatedBy`（变更 id，供 UI 显示"哪次变更导致失效"）；`evaluateRuleGraph(..., { previous })` 重算时，code / decisionTable / semantic 规则指纹不变即复用（不重复调用 Jev），humanGate 与组合规则每次重新求值。实体版本是订单级的，改一个运输段会让同一触发下所有运输段重算：保守，不会误复用。
 
 ## 6. 服务与流程
 

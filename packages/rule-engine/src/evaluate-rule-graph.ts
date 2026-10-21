@@ -1,3 +1,4 @@
+import type { RuleEngineKind } from '@durable-jev/contracts'
 import {
   type CheckScope,
   type CheckStatus,
@@ -7,12 +8,14 @@ import {
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import type { CollectionScope } from './expression.js'
-import type { RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
+import { ruleInputFingerprint } from './fingerprint.js'
+import type { InvalidationTrigger, RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
 import { referencedRules } from './validate-rule-set.js'
 
 export type Facts = Record<string, unknown>
 
 export interface CaseFacts {
+  entityVersions: Partial<Record<InvalidationTrigger, number>>
   order: Facts
   cargoItems: { cargoItemId: string; facts: Facts }[]
   legs: { legId: string; facts: Facts }[]
@@ -39,7 +42,15 @@ export interface RuleOutcome {
   status: CheckStatus
   observedValue?: unknown
   blockedBy: RuleId[]
+  inputFingerprint: string
+  reused?: boolean
+  invalidatedBy?: string
   error?: string
+}
+
+export interface EvaluationOptions {
+  previous?: readonly RuleOutcome[]
+  reusableKinds?: readonly RuleEngineKind[]
 }
 
 export interface RuleGraphEvaluation {
@@ -140,6 +151,32 @@ class GraphState implements ExpressionContext {
     return membersOf(this.facts, scope)
   }
 
+  dependencyFingerprints(ruleId: RuleId, scope: CheckScope): string[] {
+    const target = this.scopeOfRule.get(ruleId)
+    if (target === undefined) return []
+    const scopes =
+      target === 'order' || target === scope.kind ? [scope] : membersOf(this.facts, target)
+    return scopes.map((member) => this.resultOf(ruleId, member)?.inputFingerprint ?? 'missing')
+  }
+
+  fingerprintOf(rule: RuleDefinition, scope: CheckScope): string {
+    return ruleInputFingerprint({
+      ruleId: rule.ruleId,
+      ruleVersion: rule.version,
+      scopeKey: scopeKey(scope),
+      inputs: Object.fromEntries(rule.inputPaths.map((path) => [path, this.factOf(path, scope)])),
+      entityVersions: Object.fromEntries(
+        rule.invalidationTriggers.map((trigger) => [trigger, this.facts.entityVersions[trigger]]),
+      ),
+      upstream: Object.fromEntries(
+        rule.dependsOn.map((dependency) => [
+          dependency,
+          this.dependencyFingerprints(dependency, scope),
+        ]),
+      ),
+    })
+  }
+
   dependencyOutcome(ruleId: RuleId, scope: CheckScope): Outcome {
     const target = this.scopeOfRule.get(ruleId)
     if (target === undefined) return outcome('ERROR')
@@ -174,7 +211,7 @@ async function evaluateLeaf(
   scope: CheckScope,
   state: GraphState,
   evaluators: ReadonlyMap<string, LeafEvaluator>,
-): Promise<RuleOutcome> {
+): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
   const evaluator = evaluators.get(rule.evaluator.ref)
   if (!evaluator) {
     return {
@@ -204,7 +241,7 @@ async function evaluateRuleInstance(
   scope: CheckScope,
   state: GraphState,
   evaluators: ReadonlyMap<string, LeafEvaluator>,
-): Promise<RuleOutcome> {
+): Promise<Omit<RuleOutcome, 'inputFingerprint'>> {
   if (rule.appliesWhen) {
     const applicability = evaluateExpression(rule.appliesWhen, state, scope)
     if (applicability.status === 'FAIL' || applicability.status === 'NOT_APPLICABLE') {
@@ -230,18 +267,44 @@ async function evaluateRuleInstance(
   return evaluateLeaf(rule, scope, state, evaluators)
 }
 
+const defaultReusableKinds: readonly RuleEngineKind[] = ['code', 'decisionTable', 'semantic']
+
+function reusableOutcome(
+  previous: RuleOutcome | undefined,
+  fingerprint: string,
+): RuleOutcome | undefined {
+  if (!previous || previous.inputFingerprint !== fingerprint) return undefined
+  if (previous.status === 'INVALIDATED' || previous.status === 'ERROR') return undefined
+  const { invalidatedBy: _invalidatedBy, ...kept } = previous
+  return { ...kept, reused: true }
+}
+
 export async function evaluateRuleGraph(
   ruleSet: RuleSet,
   facts: CaseFacts,
   evaluators: ReadonlyMap<string, LeafEvaluator>,
+  options: EvaluationOptions = {},
 ): Promise<RuleGraphEvaluation> {
   const state = new GraphState(ruleSet.rules, facts)
   const escalations: RuleGraphEvaluation['escalations'] = []
+  const previous = new Map(
+    (options.previous ?? []).map((result) => [
+      `${result.ruleId}@${scopeKey(result.scope)}`,
+      result,
+    ]),
+  )
+  const reusableKinds = new Set(options.reusableKinds ?? defaultReusableKinds)
   for (const rule of topologicalOrder(ruleSet.rules)) {
     const results = await Promise.all(
-      membersOf(facts, rule.scope).map((scope) =>
-        evaluateRuleInstance(rule, scope, state, evaluators),
-      ),
+      membersOf(facts, rule.scope).map(async (scope): Promise<RuleOutcome> => {
+        const inputFingerprint = state.fingerprintOf(rule, scope)
+        const reused = reusableKinds.has(rule.evaluator.kind)
+          ? reusableOutcome(previous.get(`${rule.ruleId}@${scopeKey(scope)}`), inputFingerprint)
+          : undefined
+        if (reused) return reused
+        const result = await evaluateRuleInstance(rule, scope, state, evaluators)
+        return { ...result, inputFingerprint }
+      }),
     )
     for (const result of results) {
       state.record(result)

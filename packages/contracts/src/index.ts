@@ -1,4 +1,5 @@
 export * from './agents.js'
+export * from './canonical-json.js'
 export * from './check.js'
 export * from './human-task.js'
 export * from './ids.js'

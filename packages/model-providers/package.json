@@ -13,6 +13,7 @@
     "live-check": "tsx src/live-check.ts"
   },
   "dependencies": {
+    "@durable-jev/contracts": "workspace:*",
     "@earendil-works/pi-ai": "1.3.0",
     "@typesafe-ai/sdk": "0.7.0"
   }
