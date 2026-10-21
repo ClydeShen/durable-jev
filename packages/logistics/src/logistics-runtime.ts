@@ -12,7 +12,8 @@ import type { SemanticJudge } from '@durable-jev/model-providers'
 import type { LeafEvaluator } from '@durable-jev/rule-engine'
 import type { Migration } from '@durable-jev/store'
 import { buildCaseFacts } from './case-facts.js'
-import { loadReferenceData } from './reference-data.js'
+import { loadReferenceData, type ReferenceData } from './reference-data.js'
+import { investigationMigrations } from './reroute/investigation-store.js'
 import { reservationMigrations, reserveTransport } from './transport-reservation.js'
 
 const logisticsAgents = [
@@ -23,7 +24,9 @@ const logisticsAgents = [
 ] as const satisfies readonly AgentId[]
 
 export function agentMigrations(agentId: AgentId): readonly Migration[] {
-  return agentId === 'transport-planning' ? reservationMigrations : []
+  return agentId === 'transport-planning'
+    ? [...reservationMigrations, ...investigationMigrations]
+    : []
 }
 
 const codeEvaluatorOwners: Record<string, AgentId> = { R29: 'transport-planning' }
@@ -45,6 +48,7 @@ export interface LogisticsRuntimeOptions {
 export interface LogisticsRuntime {
   runtime: CaseRuntime
   rulePack: RulePack
+  reference: ReferenceData
 }
 
 export function createLogisticsRuntime(options: LogisticsRuntimeOptions): LogisticsRuntime {
@@ -62,12 +66,13 @@ export function createLogisticsRuntime(options: LogisticsRuntimeOptions): Logist
     factsOf: (shipment) => buildCaseFacts(shipment, reference),
     now: options.now,
   })
-  return { runtime, rulePack }
+  return { runtime, rulePack, reference }
 }
 
 export interface LocalLogisticsAgents {
   orchestrator: CaseOrchestrator
   coordination: { runtime: CaseRuntime; store: CaseStore }
+  transport: { runtime: CaseRuntime; store: CaseStore; reference: ReferenceData }
   rulePack: RulePack
 }
 
@@ -76,17 +81,19 @@ export function createLocalLogisticsAgents(
 ): LocalLogisticsAgents {
   const agents = logisticsAgents.map((agentId) => {
     const store = CaseStore.open(':memory:', agentMigrations(agentId))
-    const { runtime, rulePack } = createLogisticsRuntime({ ...options, agentId, store })
+    const { runtime, rulePack, reference } = createLogisticsRuntime({ ...options, agentId, store })
     return {
       agentId,
       store,
       runtime,
       rulePack,
+      reference,
       client: new LocalAgentClient(agentId, runtime, store),
     }
   })
-  const [coordination] = agents
-  if (!coordination) throw new Error('no logistics agents')
+  const coordination = agents.find((agent) => agent.agentId === 'order-coordination')
+  const transport = agents.find((agent) => agent.agentId === 'transport-planning')
+  if (!coordination || !transport) throw new Error('missing logistics agents')
   return {
     orchestrator: new CaseOrchestrator(
       agents.map((agent) => agent.client),
@@ -94,6 +101,11 @@ export function createLocalLogisticsAgents(
       (caseId) => coordination.store.caseRecord(caseId)?.shipment,
     ),
     coordination: { runtime: coordination.runtime, store: coordination.store },
+    transport: {
+      runtime: transport.runtime,
+      store: transport.store,
+      reference: transport.reference,
+    },
     rulePack: coordination.rulePack,
   }
 }

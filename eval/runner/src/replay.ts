@@ -8,6 +8,8 @@ import {
   dispatchCase,
   type LocalLogisticsAgents,
   orderStatusOf,
+  RerouteDesk,
+  scriptedRerouter,
 } from '@durable-jev/logistics'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 
@@ -68,6 +70,25 @@ function checkExpectation(view: CaseView, event: Extract<CaseEvent, { kind: 'exp
   return problems
 }
 
+function checkInvestigation(
+  desk: RerouteDesk,
+  caseId: string,
+  expected: NonNullable<Extract<CaseEvent, { kind: 'expect' }>['investigation']>,
+): string[] {
+  const investigation = desk.ofCase(caseId).at(-1)
+  if (!investigation) return ['no investigation']
+  const actual = {
+    status: investigation.status,
+    offerId: investigation.proposal?.offerId,
+    extraCostCents: investigation.proposal?.extraCostCents,
+  }
+  return Object.entries(expected).flatMap(([key, value]) =>
+    actual[key as keyof typeof actual] === value
+      ? []
+      : [`investigation ${key} is ${actual[key as keyof typeof actual]}, expected ${value}`],
+  )
+}
+
 function taskFor(view: CaseView, key: string): HumanTask | undefined {
   const matching = view.tasks.filter((task) => keyOf(task.ruleId, task.scope) === key)
   return matching.find((task) => task.status === 'OPEN') ?? matching.at(-1)
@@ -77,6 +98,7 @@ class CaseReplayer {
   private clock = replayStart
   private shipment: CaseFile['shipment']
   private readonly agents: LocalLogisticsAgents
+  private desk?: RerouteDesk
 
   constructor(
     private readonly caseFile: CaseFile,
@@ -101,19 +123,47 @@ class CaseReplayer {
 
   async start() {
     await this.agents.orchestrator.submit(this.shipment)
+    this.desk = await RerouteDesk.open({
+      ...this.agents.transport,
+      cases: this.agents.transport.store,
+      storage: 'memory',
+      model: { kind: 'scripted', next: scriptedRerouter },
+      now: () => new Date(this.clock).toISOString(),
+    })
+  }
+
+  async stop() {
+    await this.desk?.close()
+  }
+
+  private get openDesk(): RerouteDesk {
+    if (!this.desk) throw new Error('replay has not started')
+    return this.desk
   }
 
   async run(event: CaseEvent): Promise<string[]> {
     const { orchestrator, coordination } = this.agents
     switch (event.kind) {
       case 'expect':
-        return checkExpectation(await this.view(), event)
+        return [
+          ...checkExpectation(await this.view(), event),
+          ...(event.investigation
+            ? checkInvestigation(this.openDesk, this.caseId, event.investigation)
+            : []),
+        ]
       case 'act':
         return this.act(event)
       case 'revise':
         this.shipment = applyRevision(this.shipment, event.patch)
         await orchestrator.submit(this.shipment)
         return []
+      case 'incident': {
+        const investigation = await this.openDesk.report(this.caseId, event.incident)
+        await this.openDesk.settled(investigation.investigationId)
+        return []
+      }
+      case 'decideProposal':
+        return this.decideProposal(event)
       case 'dispatch': {
         const now = () => new Date(this.clock).toISOString()
         const result = await dispatchCase(
@@ -137,6 +187,30 @@ class CaseReplayer {
         await orchestrator.propagate(this.caseId)
         return []
     }
+  }
+
+  private async decideProposal(
+    event: Extract<CaseEvent, { kind: 'decideProposal' }>,
+  ): Promise<string[]> {
+    const investigation = this.openDesk.ofCase(this.caseId).at(-1)
+    if (!investigation) return ['no investigation']
+    const result = this.openDesk.decide(investigation.investigationId, {
+      type: event.decision,
+      actor: event.actor,
+    })
+    if (event.expectRefusal) {
+      return !result.ok && result.reason === event.expectRefusal
+        ? []
+        : [
+            `decision was ${result.ok ? 'accepted' : result.reason}, expected ${event.expectRefusal}`,
+          ]
+    }
+    if (!result.ok) return [`decision was refused: ${result.reason} ${result.message}`]
+    if (result.patch) {
+      this.shipment = applyRevision(this.shipment, result.patch)
+      await this.agents.orchestrator.submit(this.shipment)
+    }
+    return []
   }
 
   private async act(event: Extract<CaseEvent, { kind: 'act' }>): Promise<string[]> {
@@ -169,5 +243,6 @@ export async function replayCase(
   for (const event of caseFile.events) {
     steps.push({ label: event.label, kind: event.kind, problems: await replayer.run(event) })
   }
+  await replayer.stop()
   return { caseId: caseFile.shipment.caseId, steps }
 }

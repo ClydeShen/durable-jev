@@ -1,0 +1,32 @@
+[
+  {
+    "offerId": "OFF-HARBOUR-0600",
+    "carrierId": "CAR-HARBOUR",
+    "vehicleId": "VEH-7",
+    "origin": "Northport Warehouse A",
+    "destination": "Southgate Clinic Store",
+    "plannedDeparture": "2026-11-03T06:00:00Z",
+    "plannedArrival": "2026-11-03T11:00:00Z",
+    "priceCents": 360000
+  },
+  {
+    "offerId": "OFF-FROST-1100",
+    "carrierId": "CAR-FROST",
+    "vehicleId": "VEH-21",
+    "origin": "Northport Warehouse A",
+    "destination": "Southgate Clinic Store",
+    "plannedDeparture": "2026-11-03T11:00:00Z",
+    "plannedArrival": "2026-11-03T16:30:00Z",
+    "priceCents": 450000
+  },
+  {
+    "offerId": "OFF-FROST-0630",
+    "carrierId": "CAR-FROST",
+    "vehicleId": "VEH-21",
+    "origin": "Northport Warehouse A",
+    "destination": "Southgate Clinic Store",
+    "plannedDeparture": "2026-11-03T06:30:00Z",
+    "plannedArrival": "2026-11-03T12:30:00Z",
+    "priceCents": 500000
+  }
+]

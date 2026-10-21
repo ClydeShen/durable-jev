@@ -5,6 +5,7 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     { "path": "../agent-core" },
+    { "path": "../agent-harness" },
     { "path": "../contracts" },
     { "path": "../model-providers" },
     { "path": "../rule-engine" },

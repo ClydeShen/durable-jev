@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@durable-jev/agent-core": "workspace:*",
+    "@durable-jev/agent-harness": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
     "@durable-jev/store": "workspace:*",
+    "@earendil-works/pi-ai": "1.3.0",
     "zod": "4.6.7"
   }
 }

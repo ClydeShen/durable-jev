@@ -38,6 +38,13 @@ const caseEventSchema = z.discriminatedUnion('kind', [
     openTasks: z.array(z.string()).optional(),
     reused: z.array(z.string()).optional(),
     invalidatedBy: z.record(z.string(), z.string()).optional(),
+    investigation: z
+      .object({
+        status: z.string().min(1),
+        offerId: z.string().min(1).optional(),
+        extraCostCents: z.number().int().optional(),
+      })
+      .optional(),
   }),
   z.object({
     kind: z.literal('act'),
@@ -51,6 +58,18 @@ const caseEventSchema = z.discriminatedUnion('kind', [
     kind: z.literal('revise'),
     label: z.string().min(1),
     patch: z.record(z.string(), z.unknown()),
+  }),
+  z.object({
+    kind: z.literal('incident'),
+    label: z.string().min(1),
+    incident: z.object({ type: z.literal('carrierCancelled'), legId: z.string().min(1) }),
+  }),
+  z.object({
+    kind: z.literal('decideProposal'),
+    label: z.string().min(1),
+    actor: actorSchema,
+    decision: z.enum(['confirm', 'reject']),
+    expectRefusal: z.string().optional(),
   }),
   z.object({
     kind: z.literal('dispatch'),

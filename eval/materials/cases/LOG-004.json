@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "冷链受控货，主承运商取消。改派到备用承运商后，温控、合规签核、预订和额外费用审批失效重做，客户基础状态不重跑。",
+  "story": "冷链受控货，主承运商取消。运输 agent 的调查助手找出备用承运商，计划员确认改派后，温控、合规签核、预订和额外费用审批失效重做，客户基础状态不重跑。",
   "shipment": {
     "caseId": "LOG-004",
     "correlationId": "corr-LOG-004",
@@ -196,33 +196,41 @@
       "openTasks": ["R39"]
     },
     {
-      "kind": "revise",
-      "label": "主承运商取消，改派到 Frostline，产生额外费用",
-      "patch": {
-        "caseRevision": 2,
-        "entityVersions": {
-          "route": 2,
-          "carrier": 2,
-          "quote": 2
-        },
-        "legs": [
-          {
-            "legId": "LEG-1",
-            "sequence": 1,
-            "origin": "Northport Warehouse A",
-            "destination": "Southgate Clinic Store",
-            "carrierId": "CAR-FROST",
-            "vehicleId": "VEH-21",
-            "plannedDeparture": "2026-11-03T06:30:00Z",
-            "plannedArrival": "2026-11-03T12:30:00Z"
-          }
-        ],
-        "quote": {
-          "amountCents": 420000,
-          "extraCostCents": 80000,
-          "currency": "EUR"
-        }
+      "kind": "incident",
+      "label": "主承运商 Polar 取消，运输 agent 启动调查助手",
+      "incident": {
+        "type": "carrierCancelled",
+        "legId": "LEG-1"
       }
+    },
+    {
+      "kind": "expect",
+      "label": "调查助手预检三个备选运力，提出 Frostline 06:30 班次",
+      "statuses": {},
+      "investigation": {
+        "status": "PROPOSED",
+        "offerId": "OFF-FROST-0630",
+        "extraCostCents": 80000
+      }
+    },
+    {
+      "kind": "decideProposal",
+      "label": "仓库操作员不能确认改派",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": "confirm",
+      "expectRefusal": "ROLE_NOT_ALLOWED"
+    },
+    {
+      "kind": "decideProposal",
+      "label": "计划员确认改派，产生额外费用",
+      "actor": {
+        "id": "pat",
+        "role": "transportPlanner"
+      },
+      "decision": "confirm"
     },
     {
       "kind": "expect",

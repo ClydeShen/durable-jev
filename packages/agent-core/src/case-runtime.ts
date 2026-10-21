@@ -1,4 +1,10 @@
-import type { AgentId, HumanTask, HumanTaskTarget, Shipment } from '@durable-jev/contracts'
+import type {
+  AgentId,
+  HumanTask,
+  HumanTaskTarget,
+  RuleEngineKind,
+  Shipment,
+} from '@durable-jev/contracts'
 import { type Decision, decideHumanTask, type HumanAction } from '@durable-jev/human-tasks'
 import type { SemanticJudge } from '@durable-jev/model-providers'
 import {
@@ -40,6 +46,12 @@ class CaseNotFoundError extends Error {
     this.name = 'CaseNotFoundError'
   }
 }
+
+const pureKinds: ReadonlySet<RuleEngineKind> = new Set([
+  'expression',
+  'decisionTable',
+  'combinator',
+])
 
 const chainIdOf = (task: HumanTask) => task.humanTaskId.slice(0, task.humanTaskId.lastIndexOf('#'))
 
@@ -89,6 +101,25 @@ export class CaseRuntime {
       if (foreign) this.options.store.replaceForeignOutcomes(caseId, foreign)
       return this.evaluateNow(caseId)
     })
+  }
+
+  /**
+   * Evaluates the pure rules (expressions, tables, combinators) against a candidate shipment
+   * without storing anything. Semantic, human and code rules keep their current outcomes.
+   */
+  async whatIf(candidate: Shipment): Promise<RuleOutcome[]> {
+    const { store, rulePack, factsOf } = this.options
+    const current = [
+      ...store.outcomes(candidate.caseId),
+      ...store.foreignOutcomes(candidate.caseId),
+    ]
+    const graph = await evaluateRuleGraph(
+      rulePack.ruleSet,
+      factsOf(candidate),
+      { evaluators: new Map(), parameters: rulePack.parameters },
+      { provided: current, executes: (rule) => pureKinds.has(rule.evaluator.kind) },
+    )
+    return graph.outcomes
   }
 
   decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
