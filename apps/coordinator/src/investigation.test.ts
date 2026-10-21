@@ -13,12 +13,12 @@ const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materia
 const logFour = readJson('cases/LOG-004.json')
 const caseId = logFour.shipment.caseId as string
 
-async function submittedLogFour(
+const submittedLogFour = async (
   wrapInvestigator: (
     investigator: Investigator,
     coordinator: () => CoordinatorService,
   ) => Investigator = (investigator) => investigator,
-) {
+) => {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),

@@ -28,7 +28,7 @@ afterAll(() => {
   for (const close of closers) close()
 })
 
-async function startService(serviceName: string, branches: readonly RuleBranch[]) {
+const startService = async (serviceName: string, branches: readonly RuleBranch[]) => {
   let baseUrl = ''
   const database = openDatabase(':memory:', [...branchServiceMigrations, ...reservationMigrations])
   const app = createBranchServiceApp({
@@ -50,7 +50,7 @@ async function startService(serviceName: string, branches: readonly RuleBranch[]
 }
 
 // A full set of branch services and a coordinator that reaches them over one protocol.
-async function coordinatorOver(protocol: BranchProtocol) {
+const coordinatorOver = async (protocol: BranchProtocol) => {
   const urls = {
     cargoAssurance: await startService('cargo-assurance', branchesByService.cargoAssurance),
     transportPlanning: await startService(
@@ -87,7 +87,7 @@ const summary = (view: CaseView) => ({
     .sort(),
 })
 
-async function runLogOneAndThree(coordinator: CoordinatorService) {
+const runLogOneAndThree = async (coordinator: CoordinatorService) => {
   const results: ReturnType<typeof summary>[] = []
   for (const name of ['LOG-001', 'LOG-003']) {
     const caseFile = readJson(`cases/${name}.json`)

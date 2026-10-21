@@ -13,7 +13,7 @@ const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
 const logOne = readJson('cases/LOG-001.json')
 
-function startCoordinator() {
+const startCoordinator = () => {
   const database = openDatabase(':memory:', coordinatorMigrations)
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
@@ -47,17 +47,17 @@ const gateOf = (view: CaseView, ruleId: string): GateStatus | undefined =>
 const openTaskFor = (view: CaseView, ruleId: string) =>
   view.humanTasks.find((task) => task.ruleId === ruleId && task.status === 'OPEN')
 
-function expectStage(
+const expectStage = (
   view: CaseView,
   expected: { orderStatus: string; gates: Record<string, string> },
-) {
+) => {
   expect(view.orderStatus).toBe(expected.orderStatus)
   for (const [ruleId, gateStatus] of Object.entries(expected.gates)) {
     expect({ ruleId, gateStatus: gateOf(view, ruleId) }).toEqual({ ruleId, gateStatus })
   }
 }
 
-async function expectCoordinatorError(action: () => unknown, code: string) {
+const expectCoordinatorError = async (action: () => unknown, code: string) => {
   try {
     await action()
   } catch (error) {
@@ -161,7 +161,7 @@ describe('coordinator guards', () => {
 })
 
 describe('order state machine', () => {
-  async function dispatchLogOne() {
+  const dispatchLogOne = async () => {
     const started = startCoordinator()
     const loadTask = openTaskFor(await started.submitLogOne(), 'R39-LOAD')?.humanTaskId ?? ''
     await started.coordinator.completeHumanTask(loadTask, 'WAREHOUSE_OPERATOR', {

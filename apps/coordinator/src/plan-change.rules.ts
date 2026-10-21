@@ -11,7 +11,7 @@ export const roleForChange: Record<PlanChange['kind'], Role> = {
 
 export type AppliedPlanChange = { shipment: Shipment; triggers: string[] }
 
-function withLeg(shipment: Shipment, legId: string, update: Partial<Shipment['legs'][number]>) {
+const withLeg = (shipment: Shipment, legId: string, update: Partial<Shipment['legs'][number]>) => {
   if (!shipment.legs.some((leg) => leg.legId === legId)) {
     throw new CoordinatorError(
       'UNPROCESSABLE',
@@ -21,7 +21,7 @@ function withLeg(shipment: Shipment, legId: string, update: Partial<Shipment['le
   return shipment.legs.map((leg) => (leg.legId === legId ? { ...leg, ...update } : leg))
 }
 
-export function applyPlanChange(shipment: Shipment, change: PlanChange): AppliedPlanChange {
+export const applyPlanChange = (shipment: Shipment, change: PlanChange): AppliedPlanChange => {
   const versions = shipment.entityVersions
   const nextRevision = shipment.caseRevision + 1
   switch (change.kind) {

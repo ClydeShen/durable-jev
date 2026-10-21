@@ -12,7 +12,7 @@ const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materia
 const logOne = readJson('cases/LOG-001.json')
 const baseShipment: Shipment = logOne.shipment
 
-function startCoordinator() {
+const startCoordinator = () => {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),
@@ -392,7 +392,7 @@ describe('plan changes', () => {
       { ruleId: 'R27', entityId: 'order', answer: { type: 'noul' as const, noul: 0.93 } },
     ]
 
-    async function withBothApprovals() {
+    const withBothApprovals = async () => {
       const coordinator = startCoordinator()
       const view = await coordinator.submitCase({
         shipment,

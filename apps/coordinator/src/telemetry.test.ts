@@ -21,7 +21,7 @@ const configuration = buildRuleConfiguration(
 )
 const referenceData = readJson('mock-data/reference-data.json') as ReferenceData
 
-function observedCoordinator() {
+const observedCoordinator = () => {
   const database = openDatabase(':memory:', coordinatorMigrations)
   const coordinator = new CoordinatorService({
     database,

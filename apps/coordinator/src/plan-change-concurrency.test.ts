@@ -13,7 +13,7 @@ const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
 const logFive = readJson('cases/LOG-005.json')
 
-async function submitted() {
+const submitted = async () => {
   const configuration = buildRuleConfiguration(
     readJson('rules.json'),
     readJson('mock-policy-parameters.json'),

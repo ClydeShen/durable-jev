@@ -39,7 +39,11 @@ beforeAll(async () => {
 })
 afterAll(() => close())
 
-async function call(method: string, path: string, options: { role?: string; body?: unknown } = {}) {
+const call = async (
+  method: string,
+  path: string,
+  options: { role?: string; body?: unknown } = {},
+) => {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
     headers: {

@@ -30,7 +30,7 @@ export const branchesByService = {
   commercialControl: ['commercial'],
 } as const satisfies Record<string, readonly RuleBranch[]>
 
-export function inProcessEvaluator(
+export const inProcessEvaluator = (
   name: string,
   branches: readonly RuleBranch[],
   dependencies: {
@@ -40,7 +40,7 @@ export function inProcessEvaluator(
     judgeFor?: JudgeFor
     telemetry?: Telemetry
   },
-): BranchEvaluator {
+): BranchEvaluator => {
   return {
     name,
     branches,
@@ -57,13 +57,13 @@ export function inProcessEvaluator(
   }
 }
 
-export function inProcessEvaluators(
+export const inProcessEvaluators = (
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
   reservationDatabase: StoreDatabase = openDatabase(':memory:', reservationMigrations),
   judgeFor?: JudgeFor,
   telemetry?: Telemetry,
-): BranchEvaluator[] {
+): BranchEvaluator[] => {
   const dependencies = {
     configuration,
     referenceData,
@@ -86,13 +86,13 @@ export function inProcessEvaluators(
 export type BranchProtocol = 'native' | 'a2a'
 
 // The coordinator only sees BranchEvaluator: swapping the protocol changes nothing above it (H4).
-function remoteEvaluator(
+const remoteEvaluator = (
   name: string,
   branches: readonly RuleBranch[],
   url: string,
   protocol: BranchProtocol,
   links: A2aTaskLinks | undefined,
-): BranchEvaluator {
+): BranchEvaluator => {
   if (protocol === 'native') return httpBranchEvaluator(name, branches, url)
   if (!links) throw new Error('A2A delegation needs the A2A task links of the coordinator')
   const evaluator = a2aBranchEvaluator(name, branches, url, links)
@@ -110,7 +110,7 @@ function remoteEvaluator(
   }
 }
 
-export function serviceEvaluators(
+export const serviceEvaluators = (
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
   urls: { cargoAssurance: string; transportPlanning: string; commercialControl: string },
@@ -120,7 +120,7 @@ export function serviceEvaluators(
     links?: A2aTaskLinks
     telemetry?: Telemetry
   } = { protocol: 'native' },
-): BranchEvaluator[] {
+): BranchEvaluator[] => {
   const dependencies = {
     configuration,
     referenceData,
@@ -138,10 +138,10 @@ export function serviceEvaluators(
   ]
 }
 
-export function planEvaluationLayers(
+export const planEvaluationLayers = (
   evaluators: readonly BranchEvaluator[],
   configuration: RuleConfiguration,
-): BranchEvaluator[][] {
+): BranchEvaluator[][] => {
   const rules = configuration.rulesInEvaluationOrder
   const ownerOfRule = new Map<string, BranchEvaluator>()
   for (const evaluator of evaluators) {

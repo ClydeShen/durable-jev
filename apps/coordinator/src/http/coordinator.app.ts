@@ -42,7 +42,7 @@ const httpStatusByCode: Record<CoordinatorErrorCode, number> = {
   NOT_READY_TO_DISPATCH: 409,
 }
 
-function demoRoleOf(request: Request): Role {
+const demoRoleOf = (request: Request): Role => {
   const parsed = Role.safeParse(request.header('x-demo-role'))
   if (!parsed.success)
     throw new CoordinatorError('FORBIDDEN', 'x-demo-role header is missing or unknown')
@@ -69,10 +69,10 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
   response.status(500).json({ error: 'INTERNAL', message: String(error) })
 }
 
-export function createCoordinatorApp(
+export const createCoordinatorApp = (
   coordinator: CoordinatorService,
   referenceData?: ReferenceData,
-): Express {
+): Express => {
   const app = createServiceApp('coordinator')
   // One trace per request; everything the coordinator does for it hangs off this span.
   app.use(tracingMiddleware())

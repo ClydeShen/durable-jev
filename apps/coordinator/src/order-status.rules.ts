@@ -5,7 +5,7 @@ export const finalGateRuleId = 'R40' as RuleId
 export const dispatchConfirmationRuleId = 'R39-CONFIRM' as RuleId
 const loadedAndConfirmedRuleId = 'R39'
 
-export function gatesBeforeDispatchConfirmation(rules: readonly RuleDefinition[]): string[] {
+export const gatesBeforeDispatchConfirmation = (rules: readonly RuleDefinition[]): string[] => {
   const rulesById = new Map(rules.map((rule) => [rule.ruleId as string, rule]))
   const upstreamOf = (ruleId: string) => {
     const rule = rulesById.get(ruleId)
@@ -18,12 +18,12 @@ export function gatesBeforeDispatchConfirmation(rules: readonly RuleDefinition[]
 
 const isSettledPositively = (status: GateStatus) => status === 'PASS' || status === 'NOT_APPLICABLE'
 
-export function deriveOrderStatus(input: {
+export const deriveOrderStatus = (input: {
   evaluations: readonly RuleEvaluation[]
   finalGateStatus: GateStatus
   openHumanTasks: readonly HumanTask[]
   gatesBeforeConfirmation: readonly string[]
-}): OrderStatus {
+}): OrderStatus => {
   const { evaluations, finalGateStatus, openHumanTasks } = input
   if (finalGateStatus === 'PASS') return 'READY_TO_DISPATCH'
   if (finalGateStatus === 'ERROR') return 'TECHNICAL_FAILURE'

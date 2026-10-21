@@ -21,10 +21,10 @@ export type Investigator = (input: {
   requestId: string
 }) => Promise<InvestigationRun>
 
-export function inProcessInvestigator(
+export const inProcessInvestigator = (
   configuration: RuleConfiguration,
   referenceData: ReferenceData,
-): Investigator {
+): Investigator => {
   return async ({ investigated, request, requestId }) => {
     const runtime = createInvestigationRuntime({
       investigated,
