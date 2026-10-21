@@ -187,28 +187,46 @@ function feelExpressionsOf(rule: RuleDefinition): string[] {
   ].filter((expression): expression is string => expression !== undefined)
 }
 
+function semanticThresholdParameter(rule: RuleDefinition): string[] {
+  const passWhen = rule.semantic?.passWhen
+  if (!passWhen || 'choiceIn' in passWhen) return []
+  const threshold =
+    'probabilityAtLeast' in passWhen ? passWhen.probabilityAtLeast : passWhen.probabilityAtMost
+  return typeof threshold === 'string' ? [threshold] : []
+}
+
 function feelIssues(rule: RuleDefinition): ValidationIssue[] {
   const declared = new Set(rule.parameters)
-  return feelExpressionsOf(rule).flatMap((expression): ValidationIssue[] => {
-    const syntaxError = feelSyntaxError(expression)
-    const undeclared = parametersReferencedBy(expression).filter((name) => !declared.has(name))
-    return [
-      ...(syntaxError
-        ? [
-            {
-              code: 'EXPRESSION_SYNTAX' as const,
-              ruleId: rule.ruleId,
-              message: `${expression}: ${syntaxError}`,
-            },
-          ]
-        : []),
-      ...undeclared.map((name) => ({
-        code: 'UNDECLARED_PARAMETER' as const,
-        ruleId: rule.ruleId,
-        message: `${expression} reads params.${name} which is not in parameters`,
-      })),
-    ]
-  })
+  const thresholdIssues = semanticThresholdParameter(rule)
+    .filter((name) => !declared.has(name))
+    .map((name) => ({
+      code: 'UNDECLARED_PARAMETER' as const,
+      ruleId: rule.ruleId,
+      message: `passWhen reads ${name} which is not in parameters`,
+    }))
+  return [
+    ...thresholdIssues,
+    ...feelExpressionsOf(rule).flatMap((expression): ValidationIssue[] => {
+      const syntaxError = feelSyntaxError(expression)
+      const undeclared = parametersReferencedBy(expression).filter((name) => !declared.has(name))
+      return [
+        ...(syntaxError
+          ? [
+              {
+                code: 'EXPRESSION_SYNTAX' as const,
+                ruleId: rule.ruleId,
+                message: `${expression}: ${syntaxError}`,
+              },
+            ]
+          : []),
+        ...undeclared.map((name) => ({
+          code: 'UNDECLARED_PARAMETER' as const,
+          ruleId: rule.ruleId,
+          message: `${expression} reads params.${name} which is not in parameters`,
+        })),
+      ]
+    }),
+  ]
 }
 
 function semanticIssues(rule: RuleDefinition): ValidationIssue[] {

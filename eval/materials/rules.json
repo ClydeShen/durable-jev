@@ -1,0 +1,517 @@
+{
+  "ruleSetVersion": "policy-v1/log-001",
+  "rules": [
+    {
+      "ruleId": "R01",
+      "version": "1",
+      "title": "Order complete",
+      "owner": "order-coordination",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R01"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route", "quote"],
+      "expression": {
+        "passWhen": "order.customerId != null and order.deliveryWindow.from != null and order.deliveryWindow.to != null and count(cargoItems) > 0 and count(legs) > 0"
+      }
+    },
+    {
+      "ruleId": "R02",
+      "version": "1",
+      "title": "Measurements valid",
+      "owner": "order-coordination",
+      "scope": "cargoItem",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R02"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"],
+      "expression": {
+        "passWhen": "item.weightGrams > 0 and item.quantity > 0 and item.volumeCubicCm > 0 and item.dimensionsMillimetres.length > 0 and item.dimensionsMillimetres.width > 0 and item.dimensionsMillimetres.height > 0",
+        "observe": "item.weightGrams"
+      }
+    },
+    {
+      "ruleId": "R03",
+      "version": "1",
+      "title": "Description matches declaration",
+      "owner": "cargo-assurance",
+      "scope": "cargoItem",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "R03"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": ["semanticMatchThreshold"],
+      "invalidationTriggers": ["cargo", "documents"],
+      "semantic": {
+        "promptVersion": "r03-v1",
+        "question": {
+          "kind": "noul",
+          "text": "The cargo description describes goods of the declared categories (general, coldChain, controlled)."
+        },
+        "state": {
+          "description": "item.description",
+          "declaredCategories": "item.declaredCategories"
+        },
+        "passWhen": {
+          "probabilityAtLeast": "semanticMatchThreshold"
+        }
+      }
+    },
+    {
+      "ruleId": "R04",
+      "version": "1",
+      "title": "Branch determined",
+      "owner": "cargo-assurance",
+      "scope": "cargoItem",
+      "dependsOn": ["R02", "R03"],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R04"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"],
+      "expression": {
+        "passWhen": "count(item.declaredCategories) > 0",
+        "observe": "item.declaredCategories"
+      }
+    },
+    {
+      "ruleId": "R05",
+      "version": "1",
+      "title": "Vehicle payload",
+      "owner": "transport-planning",
+      "scope": "leg",
+      "dependsOn": ["R02"],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R05"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route"],
+      "expression": {
+        "passWhen": "sum(cargoItems.weightGrams) <= leg.vehicle.maxPayloadGrams",
+        "observe": "sum(cargoItems.weightGrams)"
+      }
+    },
+    {
+      "ruleId": "R06",
+      "version": "1",
+      "title": "Delivery window",
+      "owner": "transport-planning",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R06"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["route"],
+      "expression": {
+        "passWhen": "date and time(legs[-1].plannedArrival) >= date and time(order.deliveryWindow.from) and date and time(legs[-1].plannedArrival) <= date and time(order.deliveryWindow.to)",
+        "observe": "legs[-1].plannedArrival"
+      }
+    },
+    {
+      "ruleId": "R07",
+      "version": "1",
+      "title": "Leg sequence",
+      "owner": "transport-planning",
+      "scope": "leg",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R07"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": ["minLegConnectionMinutes"],
+      "invalidationTriggers": ["route"],
+      "expression": {
+        "passWhen": "date and time(leg.plannedDeparture) < date and time(leg.plannedArrival) and (leg.sequence = 1 or date and time(leg.plannedDeparture) - date and time(legs[leg.sequence - 1].plannedArrival) >= duration(\"PT\" + string(params.minLegConnectionMinutes) + \"M\"))"
+      }
+    },
+    {
+      "ruleId": "R08",
+      "version": "1",
+      "title": "No conflicting identities",
+      "owner": "order-coordination",
+      "scope": "order",
+      "dependsOn": ["R01"],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R08"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo"],
+      "expression": {
+        "passWhen": "every item in cargoItems satisfies item.shipmentId = order.shipmentId"
+      }
+    },
+    {
+      "ruleId": "R24",
+      "version": "1",
+      "title": "Service region",
+      "owner": "transport-planning",
+      "scope": "leg",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R24"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["route", "carrier"],
+      "expression": {
+        "passWhen": "list contains(leg.carrier.serviceRegions, leg.originRegion) and list contains(leg.carrier.serviceRegions, leg.destinationRegion)"
+      }
+    },
+    {
+      "ruleId": "R25",
+      "version": "1",
+      "title": "Vehicle volume",
+      "owner": "transport-planning",
+      "scope": "leg",
+      "dependsOn": ["R05"],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R25"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route"],
+      "expression": {
+        "passWhen": "sum(cargoItems.volumeCubicCm) <= leg.vehicle.maxVolumeCubicCm",
+        "observe": "sum(cargoItems.volumeCubicCm)"
+      }
+    },
+    {
+      "ruleId": "R27",
+      "version": "1",
+      "title": "Customer restrictions",
+      "owner": "commercial-control",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "semantic",
+        "ref": "R27"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": ["semanticMatchThreshold"],
+      "invalidationTriggers": ["route", "quote"],
+      "semantic": {
+        "promptVersion": "r27-v1",
+        "question": {
+          "kind": "noul",
+          "text": "The customer's written restrictions allow the planned route and handover. With no written restrictions, they allow it."
+        },
+        "state": {
+          "restrictions": "order.customer.restrictionsText",
+          "route": "for leg in legs return leg.origin + \" -> \" + leg.destination",
+          "handover": "order.handover"
+        },
+        "passWhen": {
+          "probabilityAtLeast": "semanticMatchThreshold"
+        }
+      }
+    },
+    {
+      "ruleId": "R29",
+      "version": "1",
+      "title": "Transport reserved",
+      "owner": "transport-planning",
+      "scope": "leg",
+      "dependsOn": ["R05", "R06", "R07", "R24", "R25"],
+      "evaluator": {
+        "kind": "code",
+        "ref": "R29"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["route", "carrier"]
+    },
+    {
+      "ruleId": "R30",
+      "version": "1",
+      "title": "Plan valid",
+      "owner": "transport-planning",
+      "scope": "order",
+      "dependsOn": ["R05", "R06", "R07", "R24", "R25", "R29"],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "R30"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": [],
+      "combiner": {
+        "op": "and",
+        "of": [
+          {
+            "op": "ref",
+            "ruleId": "R06"
+          },
+          {
+            "op": "allOf",
+            "scope": "leg",
+            "of": {
+              "op": "and",
+              "of": [
+                {
+                  "op": "ref",
+                  "ruleId": "R05"
+                },
+                {
+                  "op": "ref",
+                  "ruleId": "R07"
+                },
+                {
+                  "op": "ref",
+                  "ruleId": "R24"
+                },
+                {
+                  "op": "ref",
+                  "ruleId": "R25"
+                },
+                {
+                  "op": "ref",
+                  "ruleId": "R29"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "ruleId": "R31",
+      "version": "1",
+      "title": "Customer active",
+      "owner": "commercial-control",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R31"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["quote"],
+      "expression": {
+        "passWhen": "order.customer.active = true"
+      }
+    },
+    {
+      "ruleId": "R32",
+      "version": "1",
+      "title": "Within credit",
+      "owner": "commercial-control",
+      "scope": "order",
+      "dependsOn": [],
+      "evaluator": {
+        "kind": "expression",
+        "ref": "R32"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["quote"],
+      "expression": {
+        "passWhen": "order.quote.amountCents + order.quote.extraCostCents <= order.customer.creditLimitCents - order.customer.outstandingCents",
+        "observe": "order.customer.creditLimitCents - order.customer.outstandingCents - order.quote.amountCents - order.quote.extraCostCents"
+      }
+    },
+    {
+      "ruleId": "R36",
+      "version": "1",
+      "title": "Commercial ready",
+      "owner": "commercial-control",
+      "scope": "order",
+      "dependsOn": ["R27", "R31", "R32"],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "R36"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": [],
+      "combiner": {
+        "op": "and",
+        "of": [
+          {
+            "op": "ref",
+            "ruleId": "R31"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R27"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R32"
+          }
+        ]
+      }
+    },
+    {
+      "ruleId": "R37",
+      "version": "1",
+      "title": "Cargo ready",
+      "owner": "order-coordination",
+      "scope": "order",
+      "dependsOn": ["R02", "R03", "R04"],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "R37"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": [],
+      "combiner": {
+        "op": "allOf",
+        "scope": "cargoItem",
+        "of": {
+          "op": "and",
+          "of": [
+            {
+              "op": "ref",
+              "ruleId": "R02"
+            },
+            {
+              "op": "ref",
+              "ruleId": "R03"
+            },
+            {
+              "op": "ref",
+              "ruleId": "R04"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "ruleId": "R39",
+      "version": "1",
+      "title": "Loaded",
+      "owner": "order-coordination",
+      "scope": "order",
+      "dependsOn": ["R30", "R36", "R37"],
+      "evaluator": {
+        "kind": "humanGate",
+        "ref": "R39"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": ["cargo", "route", "carrier", "quote"],
+      "humanGate": {
+        "taskType": "OPERATION",
+        "steps": [
+          {
+            "requiredRole": "warehouseOperator"
+          }
+        ],
+        "mode": "sequential",
+        "distinctActors": true,
+        "evidenceRequirements": ["loadScanId", "sealNumber"],
+        "expiresAfterHours": 12
+      }
+    },
+    {
+      "ruleId": "R40",
+      "version": "1",
+      "title": "Release allowed",
+      "owner": "order-coordination",
+      "scope": "order",
+      "dependsOn": ["R08", "R30", "R36", "R37", "R39"],
+      "evaluator": {
+        "kind": "combinator",
+        "ref": "R40"
+      },
+      "unknownPolicy": "block",
+      "inputPaths": [],
+      "parameters": [],
+      "invalidationTriggers": [],
+      "combiner": {
+        "op": "and",
+        "of": [
+          {
+            "op": "ref",
+            "ruleId": "R08"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R30"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R36"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R37"
+          },
+          {
+            "op": "ref",
+            "ruleId": "R39"
+          }
+        ]
+      }
+    }
+  ],
+  "mixingMatrix": [
+    {
+      "categories": ["general", "general"],
+      "outcome": "allowed"
+    },
+    {
+      "categories": ["general", "coldChain"],
+      "outcome": "allowed"
+    },
+    {
+      "categories": ["general", "controlled"],
+      "outcome": "forbidden"
+    },
+    {
+      "categories": ["coldChain", "coldChain"],
+      "outcome": "allowed"
+    },
+    {
+      "categories": ["coldChain", "controlled"],
+      "outcome": "requiresQualification",
+      "qualification": "CTRL-COLD"
+    },
+    {
+      "categories": ["controlled", "controlled"],
+      "outcome": "allowed"
+    }
+  ]
+}

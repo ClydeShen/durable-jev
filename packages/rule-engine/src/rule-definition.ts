@@ -32,6 +32,8 @@ export const expressionRuleSchema = z.object({
   observe: z.string().min(1).optional(),
 })
 
+const probabilityThresholdSchema = z.union([z.number().min(0).max(1), z.string().min(1)])
+
 export const semanticRuleSchema = z.object({
   promptVersion: z.string().min(1),
   question: z.discriminatedUnion('kind', [
@@ -45,8 +47,8 @@ export const semanticRuleSchema = z.object({
   state: z.record(z.string(), z.string().min(1)),
   passWhen: z.union([
     z.object({ choiceIn: z.array(z.string().min(1)).min(1) }),
-    z.object({ probabilityAtLeast: z.number().min(0).max(1) }),
-    z.object({ probabilityAtMost: z.number().min(0).max(1) }),
+    z.object({ probabilityAtLeast: probabilityThresholdSchema }),
+    z.object({ probabilityAtMost: probabilityThresholdSchema }),
   ]),
 })
 export type SemanticRule = z.infer<typeof semanticRuleSchema>

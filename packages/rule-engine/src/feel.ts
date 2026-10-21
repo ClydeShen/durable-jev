@@ -31,6 +31,18 @@ export function evaluateFeel(expression: string, context: Facts): unknown {
   return evaluate(expression, context).value
 }
 
+export function semanticState(
+  stateExpressions: Record<string, string>,
+  context: Facts,
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(stateExpressions).map(([name, expression]) => [
+      name,
+      evaluateFeel(expression, context),
+    ]),
+  )
+}
+
 export function statusOfPredicate(value: unknown): CheckStatus {
   if (value === true) return 'PASS'
   if (value === false) return 'FAIL'

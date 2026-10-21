@@ -1,14 +1,20 @@
-import type { RuleEngineKind } from '@durable-jev/contracts'
 import {
   type CheckScope,
   type CheckStatus,
   isPendingCheckStatus,
+  type RuleEngineKind,
   type RuleId,
 } from '@durable-jev/contracts'
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import type { CollectionScope } from './expression.js'
-import { evaluateFeel, feelContext, type PolicyParameters, statusOfPredicate } from './feel.js'
+import {
+  evaluateFeel,
+  feelContext,
+  type PolicyParameters,
+  semanticState,
+  statusOfPredicate,
+} from './feel.js'
 import { ruleInputFingerprint } from './fingerprint.js'
 import type { InvalidationTrigger, RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
 import { referencedRules } from './validate-rule-set.js'
@@ -122,6 +128,7 @@ class GraphState implements ExpressionContext {
   constructor(
     rules: readonly RuleDefinition[],
     readonly facts: CaseFacts,
+    private readonly parameters: PolicyParameters,
   ) {
     this.scopeOfRule = new Map(rules.map((rule) => [rule.ruleId, rule.scope]))
   }
@@ -166,12 +173,20 @@ class GraphState implements ExpressionContext {
     return scopes.map((member) => this.resultOf(ruleId, member)?.inputFingerprint ?? 'missing')
   }
 
+  private inputsOf(rule: RuleDefinition, scope: CheckScope): Record<string, unknown> {
+    if (rule.expression) return { context: feelContext(this.facts, scope, this.parameters) }
+    if (rule.semantic) {
+      return semanticState(rule.semantic.state, feelContext(this.facts, scope, this.parameters))
+    }
+    return Object.fromEntries(rule.inputPaths.map((path) => [path, this.factOf(path, scope)]))
+  }
+
   fingerprintOf(rule: RuleDefinition, scope: CheckScope): string {
     return ruleInputFingerprint({
       ruleId: rule.ruleId,
       ruleVersion: rule.version,
       scopeKey: scopeKey(scope),
-      inputs: Object.fromEntries(rule.inputPaths.map((path) => [path, this.factOf(path, scope)])),
+      inputs: this.inputsOf(rule, scope),
       entityVersions: Object.fromEntries(
         rule.invalidationTriggers.map((trigger) => [trigger, this.facts.entityVersions[trigger]]),
       ),
@@ -317,7 +332,7 @@ export async function evaluateRuleGraph(
   environment: EvaluationEnvironment,
   options: EvaluationOptions = {},
 ): Promise<RuleGraphEvaluation> {
-  const state = new GraphState(ruleSet.rules, facts)
+  const state = new GraphState(ruleSet.rules, facts, environment.parameters)
   const escalations: RuleGraphEvaluation['escalations'] = []
   const previous = new Map(
     (options.previous ?? []).map((result) => [

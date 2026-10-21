@@ -5,6 +5,7 @@
     { "path": "packages/model-providers" },
     { "path": "packages/rule-engine" },
     { "path": "packages/store" },
-    { "path": "packages/human-tasks" }
+    { "path": "packages/human-tasks" },
+    { "path": "packages/agent-core" }
   ]
 }
