@@ -25,7 +25,7 @@ const roleLabels: Record<string, string> = {
   DISPATCHER: 'dispatcher',
 }
 
-function describeExpression(expression: Expression): string {
+const describeExpression = (expression: Expression): string => {
   switch (expression.kind) {
     case 'ref':
       return expression.ruleId
@@ -45,23 +45,23 @@ function describeExpression(expression: Expression): string {
 const withoutOuterParentheses = (text: string) =>
   text.startsWith('(') && text.endsWith(')') ? text.slice(1, -1) : text
 
-function prerequisitesOf(rule: RuleDefinition): string {
+const prerequisitesOf = (rule: RuleDefinition): string => {
   if (rule.combiner) return withoutOuterParentheses(describeExpression(rule.combiner))
   return rule.dependsOn.join(', ') || '—'
 }
 
-function humanRoleOf(rule: RuleDefinition): string {
+const humanRoleOf = (rule: RuleDefinition): string => {
   if (!rule.humanGate) return '—'
   const role = roleLabels[rule.humanGate.requiredRole] ?? rule.humanGate.requiredRole
   return rule.evaluator.kind === 'humanGate' ? role : `review: ${role}`
 }
 
-export function renderPolicyDocument(input: {
+export const renderPolicyDocument = (input: {
   template: string
   rules: readonly RuleDefinition[]
   descriptions: Readonly<Record<string, string>>
   parameters: Readonly<Record<string, unknown>>
-}): string {
+}): string => {
   const undescribed = input.rules.filter((rule) => !input.descriptions[rule.ruleId])
   if (undescribed.length > 0) {
     throw new Error(`missing descriptions for ${undescribed.map((rule) => rule.ruleId).join(', ')}`)
@@ -97,7 +97,7 @@ export function renderPolicyDocument(input: {
 
 export const policyDocumentPath = join(materialsDirectory, 'policy-v1.md')
 
-export function renderCurrentPolicyDocument(): string {
+export const renderCurrentPolicyDocument = (): string => {
   return renderPolicyDocument({
     template: readFileSync(join(materialsDirectory, 'policy-v1.template.md'), 'utf8'),
     rules: loadRuleSetFile().rules as RuleDefinition[],
@@ -106,6 +106,6 @@ export function renderCurrentPolicyDocument(): string {
   })
 }
 
-export function writePolicyDocument(): void {
+export const writePolicyDocument = (): void => {
   writeFileSync(policyDocumentPath, renderCurrentPolicyDocument())
 }

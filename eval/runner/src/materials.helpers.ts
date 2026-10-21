@@ -6,7 +6,7 @@ import { CaseFile } from './case-file.schema.js'
 
 export const materialsDirectory = fileURLToPath(new URL('../../materials/', import.meta.url))
 
-export function readMaterial<T>(fileName: string): T {
+export const readMaterial = <T>(fileName: string): T => {
   return JSON.parse(readFileSync(join(materialsDirectory, fileName), 'utf8')) as T
 }
 

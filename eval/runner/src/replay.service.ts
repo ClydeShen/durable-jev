@@ -50,7 +50,7 @@ const severityOrder: readonly GateStatus[] = [
 
 const fixedNow = () => '2026-11-02T08:00:00.000Z'
 
-export function loadReplayConfiguration(): RuleConfiguration {
+export const loadReplayConfiguration = (): RuleConfiguration => {
   return buildRuleConfiguration(loadRuleSetFile(), loadPolicyParameters() as never, {
     mixingMatrix: readMaterial('decision-tables/mixing-matrix.json'),
     semanticQuestions: readMaterial('semantic-questions.json'),
@@ -98,11 +98,11 @@ class ReplayedCoordinator {
   }
 }
 
-function taskIdFor(
+const taskIdFor = (
   replayed: ReplayedCoordinator,
   caseId: string,
   step: { ruleId: string; reuseLastTask?: boolean | undefined },
-): string {
+): string => {
   const remembered = replayed.lastTaskIds.get(step.ruleId)
   if (step.reuseLastTask && remembered) return remembered
   const taskId = openTaskId(replayed.coordinator.getCase(caseId), step.ruleId)
@@ -110,17 +110,17 @@ function taskIdFor(
   return taskId
 }
 
-function openTaskId(view: CaseView, ruleId: string): string {
+const openTaskId = (view: CaseView, ruleId: string): string => {
   const open = view.humanTasks.filter((task) => task.ruleId === ruleId && task.status === 'OPEN')
   if (open.length !== 1) throw new Error(`expected one open ${ruleId} task, found ${open.length}`)
   return open[0]?.humanTaskId as string
 }
 
-async function performStep(
+const performStep = async (
   replayed: ReplayedCoordinator,
   caseFile: CaseFile,
   step: EventScriptStep,
-): Promise<void> {
+): Promise<void> => {
   const { coordinator } = replayed
   const caseId = caseFile.caseId
   switch (step.step) {
@@ -178,7 +178,7 @@ async function performStep(
   }
 }
 
-function gateStatus(view: CaseView, key: string): GateStatus | undefined {
+const gateStatus = (view: CaseView, key: string): GateStatus | undefined => {
   const [ruleId, entityId] = key.split('@')
   const statuses = view.checks
     .filter(
@@ -188,11 +188,11 @@ function gateStatus(view: CaseView, key: string): GateStatus | undefined {
   return severityOrder.find((status) => statuses.includes(status))
 }
 
-function compareStage(
+const compareStage = (
   view: CaseView,
   expected: StageExpectation,
   errorCode: string | undefined,
-): string[] {
+): string[] => {
   const failures: string[] = []
   if (expected.error !== errorCode) {
     failures.push(`error: expected ${expected.error ?? 'none'}, got ${errorCode ?? 'none'}`)
@@ -235,18 +235,18 @@ function compareStage(
   return failures
 }
 
-function errorCodeOf(error: unknown): string {
+const errorCodeOf = (error: unknown): string => {
   if (error instanceof CoordinatorError) return error.code
   return error instanceof Error ? error.message : String(error)
 }
 
 export type ReplayOptions = { judgeFor?: JudgeFor; caseIds?: readonly string[] }
 
-export async function replayCase(
+export const replayCase = async (
   caseFile: CaseFile,
   configuration: RuleConfiguration = loadReplayConfiguration(),
   options: ReplayOptions = {},
-): Promise<CaseReplay> {
+): Promise<CaseReplay> => {
   const workDirectory = mkdtempSync(join(tmpdir(), `replay-${caseFile.caseId}-`))
   try {
     const replayed = new ReplayedCoordinator(
@@ -278,7 +278,7 @@ export async function replayCase(
   }
 }
 
-export async function replayAllCases(options: ReplayOptions = {}): Promise<CaseReplay[]> {
+export const replayAllCases = async (options: ReplayOptions = {}): Promise<CaseReplay[]> => {
   const configuration = loadReplayConfiguration()
   const results: CaseReplay[] = []
   const caseIds = options.caseIds?.length ? options.caseIds : listCaseIds()
