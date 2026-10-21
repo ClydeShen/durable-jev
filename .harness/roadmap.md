@@ -94,7 +94,7 @@
 | [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
 | [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
 | [x] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
-| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 结论与组件建议 | 每条假设有证据 | T7.1–T7.4 |
+| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 结论与组件建议（已写；H1 缺 B1 对照、H2 缺 B2，待 NVIDIA key） | 每条假设有证据 | T7.1–T7.4 |
 
 ## P8 规范统一与一键 Demo
 
