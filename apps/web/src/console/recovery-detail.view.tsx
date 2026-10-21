@@ -1,12 +1,6 @@
 import type { StoredEvent } from '@durable-jev/contracts'
 import { Icon } from '../icons.component.js'
-import {
-  categoryOf,
-  describeEvent,
-  describeSpan,
-  formatDuration,
-  isRecoveryEvent,
-} from './console.model.js'
+import { categoryOf, describeEvent, formatDuration, isRecoveryEvent } from './console.model.js'
 
 export const RecoveryDetail = (props: {
   events: StoredEvent[]

@@ -51,7 +51,7 @@ describe('buildSemanticQuestions', () => {
 
   it('explains declared category codes', () => {
     const [question] = questionsFor(logThree, ['R03'])
-    expect(question?.state['declaredCategories']).toMatch(/^CONTROLLED \(.*lithium/)
+    expect(question?.state.declaredCategories).toMatch(/^CONTROLLED \(.*lithium/)
   })
 })
 
