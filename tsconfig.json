@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/contracts" },
     { "path": "packages/model-providers" },
-    { "path": "packages/rule-engine" }
+    { "path": "packages/rule-engine" },
+    { "path": "packages/store" }
   ]
 }
