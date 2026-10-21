@@ -4,7 +4,7 @@ import { CachingJudge, semanticCacheMigrations } from './caching.judge.js'
 import type { SemanticJudge } from './semantic-judge.types.js'
 import type { SemanticQuestion } from './semantic-question.helpers.js'
 
-function countingJudge() {
+const countingJudge = () => {
   const asked: string[] = []
   const judge: SemanticJudge = {
     provider: 'jev',

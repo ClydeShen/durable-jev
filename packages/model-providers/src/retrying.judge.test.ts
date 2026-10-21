@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { JudgeUnavailableError, RetryingJudge } from './retrying.judge.js'
 import type { SemanticJudge } from './semantic-judge.types.js'
 
-function flakyJudge(failures: unknown[]) {
+const flakyJudge = (failures: unknown[]) => {
   const calls = { count: 0 }
   const judge: SemanticJudge = {
     provider: 'jev',

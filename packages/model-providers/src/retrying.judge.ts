@@ -14,7 +14,7 @@ export class JudgeUnavailableError extends Error {
 
 // Timeouts, lost connections, 408, 429 and 5xx may pass on retry; a bad key or a bad request
 // will not, so those fail at once.
-export function isTransient(error: unknown): boolean {
+export const isTransient = (error: unknown): boolean => {
   if (error instanceof APIError)
     return error.status === 408 || error.status === 429 || error.status >= 500
   return error instanceof APIConnectionError

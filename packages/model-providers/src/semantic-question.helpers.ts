@@ -42,7 +42,7 @@ type SourceContext = {
 
 const formatCelsius = (deciCelsius: number) => `${(deciCelsius / 10).toFixed(1)} °C`
 
-function describeLeg(leg: TransportLeg, { referenceData }: SemanticGlossary): string {
+const describeLeg = (leg: TransportLeg, { referenceData }: SemanticGlossary): string => {
   const placeName = (locationId: string) =>
     referenceData?.locations?.find((location) => location.locationId === locationId)?.name ??
     locationId
@@ -56,7 +56,7 @@ function describeLeg(leg: TransportLeg, { referenceData }: SemanticGlossary): st
   return `${placeName(leg.fromLocation)} to ${placeName(leg.toLocation)} by ${carrier?.name ?? leg.carrierId} in ${vehicleText}`
 }
 
-function resolveSource(source: string, context: SourceContext): string | undefined {
+const resolveSource = (source: string, context: SourceContext): string | undefined => {
   const { shipment, evidence, glossary, cargoItemId } = context
   const item = shipment.cargoItems.find((candidate) => candidate.cargoItemId === cargoItemId)
   if (source === 'item.description') return item?.description
@@ -89,13 +89,13 @@ function resolveSource(source: string, context: SourceContext): string | undefin
 
 const stateKeyOf = (source: string) => source.replace(/^(item|order)\./, '').replace(':', '_')
 
-export function buildSemanticQuestions(input: {
+export const buildSemanticQuestions = (input: {
   templates: readonly SemanticQuestionTemplate[]
   ruleIds: ReadonlySet<string>
   shipment: Shipment
   evidence: CaseEvidence
   glossary?: SemanticGlossary
-}): SemanticQuestion[] {
+}): SemanticQuestion[] => {
   return input.templates
     .filter((template) => input.ruleIds.has(template.ruleId))
     .flatMap((template) => {

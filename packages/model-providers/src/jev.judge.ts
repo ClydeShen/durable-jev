@@ -56,7 +56,7 @@ export class JevJudge implements SemanticJudge {
   }
 }
 
-function toSemanticAnswer(answer: JevAnswer): SemanticAnswer {
+const toSemanticAnswer = (answer: JevAnswer): SemanticAnswer => {
   return answer.type === 'noul'
     ? { type: 'noul', noul: answer.noul }
     : { type: 'choice', choice: answer.choice, probabilities: answer.probabilities }
