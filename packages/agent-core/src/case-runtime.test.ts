@@ -134,6 +134,9 @@ describe('CaseRuntime', () => {
       'SUPERSEDED',
     )
     expect(view.tasks.filter((task) => task.status === 'OPEN')).toHaveLength(1)
+    expect(view.outcomes.find((outcome) => outcome.ruleId === 'R39')?.invalidatedBy).toBe(
+      'r2 (cargo)',
+    )
   })
 
   it('withdraws an open task whose rule now waits on changed inputs', async () => {

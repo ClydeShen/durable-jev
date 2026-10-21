@@ -1,4 +1,5 @@
-import type { CargoItem, Leg, Shipment } from '@durable-jev/contracts'
+import { createHash } from 'node:crypto'
+import { type CargoItem, canonicalJson, type Leg, type Shipment } from '@durable-jev/contracts'
 import type { CaseFacts, Facts } from '@durable-jev/rule-engine'
 import type { ReferenceData } from './reference-data.js'
 import { longestExcursionMinutes } from './temperature-log.js'
@@ -44,9 +45,18 @@ function legFacts(leg: Leg, reference: ReferenceData): Facts {
   }
 }
 
+function documentsVersion(shipment: Shipment): string {
+  return createHash('sha256')
+    .update(
+      canonicalJson({ documents: shipment.documents, warehouseRecords: shipment.warehouseRecords }),
+    )
+    .digest('hex')
+    .slice(0, 12)
+}
+
 export function buildCaseFacts(shipment: Shipment, reference: ReferenceData): CaseFacts {
   return {
-    entityVersions: { ...shipment.entityVersions, documents: shipment.caseRevision },
+    entityVersions: { ...shipment.entityVersions, documents: documentsVersion(shipment) },
     order: {
       caseId: shipment.caseId,
       shipmentId: shipment.shipmentId,

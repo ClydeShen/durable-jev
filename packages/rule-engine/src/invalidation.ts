@@ -1,5 +1,4 @@
 import type { RuleId } from '@durable-jev/contracts'
-import type { RuleOutcome } from './evaluate-rule-graph.js'
 import type { InvalidationTrigger, RuleDefinition, RuleSet } from './rule-definition.js'
 
 export interface EntityChange {
@@ -34,17 +33,4 @@ export function invalidateDependentsOf(ruleSet: RuleSet, change: EntityChange): 
     }
   }
   return affected
-}
-
-export function markInvalidated(
-  outcomes: readonly RuleOutcome[],
-  ruleSet: RuleSet,
-  change: EntityChange,
-): RuleOutcome[] {
-  const affected = invalidateDependentsOf(ruleSet, change)
-  return outcomes.map((result) =>
-    affected.has(result.ruleId)
-      ? { ...result, status: 'INVALIDATED', invalidatedBy: change.changeId, reused: false }
-      : result,
-  )
 }

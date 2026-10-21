@@ -1,5 +1,6 @@
 {
   "story": "General cargo, one leg, complete documents. Every applicable rule passes; the warehouse loads and the dispatcher releases.",
+  "reviewStatus": "draft",
   "shipment": {
     "caseId": "LOG-001",
     "correlationId": "corr-LOG-001",

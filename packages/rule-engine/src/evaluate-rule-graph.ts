@@ -30,7 +30,7 @@ import { referencedRules } from './validate-rule-set.js'
 export type Facts = Record<string, unknown>
 
 export interface CaseFacts {
-  entityVersions: Partial<Record<InvalidationTrigger, number>>
+  entityVersions: Partial<Record<InvalidationTrigger, number | string>>
   order: Facts
   cargoItems: { cargoItemId: string; facts: Facts }[]
   legs: { legId: string; facts: Facts }[]

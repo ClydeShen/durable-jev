@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { type CaseFacts, evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
 import { allOf, and, ref } from './expression.js'
-import { invalidateDependentsOf, markInvalidated } from './invalidation.js'
+import { invalidateDependentsOf } from './invalidation.js'
 import type { RuleDefinition, RuleSet } from './rule-definition.js'
 
 function rule(ruleId: string, overrides: Partial<RuleDefinition>): RuleDefinition {
@@ -111,20 +111,6 @@ describe('invalidateDependentsOf', () => {
     const affected = invalidateDependentsOf(ruleSet, { changeId: 'chg-1', entities: ['route'] })
     expect([...affected].sort()).toEqual(['R05', 'R13', 'R16', 'R30', 'R40'])
   })
-
-  it('marks affected results with the change that caused it', async () => {
-    const { environment } = countingEvaluators()
-    const first = await evaluateRuleGraph(ruleSet, original, environment)
-    const marked = markInvalidated(first.outcomes, ruleSet, {
-      changeId: 'chg-1',
-      entities: ['route'],
-    })
-    const byRule = (ruleId: string) => marked.filter((result) => result.ruleId === ruleId)
-    expect(byRule('R05').every((result) => result.status === 'INVALIDATED')).toBe(true)
-    expect(byRule('R05')[0]?.invalidatedBy).toBe('chg-1')
-    expect(byRule('R31')[0]?.status).toBe('PASS')
-    expect(byRule('R02')[0]?.status).toBe('PASS')
-  })
 })
 
 describe('incremental evaluation', () => {
@@ -142,13 +128,9 @@ describe('incremental evaluation', () => {
   it('re-evaluates only what the vehicle change touches', async () => {
     const { calls, environment } = countingEvaluators()
     const first = await evaluateRuleGraph(ruleSet, original, environment)
-    const marked = markInvalidated(first.outcomes, ruleSet, {
-      changeId: 'chg-1',
-      entities: ['route'],
-    })
     calls.length = 0
     const second = await evaluateRuleGraph(ruleSet, vehicleChanged, environment, {
-      previous: marked,
+      previous: first.outcomes,
     })
     expect(calls.sort()).toEqual(['R05', 'R05', 'R13', 'R16', 'R16'])
     expect(second.outcomeOf('R31')?.reused).toBe(true)

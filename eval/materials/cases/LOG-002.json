@@ -1,4 +1,5 @@
 {
+  "reviewStatus": "draft",
   "story": "冷链疫苗到仓检查发现外箱压损。Jev 读检查备注提示包装风险，仓库重新包装并复测后才解除阻塞，再装载发运。",
   "shipment": {
     "caseId": "LOG-002",

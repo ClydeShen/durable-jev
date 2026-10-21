@@ -1,4 +1,5 @@
 {
+  "reviewStatus": "draft",
   "story": "两段运输，中转站不支持冷链：第一段本身没问题也不能整单发运；改经支持冷藏的中转站后重算通过。",
   "shipment": {
     "caseId": "LOG-007",

@@ -6,7 +6,7 @@ export interface FingerprintInput {
   ruleVersion: string
   scopeKey: string
   inputs: Record<string, unknown>
-  entityVersions: Record<string, number | undefined>
+  entityVersions: Record<string, number | string | undefined>
   upstream: Record<string, string[]>
 }
 

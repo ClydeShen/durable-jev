@@ -3,7 +3,10 @@ import { type Decision, decideHumanTask, type HumanAction } from '@durable-jev/h
 import type { SemanticJudge } from '@durable-jev/model-providers'
 import {
   type CaseFacts,
+  type EntityChange,
   evaluateRuleGraph,
+  invalidateDependentsOf,
+  invalidationTriggers,
   type LeafEvaluator,
   type RuleDefinition,
   type RuleOutcome,
@@ -65,6 +68,8 @@ export class CaseRuntime {
   submit(shipment: Shipment): Promise<CaseView> {
     return this.serialized(shipment.caseId, async () => {
       const { store, now } = this.options
+      const previous = store.caseRecord(shipment.caseId)?.shipment
+      const change = previous ? this.changeBetween(previous, shipment) : undefined
       store.transaction(() => {
         store.putCase(shipment, now())
         store.record({
@@ -73,7 +78,7 @@ export class CaseRuntime {
           payload: { correlationId: shipment.correlationId, caseRevision: shipment.caseRevision },
         })
       })
-      return this.evaluateNow(shipment.caseId)
+      return this.evaluateNow(shipment.caseId, change)
     })
   }
 
@@ -144,9 +149,18 @@ export class CaseRuntime {
     )
   }
 
-  private async evaluateNow(caseId: string): Promise<CaseView> {
+  private changeBetween(previous: Shipment, next: Shipment): EntityChange | undefined {
+    const [before, after] = [this.options.factsOf(previous), this.options.factsOf(next)]
+    const entities = invalidationTriggers.filter(
+      (trigger) => before.entityVersions[trigger] !== after.entityVersions[trigger],
+    )
+    return entities.length > 0 ? { changeId: `r${next.caseRevision}`, entities } : undefined
+  }
+
+  private async evaluateNow(caseId: string, change?: EntityChange): Promise<CaseView> {
     const { store, rulePack, factsOf, now } = this.options
     const before = this.view(caseId)
+    const affected = change ? invalidateDependentsOf(rulePack.ruleSet, change) : new Set<string>()
     const shipment = before.record.shipment
     const gates = new HumanGateSession(shipment, before.tasks, now())
     const graph = await evaluateRuleGraph(
@@ -156,12 +170,30 @@ export class CaseRuntime {
       { previous: before.outcomes },
     )
     gates.withdrawStale(graph.outcomes)
+    const changeLabel = change && `${change.changeId} (${change.entities.join(', ')})`
+    const outcomes = graph.outcomes.map((outcome) =>
+      changeLabel && affected.has(outcome.ruleId) && !outcome.reused
+        ? { ...outcome, invalidatedBy: changeLabel }
+        : outcome,
+    )
     const written = store.transaction(() => {
       const current = store.caseRecord(caseId)
       if (current?.shipment.caseRevision !== shipment.caseRevision) return false
-      store.replaceOutcomes(caseId, graph.outcomes)
+      store.replaceOutcomes(caseId, outcomes)
+      for (const outcome of before.outcomes.filter((candidate) => affected.has(candidate.ruleId))) {
+        store.record({
+          caseId,
+          eventName: 'result.invalidated',
+          payload: {
+            ruleId: outcome.ruleId,
+            scope: outcome.scope,
+            previousStatus: outcome.status,
+            change: changeLabel,
+          },
+        })
+      }
       store.putTasks(gates.changes())
-      for (const outcome of changedOutcomes(before.outcomes, graph.outcomes)) {
+      for (const outcome of changedOutcomes(before.outcomes, outcomes)) {
         store.record({
           caseId,
           eventName: 'rule.evaluated',
@@ -182,7 +214,7 @@ export class CaseRuntime {
       }
       return true
     })
-    return written ? this.view(caseId) : this.evaluateNow(caseId)
+    return written ? this.view(caseId) : this.evaluateNow(caseId, change)
   }
 
   private serialized<T>(caseId: string, work: () => Promise<T>): Promise<T> {

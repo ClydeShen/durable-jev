@@ -68,6 +68,7 @@ export type CaseEvent = z.infer<typeof caseEventSchema>
 
 const caseFileSchema = z.object({
   story: z.string().min(1),
+  reviewStatus: z.enum(['draft', 'reviewed']),
   shipment: shipmentSchema,
   scriptedJudgements: z.array(
     z.object({

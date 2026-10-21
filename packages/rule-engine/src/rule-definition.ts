@@ -11,7 +11,8 @@ import { expressionSchema } from './expression.js'
 const ruleScopeSchema = z.enum(['order', 'cargoItem', 'leg'])
 export type RuleScope = z.infer<typeof ruleScopeSchema>
 
-const invalidationTriggerSchema = z.enum(['cargo', 'route', 'carrier', 'quote', 'documents'])
+export const invalidationTriggers = ['cargo', 'route', 'carrier', 'quote', 'documents'] as const
+const invalidationTriggerSchema = z.enum(invalidationTriggers)
 export type InvalidationTrigger = z.infer<typeof invalidationTriggerSchema>
 
 const humanGateSchema = z.object({
