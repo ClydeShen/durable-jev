@@ -28,11 +28,11 @@ export type NewHumanTask = {
   expiresAt: UtcTimestamp
 }
 
-export function createHumanTask(task: NewHumanTask): HumanTask {
+export const createHumanTask = (task: NewHumanTask): HumanTask => {
   return { ...task, status: humanTaskMachine.initial }
 }
 
-function moveTo(task: HumanTask, status: HumanTask['status'], changes: Partial<HumanTask> = {}) {
+const moveTo = (task: HumanTask, status: HumanTask['status'], changes: Partial<HumanTask> = {}) => {
   return { ...task, ...changes, status: humanTaskMachine.transition(task.status, status) }
 }
 
@@ -64,11 +64,11 @@ export type HumanTaskCommandContext = {
   currentTarget: HumanTaskTarget
 }
 
-export function applyHumanTaskCommand(
+export const applyHumanTaskCommand = (
   task: HumanTask,
   command: HumanTaskCommand,
   context: HumanTaskCommandContext,
-): HumanTaskCommandResult {
+): HumanTaskCommandResult => {
   if (task.status !== 'OPEN') return rejected(task, 'TASK_NOT_OPEN')
   if (command.kind === 'cancel') return accepted(moveTo(task, 'CANCELLED'))
 
@@ -109,22 +109,22 @@ export function applyHumanTaskCommand(
   )
 }
 
-export function expireIfDue(task: HumanTask, now: UtcTimestamp): HumanTask {
+export const expireIfDue = (task: HumanTask, now: UtcTimestamp): HumanTask => {
   return task.status === 'OPEN' && isExpired(task, now) ? moveTo(task, 'EXPIRED') : task
 }
 
-export function canBeSuperseded(task: HumanTask): boolean {
+export const canBeSuperseded = (task: HumanTask): boolean => {
   return task.status !== 'SUPERSEDED' && humanTaskMachine.canTransition(task.status, 'SUPERSEDED')
 }
 
-export function supersedeTask(task: HumanTask, replacementId: HumanTaskId): HumanTask {
+export const supersedeTask = (task: HumanTask, replacementId: HumanTaskId): HumanTask => {
   return moveTo(task, 'SUPERSEDED', { supersededBy: replacementId })
 }
 
-export function supersedeForNewTarget(
+export const supersedeForNewTarget = (
   task: HumanTask,
   replacement: Pick<NewHumanTask, 'humanTaskId' | 'target' | 'createdAt' | 'expiresAt'>,
-): { superseded: HumanTask; replacement: HumanTask } {
+): { superseded: HumanTask; replacement: HumanTask } => {
   return {
     superseded: supersedeTask(task, replacement.humanTaskId),
     replacement: createHumanTask({
@@ -142,11 +142,11 @@ export function supersedeForNewTarget(
   }
 }
 
-export function humanGateStatus(
+export const humanGateStatus = (
   tasks: readonly HumanTask[],
   currentTarget: HumanTaskTarget,
   now: UtcTimestamp,
-): GateStatus {
+): GateStatus => {
   const current = tasks
     .map((task) => expireIfDue(task, now))
     .filter((task) => targetsMatch(task.target, currentTarget))
@@ -158,18 +158,18 @@ export function humanGateStatus(
   return 'UNKNOWN'
 }
 
-export function targetsMatch(left: HumanTaskTarget, right: HumanTaskTarget): boolean {
+export const targetsMatch = (left: HumanTaskTarget, right: HumanTaskTarget): boolean => {
   return left.inputFingerprint === right.inputFingerprint
 }
 
-function isExpired(task: HumanTask, now: UtcTimestamp): boolean {
+const isExpired = (task: HumanTask, now: UtcTimestamp): boolean => {
   return Date.parse(now) >= Date.parse(task.expiresAt)
 }
 
-function accepted(task: HumanTask): HumanTaskCommandResult {
+const accepted = (task: HumanTask): HumanTaskCommandResult => {
   return { accepted: true, task }
 }
 
-function rejected(task: HumanTask, reason: HumanTaskRejection): HumanTaskCommandResult {
+const rejected = (task: HumanTask, reason: HumanTaskRejection): HumanTaskCommandResult => {
   return { accepted: false, reason, task }
 }
