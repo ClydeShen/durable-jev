@@ -13,10 +13,9 @@ Goal: from a folder name and a file name alone, a reader knows what the code doe
 
 ```
 apps/<service>/src/
-  domain/         rules and logic with no I/O
+  *.rules.ts, *.service.ts, ...   logic, flat in src
   http/           routes, request parsing, response mapping
   persistence/    migrations and repositories (SQLite)
-  telemetry/      events and spans this service emits
   main.ts         the only entry point; wires everything
 packages/<name>/src/   one concept per package; index.ts is the public surface
 eval/<tool>/src/       evaluation tools
@@ -43,11 +42,19 @@ tools/<tool>/src/      repository tooling
 | `.migrations` | table definitions |
 | `.runtime` | an agent runtime |
 | `.tools` | tools offered to an agent |
-| `.model` | pure logic behind a screen or view |
+| `.model` | pure logic behind a screen or view, or a scripted model |
 | `.helpers` | small pure functions for one named concept |
 | `.config` | configuration |
 | `.app` | builds an HTTP app (no listening) |
 | `.cli` | a command-line entry |
+| `.errors` | error types |
+| `.scenarios` | fault or test scenarios |
+| `.server` | a protocol server |
+| `.guard` | a limit enforced around a run |
+| `.registry` | a registry of tools |
+| `.relay` | moves records from one place to another |
+| `.bootstrap` | wires and starts a service |
+| `.manifest` | the list of processes to run |
 | `.fixture` | test data |
 | `.test` | tests, next to the code they test |
 

@@ -29,6 +29,14 @@ const roles = [
   'node',
   'component',
   'hook',
+  'errors',
+  'scenarios',
+  'server',
+  'guard',
+  'registry',
+  'bootstrap',
+  'relay',
+  'manifest',
 ]
 const exactNames = ['index.ts', 'main.ts', 'main.tsx']
 const skipped = new Set(['node_modules', 'dist', 'var', '.git', '.claude', '.harness'])
