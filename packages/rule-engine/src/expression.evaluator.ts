@@ -6,8 +6,8 @@ import {
   combineIfThen,
   combineNot,
   combineOr,
-} from './combinators.js'
-import type { CollectionScope, Expression } from './expression.js'
+} from './combinators.rules.js'
+import type { CollectionScope, Expression } from './expression.types.js'
 
 export type ExpressionContext = {
   subject: CheckSubject

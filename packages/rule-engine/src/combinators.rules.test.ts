@@ -1,8 +1,8 @@
 import type { CheckSubject, GateStatus, RuleId } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { combineAnd, combineIfThen, combineNot, combineOr } from './combinators.js'
-import { evaluateExpression } from './evaluate-expression.js'
-import type { Expression } from './expression.js'
+import { combineAnd, combineIfThen, combineNot, combineOr } from './combinators.rules.js'
+import { evaluateExpression } from './expression.evaluator.js'
+import type { Expression } from './expression.types.js'
 
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 

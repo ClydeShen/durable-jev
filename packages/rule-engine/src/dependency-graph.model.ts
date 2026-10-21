@@ -1,6 +1,6 @@
 import type { RuleId } from '@durable-jev/contracts'
-import { referencedRuleIds } from './expression.js'
-import type { RuleDefinition } from './rule-definition.js'
+import { referencedRuleIds } from './expression.types.js'
+import type { RuleDefinition } from './rule-definition.schema.js'
 
 export function upstreamRuleIds(rule: RuleDefinition): RuleId[] {
   const referenced = [

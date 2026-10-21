@@ -1,8 +1,8 @@
 import type { CheckSubject, GateStatus, RuleId } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { evaluateRuleGraph, type LeafOutcome } from './evaluate-rule-graph.js'
-import type { Expression } from './expression.js'
-import type { RuleDefinition } from './rule-definition.js'
+import type { Expression } from './expression.types.js'
+import type { RuleDefinition } from './rule-definition.schema.js'
+import { evaluateRuleGraph, type LeafOutcome } from './rule-graph.evaluator.js'
 
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 

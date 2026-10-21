@@ -1,6 +1,6 @@
 import { Role, RuleBranch, RuleId, RuleScope } from '@durable-jev/contracts'
 import { z } from 'zod'
-import { Expression } from './expression.js'
+import { Expression } from './expression.types.js'
 
 export const EvaluatorKind = z.enum([
   'code',

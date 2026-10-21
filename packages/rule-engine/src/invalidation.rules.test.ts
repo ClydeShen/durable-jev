@@ -1,10 +1,14 @@
 import type { EntityVersions, RuleId } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
-import type { Expression } from './expression.js'
-import { computeInputFingerprint, relevantEntityVersions } from './fingerprint.js'
-import { invalidateDependentsOf, markInvalidated, recomputeInvalidated } from './invalidation.js'
-import type { RuleDefinition } from './rule-definition.js'
+import type { Expression } from './expression.types.js'
+import { computeInputFingerprint, relevantEntityVersions } from './fingerprint.helpers.js'
+import {
+  invalidateDependentsOf,
+  markInvalidated,
+  recomputeInvalidated,
+} from './invalidation.rules.js'
+import type { RuleDefinition } from './rule-definition.schema.js'
+import { evaluateRuleGraph, type LeafEvaluator } from './rule-graph.evaluator.js'
 
 const ref = (ruleId: string): Expression => ({ kind: 'ref', ruleId: ruleId as RuleId })
 const and = (...ruleIds: string[]): Expression => ({ kind: 'and', operands: ruleIds.map(ref) })

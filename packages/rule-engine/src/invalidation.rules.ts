@@ -1,5 +1,6 @@
 import type { RuleId } from '@durable-jev/contracts'
-import { upstreamRuleIds } from './dependency-graph.js'
+import { upstreamRuleIds } from './dependency-graph.model.js'
+import type { RuleDefinition } from './rule-definition.schema.js'
 import {
   evaluateRuleGraph,
   type GraphSubjects,
@@ -7,8 +8,7 @@ import {
   type RuleEvaluation,
   type RuleGraphEvaluation,
   subjectKey,
-} from './evaluate-rule-graph.js'
-import type { RuleDefinition } from './rule-definition.js'
+} from './rule-graph.evaluator.js'
 
 export type ChangeSet = { changeId: string; triggers: readonly string[] }
 

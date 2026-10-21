@@ -4,10 +4,10 @@ import {
   isPendingGateStatus,
   type RuleId,
 } from '@durable-jev/contracts'
-import { combineAllOf } from './combinators.js'
-import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
-import { type CollectionScope, referencedRuleIds } from './expression.js'
-import type { RuleDefinition } from './rule-definition.js'
+import { combineAllOf } from './combinators.rules.js'
+import { type ExpressionContext, evaluateExpression } from './expression.evaluator.js'
+import { type CollectionScope, referencedRuleIds } from './expression.types.js'
+import type { RuleDefinition } from './rule-definition.schema.js'
 
 export type GraphSubjects = Readonly<Record<CollectionScope, readonly string[]>>
 

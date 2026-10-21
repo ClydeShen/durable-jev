@@ -1,7 +1,7 @@
 import type { RuleId, RuleScope } from '@durable-jev/contracts'
-import { orderRulesTopologically, upstreamRuleIds } from './dependency-graph.js'
-import type { Expression } from './expression.js'
-import { type RuleDefinition, RuleSet } from './rule-definition.js'
+import { orderRulesTopologically, upstreamRuleIds } from './dependency-graph.model.js'
+import type { Expression } from './expression.types.js'
+import { type RuleDefinition, RuleSet } from './rule-definition.schema.js'
 
 export type ConfigIssue =
   | { kind: 'invalidSchema'; path: string; message: string }
