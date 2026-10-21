@@ -9,7 +9,7 @@ import {
 import { startService } from '@durable-jev/service-kit'
 import { type Migration, openDatabase, type StoreDatabase } from '@durable-jev/store'
 import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
-import { branchServiceMigrations, createBranchServiceApp } from './branch-service-app.js'
+import { branchServiceMigrations, createBranchServiceApp } from './branch-service.app.js'
 
 export async function startBranchService(options: {
   serviceName: string

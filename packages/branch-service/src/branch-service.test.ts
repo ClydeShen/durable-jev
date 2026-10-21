@@ -5,8 +5,8 @@ import type { BranchEvaluationRequest } from '@durable-jev/contracts'
 import { buildRuleConfiguration, evaluateBranch } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { branchServiceMigrations, createBranchServiceApp } from './branch-service-app.js'
-import { BranchUnavailableError, httpBranchEvaluator } from './http-branch-evaluator.js'
+import { branchServiceMigrations, createBranchServiceApp } from './branch-service.app.js'
+import { BranchUnavailableError, httpBranchEvaluator } from './http-branch.client.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))
