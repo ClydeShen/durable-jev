@@ -1,6 +1,6 @@
 import type { AgentModel, ModelRequest, ModelTurn, ToolCall } from '@durable-jev/agent-harness'
-import type { CandidateCheck } from './candidate-check.js'
-import { resultToolName } from './investigation-tools.js'
+import type { CandidateCheck } from './candidate-check.rules.js'
+import { resultToolName } from './investigation.tools.js'
 
 type ListedCarrier = { carrierId: string; vehicles: { vehicleId: string }[] }
 

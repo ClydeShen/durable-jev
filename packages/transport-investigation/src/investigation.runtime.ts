@@ -9,8 +9,8 @@ import {
   type InvestigationRequest,
   investigationTools,
   resultToolName,
-} from './investigation-tools.js'
-import { ScriptedInvestigatorModel } from './scripted-investigator.js'
+} from './investigation.tools.js'
+import { ScriptedInvestigatorModel } from './scripted-investigator.model.js'
 
 export const investigatorInstructions = [
   'You help a transport planner replace a carrier that can no longer serve a leg.',

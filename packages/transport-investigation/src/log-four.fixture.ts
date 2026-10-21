@@ -5,8 +5,8 @@ import type {
   RuleEvaluationRecord,
 } from '@durable-jev/contracts'
 import { buildRuleConfiguration, evaluateBranch } from '@durable-jev/rule-evaluation'
-import type { InvestigationCase } from './candidate-check.js'
-import type { InvestigationDependencies } from './investigation-tools.js'
+import type { InvestigationCase } from './candidate-check.rules.js'
+import type { InvestigationDependencies } from './investigation.tools.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

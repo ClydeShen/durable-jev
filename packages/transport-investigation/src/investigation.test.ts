@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { checkCandidate } from './candidate-check.js'
-import { createInvestigationRuntime } from './investigation-runtime.js'
-import { investigationTools } from './investigation-tools.js'
+import { checkCandidate } from './candidate-check.rules.js'
+import { createInvestigationRuntime } from './investigation.runtime.js'
+import { investigationTools } from './investigation.tools.js'
 import {
   logFourDependencies as dependencies,
   investigated,

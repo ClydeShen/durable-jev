@@ -12,14 +12,14 @@ import {
 import { PiDurableAgentRuntime, piRuntimeMigrations } from '@durable-jev/agent-runtime-pi'
 import { openDatabase } from '@durable-jev/store'
 import { initTracing, Telemetry } from '@durable-jev/telemetry'
-import { describeInvestigation, investigatorInstructions } from './investigation-runtime.js'
+import { describeInvestigation, investigatorInstructions } from './investigation.runtime.js'
 import {
   type InvestigationRequest,
   investigationTools,
   resultToolName,
-} from './investigation-tools.js'
+} from './investigation.tools.js'
 import { logFourDependencies } from './log-four.fixture.js'
-import { ScriptedInvestigatorModel } from './scripted-investigator.js'
+import { ScriptedInvestigatorModel } from './scripted-investigator.model.js'
 
 const [workDirectory = '.', phase = 'start'] = process.argv.slice(2)
 const [crashTool, crashAtCall] = (process.env.CRASH_AT ?? '').split(':')

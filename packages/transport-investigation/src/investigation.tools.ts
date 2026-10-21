@@ -2,7 +2,7 @@ import { defineTool, ToolRegistry } from '@durable-jev/agent-harness'
 import type { ReferenceData } from '@durable-jev/contracts'
 import type { RuleConfiguration } from '@durable-jev/rule-evaluation'
 import { z } from 'zod'
-import { Candidate, checkCandidate, type InvestigationCase } from './candidate-check.js'
+import { Candidate, checkCandidate, type InvestigationCase } from './candidate-check.rules.js'
 
 export type InvestigationRequest = {
   legId: string
