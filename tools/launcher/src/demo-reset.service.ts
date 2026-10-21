@@ -5,7 +5,7 @@ import { dataServices, ports } from './service.manifest.js'
 
 export type DemoResetResult = { loadedCaseIds: string[] }
 
-export async function resetDemo(supervisor: ProcessSupervisor): Promise<DemoResetResult> {
+export const resetDemo = async (supervisor: ProcessSupervisor): Promise<DemoResetResult> => {
   for (const service of [...dataServices].reverse()) await supervisor.stop(service.name)
   for (const { databasePath } of dataServices) {
     for (const suffix of ['', '-wal', '-shm']) rmSync(`${databasePath}${suffix}`, { force: true })

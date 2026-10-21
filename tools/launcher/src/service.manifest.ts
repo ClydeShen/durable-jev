@@ -20,7 +20,7 @@ export type DataService = { name: string; databasePath: string }
 
 const observabilityUrl = serviceUrl(ports.observability)
 
-function branchService(name: string, port: number): ManagedProcessDefinition & DataService {
+const branchService = (name: string, port: number): ManagedProcessDefinition & DataService => {
   const databasePath = resolve(dataDirectory, `${name}.sqlite`)
   return {
     name,

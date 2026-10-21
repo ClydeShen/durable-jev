@@ -133,7 +133,7 @@ export class ProcessSupervisor {
   }
 }
 
-async function answers(url: string): Promise<boolean> {
+const answers = async (url: string): Promise<boolean> => {
   try {
     return (await fetch(url, { signal: AbortSignal.timeout(1000) })).ok
   } catch {
@@ -141,7 +141,7 @@ async function answers(url: string): Promise<boolean> {
   }
 }
 
-export async function waitForHealth(url: string, timeoutMs = 15_000): Promise<void> {
+export const waitForHealth = async (url: string, timeoutMs = 15_000): Promise<void> => {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try {

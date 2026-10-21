@@ -10,7 +10,7 @@ import { slowableServices } from './service.manifest.js'
 type ProcessAction = 'start' | 'stop' | 'restart' | 'kill'
 const processActions: readonly ProcessAction[] = ['start', 'stop', 'restart', 'kill']
 
-export function createControlApp(supervisor: ProcessSupervisor): Express {
+export const createControlApp = (supervisor: ProcessSupervisor): Express => {
   const app = createServiceApp('launcher')
   const modes = createRuntimeModes(supervisor)
   const proofRuns = createProofRuns()
