@@ -103,7 +103,7 @@ type RuleDefinition = {
 }
 ```
 
-`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。
+`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。另有两个叶子：`fact(path, equals|includes)` 读输入事实（`order.` 前缀读订单级，否则读当前作用域成员），`observed(ruleId, equals|includes)` 读上游规则的 observedValue（如 R04 判定的分支）；值缺失为 UNKNOWN。
 
 ### 5.3 组合语义
 
@@ -119,6 +119,13 @@ type RuleDefinition = {
 | `anyOf(scope, e)` | 集合为空 → UNKNOWN；否则对成员 `or` |
 
 依赖未完成时规则本身为 BLOCKED_DEPENDENCY，并记录 `blockedBy`。
+
+图求值（`evaluateRuleGraph`）按拓扑序、按作用域成员逐实例求值：
+
+1. `appliesWhen`：FAIL/NOT_APPLICABLE → 本规则 NOT_APPLICABLE；pending → BLOCKED_DEPENDENCY；ERROR → ERROR。
+2. 组合规则直接求 `combiner`，不做依赖门控（组合语义自己处理 pending）。
+3. 叶子规则：`dependsOn` 中除 `appliesWhen` 已引用者外，每个依赖必须为 PASS 或 NOT_APPLICABLE，否则 BLOCKED_DEPENDENCY 且 `blockedBy` 列出这些依赖；订单级规则依赖货件/运输段级规则时按 ALL 聚合（空集合为 UNKNOWN）。像 R33"仅 R32 失败时"这类规则，把 R32 写进 `appliesWhen`，就不会被 R32 的 FAIL 门控。
+4. 求值器抛错 → ERROR；缺求值器 → ERROR；返回 UNKNOWN 且 `unknownPolicy = escalateToHuman` → 记入 `escalations`，由人工任务模块（T1.7）创建任务。
 
 ### 5.4 配置校验
 

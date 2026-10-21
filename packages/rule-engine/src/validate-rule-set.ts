@@ -43,7 +43,10 @@ export interface ValidationEnvironment {
 export function referencedRules(expression: Expression): RuleId[] {
   switch (expression.op) {
     case 'ref':
+    case 'observed':
       return [expression.ruleId]
+    case 'fact':
+      return []
     case 'and':
     case 'or':
       return expression.of.flatMap(referencedRules)
@@ -77,7 +80,10 @@ function scopeIssues(
   const within = (child: Expression, childScope = evaluationScope) =>
     scopeIssues(rule, child, scopeOf, childScope)
   switch (expression.op) {
-    case 'ref': {
+    case 'fact':
+      return []
+    case 'ref':
+    case 'observed': {
       const target = scopeOf.get(expression.ruleId)
       if (!target || target === 'order' || target === evaluationScope) return []
       return [

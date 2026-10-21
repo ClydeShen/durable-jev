@@ -1,5 +1,6 @@
 export * from './combinators.js'
 export * from './evaluate-expression.js'
+export * from './evaluate-rule-graph.js'
 export * from './expression.js'
 export * from './rule-definition.js'
 export * from './validate-rule-set.js'

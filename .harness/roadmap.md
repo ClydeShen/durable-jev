@@ -24,7 +24,7 @@
 | [x] | T1.1 | `contracts`：ids、状态枚举、shipment、check、humanTask | 类型与 Zod schema 可导出 | T0.1 |
 | [x] | T1.2 | `rule-engine` 表达式与组合器（design 5.3） | 组合语义测试：UNKNOWN 不经 OR/NOT 变 PASS，空集合为 UNKNOWN | T1.1 |
 | [x] | T1.3 | 配置校验：缺引用、类型、环、缺参数、混装矩阵矛盾；规则适用范围字段（目的地/货物类别/客户） | 对应 F16 测试 | T1.2 |
-| [ ] | T1.4 | 图求值：作用域展开（cargoItem/leg）、blockedBy、appliesWhen | 多货件一件失败整单不过（F17） | T1.2 |
+| [x] | T1.4 | 图求值：作用域展开（cargoItem/leg）、blockedBy、appliesWhen | 多货件一件失败整单不过（F17） | T1.2 |
 | [ ] | T1.5 | 指纹与失效传播、增量重算 | 改车辆只失效预期集合 | T1.4 |
 | [ ] | T1.6 | `store`：SQLite 连接、迁移、幂等操作表、outbox | 同一 operationId 重复执行只写一条 | T0.1 |
 | [ ] | T1.7 | 人工任务状态机（模块共用包）：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定；2–3 角色审批链（顺序/并行、四眼原则、条件步骤） | 未授权、过期、旧版本不能生效（F11、F12）；链中任一拒绝即 FAIL，同一人不能签两步 | T1.1 |
