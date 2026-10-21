@@ -115,5 +115,5 @@ What it shows:
 
 End to end (live mode, demo reset): LOG-001 now opens R03 and R27 for a person, LOG-002 R21 and R27, LOG-004 and LOG-005 R03, LOG-003 stays on hold, LOG-007 on hold without a task. In scripted mode only the intended tasks open, so a live run has more human work than the guides describe.
 
-Still open from T7.0: the Console judgement view should show what the rule made of the answer (a choice such as cold_chain_risk next to "Pass" reads oddly).
+The Console judgement view now says in words what the rule made of the answer (for a choice such as cold_chain_risk: "the model only classifies; what follows is decided by the rules after this one"), which closes the last item of T7.0.
 

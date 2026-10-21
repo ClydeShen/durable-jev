@@ -5,6 +5,7 @@ import {
   businessEvents,
   categoryOf,
   describeEvent,
+  explainDecision,
   formatDuration,
   groupTimeline,
   isRecoveryEvent,
@@ -211,5 +212,14 @@ describe('timeline order and grouping', () => {
         }),
       ),
     ).toBe('Coordinator restarted; still waiting for HT-1')
+  })
+
+  it('explains what the rule made of an answer, in words', () => {
+    expect(explainDecision({ type: 'noul', noul: 0.97 }, 'PASS')).toMatch(/clearly above/)
+    expect(explainDecision({ type: 'noul', noul: 0.81 }, 'UNKNOWN')).toMatch(/person decides/)
+    expect(explainDecision({ type: 'choice', choice: 'cold_chain_risk' }, 'PASS')).toMatch(
+      /only classifies/,
+    )
+    expect(explainDecision(undefined, undefined)).toMatch(/not recorded/)
   })
 })

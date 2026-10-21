@@ -1,7 +1,13 @@
 import type { StoredEvent } from '@durable-jev/contracts'
 import { Icon } from '../icons.component.js'
 import { StatusBadge } from '../status-badge.component.js'
-import { businessEvents, describeAnswer, formatDuration, judgements } from './console.model.js'
+import {
+  businessEvents,
+  describeAnswer,
+  explainDecision,
+  formatDuration,
+  judgements,
+} from './console.model.js'
 
 export const JudgementDetail = (props: {
   events: StoredEvent[]
@@ -84,6 +90,7 @@ export const JudgementDetail = (props: {
                     ) : (
                       <span className="muted">no result recorded</span>
                     )}
+                    <p className="small">{explainDecision(answered.answer, row.decided?.status)}</p>
                     <p className="muted small">
                       Whether an answer is enough to pass is set by the policy thresholds, not by
                       the model.

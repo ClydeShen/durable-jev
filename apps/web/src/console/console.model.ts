@@ -136,6 +136,21 @@ export const describeAnswer = (answer: unknown): string => {
   return 'unknown'
 }
 
+// What the rule made of the model's answer, in words, without repeating thresholds that live in
+// the policy and can change.
+export const explainDecision = (answer: unknown, status: string | undefined): string => {
+  const value = answer as { type?: string } | undefined
+  if (value?.type === 'choice')
+    return 'The model only classifies. What follows from the class (for example a repack) is decided by the rules after this one.'
+  if (value?.type === 'noul') {
+    if (status === 'PASS') return 'The reading is clearly above the pass line, so the rule passes.'
+    if (status === 'FAIL') return 'The reading is clearly below the fail line, so the rule fails.'
+    if (status === 'UNKNOWN')
+      return 'The reading is not clear enough, or too close to a line, so a person decides.'
+  }
+  return 'The rule has not recorded a result for this answer yet.'
+}
+
 // Services deliver independently, so arrival order is not time order: sort by time, and keep
 // arrival order for events with the same timestamp.
 export const businessEvents = (events: readonly StoredEvent[]): BusinessEvent[] =>
