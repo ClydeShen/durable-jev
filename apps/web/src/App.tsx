@@ -8,6 +8,7 @@ import { RoleBar } from './components/RoleBar'
 import { RuleDetail } from './components/RuleDetail'
 import { RuleGraph } from './components/RuleGraph'
 import { TaskPanel } from './components/TaskPanel'
+import { Timeline } from './components/Timeline'
 import { usePolling } from './use-polling'
 
 export function App() {
@@ -16,6 +17,7 @@ export function App() {
   const [selectedRule, setSelectedRule] = useState<string>()
   const [message, setMessage] = useState<string>()
   const [rules, setRules] = useState<RuleInfo[]>([])
+  const [view, setView] = useState<'graph' | 'timeline'>('graph')
 
   useEffect(() => {
     api.rules().then((response) => setRules(response.rules))
@@ -27,6 +29,11 @@ export function App() {
     [selectedCase],
   )
   const detail = usePolling(loadDetail)
+  const loadTimeline = useCallback(
+    () => (selectedCase && view === 'timeline' ? api.timeline(selectedCase) : Promise.resolve([])),
+    [selectedCase, view],
+  )
+  const timeline = usePolling(loadTimeline)
   const loadTasks = useCallback(() => api.tasks(actor.role), [actor.role])
   const tasks = usePolling(loadTasks)
 
@@ -82,7 +89,27 @@ export function App() {
                 report(() => api.revise(detail.data?.caseId ?? '', index), '已应用变更并重新评估')
               }
             />
-            <RuleGraph rules={rules} outcomes={detail.data.outcomes} onSelect={setSelectedRule} />
+            <nav className="view-tabs">
+              <button
+                type="button"
+                className={view === 'graph' ? '' : 'secondary'}
+                onClick={() => setView('graph')}
+              >
+                规则图
+              </button>
+              <button
+                type="button"
+                className={view === 'timeline' ? '' : 'secondary'}
+                onClick={() => setView('timeline')}
+              >
+                时间线
+              </button>
+            </nav>
+            {view === 'graph' ? (
+              <RuleGraph rules={rules} outcomes={detail.data.outcomes} onSelect={setSelectedRule} />
+            ) : (
+              <Timeline entries={timeline.data ?? []} />
+            )}
             {rule && (
               <RuleDetail
                 rule={rule}

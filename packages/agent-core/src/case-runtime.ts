@@ -14,6 +14,7 @@ import {
 } from '@durable-jev/rule-engine'
 import type { CaseRecord, CaseStore } from './case-store.js'
 import { HumanGateSession } from './human-gate.js'
+import { RecordingJudge } from './recording-judge.js'
 import type { RulePack } from './rule-pack.js'
 import { semanticEvaluator } from './semantic-evaluator.js'
 
@@ -143,8 +144,8 @@ export class CaseRuntime {
     return this.options.codeEvaluators.get(rule.evaluator.ref)
   }
 
-  private evaluatorsFor(gates: HumanGateSession, shipment: Shipment): Map<string, LeafEvaluator> {
-    const semantic = semanticEvaluator(this.options.judgeFor(shipment))
+  private evaluatorsFor(gates: HumanGateSession, judge: SemanticJudge): Map<string, LeafEvaluator> {
+    const semantic = semanticEvaluator(judge)
     return new Map(
       this.options.rulePack.ruleSet.rules.flatMap((rule) => {
         const evaluator = this.evaluatorFor(rule, gates, semantic)
@@ -167,10 +168,11 @@ export class CaseRuntime {
     const affected = change ? invalidateDependentsOf(rulePack.ruleSet, change) : new Set<string>()
     const shipment = before.record.shipment
     const gates = new HumanGateSession(shipment, before.tasks, now())
+    const judge = new RecordingJudge(this.options.judgeFor(shipment))
     const graph = await evaluateRuleGraph(
       rulePack.ruleSet,
       factsOf(shipment),
-      { evaluators: this.evaluatorsFor(gates, shipment), parameters: rulePack.parameters },
+      { evaluators: this.evaluatorsFor(gates, judge), parameters: rulePack.parameters },
       {
         previous: before.outcomes,
         provided: store.foreignOutcomes(caseId),
@@ -221,6 +223,22 @@ export class CaseRuntime {
             scope: outcome.scope,
             status: outcome.status,
             caseRevision: shipment.caseRevision,
+          },
+        })
+      }
+      for (const answer of judge.answers) {
+        store.record({
+          caseId,
+          eventName: 'jev.completed',
+          payload: {
+            questionId: answer.questionId,
+            provider: answer.provider,
+            modelId: answer.modelId,
+            promptVersion: answer.promptVersion,
+            inputHash: answer.inputHash,
+            judgement: answer.judgement,
+            usage: answer.usage,
+            durationMs: answer.durationMs,
           },
         })
       }

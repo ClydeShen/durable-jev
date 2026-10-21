@@ -18,6 +18,7 @@ import {
 import { actorOf, HttpError } from '@durable-jev/service-kit'
 import { Router } from 'express'
 import { z } from 'zod'
+import type { TimelineEntry } from './event-log.js'
 
 export type AgentStatus = { agentId: string; available: boolean; summary?: AgentSummary }
 
@@ -28,6 +29,7 @@ export interface CoordinatorDependencies {
   rulePack: RulePack
   agentStatuses(): Promise<AgentStatus[]>
   controlUrl?: string
+  timeline(caseId: string): TimelineEntry[]
   now(): string
   resetDemo(): Promise<void>
 }
@@ -90,6 +92,11 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
         applied: view.record.shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
       })),
     })
+  })
+
+  router.get('/cases/:caseId/timeline', async (request, response) => {
+    await caseView(request.params.caseId)
+    response.json(dependencies.timeline(request.params.caseId))
   })
 
   router.post('/cases/:caseId/revisions/:index', async (request, response) => {

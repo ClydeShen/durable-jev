@@ -13,6 +13,7 @@ import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-
 import { createService } from '@durable-jev/service-kit'
 import express from 'express'
 import { watchAgents } from './agent-watch.js'
+import { collectEvents, EventLog } from './event-log.js'
 import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
 const repositoryRoot = new URL('../../../', import.meta.url).pathname
@@ -43,8 +44,10 @@ const { runtime, rulePack } = createLogisticsRuntime({
   now,
 })
 const remotes = remoteAgents(process.env.AGENT_ENDPOINTS)
+const agents = [new LocalAgentClient('order-coordination', runtime, store), ...remotes]
+const eventLog = EventLog.open(join(dataDirectory, 'observability.sqlite'))
 const orchestrator = new CaseOrchestrator(
-  [new LocalAgentClient('order-coordination', runtime, store), ...remotes],
+  agents,
   rulePack.ruleSet,
   (caseId) => store.caseRecord(caseId)?.shipment,
 )
@@ -68,6 +71,7 @@ async function agentStatuses(): Promise<AgentStatus[]> {
 
 async function resetDemo() {
   await orchestrator.reset()
+  eventLog.clear()
   for (const caseFile of catalog.values()) await orchestrator.submit(caseFile.shipment)
 }
 
@@ -88,6 +92,7 @@ service.app.use(
     rulePack,
     agentStatuses,
     controlUrl: process.env.CONTROL_URL,
+    timeline: (caseId) => eventLog.timeline(caseId),
     now,
     resetDemo,
   }),
@@ -101,4 +106,5 @@ if (existsSync(webDist)) {
 await waitForAgents()
 if (store.cases().length === 0) await resetDemo()
 watchAgents(orchestrator, store)
+collectEvents(agents, eventLog)
 await service.listen(port)

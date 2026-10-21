@@ -71,6 +71,9 @@ importers:
       '@durable-jev/service-kit':
         specifier: workspace:*
         version: link:../../packages/service-kit
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../../packages/store
       express:
         specifier: 5.3.0
         version: 5.3.0
@@ -166,6 +169,9 @@ importers:
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../rule-engine
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../store
       express:
         specifier: 5.3.0
         version: 5.3.0

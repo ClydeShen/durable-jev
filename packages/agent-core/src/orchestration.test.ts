@@ -85,6 +85,9 @@ class SwitchableAgent implements AgentClient {
   decide = (taskId: string, action: Parameters<AgentClient['decide']>[1]) =>
     this.guard(() => this.inner.decide(taskId, action))
   openTasks = () => this.guard(() => this.inner.openTasks())
+  events = () => this.guard(() => this.inner.events())
+  acknowledgeEvents = (eventIds: readonly string[]) =>
+    this.guard(() => this.inner.acknowledgeEvents(eventIds))
   reset = () => this.guard(() => this.inner.reset())
 }
 

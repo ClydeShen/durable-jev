@@ -10,6 +10,7 @@
     { "path": "../../packages/human-tasks" },
     { "path": "../../packages/logistics" },
     { "path": "../../packages/model-providers" },
-    { "path": "../../packages/service-kit" }
+    { "path": "../../packages/service-kit" },
+    { "path": "../../packages/store" }
   ]
 }

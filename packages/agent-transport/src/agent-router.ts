@@ -35,6 +35,13 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
       await client.decide(request.params.taskId, action as Parameters<AgentClient['decide']>[1]),
     )
   })
+  router.get('/events', async (_request, response) => {
+    response.json(await client.events())
+  })
+  router.post('/events/ack', async (request, response) => {
+    await client.acknowledgeEvents(z.array(z.string()).parse(request.body.eventIds))
+    response.json({ acknowledged: true })
+  })
   router.post('/reset', async (_request, response) => {
     await client.reset()
     response.json({ reset: true })

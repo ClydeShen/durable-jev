@@ -7,6 +7,7 @@
     { "path": "../agent-core" },
     { "path": "../contracts" },
     { "path": "../human-tasks" },
-    { "path": "../rule-engine" }
+    { "path": "../rule-engine" },
+    { "path": "../store" }
   ]
 }

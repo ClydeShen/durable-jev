@@ -31,6 +31,14 @@ export interface AgentStatus {
   available: boolean
 }
 
+export interface TimelineEntry {
+  eventId: string
+  agentId: string
+  eventName: string
+  payload: Record<string, unknown>
+  createdAt: string
+}
+
 export interface Actor {
   id: string
   role: Role
@@ -69,6 +77,8 @@ export const api = {
     request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/revisions/${index}`, {
       method: 'POST',
     }),
+  timeline: (caseId: string) =>
+    request<TimelineEntry[]>(`/cases/${encodeURIComponent(caseId)}/timeline`),
   agents: () => request<AgentStatus[]>('/agents'),
   controlService: (name: string, verb: 'crash' | 'start') =>
     request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),

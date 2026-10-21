@@ -2,6 +2,7 @@ import type { AgentCaseState, AgentClient, AgentSummary } from '@durable-jev/age
 import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
+import type { OutboxEvent } from '@durable-jev/store'
 
 class AgentUnavailableError extends Error {
   constructor(
@@ -59,6 +60,14 @@ export class HttpAgentClient implements AgentClient {
 
   openTasks() {
     return this.call<HumanTask[]>('/tasks')
+  }
+
+  events() {
+    return this.call<OutboxEvent[]>('/events')
+  }
+
+  async acknowledgeEvents(eventIds: readonly string[]) {
+    await this.call('/events/ack', { method: 'POST', body: { eventIds } })
   }
 
   async reset() {

@@ -370,3 +370,45 @@ button.small {
   padding: 2px 8px;
   font-size: 12px;
 }
+
+.view-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.timeline {
+  flex: 1;
+  overflow: auto;
+  padding: 8px 16px;
+}
+
+.timeline label {
+  margin-bottom: 8px;
+}
+
+.agent-chip {
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--unknown);
+  white-space: nowrap;
+}
+
+.agent-chip.order-coordination {
+  background: #2f6fde;
+}
+.agent-chip.cargo-assurance {
+  background: #8e44ad;
+}
+.agent-chip.transport-planning {
+  background: #16a085;
+}
+.agent-chip.commercial-control {
+  background: #d35400;
+}
+.agent-chip.destination-compliance {
+  background: #7f8c8d;
+}

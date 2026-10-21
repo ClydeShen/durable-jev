@@ -1,7 +1,7 @@
 import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import { type RuleOutcome, type RuleSet, scopeKey } from '@durable-jev/rule-engine'
-import { clearData } from '@durable-jev/store'
+import { clearData, markPublished, type OutboxEvent, unpublishedEvents } from '@durable-jev/store'
 import type { CaseRuntime, CaseView } from './case-runtime.js'
 import type { CaseStore } from './case-store.js'
 
@@ -23,6 +23,8 @@ export interface AgentClient {
   state(caseId: string): Promise<AgentCaseState>
   decide(humanTaskId: string, action: HumanAction): Promise<Decision>
   openTasks(): Promise<HumanTask[]>
+  events(): Promise<OutboxEvent[]>
+  acknowledgeEvents(eventIds: readonly string[]): Promise<void>
   reset(): Promise<void>
 }
 
@@ -59,6 +61,14 @@ export class LocalAgentClient implements AgentClient {
 
   async openTasks() {
     return this.store.openTasks()
+  }
+
+  async events() {
+    return unpublishedEvents(this.store.db)
+  }
+
+  async acknowledgeEvents(eventIds: readonly string[]) {
+    markPublished(this.store.db, eventIds)
   }
 
   async reset() {
