@@ -1,4 +1,3 @@
-export * from './create-judge.js'
 export * from './input-hash.js'
 export * from './jev-judge.js'
 export * from './scripted-judge.js'

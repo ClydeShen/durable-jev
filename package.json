@@ -16,11 +16,13 @@
     "format": "biome format --write .",
     "spikes": "pnpm --filter @durable-jev/spike-pi-durable crash-recovery && pnpm --filter @durable-jev/spike-pi-durable module-flow && pnpm --filter @durable-jev/spike-a2a round-trip && pnpm --filter @durable-jev/spike-jev semantic-checks && pnpm --filter @durable-jev/spike-trace propagation",
     "models:live-check": "pnpm --filter @durable-jev/model-providers live-check",
-    "typecheck": "tsc -b && tsc -p tsconfig.typecheck.json"
+    "typecheck": "tsc -b && tsc -p tsconfig.typecheck.json",
+    "knip": "knip"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
     "@types/node": "22.20.5",
+    "knip": "6.42.1",
     "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "5.0.5"
