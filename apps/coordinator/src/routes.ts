@@ -8,6 +8,7 @@ import {
 import { roleSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
+  applyRevision,
   type CaseCatalog,
   dispatchCase,
   orderStatusOf,
@@ -47,6 +48,12 @@ function summaryOf(view: CaseView, catalog: CaseCatalog) {
   }
 }
 
+function scriptedRevisions(catalog: CaseCatalog, caseId: string) {
+  return (catalog.get(caseId)?.events ?? []).flatMap((event) =>
+    event.kind === 'revise' ? [{ label: event.label, patch: event.patch }] : [],
+  )
+}
+
 function viewOf(runtime: CaseRuntime, caseId: string): CaseView {
   try {
     return runtime.view(caseId)
@@ -73,7 +80,20 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
       shipment: view.record.shipment,
       outcomes: view.outcomes,
       tasks: view.tasks,
+      revisions: scriptedRevisions(catalog, view.record.shipment.caseId).map((revision, index) => ({
+        index,
+        label: revision.label,
+        applied: view.record.shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
+      })),
     })
+  })
+
+  router.post('/cases/:caseId/revisions/:index', async (request, response) => {
+    const { shipment } = viewOf(runtime, request.params.caseId).record
+    const revision = scriptedRevisions(catalog, shipment.caseId)[Number(request.params.index)]
+    if (!revision) throw new HttpError(404, `no scripted revision ${request.params.index}`)
+    const view = await runtime.submit(applyRevision(shipment, revision.patch))
+    response.json(summaryOf(view, catalog))
   })
 
   router.post('/cases/:caseId/dispatch', async (request, response) => {

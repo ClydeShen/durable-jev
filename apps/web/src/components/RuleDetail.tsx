@@ -40,6 +40,7 @@ export function RuleDetail({ rule, outcomes, onClose }: Props) {
             <th>状态</th>
             <th>观察值</th>
             <th>阻塞于</th>
+            <th>失效原因</th>
           </tr>
         </thead>
         <tbody>
@@ -55,6 +56,7 @@ export function RuleDetail({ rule, outcomes, onClose }: Props) {
                   (outcome.observedValue === undefined ? '' : show(outcome.observedValue))}
               </td>
               <td>{outcome.blockedBy.join('、')}</td>
+              <td>{outcome.invalidatedBy ?? ''}</td>
             </tr>
           ))}
         </tbody>

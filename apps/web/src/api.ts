@@ -14,6 +14,7 @@ export interface CaseDetail extends CaseSummary {
   shipment: Shipment
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
+  revisions: { index: number; label: string; applied: boolean }[]
 }
 
 export interface RuleInfo {
@@ -58,6 +59,10 @@ export const api = {
     request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/dispatch`, {
       method: 'POST',
       headers: asActor(actor),
+    }),
+  revise: (caseId: string, index: number) =>
+    request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/revisions/${index}`, {
+      method: 'POST',
     }),
   reset: () => request<{ cases: number }>('/demo/reset', { method: 'POST' }),
 }

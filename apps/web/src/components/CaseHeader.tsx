@@ -5,10 +5,12 @@ interface Props {
   detail: CaseDetail
   actor: Actor
   onDispatch(): void
+  onRevise(index: number): void
 }
 
-export function CaseHeader({ detail, actor, onDispatch }: Props) {
+export function CaseHeader({ detail, actor, onDispatch, onRevise }: Props) {
   const canDispatch = actor.role === 'dispatcher' && detail.status === 'READY_TO_DISPATCH'
+  const nextRevision = detail.revisions.find((revision) => !revision.applied)
   return (
     <section className="case-header">
       <div>
@@ -24,6 +26,11 @@ export function CaseHeader({ detail, actor, onDispatch }: Props) {
           {detail.shipment.legs.length} 个运输段
         </small>
       </div>
+      {nextRevision && detail.status !== 'DISPATCHED' && (
+        <button type="button" className="secondary" onClick={() => onRevise(nextRevision.index)}>
+          演示变更：{nextRevision.label}
+        </button>
+      )}
       {canDispatch && (
         <button type="button" onClick={onDispatch}>
           确认发运

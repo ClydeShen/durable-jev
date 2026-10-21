@@ -324,3 +324,12 @@ td {
   border: 1px solid var(--border);
   font-size: 13px;
 }
+
+.invalidated {
+  color: var(--invalidated);
+  font-weight: 600;
+}
+
+.case-header > div:first-child {
+  flex: 1;
+}

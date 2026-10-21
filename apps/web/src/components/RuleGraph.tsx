@@ -15,15 +15,26 @@ import type { RuleInfo } from '../api'
 import { layoutGraph, nodeSize, type Positions } from '../graph-layout'
 import { agentLabels, checkStatusLabels, kindLabels, mostSevere } from '../labels'
 
-type RuleNodeData = { rule: RuleInfo; status?: CheckStatus; count: number }
+type RuleNodeData = {
+  rule: RuleInfo
+  status?: CheckStatus
+  count: number
+  invalidatedBy?: string
+}
 
 function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
-  const { rule, status, count } = data
+  const { rule, status, count, invalidatedBy } = data
   return (
     <div className={`rule-node check-status ${status ?? 'NONE'}`} style={nodeSize}>
       <Handle type="target" position={Position.Left} />
       <div className="rule-node-title">
         <strong>{rule.ruleId}</strong> {rule.title}
+        {invalidatedBy && (
+          <span className="invalidated" title={`因变更 ${invalidatedBy} 重算`}>
+            {' '}
+            ↻{invalidatedBy.split(' ')[0]}
+          </span>
+        )}
       </div>
       <div className="rule-node-meta">
         <span>{kindLabels[rule.kind]}</span>
@@ -65,6 +76,7 @@ export function RuleGraph({ rules, outcomes, onSelect }: Props) {
             rule,
             status: mostSevere(own.map((outcome) => outcome.status)),
             count: own.length,
+            invalidatedBy: own.find((outcome) => outcome.invalidatedBy)?.invalidatedBy,
           },
         }
       }),

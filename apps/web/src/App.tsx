@@ -63,6 +63,9 @@ export function App() {
               onDispatch={() =>
                 report(() => api.dispatch(detail.data?.caseId ?? '', actor), '已确认发运')
               }
+              onRevise={(index) =>
+                report(() => api.revise(detail.data?.caseId ?? '', index), '已应用变更并重新评估')
+              }
             />
             <RuleGraph rules={rules} outcomes={detail.data.outcomes} onSelect={setSelectedRule} />
             {rule && (
