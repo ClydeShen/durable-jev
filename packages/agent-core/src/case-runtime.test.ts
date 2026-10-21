@@ -136,6 +136,22 @@ describe('CaseRuntime', () => {
     expect(view.tasks.filter((task) => task.status === 'OPEN')).toHaveLength(1)
   })
 
+  it('withdraws an open task whose rule now waits on changed inputs', async () => {
+    const { runtime: agent } = runtime()
+    const [first] = (await agent.submit(shipment)).tasks
+    const emptied = {
+      ...shipment,
+      caseRevision: 2,
+      entityVersions: { ...shipment.entityVersions, cargo: 2 },
+      cargoItems: [],
+    } as unknown as Shipment
+    const view = await agent.submit(emptied)
+    expect(statusOf(view, 'R39')).toBe('BLOCKED_DEPENDENCY')
+    expect(view.tasks.find((task) => task.humanTaskId === first?.humanTaskId)?.status).toBe(
+      'CANCELLED',
+    )
+  })
+
   it('reissues a task that expired', async () => {
     let now = '2026-11-02T08:00:00.000Z'
     const { runtime: agent } = runtime(() => now)

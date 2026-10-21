@@ -13,6 +13,7 @@ import {
   type LeafEvaluation,
   type LeafEvaluator,
   type LeafInput,
+  type RuleOutcome,
   scopeKey,
 } from '@durable-jev/rule-engine'
 
@@ -34,6 +35,21 @@ export class HumanGateSession {
     private readonly now: string,
   ) {
     for (const task of existing) this.tasks.set(task.humanTaskId, task)
+  }
+
+  withdrawStale(outcomes: readonly RuleOutcome[]) {
+    const current = new Map(
+      outcomes.map((outcome) => [
+        `${outcome.ruleId}@${scopeKey(outcome.scope)}`,
+        outcome.inputFingerprint,
+      ]),
+    )
+    for (const task of this.tasks.values()) {
+      const fingerprint = current.get(`${task.ruleId}@${scopeKey(task.scope)}`)
+      if (task.status === 'OPEN' && fingerprint !== task.target.inputFingerprint) {
+        this.apply(task, { type: 'cancel' })
+      }
+    }
   }
 
   changes(): HumanTask[] {

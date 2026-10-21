@@ -155,6 +155,7 @@ export class CaseRuntime {
       { evaluators: this.evaluatorsFor(gates, shipment), parameters: rulePack.parameters },
       { previous: before.outcomes },
     )
+    gates.withdrawStale(graph.outcomes)
     const written = store.transaction(() => {
       const current = store.caseRecord(caseId)
       if (current?.shipment.caseRevision !== shipment.caseRevision) return false
