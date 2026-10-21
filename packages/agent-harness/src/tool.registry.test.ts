@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { defineTool, type ToolContext } from './tool.js'
-import { ToolRegistry } from './tool-registry.js'
+import { ToolRegistry } from './tool.registry.js'
+import { defineTool, type ToolContext } from './tool.types.js'
 
 const context: ToolContext = {
   runId: 'run-1',

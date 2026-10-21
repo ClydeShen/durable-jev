@@ -1,5 +1,5 @@
-import type { AssembledContext } from './context-assembler.js'
-import type { ToolResult } from './tool.js'
+import type { AssembledContext } from './context-assembler.service.js'
+import type { ToolResult } from './tool.types.js'
 
 export type ToolCall = { callId: string; name: string; input: unknown }
 

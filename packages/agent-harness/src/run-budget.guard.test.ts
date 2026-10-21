@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defaultRunBudget, RunBudgetGuard } from './run-budget-guard.js'
+import { defaultRunBudget, RunBudgetGuard } from './run-budget.guard.js'
 
 const clock = (start = 0) => {
   let now = start

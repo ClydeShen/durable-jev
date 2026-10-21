@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { ContextAssembler } from './context-assembler.js'
+import { ContextAssembler } from './context-assembler.service.js'
 
 const assembler = new ContextAssembler(['You investigate transport plans. You cannot approve.'])
 

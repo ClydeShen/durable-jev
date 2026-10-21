@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { ScriptedAgentModel, type ScriptedTurn } from './agent-model.js'
-import { ContextAssembler } from './context-assembler.js'
-import { InMemoryAgentRuntime } from './in-memory-agent-runtime.js'
-import { defineTool } from './tool.js'
-import { ToolRegistry } from './tool-registry.js'
+import { ScriptedAgentModel, type ScriptedTurn } from './agent-model.types.js'
+import { ContextAssembler } from './context-assembler.service.js'
+import { InMemoryAgentRuntime } from './in-memory-agent.runtime.js'
+import { ToolRegistry } from './tool.registry.js'
+import { defineTool } from './tool.types.js'
 
 const registry = () =>
   new ToolRegistry()

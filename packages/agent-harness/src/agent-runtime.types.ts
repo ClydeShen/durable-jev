@@ -1,5 +1,5 @@
-import type { BudgetLimit } from './run-budget-guard.js'
-import type { ToolErrorCode } from './tool.js'
+import type { BudgetLimit } from './run-budget.guard.js'
+import type { ToolErrorCode } from './tool.types.js'
 
 export type SessionKey = { caseId: string; caseRevision: number; purpose: string }
 

@@ -1,4 +1,4 @@
-import type { AgentModel, ModelTurn, TranscriptEntry } from './agent-model.js'
+import type { AgentModel, ModelTurn, TranscriptEntry } from './agent-model.types.js'
 import type {
   AgentEvent,
   AgentRuntime,
@@ -6,11 +6,11 @@ import type {
   RunHandle,
   RunOutcome,
   SessionKey,
-} from './agent-runtime.js'
-import type { ContextAssembler, DataSection } from './context-assembler.js'
-import { defaultRunBudget, type RunBudget, RunBudgetGuard } from './run-budget-guard.js'
-import type { ToolContext } from './tool.js'
-import type { ToolRegistry } from './tool-registry.js'
+} from './agent-runtime.types.js'
+import type { ContextAssembler, DataSection } from './context-assembler.service.js'
+import { defaultRunBudget, type RunBudget, RunBudgetGuard } from './run-budget.guard.js'
+import type { ToolRegistry } from './tool.registry.js'
+import type { ToolContext } from './tool.types.js'
 
 export type AgentRunOptions<Input> = {
   registry: ToolRegistry

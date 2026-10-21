@@ -1,4 +1,4 @@
-import type { ToolCaller, ToolContext, ToolDefinition, ToolResult } from './tool.js'
+import type { ToolCaller, ToolContext, ToolDefinition, ToolResult } from './tool.types.js'
 
 const failure = (code: Extract<ToolResult, { ok: false }>['error']['code'], message: string) =>
   ({ ok: false, error: { code, message } }) as const
