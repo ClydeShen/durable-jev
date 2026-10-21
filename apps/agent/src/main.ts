@@ -9,11 +9,10 @@ import {
   createLogisticsRuntime,
   loadCaseCatalog,
   RerouteDesk,
-  scriptedRerouter,
+  rerouterModel,
 } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
-import { nvidiaProvider } from '@earendil-works/pi-ai/providers/nvidia'
 import { investigationRoutes } from './investigation-routes.js'
 
 const repositoryRoot = new URL('../../../', import.meta.url).pathname
@@ -51,14 +50,7 @@ if (agentId === 'transport-planning') {
     runtime,
     reference,
     storage: join(dataDirectory, `${agentId}.investigations.sqlite`),
-    model:
-      process.env.MODEL_MODE === 'live'
-        ? {
-            kind: 'live',
-            provider: nvidiaProvider(),
-            modelId: process.env.INVESTIGATOR_MODEL ?? 'nvidia/nemotron-3.5-lightning-30b-a3b',
-          }
-        : { kind: 'scripted', next: scriptedRerouter },
+    model: rerouterModel(),
     now: () => new Date().toISOString(),
   })
   service.app.use('/agent/investigations', investigationRoutes(desk))

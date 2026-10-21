@@ -9,9 +9,9 @@ import {
   type LocalLogisticsAgents,
   orderStatusOf,
   RerouteDesk,
-  scriptedRerouter,
+  rerouterModel,
 } from '@durable-jev/logistics'
-import { ScriptedJudge } from '@durable-jev/model-providers'
+import { ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 
 interface StepResult {
   label: string
@@ -103,11 +103,12 @@ class CaseReplayer {
   constructor(
     private readonly caseFile: CaseFile,
     materialsDirectory: string,
+    liveJudge?: SemanticJudge,
   ) {
     this.shipment = caseFile.shipment
     this.agents = createLocalLogisticsAgents({
       materialsDirectory,
-      judgeFor: () => new ScriptedJudge(caseFile.scriptedJudgements),
+      judgeFor: () => liveJudge ?? new ScriptedJudge(caseFile.scriptedJudgements),
       now: () => new Date(this.clock).toISOString(),
     })
   }
@@ -127,7 +128,7 @@ class CaseReplayer {
       ...this.agents.transport,
       cases: this.agents.transport.store,
       storage: 'memory',
-      model: { kind: 'scripted', next: scriptedRerouter },
+      model: rerouterModel(),
       now: () => new Date(this.clock).toISOString(),
     })
   }
@@ -233,11 +234,13 @@ class CaseReplayer {
   }
 }
 
+/** Replays a case with its scripted judgements, or with a live judge when one is given. */
 export async function replayCase(
   caseFile: CaseFile,
   materialsDirectory: string,
+  liveJudge?: SemanticJudge,
 ): Promise<CaseReplay> {
-  const replayer = new CaseReplayer(caseFile, materialsDirectory)
+  const replayer = new CaseReplayer(caseFile, materialsDirectory, liveJudge)
   await replayer.start()
   const steps: StepResult[] = []
   for (const event of caseFile.events) {

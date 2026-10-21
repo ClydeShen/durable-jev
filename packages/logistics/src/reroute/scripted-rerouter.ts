@@ -1,4 +1,5 @@
-import type { ObservedResult, ScriptedStep } from '@durable-jev/agent-harness'
+import type { InvestigatorModel, ObservedResult, ScriptedStep } from '@durable-jev/agent-harness'
+import { nvidiaProvider } from '@earendil-works/pi-ai/providers/nvidia'
 import type { PlanCheck } from './reroute-plan.js'
 
 type CaseResult = { incident: { legId: string } }
@@ -52,4 +53,15 @@ export function scriptedRerouter(results: readonly ObservedResult[]): ScriptedSt
     call: 'submit_investigation_result',
     args: { decision: 'escalate', rationale: ['没有通过预检的备选运力', ...rejected].join('；') },
   }
+}
+
+/** The live model with MODEL_MODE=live (INVESTIGATOR_MODEL picks it), the scripted one otherwise. */
+export function rerouterModel(env = process.env): InvestigatorModel {
+  return env.MODEL_MODE === 'live'
+    ? {
+        kind: 'live',
+        provider: nvidiaProvider(),
+        modelId: env.INVESTIGATOR_MODEL ?? 'nvidia/nemotron-3.5-lightning-30b-a3b',
+      }
+    : { kind: 'scripted', next: scriptedRerouter }
 }

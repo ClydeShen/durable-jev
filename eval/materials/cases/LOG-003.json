@@ -118,7 +118,15 @@
       "questionId": "DEST-SG-CHEM-3",
       "judgement": {
         "kind": "noul",
-        "probability": 0.88
+        "probability": 0.15
+      }
+    },
+    {
+      "questionId": "DEST-SG-CHEM-3",
+      "stateIncludes": "hazard class 8",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.9
       }
     }
   ],
@@ -145,7 +153,7 @@
             "documentId": "DOC-003-SDS",
             "kind": "safetyDataSheet",
             "version": 2,
-            "text": "Safety data sheet: citric acid descaling concentrate, corrosive liquid, 12 x 25 L drums.",
+            "text": "Safety data sheet: citric acid descaling concentrate, UN 3265, hazard class 8 (corrosive liquid), 12 x 25 L drums.",
             "extractedFields": {},
             "source": "customer upload",
             "cargoItemId": "ITEM-1"
