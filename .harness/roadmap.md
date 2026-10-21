@@ -46,9 +46,9 @@
 |---|---|---|---|---|
 | [ ] | T3.0 | 规则编写 agent：`policy-v1.md` → 规则图配置、结构化表达式、Jev 问题；输出待人工审核的 diff | 由政策原文生成 LOG-001 规则子集并与 T2.1 手写版一致 | T1.3, T4.2 |
 | [~] | T3.1 | 用编写 agent 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力），人工审核 | 全部 40 条通过配置校验；记录生成与审核耗时、人工修改量 | T2.1, T3.0 |
-| [ ] | T3.2 | 拆出货物合规、运输计划、商务三个 Durable Jev Agent（design 2），各自持有规则图与人工任务，原生 HTTP 任务接口，`GET /agent/summary` | 各自 SQLite，launcher 启动 | T2.4 |
-| [ ] | T3.2a | agent 间点对点协作：运输 → 商务（R35 额外费用审批）、运输 → 货物（R28 候选计划复核）、换承运商通知货物 agent 使 R13 审批链失效 | LOG-004 中三种往来均出现 | T3.2 |
-| [ ] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
+| [x] | T3.2 | 拆出货物合规、运输计划、商务三个 Durable Jev Agent（design 2），各自持有规则图与人工任务，原生 HTTP 任务接口，`GET /agent/summary` | 各自 SQLite，launcher 启动 | T2.4 |
+| [ ] | T3.2a | agent 间点对点协作（随 T4.6 调查助手与 T5.1 A2A 一起做）：运输 → 商务（R35 额外费用审批）、运输 → 货物（R28 候选计划复核）、换承运商通知货物 agent 使 R13 审批链失效 | LOG-004 中三种往来均出现 | T3.2 |
+| [x] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
 | [x] | T3.4 | 变更：改车辆/路线/报价触发失效，UI 显示"哪次变更导致失效" | LOG-004 失效集符合预期 | T1.5, T3.3 |
 | [x] | T3.5 | LOG-002–008 案例、事件脚本、draft 标注 | 文件齐全，标 `reviewStatus: draft` | T3.1 |
 | [ ] | T3.7 | 扩展包：`policy-v1.md` 附录（客户合同条款、目的地进口要求，仿 MPI IHS 结构），编写 agent 生成 100–200 条扩展规则（`CUST-*`、`DEST-*`），挂到 R27 与新增 R41（汇入 R37）；LOG-001–008 补目的地与客户；20–30 份筛选样本（draft） | 扩展规则通过配置校验；每单命中少数几条 | T3.0, T3.1 |
@@ -61,7 +61,7 @@
 |---|---|---|---|---|
 | [x] | T4.1 | `model-providers`：SemanticJudge 接口 + ScriptedJudge | 回放稳定 | T1.1 |
 | [x] | T4.2 | JevJudge、StructuredOutputJudge（live 模式） | 有 key 时同一问题两种 provider 均可答 | T0.5, T4.1 |
-| [ ] | T4.3 | 接入语义规则 R03、R10、R18、R27；observedValue 与 gateStatus 分开 | LOG-002、LOG-003 语义节点正确 | T4.1, T3.1 |
+| [x] | T4.3 | 接入语义规则 R03、R10、R18、R27；observedValue 与 gateStatus 分开 | LOG-002、LOG-003 语义节点正确 | T4.1, T3.1 |
 | [ ] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard、ContextAssembler | 预算与白名单测试 | T1.6 |
 | [ ] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完 | T4.4 |
 | [ ] | T4.6 | 运输计划 agent 的调查助手：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
