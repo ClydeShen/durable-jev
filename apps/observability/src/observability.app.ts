@@ -2,8 +2,8 @@ import type { StoredEvent } from '@durable-jev/contracts'
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { ErrorRequestHandler, Express } from 'express'
 import { z } from 'zod'
-import { type CaseSummary, summarizeCase } from './case-summary.js'
-import type { EventQuery, ObservationStore } from './observation-store.js'
+import { type CaseSummary, summarizeCase } from './case-summary.model.js'
+import type { EventQuery, ObservationStore } from './observation.repository.js'
 
 const IngestBody = z.object({ events: z.array(z.unknown()).max(1000) })
 

@@ -1,8 +1,8 @@
 import type { AddressInfo } from 'node:net'
 import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { createObservabilityApp } from './observability-app.js'
-import { ObservationStore, observationMigrations } from './observation-store.js'
+import { createObservabilityApp } from './observability.app.js'
+import { ObservationStore, observationMigrations } from './observation.repository.js'
 
 const event = (id: string, caseId = 'CASE-1', seconds = 0) => ({
   eventId: id,

@@ -1,9 +1,9 @@
 import type { AddressInfo } from 'node:net'
 import { openDatabase } from '@durable-jev/store'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { summarizeCase, unionDurationMs } from './case-summary.js'
-import { createObservabilityApp } from './observability-app.js'
-import { ObservationStore, observationMigrations } from './observation-store.js'
+import { summarizeCase, unionDurationMs } from './case-summary.model.js'
+import { createObservabilityApp } from './observability.app.js'
+import { ObservationStore, observationMigrations } from './observation.repository.js'
 
 const at = (seconds: number) =>
   new Date(Date.parse('2026-11-02T08:00:00.000Z') + seconds * 1000).toISOString()

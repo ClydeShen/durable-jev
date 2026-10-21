@@ -1,8 +1,8 @@
 import { resolve } from 'node:path'
 import { startService } from '@durable-jev/service-kit'
 import { openDatabase } from '@durable-jev/store'
-import { createObservabilityApp } from './observability-app.js'
-import { ObservationStore, observationMigrations } from './observation-store.js'
+import { createObservabilityApp } from './observability.app.js'
+import { ObservationStore, observationMigrations } from './observation.repository.js'
 
 const repositoryRoot = resolve(import.meta.dirname, '../../..')
 const databasePath = resolve(
