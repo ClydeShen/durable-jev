@@ -221,6 +221,20 @@ describe('evaluateRuleGraph', () => {
     expect(graph.outcomeOf('R40')?.status).toBe('UNKNOWN')
   })
 
+  it('takes outcomes of rules it does not execute from what was provided', async () => {
+    const executes = (candidate: RuleDefinition) => candidate.owner === 'order-coordination'
+    const alone = await evaluateRuleGraph(ruleSet, generalItems, evaluatorsWith(), { executes })
+    expect(alone.outcomeOf('R40')?.status).toBe('UNKNOWN')
+    expect(alone.outcomes.every((outcome) => outcome.ruleId !== 'R24')).toBe(true)
+    const everyone = await evaluateRuleGraph(ruleSet, generalItems, evaluatorsWith())
+    const provided = everyone.outcomes.filter((outcome) => !['R01', 'R40'].includes(outcome.ruleId))
+    const together = await evaluateRuleGraph(ruleSet, generalItems, evaluatorsWith(), {
+      executes,
+      provided,
+    })
+    expect(together.outcomeOf('R40')?.status).toBe('PASS')
+  })
+
   it('turns a throwing evaluator into ERROR instead of PASS', async () => {
     const graph = await evaluateRuleGraph(
       ruleSet,

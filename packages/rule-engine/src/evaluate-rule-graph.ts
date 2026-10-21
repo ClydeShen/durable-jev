@@ -74,6 +74,27 @@ export interface EvaluationEnvironment {
 export interface EvaluationOptions {
   previous?: readonly RuleOutcome[]
   reusableKinds?: readonly RuleEngineKind[]
+  executes?(rule: RuleDefinition): boolean
+  provided?: readonly RuleOutcome[]
+}
+
+const outcomeKey = (outcome: { ruleId: RuleId; scope: CheckScope }) =>
+  `${outcome.ruleId}@${scopeKey(outcome.scope)}`
+
+function providedOutcome(
+  provided: ReadonlyMap<string, RuleOutcome>,
+  ruleId: RuleId,
+  scope: CheckScope,
+): RuleOutcome {
+  return (
+    provided.get(outcomeKey({ ruleId, scope })) ?? {
+      ruleId,
+      scope,
+      status: 'UNKNOWN',
+      blockedBy: [],
+      inputFingerprint: 'unreported',
+    }
+  )
 }
 
 export interface RuleGraphEvaluation {
@@ -370,19 +391,20 @@ export async function evaluateRuleGraph(
 ): Promise<RuleGraphEvaluation> {
   const state = new GraphState(ruleSet.rules, facts, environment.parameters, ruleSet.mixingMatrix)
   const escalations: RuleGraphEvaluation['escalations'] = []
-  const previous = new Map(
-    (options.previous ?? []).map((result) => [
-      `${result.ruleId}@${scopeKey(result.scope)}`,
-      result,
-    ]),
-  )
+  const previous = new Map((options.previous ?? []).map((result) => [outcomeKey(result), result]))
+  const provided = new Map((options.provided ?? []).map((result) => [outcomeKey(result), result]))
+  const executes = options.executes ?? (() => true)
   const reusableKinds = new Set(options.reusableKinds ?? defaultReusableKinds)
   for (const rule of topologicalOrder(ruleSet.rules)) {
     const results = await Promise.all(
       membersOf(facts, rule.scope).map(async (scope): Promise<RuleOutcome> => {
+        if (!executes(rule)) return providedOutcome(provided, rule.ruleId, scope)
         const inputFingerprint = state.fingerprintOf(rule, scope)
         const reused = reusableKinds.has(rule.evaluator.kind)
-          ? reusableOutcome(previous.get(`${rule.ruleId}@${scopeKey(scope)}`), inputFingerprint)
+          ? reusableOutcome(
+              previous.get(outcomeKey({ ruleId: rule.ruleId, scope })),
+              inputFingerprint,
+            )
           : undefined
         if (reused) return reused
         const result = await evaluateRuleInstance(rule, scope, state, environment, inputFingerprint)
@@ -396,8 +418,9 @@ export async function evaluateRuleGraph(
       }
     }
   }
+  const executed = new Set(ruleSet.rules.filter(executes).map((rule) => rule.ruleId))
   return {
-    outcomes: state.all(),
+    outcomes: state.all().filter((outcome) => executed.has(outcome.ruleId)),
     escalations,
     outcomeOf: (ruleId, scope = { kind: 'order' }) => state.resultOf(ruleId, scope),
   }
