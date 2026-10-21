@@ -73,7 +73,7 @@ let registered = false
 
 // Safe to call again (tests, restarts): the one tracer provider stays and only the place its
 // spans are written to changes.
-export function initTracing(telemetry: Telemetry): void {
+export const initTracing = (telemetry: Telemetry): void => {
   processor.target = telemetry
   if (registered) return
   new NodeTracerProvider({ spanProcessors: [processor] }).register()
@@ -94,7 +94,7 @@ export type SpanOptions = {
 
 const tracer = () => trace.getTracer(tracerName)
 
-export function startSpan(name: string, options: SpanOptions): Span {
+export const startSpan = (name: string, options: SpanOptions): Span => {
   const links = (options.links ?? []).flatMap((link): Link[] => {
     const linked = spanContextFromTraceparent(link.traceparent)
     return linked ? [{ context: linked, attributes: { relation: link.relation } }] : []
@@ -118,11 +118,11 @@ export function startSpan(name: string, options: SpanOptions): Span {
 }
 
 // Runs fn inside a new span; the span ends when fn settles and records a failure as an error.
-export async function withSpan<T>(
+export const withSpan = async <T>(
   name: string,
   options: SpanOptions,
   fn: (span: Span) => Promise<T> | T,
-): Promise<T> {
+): Promise<T> => {
   const span = startSpan(name, options)
   try {
     return await context.with(trace.setSpan(context.active(), span), () => fn(span))
@@ -137,19 +137,19 @@ export async function withSpan<T>(
 
 // Adds case details to the span that is already running, e.g. the HTTP span of a request whose
 // body has just been read.
-export function annotateActiveSpan(attributes: Record<string, string | number | boolean>): void {
+export const annotateActiveSpan = (attributes: Record<string, string | number | boolean>): void => {
   trace.getActiveSpan()?.setAttributes(attributes)
 }
 
 // W3C trace context of whatever is running now: what to store with a task or run so a later,
 // separate trace can link back to it.
-export function currentTraceparent(): string | undefined {
+export const currentTraceparent = (): string | undefined => {
   const carrier: Record<string, string> = {}
   propagation.inject(context.active(), carrier)
   return carrier.traceparent
 }
 
-export function spanContextFromTraceparent(traceparent: string) {
+export const spanContextFromTraceparent = (traceparent: string) => {
   const match = /^00-([0-9a-f]{32})-([0-9a-f]{16})-([0-9a-f]{2})$/.exec(traceparent)
   return match
     ? { traceId: match[1] as string, spanId: match[2] as string, traceFlags: 1, isRemote: true }
@@ -166,7 +166,7 @@ export const fetchWithTrace: typeof fetch = (input, init) => {
 }
 
 // Server side: continue the caller's trace, or start one, for each request.
-export function tracingMiddleware(): RequestHandler {
+export const tracingMiddleware = (): RequestHandler => {
   return (request: Request, response: Response, next: NextFunction) => {
     const parent: Context = propagation.extract(context.active(), request.headers)
     const span = tracer().startSpan(

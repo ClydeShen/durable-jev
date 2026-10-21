@@ -89,7 +89,7 @@ export class Telemetry {
   }
 }
 
-function activeTraceIds(): { traceId?: string; spanId?: string } {
+const activeTraceIds = (): { traceId?: string; spanId?: string } => {
   const context = trace.getActiveSpan()?.spanContext()
   return context && trace.isSpanContextValid(context)
     ? { traceId: context.traceId, spanId: context.spanId }
@@ -100,11 +100,11 @@ export type ServiceTelemetry = { telemetry: Telemetry; relay?: OutboxRelay; stop
 
 // One call per service at startup. Without a collector URL events still land in the outbox and
 // wait there, so a service started before the collector loses nothing.
-export function startServiceTelemetry(options: {
+export const startServiceTelemetry = (options: {
   service: string
   database: StoreDatabase
   collectorUrl?: string | undefined
-}): ServiceTelemetry {
+}): ServiceTelemetry => {
   const telemetry = new Telemetry(options.service, options.database)
   if (!options.collectorUrl) return { telemetry, stop: () => {} }
   const relay = new OutboxRelay({ database: options.database, collectorUrl: options.collectorUrl })

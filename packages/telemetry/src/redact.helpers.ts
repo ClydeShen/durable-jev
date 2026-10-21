@@ -4,7 +4,7 @@ const maxDepth = 6
 
 // Keeps secrets and whole documents out of the observation store: values under secret-looking
 // keys are replaced, and long text is cut (a hash of the input is the right way to refer to it).
-export function redact(value: unknown, depth = 0): unknown {
+export const redact = (value: unknown, depth = 0): unknown => {
   if (typeof value === 'string') {
     return value.length > maxStringLength
       ? `${value.slice(0, maxStringLength)}[truncated ${value.length - maxStringLength} chars]`
@@ -21,6 +21,6 @@ export function redact(value: unknown, depth = 0): unknown {
   )
 }
 
-export function redactHeaders(headers: Record<string, unknown>): Record<string, unknown> {
+export const redactHeaders = (headers: Record<string, unknown>): Record<string, unknown> => {
   return redact(headers) as Record<string, unknown>
 }
