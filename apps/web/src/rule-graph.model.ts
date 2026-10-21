@@ -1,6 +1,6 @@
 import type { Expression, RuleDefinition } from '@durable-jev/rule-engine'
 
-function referencedRuleIds(expression: Expression): string[] {
+const referencedRuleIds = (expression: Expression): string[] => {
   switch (expression.kind) {
     case 'ref':
       return [expression.ruleId]
@@ -20,7 +20,7 @@ function referencedRuleIds(expression: Expression): string[] {
   }
 }
 
-export function upstreamOf(rule: RuleDefinition): string[] {
+export const upstreamOf = (rule: RuleDefinition): string[] => {
   return [
     ...new Set([
       ...rule.dependsOn,
@@ -32,10 +32,10 @@ export function upstreamOf(rule: RuleDefinition): string[] {
 
 type BlockingCheck = { ruleId: string; gateStatus: string; blockedBy: readonly string[] }
 
-export function rootBlockers(
+export const rootBlockers = (
   blockedBy: readonly string[],
   checksByRule: ReadonlyMap<string, readonly BlockingCheck[]>,
-): string[] {
+): string[] => {
   const roots = new Set<string>()
   const visited = new Set<string>()
   const pending = [...blockedBy]

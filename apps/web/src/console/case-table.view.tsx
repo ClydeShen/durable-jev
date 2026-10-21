@@ -3,10 +3,10 @@ import { Icon } from '../icons.component.js'
 import { StatusBadge } from '../status-badge.component.js'
 import { type CaseSummary, formatDuration } from './console.model.js'
 
-export function CaseTable(props: {
+export const CaseTable = (props: {
   cases: CaseSummary[]
   onOpen: (correlationId: string) => void
-}) {
+}) => {
   const [text, setText] = useState('')
   const [status, setStatus] = useState('')
   const [service, setService] = useState('')

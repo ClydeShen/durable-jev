@@ -6,13 +6,13 @@ const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-contr
 // Longer than the coordinator's 10 s timeout, so the order shows a technical failure.
 const injectedDelayMs = 12_000
 
-export function DemoControls(props: {
+export const DemoControls = (props: {
   // The order on screen, for the two-changes-at-once drill.
   selectedCase: { caseId: string; revision: number; amountCents: number } | undefined
   run: (description: string, action: () => Promise<unknown>) => Promise<void>
   lastAction: string | undefined
   resendLastAction: () => Promise<void>
-}) {
+}) => {
   const [open, setOpen] = useState(false)
   const [processes, setProcesses] = useState<ProcessStatus[]>([])
   const [slowed, setSlowed] = useState<Record<string, boolean>>({})

@@ -2,14 +2,14 @@
 // reload keeps the place and a link opens the same screen.
 export type LocationState = { caseId: string | undefined; view: 'flow' | 'tree' }
 
-export function parseLocation(hash: string): LocationState {
+export const parseLocation = (hash: string): LocationState => {
   const [path = '', query = ''] = hash.replace(/^#/, '').split('?')
   const caseId = /^\/cases\/([^/]+)$/.exec(path)?.[1]
   const view = new URLSearchParams(query).get('view') === 'tree' ? 'tree' : 'flow'
   return { caseId: caseId ? decodeURIComponent(caseId) : undefined, view }
 }
 
-export function formatLocation(state: LocationState): string {
+export const formatLocation = (state: LocationState): string => {
   if (!state.caseId) return ''
   const query = state.view === 'tree' ? '?view=tree' : ''
   return `#/cases/${encodeURIComponent(state.caseId)}${query}`
@@ -28,7 +28,7 @@ const consoleTabs: readonly ConsoleTab[] = ['timeline', 'calls', 'judgements', '
 
 export const isConsoleHash = (hash: string) => hash.startsWith('#/console')
 
-export function parseConsoleLocation(hash: string): ConsoleLocation {
+export const parseConsoleLocation = (hash: string): ConsoleLocation => {
   const [path = '', query = ''] = hash.replace(/^#/, '').split('?')
   const params = new URLSearchParams(query)
   const correlationId = /^\/console\/([^/]+)$/.exec(path)?.[1]
@@ -41,7 +41,7 @@ export function parseConsoleLocation(hash: string): ConsoleLocation {
   }
 }
 
-export function formatConsoleLocation(state: Partial<ConsoleLocation>): string {
+export const formatConsoleLocation = (state: Partial<ConsoleLocation>): string => {
   const params = new URLSearchParams()
   if (state.tab && state.tab !== 'timeline') params.set('tab', state.tab)
   if (state.rule) params.set('rule', state.rule)

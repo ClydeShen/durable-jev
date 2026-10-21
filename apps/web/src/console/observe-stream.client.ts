@@ -3,10 +3,10 @@ import type { CaseSummary } from './console.model.js'
 
 // Adds incoming events to what is already shown. An event can arrive twice (a snapshot and the
 // stream overlap, or the stream replays after a reconnect): it is kept once, in stream order.
-export function mergeStored(
+export const mergeStored = (
   current: readonly StoredEvent[],
   incoming: readonly StoredEvent[],
-): StoredEvent[] {
+): StoredEvent[] => {
   const known = new Set(current.map((stored) => stored.event.eventId))
   const added = incoming.filter((stored) => {
     if (known.has(stored.event.eventId)) return false
@@ -39,7 +39,7 @@ const retryDelaysMs = [500, 1000, 2000, 5000]
 // answers 502 while the collector is down) and cannot tell a dead stream from a quiet one. The
 // server sends a ping every few seconds, so silence for longer than the limit means the stream is
 // gone and a new one is opened.
-export function openEventStream(options: StreamOptions): () => void {
+export const openEventStream = (options: StreamOptions): (() => void) => {
   let cursor = options.after
   let source: EventSource | undefined
   let watchdog: ReturnType<typeof setTimeout> | undefined
@@ -94,10 +94,10 @@ export type ShownCase = { summary: CaseSummary; events: StoredEvent[]; latest: n
 // What to show after a fresh snapshot of a case. Events already on screen are kept only when they
 // belong to the same case and the collector's history has not been reset (its latest sequence is
 // still at least what we have seen); otherwise the snapshot replaces them.
-export function reconcileSnapshot(
+export const reconcileSnapshot = (
   current: ShownCase | undefined,
   fresh: { summary: CaseSummary; events: StoredEvent[]; latest: number },
-): ShownCase {
+): ShownCase => {
   const sameCase = current?.summary.correlationId === fresh.summary.correlationId
   const reset = current !== undefined && fresh.latest < cursorOf(current.events)
   return {

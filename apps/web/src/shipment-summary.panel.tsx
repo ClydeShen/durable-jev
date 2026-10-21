@@ -5,7 +5,7 @@ const kilograms = (grams: number) => `${(grams / 1000).toLocaleString('en-US')} 
 const money = (cents: number, currency: string) =>
   `${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${currency}`
 
-export function ShipmentSummary({ shipment }: { shipment: Shipment }) {
+export const ShipmentSummary = ({ shipment }: { shipment: Shipment }) => {
   return (
     <section className="shipment">
       <dl>

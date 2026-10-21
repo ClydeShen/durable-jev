@@ -49,7 +49,7 @@ const recoveryNames = new Set([
   'task.failed',
 ])
 
-export function categoryOf(event: BusinessEvent): EventCategory {
+export const categoryOf = (event: BusinessEvent): EventCategory => {
   if (recoveryNames.has(event.eventName)) return 'recovery'
   switch (event.eventName) {
     case 'rule.evaluated': {
@@ -81,7 +81,7 @@ export function categoryOf(event: BusinessEvent): EventCategory {
 const text = (value: unknown) => (value === undefined || value === null ? undefined : String(value))
 
 // One line saying what happened, from the fields that matter for this kind of event.
-export function describeEvent(event: BusinessEvent): string {
+export const describeEvent = (event: BusinessEvent): string => {
   const a = event.attributes ?? {}
   switch (event.eventName) {
     case 'case.submitted':
@@ -129,7 +129,7 @@ export function describeEvent(event: BusinessEvent): string {
   }
 }
 
-export function describeAnswer(answer: unknown): string {
+export const describeAnswer = (answer: unknown): string => {
   const value = answer as { type?: string; noul?: number; choice?: string } | undefined
   if (value?.type === 'noul') return `noul ${value.noul}`
   if (value?.type === 'choice') return `choice ${value.choice}`
@@ -167,7 +167,7 @@ export type TraceView = {
   links: { fromSpanId: string; traceId: string; spanId: string; relation: string }[]
 }
 
-export function buildTraces(spans: readonly SpanRecord[]): TraceView[] {
+export const buildTraces = (spans: readonly SpanRecord[]): TraceView[] => {
   const byTrace = Map.groupBy(spans, (span) => span.traceId)
   const traces: TraceView[] = []
   for (const [traceId, members] of byTrace) {
@@ -216,7 +216,7 @@ export type Judgement = {
 }
 
 // Pairs, per rule and item, what Jev was asked and answered with the rule result that followed.
-export function judgements(events: readonly BusinessEvent[]): Judgement[] {
+export const judgements = (events: readonly BusinessEvent[]): Judgement[] => {
   const rows = new Map<string, Judgement>()
   const row = (ruleId: string, entityId: string) => {
     const key = `${ruleId}@${entityId}`
@@ -244,7 +244,7 @@ export function judgements(events: readonly BusinessEvent[]): Judgement[] {
 export const isRecoveryEvent = (event: ObservabilityEvent): boolean =>
   event.kind === 'event' ? categoryOf(event) === 'recovery' : (event.links?.length ?? 0) > 0
 
-export function formatDuration(ms: number): string {
+export const formatDuration = (ms: number): string => {
   if (ms < 1000) return `${Math.round(ms)} ms`
   if (ms < 60_000) return `${(ms / 1000).toFixed(1)} s`
   const minutes = Math.floor(ms / 60_000)
@@ -261,7 +261,7 @@ export type TimelineItem =
 const minimumGroup = 4
 
 // Folds consecutive rule results into one row, so the first evaluation does not bury the story.
-export function groupTimeline(events: readonly BusinessEvent[]): TimelineItem[] {
+export const groupTimeline = (events: readonly BusinessEvent[]): TimelineItem[] => {
   const items: TimelineItem[] = []
   let run: BusinessEvent[] = []
   const flush = () => {

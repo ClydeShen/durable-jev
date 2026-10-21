@@ -15,13 +15,13 @@ export type HumanTaskActions = {
   dispatch: () => Promise<void>
 }
 
-export function HumanTaskPanel(props: {
+export const HumanTaskPanel = (props: {
   tasks: HumanTask[]
   actingRole: Role
   actions: HumanTaskActions
   decisionConditionsByRule: ReadonlyMap<string, readonly string[]>
   ruleTitles: ReadonlyMap<string, string>
-}) {
+}) => {
   const openTasks = props.tasks.filter((task) => task.status === 'OPEN')
   const closedTasks = props.tasks.filter((task) => task.status !== 'OPEN')
   return (
@@ -64,13 +64,13 @@ export function HumanTaskPanel(props: {
   )
 }
 
-function OpenTaskCard(props: {
+const OpenTaskCard = (props: {
   task: HumanTask
   actingRole: Role
   actions: HumanTaskActions
   decisionConditions: readonly string[]
   title: string | undefined
-}) {
+}) => {
   const { task, actingRole, actions, decisionConditions, title } = props
   const [fields, setFields] = useState<Record<string, string>>({})
   const [reason, setReason] = useState('')

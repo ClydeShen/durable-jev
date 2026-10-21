@@ -31,14 +31,14 @@ export type InvestigationActions = {
   reject: (investigation: Investigation, reason: string) => Promise<void>
 }
 
-export function InvestigationPanel(props: {
+export const InvestigationPanel = (props: {
   shipment: Shipment
   investigations: Investigation[]
   referenceData: ReferenceData | undefined
   actingRole: Role
   disabled: boolean
   actions: InvestigationActions
-}) {
+}) => {
   const { shipment, referenceData } = props
   const carrierName = (carrierId: string) =>
     referenceData?.carriers.find((carrier) => carrier.carrierId === carrierId)?.name ?? carrierId
@@ -79,11 +79,11 @@ export function InvestigationPanel(props: {
   )
 }
 
-function InvestigateRow(props: {
+const InvestigateRow = (props: {
   label: string
   warning: boolean
   onInvestigate: (reason: string) => Promise<void>
-}) {
+}) => {
   const [reason, setReason] = useState('Carrier cancelled the booking')
   return (
     <div className="row change-row">
@@ -102,11 +102,11 @@ function InvestigateRow(props: {
   )
 }
 
-function InvestigationItem(props: {
+const InvestigationItem = (props: {
   investigation: Investigation
   carrierName: (carrierId: string) => string
   actions: InvestigationActions
-}) {
+}) => {
   const { investigation, carrierName, actions } = props
   const [rejectReason, setRejectReason] = useState('')
   return (

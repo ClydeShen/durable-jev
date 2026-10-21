@@ -27,7 +27,7 @@ type TreeContext = {
   openTaskRoleByRule: Map<string, string>
 }
 
-export function RuleTree({ rootRuleId, rules, checks, humanTasks }: RuleTreeProps) {
+export const RuleTree = ({ rootRuleId, rules, checks, humanTasks }: RuleTreeProps) => {
   const context: TreeContext = {
     rulesById: new Map(rules.map((rule) => [rule.ruleId as string, rule])),
     checksByRule: Map.groupBy(checks, (check) => check.ruleId as string),
@@ -44,7 +44,7 @@ export function RuleTree({ rootRuleId, rules, checks, humanTasks }: RuleTreeProp
   )
 }
 
-function describeBlocker(ruleId: string, context: TreeContext): string {
+const describeBlocker = (ruleId: string, context: TreeContext): string => {
   const role = context.openTaskRoleByRule.get(ruleId)
   if (role) return `${ruleId} (${role})`
   const statuses = [
@@ -53,7 +53,7 @@ function describeBlocker(ruleId: string, context: TreeContext): string {
   return statuses.length > 0 ? `${ruleId} (${statuses.join(', ').toLowerCase()})` : ruleId
 }
 
-function RuleNode(props: { ruleId: string; context: TreeContext; ancestors: string[] }) {
+const RuleNode = (props: { ruleId: string; context: TreeContext; ancestors: string[] }) => {
   const { ruleId, context, ancestors } = props
   const { rulesById, checksByRule } = context
   const rule = rulesById.get(ruleId)

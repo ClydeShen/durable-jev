@@ -8,10 +8,10 @@ import {
   isRecoveryEvent,
 } from './console.model.js'
 
-export function RecoveryDetail(props: {
+export const RecoveryDetail = (props: {
   events: StoredEvent[]
   onOpenTrace: (traceId: string) => void
-}) {
+}) => {
   const items = props.events
     .filter(({ event }) => isRecoveryEvent(event))
     .sort((left, right) => left.event.timestamp.localeCompare(right.event.timestamp))

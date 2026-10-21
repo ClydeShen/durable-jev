@@ -51,12 +51,12 @@ export const branchLabels: Record<RuleBranch, string> = {
 
 const overviewMerges: Readonly<Record<string, string>> = { R39: 'R39-CONFIRM' }
 
-export function aggregateStatus(statuses: readonly GateStatus[]): GateStatus {
+export const aggregateStatus = (statuses: readonly GateStatus[]): GateStatus => {
   if (statuses.length === 0) return 'UNKNOWN'
   return severityOrder.find((status) => statuses.includes(status)) ?? 'UNKNOWN'
 }
 
-export function edgeStateFor(upstreamStatus: GateStatus): EdgeState {
+export const edgeStateFor = (upstreamStatus: GateStatus): EdgeState => {
   switch (upstreamStatus) {
     case 'PASS':
       return 'flowing'
@@ -72,11 +72,11 @@ export function edgeStateFor(upstreamStatus: GateStatus): EdgeState {
   }
 }
 
-function reachableFrom(
+const reachableFrom = (
   start: string,
   downstreamOf: ReadonlyMap<string, readonly string[]>,
   skipEdge: { from: string; to: string },
-): Set<string> {
+): Set<string> => {
   const reached = new Set<string>()
   const pending = [start]
   while (pending.length > 0) {
@@ -91,9 +91,9 @@ function reachableFrom(
   return reached
 }
 
-export function withoutRedundantEdges<Edge extends { from: string; to: string }>(
+export const withoutRedundantEdges = <Edge extends { from: string; to: string }>(
   edges: readonly Edge[],
-): Edge[] {
+): Edge[] => {
   const downstreamOf = new Map<string, string[]>()
   for (const edge of edges) {
     downstreamOf.set(edge.from, [...(downstreamOf.get(edge.from) ?? []), edge.to])
@@ -101,21 +101,21 @@ export function withoutRedundantEdges<Edge extends { from: string; to: string }>
   return edges.filter((edge) => !reachableFrom(edge.from, downstreamOf, edge).has(edge.to))
 }
 
-function unitOf(rule: RuleDefinition, view: FlowView): string | undefined {
+const unitOf = (rule: RuleDefinition, view: FlowView): string | undefined => {
   if (view.kind === 'all') return rule.ruleId
   if (view.kind === 'branch') return rule.branch === view.branch ? rule.ruleId : undefined
   if (rule.branch && rule.branch !== 'release') return `branch:${rule.branch}`
   return overviewMerges[rule.ruleId] ?? rule.ruleId
 }
 
-export function buildFlowModel(input: {
+export const buildFlowModel = (input: {
   rootRuleId: string
   view: FlowView
   rules: readonly RuleDefinition[]
   checks: readonly CheckResult[]
   humanTasks: readonly HumanTask[]
   showNotApplicable: boolean
-}): FlowModel {
+}): FlowModel => {
   const rulesById = new Map(input.rules.map((rule) => [rule.ruleId as string, rule]))
   const checksByRule = Map.groupBy(input.checks, (check) => check.ruleId as string)
   const openTaskRoles = new Map(

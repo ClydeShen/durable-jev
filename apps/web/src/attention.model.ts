@@ -26,13 +26,13 @@ const titleOf = (rules: ReadonlyMap<string, RuleDefinition>, ruleId: string) =>
   rules.get(ruleId)?.title ?? ruleId
 
 // What a person looking at the order needs first: why it is stuck and who can move it.
-export function attentionFor(input: {
+export const attentionFor = (input: {
   orderStatus: OrderStatus
   humanTasks: readonly HumanTask[]
   checks: readonly CheckResult[]
   rules: readonly RuleDefinition[]
   actingRole: Role
-}): Attention {
+}): Attention => {
   const rules = new Map(input.rules.map((rule) => [rule.ruleId as string, rule]))
   const waiting = input.humanTasks
     .filter((task) => task.status === 'OPEN')

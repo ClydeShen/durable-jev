@@ -26,7 +26,7 @@ const labels: Record<string, string> = {
   SUPERSEDED: 'Superseded',
 }
 
-export function StatusBadge({ status }: { status: GateStatus | OrderStatus | HumanTaskStatus }) {
+export const StatusBadge = ({ status }: { status: GateStatus | OrderStatus | HumanTaskStatus }) => {
   const icon = iconForStatus(status)
   return (
     <span className={`badge badge-${status.toLowerCase()}`} title={status}>

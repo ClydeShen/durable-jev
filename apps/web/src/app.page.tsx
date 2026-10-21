@@ -28,7 +28,7 @@ import { StatusBadge } from './status-badge.component.js'
 
 const refreshIntervalMs = 2000
 
-export function App() {
+export const App = () => {
   const [hash, setHash] = useState(window.location.hash)
   useEffect(() => {
     const onChange = () => setHash(window.location.hash)
@@ -62,7 +62,7 @@ export function App() {
   )
 }
 
-function Workbench() {
+const Workbench = () => {
   const [actingRole, setActingRole] = useState<Role>('WAREHOUSE_OPERATOR')
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [selectedCaseId, setSelectedCaseId] = useState<string | undefined>(

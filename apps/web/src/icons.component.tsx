@@ -90,7 +90,7 @@ const icons = {
 
 export type IconName = keyof typeof icons
 
-export function Icon(props: { name: IconName; size?: number; label?: string }) {
+export const Icon = (props: { name: IconName; size?: number; label?: string }) => {
   const Glyph = icons[props.name]
   return (
     <Glyph
@@ -103,11 +103,11 @@ export function Icon(props: { name: IconName; size?: number; label?: string }) {
 }
 
 // Separator between facts in a line of text; drawn with CSS, not typed.
-export function Dot() {
+export const Dot = () => {
   return <span className="dot" aria-hidden="true" />
 }
 
-export function Route(props: { from: string; to: string }) {
+export const Route = (props: { from: string; to: string }) => {
   return (
     <span className="route">
       {props.from}

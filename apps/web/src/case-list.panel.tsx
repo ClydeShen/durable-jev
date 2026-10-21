@@ -2,11 +2,11 @@ import type { CaseSummary } from './api.client.js'
 import { Route } from './icons.component.js'
 import { StatusBadge } from './status-badge.component.js'
 
-export function CaseList(props: {
+export const CaseList = (props: {
   cases: CaseSummary[]
   selectedCaseId: string | undefined
   onSelect: (caseId: string) => void
-}) {
+}) => {
   if (props.cases.length === 0) {
     return <p className="muted">No cases yet. Click "Reset demo" to load the demo orders.</p>
   }

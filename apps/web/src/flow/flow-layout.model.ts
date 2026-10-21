@@ -3,7 +3,7 @@ import type { FlowModel } from './flow.model.js'
 
 export const flowNodeSize = { width: 172, height: 74 }
 
-export function layoutFlow(model: FlowModel): Map<string, { x: number; y: number }> {
+export const layoutFlow = (model: FlowModel): Map<string, { x: number; y: number }> => {
   const graph = new Graph()
   graph.setGraph({ rankdir: 'LR', nodesep: 16, ranksep: 44, marginx: 8, marginy: 8 })
   graph.setDefaultEdgeLabel(() => ({}))

@@ -22,10 +22,10 @@ const tabs: { id: ConsoleTab; label: string }[] = [
   { id: 'recovery', label: 'Recovery' },
 ]
 
-export function ConsolePage(props: {
+export const ConsolePage = (props: {
   location: ConsoleLocation
   navigate: (hash: string) => void
-}) {
+}) => {
   const { location } = props
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [detail, setDetail] = useState<CaseDetail>()
@@ -221,7 +221,7 @@ export function ConsolePage(props: {
   )
 }
 
-function SummaryTiles(props: { summary: CaseSummary; recoveries: number }) {
+const SummaryTiles = (props: { summary: CaseSummary; recoveries: number }) => {
   const { summary } = props
   const tiles: { label: string; value: string; hint?: string }[] = [
     { label: 'Total', value: formatDuration(summary.totalMs), hint: 'First to last event' },

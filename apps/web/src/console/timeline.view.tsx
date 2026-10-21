@@ -25,11 +25,11 @@ const categoryIcons: Record<EventCategory, IconName> = {
 
 const categories = Object.keys(categoryLabels) as EventCategory[]
 
-export function Timeline(props: {
+export const Timeline = (props: {
   events: StoredEvent[]
   highlightRule: string | undefined
   onOpenTrace: (traceId: string) => void
-}) {
+}) => {
   const [hidden, setHidden] = useState<ReadonlySet<EventCategory>>(new Set())
   const all = businessEvents(props.events)
   const visible = all.filter((event) => !hidden.has(categoryOf(event)))

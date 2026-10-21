@@ -5,11 +5,11 @@ import { buildTraces, formatDuration, spanRecords } from './console.model.js'
 
 const shortId = (id: string) => id.slice(0, 8)
 
-export function CallTree(props: {
+export const CallTree = (props: {
   events: StoredEvent[]
   focusTrace: string | undefined
   onOpenTrace: (traceId: string) => void
-}) {
+}) => {
   const traces = buildTraces(spanRecords(props.events))
   useEffect(() => {
     if (props.focusTrace) {

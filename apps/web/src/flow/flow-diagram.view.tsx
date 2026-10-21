@@ -25,13 +25,13 @@ const edgeLegend: { state: EdgeState; label: string }[] = [
   { state: 'failed', label: 'failed' },
 ]
 
-export function FlowDiagram(props: {
+export const FlowDiagram = (props: {
   rules: RuleDefinition[]
   checks: CheckResult[]
   humanTasks: HumanTask[]
   // Lets a rule node open the Console on the same order.
   correlationId?: string
-}) {
+}) => {
   const [view, setView] = useState<FlowView>({ kind: 'overview' })
   const [showNotApplicable, setShowNotApplicable] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
@@ -155,7 +155,7 @@ export function FlowDiagram(props: {
 }
 
 // Where to look for the evidence behind this rule in the Console.
-function evidenceLinks(node: FlowNodeModel, correlationId: string) {
+const evidenceLinks = (node: FlowNodeModel, correlationId: string) => {
   if (node.kind !== 'rule') return []
   const base = { correlationId, rule: node.id }
   const links = [{ label: `Timeline events for ${node.id}`, href: formatConsoleLocation(base) }]
@@ -175,13 +175,13 @@ function evidenceLinks(node: FlowNodeModel, correlationId: string) {
   return links
 }
 
-function RuleDetails({
+const RuleDetails = ({
   node,
   correlationId,
 }: {
   node: FlowNodeModel
   correlationId: string | undefined
-}) {
+}) => {
   const links = correlationId ? evidenceLinks(node, correlationId) : []
   return (
     <div className="flow-details">

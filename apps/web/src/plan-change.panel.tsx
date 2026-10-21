@@ -16,14 +16,14 @@ const plannerRole: Role = 'TRANSPORT_PLANNER'
 const commercialRole: Role = 'COMMERCIAL_MANAGER'
 const warehouseRole: Role = 'WAREHOUSE_OPERATOR'
 
-export function PlanChangePanel(props: {
+export const PlanChangePanel = (props: {
   shipment: Shipment
   changes: CaseChange[]
   referenceData: ReferenceData | undefined
   actingRole: Role
   disabled: boolean
   applyChange: (change: PlanChange) => Promise<void>
-}) {
+}) => {
   const { shipment, referenceData, actingRole } = props
   const [quoteAmount, setQuoteAmount] = useState(String(shipment.quote.amountCents / 100))
 
@@ -94,12 +94,12 @@ export function PlanChangePanel(props: {
   )
 }
 
-function LegChangeRow(props: {
+const LegChangeRow = (props: {
   leg: Shipment['legs'][number]
   referenceData: ReferenceData | undefined
   warning: boolean
   applyChange: (change: PlanChange) => Promise<void>
-}) {
+}) => {
   const { leg, referenceData } = props
   const [carrierId, setCarrierId] = useState<string>(leg.carrierId)
   const [vehicleId, setVehicleId] = useState<string>(leg.vehicleId)

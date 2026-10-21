@@ -24,7 +24,7 @@ export const describeWaitingOn = (waitingOn: readonly WaitingOn[]) =>
 
 export const revisionOf = (changeId: string) => changeId.slice(changeId.lastIndexOf('-') + 1)
 
-export function RuleFlowNode({ data }: NodeProps<RuleFlowNodeType>) {
+export const RuleFlowNode = ({ data }: NodeProps<RuleFlowNodeType>) => {
   const isHuman = data.evaluatorKind === 'humanGate'
   const classNames = [
     'flow-node',

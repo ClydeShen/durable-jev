@@ -1,6 +1,6 @@
 import { Icon } from './icons.component.js'
 
-export function AppNav(props: { current: 'workbench' | 'console' | 'proof' }) {
+export const AppNav = (props: { current: 'workbench' | 'console' | 'proof' }) => {
   return (
     <nav className="app-nav" aria-label="Main">
       <a href="#/" aria-current={props.current === 'workbench' ? 'page' : undefined}>

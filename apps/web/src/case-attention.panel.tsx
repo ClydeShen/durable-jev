@@ -1,7 +1,7 @@
 import type { Attention } from './attention.model.js'
 import { Dot, Icon } from './icons.component.js'
 
-export function CaseAttention({ attention }: { attention: Attention }) {
+export const CaseAttention = ({ attention }: { attention: Attention }) => {
   const { waiting, failed } = attention
   return (
     <section className="attention" aria-label="What needs attention">

@@ -3,10 +3,10 @@ import { Icon } from '../icons.component.js'
 import { StatusBadge } from '../status-badge.component.js'
 import { businessEvents, describeAnswer, formatDuration, judgements } from './console.model.js'
 
-export function JudgementDetail(props: {
+export const JudgementDetail = (props: {
   events: StoredEvent[]
   highlightRule: string | undefined
-}) {
+}) => {
   const rows = judgements(businessEvents(props.events))
   return (
     <section>

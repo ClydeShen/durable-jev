@@ -56,10 +56,10 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(
+const request = async <T>(
   path: string,
   init: RequestInit & { role?: Role; ifMatch?: string } = {},
-): Promise<T> {
+): Promise<T> => {
   const { role, ifMatch, ...rest } = init
   const response = await fetch(path, {
     ...rest,
