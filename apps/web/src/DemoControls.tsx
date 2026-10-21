@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ApiError, api, type ProcessStatus } from './api.js'
+import { ApiError, api, type ProcessStatus, type RuntimeModes } from './api.js'
 import { Icon } from './icons.js'
 
 const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-control']
@@ -17,12 +17,14 @@ export function DemoControls(props: {
   const [processes, setProcesses] = useState<ProcessStatus[]>([])
   const [slowed, setSlowed] = useState<Record<string, boolean>>({})
   const [jevDown, setJevDown] = useState(false)
+  const [modes, setModes] = useState<RuntimeModes>()
   const [raceResult, setRaceResult] = useState<string>()
 
   useEffect(() => {
     if (!open) return
     const load = () => api.processes().then(setProcesses, () => setProcesses([]))
     load()
+    api.modes().then(setModes, () => {})
     const timer = setInterval(load, 2000)
     return () => clearInterval(timer)
   }, [open])
@@ -38,6 +40,9 @@ export function DemoControls(props: {
       await api.delayService(name, on ? injectedDelayMs : 0)
       setSlowed((current) => ({ ...current, [name]: on }))
     })
+
+  const switchMode = (wanted: Parameters<typeof api.setModes>[0], description: string) =>
+    props.run(description, async () => setModes(await api.setModes(wanted)))
 
   const setJev = (down: boolean) =>
     props.run(down ? 'Make Jev unavailable' : 'Make Jev available', async () => {
@@ -75,6 +80,47 @@ export function DemoControls(props: {
         coordinator while the quality review is open; after the restart the same task is still
         there.
       </p>
+      {modes && (
+        <>
+          <h3>Modes</h3>
+          <p className="muted small">
+            Switching restarts only the services it affects; orders and tasks are kept.
+          </p>
+          <div className="row" role="group" aria-label="How the coordinator calls branch services">
+            {(['native', 'a2a'] as const).map((protocol) => (
+              <button
+                key={protocol}
+                type="button"
+                aria-pressed={modes.branchProtocol === protocol}
+                onClick={() => switchMode({ branchProtocol: protocol }, `Switch to ${protocol}`)}
+              >
+                {protocol === 'native' ? 'Native HTTP' : 'A2A'}
+              </button>
+            ))}
+          </div>
+          <div className="row" role="group" aria-label="Where semantic answers come from">
+            {(['scripted', 'live'] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={modes.modelMode === mode}
+                disabled={mode === 'live' && !modes.liveAvailable}
+                title={
+                  mode === 'live' && !modes.liveAvailable
+                    ? 'Start with TYPESAFE_API_KEY set to enable live Jev'
+                    : undefined
+                }
+                onClick={() => switchMode({ modelMode: mode }, `Switch to ${mode} answers`)}
+              >
+                {mode === 'scripted' ? 'Scripted answers' : 'Live Jev'}
+              </button>
+            ))}
+          </div>
+          {modes.modelMode === 'live' && (
+            <p className="warning small">Live Jev uses real quota. Switch back when done.</p>
+          )}
+        </>
+      )}
       <ul className="process-list">
         {processes
           .filter((process) => process.name !== 'web')

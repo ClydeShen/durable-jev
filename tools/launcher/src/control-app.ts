@@ -1,7 +1,10 @@
 import { createServiceApp } from '@durable-jev/service-kit'
 import type { Express, Request, Response } from 'express'
+import { z } from 'zod'
 import { resetDemo } from './demo-reset.js'
 import type { ProcessSupervisor } from './process-supervisor.js'
+import { createProofRuns, type ProofKind, proofKinds } from './proof-runs.service.js'
+import { createRuntimeModes } from './runtime-modes.service.js'
 import { slowableServices } from './service-manifest.js'
 
 type ProcessAction = 'start' | 'stop' | 'restart' | 'kill'
@@ -9,6 +12,45 @@ const processActions: readonly ProcessAction[] = ['start', 'stop', 'restart', 'k
 
 export function createControlApp(supervisor: ProcessSupervisor): Express {
   const app = createServiceApp('launcher')
+  const modes = createRuntimeModes(supervisor)
+  const proofRuns = createProofRuns()
+
+  app.get('/modes', (_request, response) => {
+    response.json(modes.get())
+  })
+
+  app.post('/modes', async (request: Request, response: Response) => {
+    const wanted = z
+      .object({
+        branchProtocol: z.enum(['native', 'a2a']).optional(),
+        modelMode: z.enum(['scripted', 'live']).optional(),
+      })
+      .safeParse(request.body)
+    if (!wanted.success) {
+      response.status(400).json({ error: 'BAD_REQUEST' })
+      return
+    }
+    const outcome = await modes.set(wanted.data)
+    if (!outcome.ok) {
+      response.status(409).json({ error: 'LIVE_UNAVAILABLE', message: outcome.reason })
+      return
+    }
+    response.json(modes.get())
+  })
+
+  app.get('/proof', (_request, response) => {
+    response.json(proofRuns.snapshot())
+  })
+
+  app.post('/proof/:kind/run', (request: Request, response: Response) => {
+    const kind = request.params.kind as ProofKind
+    if (!proofKinds.includes(kind)) {
+      response.status(404).json({ error: 'NOT_FOUND' })
+      return
+    }
+    const started = proofRuns.start(kind)
+    response.status(started ? 202 : 409).json(proofRuns.snapshot()[kind])
+  })
 
   app.get('/processes', (_request, response) => {
     response.json(supervisor.status())

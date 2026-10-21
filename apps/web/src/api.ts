@@ -28,6 +28,23 @@ export type CaseView = CaseSummary & {
 
 export type ProcessStatus = { name: string; state: 'running' | 'stopped' | 'exited'; pid?: number }
 
+export type RuntimeModes = {
+  branchProtocol: 'native' | 'a2a'
+  modelMode: 'scripted' | 'live'
+  liveAvailable: boolean
+}
+
+export type ProofKind = 'replay' | 'faults'
+export type ProofItem = { status: 'PASS' | 'FAIL'; id: string; title: string; details: string[] }
+export type ProofRun = {
+  state: 'idle' | 'running' | 'done'
+  startedAt?: string
+  finishedAt?: string
+  passed?: boolean
+  summary?: string
+  items: ProofItem[]
+}
+
 export type RuleCatalog = { ruleSetVersion: string; rules: RuleDefinition[] }
 
 export class ApiError extends Error {
@@ -134,5 +151,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ unavailable }),
     }),
+  modes: () => request<RuntimeModes>('/control/modes'),
+  setModes: (wanted: Partial<Pick<RuntimeModes, 'branchProtocol' | 'modelMode'>>) =>
+    request<RuntimeModes>('/control/modes', { method: 'POST', body: JSON.stringify(wanted) }),
+  proof: () => request<Record<ProofKind, ProofRun>>('/control/proof'),
+  runProof: (kind: ProofKind) =>
+    request<ProofRun>(`/control/proof/${kind}/run`, { method: 'POST' }),
   resetDemo: () => request<{ loadedCaseIds: string[] }>('/control/demo/reset', { method: 'POST' }),
 }

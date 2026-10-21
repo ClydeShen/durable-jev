@@ -77,6 +77,12 @@ export class ProcessSupervisor {
     if (managed.child !== child) throw new Error(`${name} exited while starting`)
   }
 
+  // Takes effect the next time the process starts.
+  updateEnv(name: string, env: Record<string, string>): void {
+    const { definition } = this.require(name)
+    definition.env = { ...definition.env, ...env }
+  }
+
   async stop(name: string): Promise<void> {
     await this.terminate(name, 'SIGTERM')
   }

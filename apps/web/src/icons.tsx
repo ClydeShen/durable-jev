@@ -30,6 +30,7 @@ import {
   Send,
   Server,
   ServerCrash,
+  ShieldCheck,
   Sparkles,
   Timer,
   TriangleAlert,
@@ -83,6 +84,7 @@ const icons = {
   live: Radio,
   offline: WifiOff,
   guide: ListChecks,
+  proof: ShieldCheck,
   todo: Circle,
 } as const satisfies Record<string, LucideIcon>
 

@@ -20,6 +20,7 @@ import {
   parseLocation,
 } from './location-state.js'
 import { PlanChangePanel } from './PlanChangePanel.js'
+import { ProofPage } from './proof/proof.page.js'
 import { RuleTree } from './RuleTree.js'
 import { roleLabels, roles } from './roles.js'
 import { ShipmentSummary } from './ShipmentSummary.js'
@@ -34,6 +35,16 @@ export function App() {
     window.addEventListener('hashchange', onChange)
     return () => window.removeEventListener('hashchange', onChange)
   }, [])
+  if (hash.startsWith('#/proof'))
+    return (
+      <div className="layout layout-console">
+        <header className="topbar">
+          <h1>Dispatch Workbench</h1>
+          <AppNav current="proof" />
+        </header>
+        <ProofPage />
+      </div>
+    )
   if (!isConsoleHash(hash)) return <Workbench />
   return (
     <div className="layout layout-console">

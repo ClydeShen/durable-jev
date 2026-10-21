@@ -1261,3 +1261,52 @@ button:has(> .icon) {
 .guide-step p {
   margin: 4px 0;
 }
+
+.proof {
+  max-width: 900px;
+}
+
+.proof-section {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.proof-section header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.proof-section header h3 {
+  flex: 1;
+  margin: 0;
+}
+
+.proof-pass {
+  color: var(--pass);
+  font-weight: 600;
+}
+
+.proof-fail {
+  color: var(--fail);
+  font-weight: 600;
+}
+
+.proof-items {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+}
+
+.proof-items summary {
+  cursor: pointer;
+  padding: 3px 0;
+}
+
+.proof-details {
+  margin: 4px 0 8px 24px;
+  color: var(--muted);
+}
