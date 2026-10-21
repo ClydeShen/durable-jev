@@ -34,6 +34,11 @@ const expressionRuleSchema = z.object({
 
 const probabilityThresholdSchema = z.union([z.number().min(0).max(1), z.string().min(1)])
 
+const mixingTableSchema = z.object({
+  categories: z.string().min(1),
+  qualifications: z.string().min(1),
+})
+
 const semanticRuleSchema = z.object({
   promptVersion: z.string().min(1),
   question: z.discriminatedUnion('kind', [
@@ -71,6 +76,7 @@ const ruleDefinitionSchema = z.object({
   evaluator: z.object({ kind: ruleEngineKindSchema, ref: z.string().min(1) }),
   combiner: expressionSchema.optional(),
   expression: expressionRuleSchema.optional(),
+  mixing: mixingTableSchema.optional(),
   semantic: semanticRuleSchema.optional(),
   unknownPolicy: z.enum(['block', 'escalateToHuman']),
   inputPaths: z.array(z.string().min(1)),

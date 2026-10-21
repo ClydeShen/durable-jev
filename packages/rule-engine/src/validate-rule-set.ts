@@ -48,7 +48,7 @@ export function referencedRules(expression: Expression): RuleId[] {
     case 'ref':
     case 'observed':
       return [expression.ruleId]
-    case 'fact':
+    case 'feel':
       return []
     case 'and':
     case 'or':
@@ -83,7 +83,7 @@ function scopeIssues(
   const within = (child: Expression, childScope = evaluationScope) =>
     scopeIssues(rule, child, scopeOf, childScope)
   switch (expression.op) {
-    case 'fact':
+    case 'feel':
       return []
     case 'ref':
     case 'observed': {
@@ -106,12 +106,12 @@ function scopeIssues(
       return [...within(expression.condition), ...within(expression.consequence)]
     case 'allOf':
     case 'anyOf':
-      if (evaluationScope !== 'order') {
+      if (evaluationScope === expression.scope) {
         return [
           {
             code: 'SCOPE_MISMATCH',
             ruleId: rule.ruleId,
-            message: `${expression.op}(${expression.scope}) is only allowed in order scope`,
+            message: `${expression.op}(${expression.scope}) cannot be nested inside its own scope`,
           },
         ]
       }
@@ -147,6 +147,7 @@ function referenceIssues(
 }
 
 const configByKind = {
+  decisionTable: 'mixing',
   combinator: 'combiner',
   humanGate: 'humanGate',
   expression: 'expression',
@@ -175,7 +176,7 @@ function evaluatorIssues(
       message: 'an operation gate has exactly one step; only approvals form chains',
     })
   }
-  const registered = kind === 'code' || kind === 'decisionTable'
+  const registered = kind === 'code'
   if (registered && environment.evaluatorRefs && !environment.evaluatorRefs.has(ref)) {
     issues.push({
       code: 'UNKNOWN_EVALUATOR',
@@ -186,11 +187,36 @@ function evaluatorIssues(
   return issues
 }
 
+function feelConditionsIn(expression: Expression): string[] {
+  switch (expression.op) {
+    case 'feel':
+      return [expression.expression]
+    case 'ref':
+    case 'observed':
+      return []
+    case 'and':
+    case 'or':
+      return expression.of.flatMap(feelConditionsIn)
+    case 'not':
+    case 'allOf':
+    case 'anyOf':
+      return feelConditionsIn(expression.of)
+    case 'ifThen':
+      return [
+        ...feelConditionsIn(expression.condition),
+        ...feelConditionsIn(expression.consequence),
+      ]
+  }
+}
+
 function feelExpressionsOf(rule: RuleDefinition): string[] {
   return [
     rule.expression?.passWhen,
     rule.expression?.observe,
+    rule.mixing?.categories,
+    rule.mixing?.qualifications,
     ...Object.values(rule.semantic?.state ?? {}),
+    ...expressionsOf(rule).flatMap(feelConditionsIn),
   ].filter((expression): expression is string => expression !== undefined)
 }
 

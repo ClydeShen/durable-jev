@@ -113,7 +113,7 @@ type RuleDefinition = {
 | `combinator` | `combiner` 表达式树 | rule-engine 内置 | 编写 agent 生成 |
 | `code` / `decisionTable` | `evaluator.ref` 指向注册的函数 | agent 层注册的手写代码 | 人；计入"手写代码"指标 |
 
-FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`、`params`（政策参数）。表达式里的 `params.X` 必须在规则的 `parameters` 中声明，且存在于政策参数；FEEL 语法在启动校验时检查。
+FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`、`params`（政策参数）。不用 FEEL 过滤语法 `list[条件]`（feelin 8.2 在这些情形下返回空列表，配合 `every` 会空真通过），一律写成 `every i in list satisfies (not(适用) or 条件)`。条件树里可用 `feel` 叶子写数值或事实条件；`allOf`/`anyOf` 可在任何作用域使用，只要不嵌套在同一作用域内（如运输段规则读"任一货件是受控货"）。`decisionTable` 目前是混装矩阵：`mixing.categories` / `mixing.qualifications` 两个 FEEL 取值，按规则包中的 `mixingMatrix` 判定，观察值列出违规组合。表达式里的 `params.X` 必须在规则的 `parameters` 中声明，且存在于政策参数；FEEL 语法在启动校验时检查。
 
 `Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。另有两个叶子：`fact(path, equals|includes)` 读输入事实（`order.` 前缀读订单级，否则读当前作用域成员），`observed(ruleId, equals|includes)` 读上游规则的 observedValue（如 R04 判定的分支）；值缺失为 UNKNOWN。
 

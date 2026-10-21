@@ -10,7 +10,7 @@ export type ValueTest = { equals: FactValue } | { includes: FactValue }
 
 export type Expression =
   | { op: 'ref'; ruleId: RuleId }
-  | ({ op: 'fact'; path: string } & ValueTest)
+  | { op: 'feel'; expression: string }
   | ({ op: 'observed'; ruleId: RuleId } & ValueTest)
   | { op: 'and'; of: Expression[] }
   | { op: 'or'; of: Expression[] }
@@ -30,7 +30,7 @@ function withValueTest<T extends z.ZodRawShape>(shape: T) {
 
 export const expressionSchema: z.ZodType<Expression> = z.lazy(() =>
   z.union([
-    withValueTest({ op: z.literal('fact'), path: z.string().min(1) }),
+    z.object({ op: z.literal('feel'), expression: z.string().min(1) }).strict(),
     withValueTest({ op: z.literal('observed'), ruleId: ruleIdSchema }),
     expressionNodeSchema,
   ]),
@@ -53,6 +53,7 @@ const expressionNodeSchema: z.ZodType<Expression> = z.lazy(() =>
 )
 
 export const ref = (ruleId: RuleId): Expression => ({ op: 'ref', ruleId })
+export const feel = (expression: string): Expression => ({ op: 'feel', expression })
 export const observed = (ruleId: RuleId, test: ValueTest): Expression => ({
   op: 'observed',
   ruleId,

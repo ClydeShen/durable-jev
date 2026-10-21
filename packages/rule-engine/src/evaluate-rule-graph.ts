@@ -16,7 +16,14 @@ import {
   statusOfPredicate,
 } from './feel.js'
 import { ruleInputFingerprint } from './fingerprint.js'
-import type { InvalidationTrigger, RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
+import { evaluateMixing } from './mixing.js'
+import type {
+  InvalidationTrigger,
+  MixingRule,
+  RuleDefinition,
+  RuleScope,
+  RuleSet,
+} from './rule-definition.js'
 import { referencedRules } from './validate-rule-set.js'
 
 export type Facts = Record<string, unknown>
@@ -131,6 +138,7 @@ class GraphState implements ExpressionContext {
     rules: readonly RuleDefinition[],
     readonly facts: CaseFacts,
     private readonly parameters: PolicyParameters,
+    readonly mixingMatrix: readonly MixingRule[],
   ) {
     this.scopeOfRule = new Map(rules.map((rule) => [rule.ruleId, rule.scope]))
   }
@@ -158,7 +166,11 @@ class GraphState implements ExpressionContext {
     return this.resultOf(ruleId, scope)?.observedValue
   }
 
-  factOf(path: string, scope: CheckScope): unknown {
+  feel(expression: string, scope: CheckScope): unknown {
+    return evaluateFeel(expression, feelContext(this.facts, scope, this.parameters))
+  }
+
+  private factOf(path: string, scope: CheckScope): unknown {
     if (path.startsWith('order.')) return readPath(this.facts.order, path.slice('order.'.length))
     return readPath(factsOf(this.facts, scope), path)
   }
@@ -176,7 +188,9 @@ class GraphState implements ExpressionContext {
   }
 
   private inputsOf(rule: RuleDefinition, scope: CheckScope): Record<string, unknown> {
-    if (rule.expression) return { context: feelContext(this.facts, scope, this.parameters) }
+    if (rule.expression || rule.mixing) {
+      return { context: feelContext(this.facts, scope, this.parameters) }
+    }
     if (rule.semantic) {
       return semanticState(rule.semantic.state, feelContext(this.facts, scope, this.parameters))
     }
@@ -254,6 +268,14 @@ function runLeaf(
 ): LeafEvaluation | Promise<LeafEvaluation> {
   if (rule.evaluator.kind === 'expression') {
     return evaluateExpressionRule(rule, scope, state, environment.parameters)
+  }
+  if (rule.evaluator.kind === 'decisionTable') {
+    if (!rule.mixing) throw new Error(`${rule.ruleId} has no mixing table`)
+    return evaluateMixing(
+      state.mixingMatrix,
+      state.feel(rule.mixing.categories, scope),
+      state.feel(rule.mixing.qualifications, scope),
+    )
   }
   const evaluator = environment.evaluators.get(rule.evaluator.ref)
   if (!evaluator) throw new Error(`no evaluator ${rule.evaluator.ref}`)
@@ -339,7 +361,7 @@ export async function evaluateRuleGraph(
   environment: EvaluationEnvironment,
   options: EvaluationOptions = {},
 ): Promise<RuleGraphEvaluation> {
-  const state = new GraphState(ruleSet.rules, facts, environment.parameters)
+  const state = new GraphState(ruleSet.rules, facts, environment.parameters, ruleSet.mixingMatrix)
   const escalations: RuleGraphEvaluation['escalations'] = []
   const previous = new Map(
     (options.previous ?? []).map((result) => [

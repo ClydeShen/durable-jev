@@ -15,11 +15,12 @@ import {
   outcome,
 } from './combinators.js'
 import type { CollectionScope, Expression, ValueTest } from './expression.js'
+import { statusOfPredicate } from './feel.js'
 
 export interface ExpressionContext {
   statusOf(ruleId: RuleId, scope: CheckScope): CheckStatus
   observedValueOf(ruleId: RuleId, scope: CheckScope): unknown
-  factOf(path: string, scope: CheckScope): unknown
+  feel(expression: string, scope: CheckScope): unknown
   membersOf(scope: CollectionScope): CheckScope[]
 }
 
@@ -57,8 +58,8 @@ export function evaluateExpression(
   switch (expression.op) {
     case 'ref':
       return evaluateRef(expression.ruleId, scope, context)
-    case 'fact':
-      return testValue(context.factOf(expression.path, scope), expression)
+    case 'feel':
+      return outcome(statusOfPredicate(context.feel(expression.expression, scope)))
     case 'observed':
       return evaluateObserved(expression.ruleId, expression, scope, context)
     case 'and':

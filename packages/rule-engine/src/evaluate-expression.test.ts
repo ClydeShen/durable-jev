@@ -2,13 +2,15 @@ import type { CheckScope, CheckStatus, RuleId } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
 import { combineAnd, combineOr, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
-import { allOf, and, anyOf, type Expression, ifThen, not, or, ref } from './expression.js'
+import { allOf, and, anyOf, type Expression, feel, ifThen, not, or, ref } from './expression.js'
 
 function scopeKey(scope: CheckScope): string {
   if (scope.kind === 'cargoItem') return scope.cargoItemId
   if (scope.kind === 'leg') return scope.legId
   return 'order'
 }
+
+const feelValues: Record<string, boolean> = { true: true, false: false }
 
 function contextWith(
   statuses: Record<string, CheckStatus>,
@@ -18,7 +20,8 @@ function contextWith(
     statusOf: (ruleId: RuleId, scope: CheckScope) =>
       statuses[`${ruleId}@${scopeKey(scope)}`] ?? statuses[ruleId] ?? 'UNKNOWN',
     observedValueOf: () => undefined,
-    factOf: () => undefined,
+    feel: (expression: string) =>
+      expression === 'true' ? true : expression === 'false' ? false : null,
     membersOf: (scope) =>
       (members[scope] ?? []).map((id) =>
         scope === 'cargoItem' ? { kind: 'cargoItem', cargoItemId: id } : { kind: 'leg', legId: id },
@@ -97,6 +100,14 @@ describe('ifThen', () => {
       status: 'BLOCKED_DEPENDENCY',
       blockedBy: ['R19'],
     })
+  })
+})
+
+describe('feel conditions', () => {
+  it('maps FEEL true, false and missing values to PASS, FAIL and UNKNOWN', () => {
+    expect(statusOf(feel('true'), contextWith({}))).toBe('PASS')
+    expect(statusOf(feel('false'), contextWith({}))).toBe('FAIL')
+    expect(statusOf(feel('missing'), contextWith({}))).toBe('UNKNOWN')
   })
 })
 
