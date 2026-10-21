@@ -6,7 +6,7 @@ import {
   countActiveReservations,
   ensurePlanReservation,
   reservationMigrations,
-} from './reservation-book.js'
+} from './reservation.repository.js'
 
 const shipment: Shipment = JSON.parse(
   readFileSync(new URL('../../../eval/materials/cases/LOG-001.json', import.meta.url), 'utf8'),
