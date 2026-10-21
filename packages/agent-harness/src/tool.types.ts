@@ -32,7 +32,7 @@ export type ToolDefinition<Input = unknown> = {
   execute(input: Input, context: ToolContext): Promise<unknown>
 }
 
-export function defineTool<Input>(definition: ToolDefinition<Input>): ToolDefinition<Input> {
+export const defineTool = <Input>(definition: ToolDefinition<Input>): ToolDefinition<Input> => {
   if (definition.access === 'write' && definition.replayPolicy === 'replaySafe') {
     throw new Error(`${definition.name} writes, so it cannot be replay safe`)
   }
