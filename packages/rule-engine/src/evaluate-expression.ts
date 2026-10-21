@@ -23,7 +23,7 @@ export interface ExpressionContext {
   membersOf(scope: CollectionScope): CheckScope[]
 }
 
-export function testValue(value: unknown, test: ValueTest): Outcome {
+function testValue(value: unknown, test: ValueTest): Outcome {
   if (value === undefined || value === null) return outcome('UNKNOWN')
   if ('equals' in test) return outcome(value === test.equals ? 'PASS' : 'FAIL')
   if (!Array.isArray(value)) return outcome('ERROR')

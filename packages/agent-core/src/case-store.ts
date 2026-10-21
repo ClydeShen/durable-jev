@@ -8,7 +8,7 @@ import {
   openStore,
 } from '@durable-jev/store'
 
-export const caseMigrations: readonly Migration[] = [
+const caseMigrations: readonly Migration[] = [
   {
     version: 10,
     name: 'cases, rule results and human tasks',

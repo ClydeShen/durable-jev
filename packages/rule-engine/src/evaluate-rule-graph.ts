@@ -106,7 +106,7 @@ function readPath(source: Facts, path: string): unknown {
     )
 }
 
-export function topologicalOrder(rules: readonly RuleDefinition[]): RuleDefinition[] {
+function topologicalOrder(rules: readonly RuleDefinition[]): RuleDefinition[] {
   const byId = new Map(rules.map((rule) => [rule.ruleId, rule]))
   const ordered: RuleDefinition[] = []
   const visited = new Set<RuleId>()

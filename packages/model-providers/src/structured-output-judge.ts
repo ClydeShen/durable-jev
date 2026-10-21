@@ -19,7 +19,7 @@ import {
   type SemanticState,
 } from './semantic-judge.js'
 
-export const pinnedStructuredOutputModel = {
+const pinnedStructuredOutputModel = {
   provider: 'nvidia',
   id: 'nvidia/nemotron-3.5-lightning-30b-a3b',
 } as const

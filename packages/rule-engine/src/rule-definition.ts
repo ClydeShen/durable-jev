@@ -8,13 +8,13 @@ import {
 import { z } from 'zod'
 import { expressionSchema } from './expression.js'
 
-export const ruleScopeSchema = z.enum(['order', 'cargoItem', 'leg'])
+const ruleScopeSchema = z.enum(['order', 'cargoItem', 'leg'])
 export type RuleScope = z.infer<typeof ruleScopeSchema>
 
-export const invalidationTriggerSchema = z.enum(['cargo', 'route', 'carrier', 'quote', 'documents'])
+const invalidationTriggerSchema = z.enum(['cargo', 'route', 'carrier', 'quote', 'documents'])
 export type InvalidationTrigger = z.infer<typeof invalidationTriggerSchema>
 
-export const humanGateSchema = z.object({
+const humanGateSchema = z.object({
   taskType: z.enum(['APPROVAL', 'OPERATION']),
   steps: z
     .array(z.object({ requiredRole: roleSchema, appliesWhen: expressionSchema.optional() }))
@@ -27,14 +27,14 @@ export const humanGateSchema = z.object({
 })
 export type HumanGate = z.infer<typeof humanGateSchema>
 
-export const expressionRuleSchema = z.object({
+const expressionRuleSchema = z.object({
   passWhen: z.string().min(1),
   observe: z.string().min(1).optional(),
 })
 
 const probabilityThresholdSchema = z.union([z.number().min(0).max(1), z.string().min(1)])
 
-export const semanticRuleSchema = z.object({
+const semanticRuleSchema = z.object({
   promptVersion: z.string().min(1),
   question: z.discriminatedUnion('kind', [
     z.object({
@@ -53,14 +53,13 @@ export const semanticRuleSchema = z.object({
 })
 export type SemanticRule = z.infer<typeof semanticRuleSchema>
 
-export const applicabilitySchema = z.object({
+const applicabilitySchema = z.object({
   destinations: z.array(z.string().min(1)).min(1).optional(),
   cargoCategories: z.array(cargoCategorySchema).min(1).optional(),
   customers: z.array(z.string().min(1)).min(1).optional(),
 })
-export type Applicability = z.infer<typeof applicabilitySchema>
 
-export const ruleDefinitionSchema = z.object({
+const ruleDefinitionSchema = z.object({
   ruleId: ruleIdSchema,
   version: z.string().min(1),
   title: z.string().min(1),
@@ -81,7 +80,7 @@ export const ruleDefinitionSchema = z.object({
 })
 export type RuleDefinition = z.infer<typeof ruleDefinitionSchema>
 
-export const mixingRuleSchema = z.object({
+const mixingRuleSchema = z.object({
   categories: z.tuple([cargoCategorySchema, cargoCategorySchema]),
   outcome: z.enum(['allowed', 'forbidden', 'requiresQualification']),
   qualification: z.string().min(1).optional(),

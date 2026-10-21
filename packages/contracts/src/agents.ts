@@ -7,4 +7,3 @@ export const agentIdSchema = z.enum([
   'commercial-control',
   'destination-compliance',
 ])
-export type AgentId = z.infer<typeof agentIdSchema>

@@ -19,17 +19,15 @@ const positiveInteger = z.number().int().positive()
 export const cargoCategorySchema = z.enum(['general', 'coldChain', 'controlled'])
 export type CargoCategory = z.infer<typeof cargoCategorySchema>
 
-export const temperatureRangeSchema = z
+const temperatureRangeSchema = z
   .object({ minDeciCelsius: z.number().int(), maxDeciCelsius: z.number().int() })
   .refine((range) => range.minDeciCelsius <= range.maxDeciCelsius, 'min must not exceed max')
-export type TemperatureRange = z.infer<typeof temperatureRangeSchema>
 
-export const timeWindowSchema = z
+const timeWindowSchema = z
   .object({ from: utcTimestampSchema, to: utcTimestampSchema })
   .refine((window) => window.from <= window.to, 'from must not be after to')
-export type TimeWindow = z.infer<typeof timeWindowSchema>
 
-export const cargoItemSchema = z.object({
+const cargoItemSchema = z.object({
   cargoItemId: cargoItemIdSchema,
   description: z.string(),
   declaredCategories: z.array(cargoCategorySchema).min(1),
@@ -45,7 +43,7 @@ export const cargoItemSchema = z.object({
 })
 export type CargoItem = z.infer<typeof cargoItemSchema>
 
-export const legSchema = z.object({
+const legSchema = z.object({
   legId: legIdSchema,
   sequence: positiveInteger,
   origin: z.string().min(1),
@@ -58,14 +56,13 @@ export const legSchema = z.object({
 })
 export type Leg = z.infer<typeof legSchema>
 
-export const quoteSchema = z.object({
+const quoteSchema = z.object({
   amountCents: z.number().int().nonnegative(),
   extraCostCents: z.number().int().nonnegative(),
   currency: z.string().length(3),
 })
-export type Quote = z.infer<typeof quoteSchema>
 
-export const documentKindSchema = z.enum([
+const documentKindSchema = z.enum([
   'transportInstructions',
   'packingList',
   'safetyDataSheet',
@@ -73,9 +70,8 @@ export const documentKindSchema = z.enum([
   'temperatureLog',
   'customerRestrictions',
 ])
-export type DocumentKind = z.infer<typeof documentKindSchema>
 
-export const caseDocumentSchema = z.object({
+const caseDocumentSchema = z.object({
   documentId: documentIdSchema,
   kind: documentKindSchema,
   cargoItemId: cargoItemIdSchema.optional(),
@@ -84,7 +80,6 @@ export const caseDocumentSchema = z.object({
   extractedFields: z.record(z.string(), z.unknown()),
   source: z.string().min(1),
 })
-export type CaseDocument = z.infer<typeof caseDocumentSchema>
 
 export const entityVersionsSchema = z.object({
   cargo: revisionSchema,
@@ -92,8 +87,6 @@ export const entityVersionsSchema = z.object({
   carrier: revisionSchema,
   quote: revisionSchema,
 })
-export type EntityVersions = z.infer<typeof entityVersionsSchema>
-export type VersionedEntity = keyof EntityVersions
 
 export const shipmentSchema = z
   .object({

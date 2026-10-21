@@ -9,7 +9,7 @@ import {
   ruleSetSchema,
 } from './rule-definition.js'
 
-export type ValidationIssueCode =
+type ValidationIssueCode =
   | 'SCHEMA'
   | 'DUPLICATE_RULE'
   | 'MISSING_REFERENCE'
@@ -273,7 +273,7 @@ function applicabilityIssues(rule: RuleDefinition): ValidationIssue[] {
   ]
 }
 
-export function rulesInCycles(rules: readonly RuleDefinition[]): RuleId[] {
+function rulesInCycles(rules: readonly RuleDefinition[]): RuleId[] {
   const known = new Set(rules.map((rule) => rule.ruleId))
   const remainingDependencies = new Map(
     rules.map((rule) => [rule.ruleId, new Set(rule.dependsOn.filter((id) => known.has(id)))]),
@@ -295,7 +295,7 @@ function pairKey(categories: readonly [CargoCategory, CargoCategory]): string {
   return [...categories].sort().join('+')
 }
 
-export function mixingMatrixIssues(matrix: readonly MixingRule[]): ValidationIssue[] {
+function mixingMatrixIssues(matrix: readonly MixingRule[]): ValidationIssue[] {
   const issues: ValidationIssue[] = []
   const outcomes = new Map<string, MixingRule>()
   for (const entry of matrix) {

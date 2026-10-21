@@ -28,7 +28,7 @@ export interface ActionContext {
   chainTasks?: readonly HumanTask[]
 }
 
-export type RefusalReason =
+type RefusalReason =
   | 'NOT_FOUND'
   | 'NOT_OPEN'
   | 'UNAUTHORIZED'

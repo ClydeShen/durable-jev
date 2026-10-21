@@ -17,31 +17,25 @@ export interface NoulQuestion extends QuestionIdentity {
 
 export type SemanticQuestion = ChoiceQuestion | NoulQuestion
 
-export type JsonValue =
-  | string
-  | number
-  | boolean
-  | null
-  | JsonValue[]
-  | { [key: string]: JsonValue }
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
 
 export type SemanticState = { [key: string]: JsonValue }
 
-export interface ChoiceJudgement {
+interface ChoiceJudgement {
   kind: 'choice'
   choice: string
   probabilities?: Record<string, number>
   confidence?: number
 }
 
-export interface NoulJudgement {
+interface NoulJudgement {
   kind: 'noul'
   probability: number
 }
 
 export type SemanticJudgement = ChoiceJudgement | NoulJudgement
 
-export interface TokenUsage {
+interface TokenUsage {
   inputTokens: number | null
   outputTokens: number | null
 }

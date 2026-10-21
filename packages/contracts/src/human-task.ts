@@ -11,35 +11,33 @@ import {
 import { entityVersionsSchema } from './shipment.js'
 import { humanTaskStatusSchema, humanTaskTypeSchema, roleSchema } from './statuses.js'
 
-export const humanTaskTargetSchema = z.object({
+const humanTaskTargetSchema = z.object({
   caseRevision: revisionSchema,
   entityVersions: entityVersionsSchema,
   inputFingerprint: z.string().min(1),
 })
 export type HumanTaskTarget = z.infer<typeof humanTaskTargetSchema>
 
-export const humanDecisionSchema = z.object({
+const humanDecisionSchema = z.object({
   outcome: z.enum(['APPROVED', 'REJECTED']),
   decidedByRole: roleSchema,
   decidedBy: z.string().min(1),
   decidedAt: utcTimestampSchema,
   comment: z.string().optional(),
 })
-export type HumanDecision = z.infer<typeof humanDecisionSchema>
 
-export const actionEvidenceSchema = z.object({
+const actionEvidenceSchema = z.object({
   completedByRole: roleSchema,
   completedBy: z.string().min(1),
   completedAt: utcTimestampSchema,
   fields: z.record(z.string(), z.unknown()),
   evidenceRefs: z.array(evidenceRefSchema),
 })
-export type ActionEvidence = z.infer<typeof actionEvidenceSchema>
 
-export const approvalModeSchema = z.enum(['sequential', 'parallel'])
+const approvalModeSchema = z.enum(['sequential', 'parallel'])
 export type ApprovalMode = z.infer<typeof approvalModeSchema>
 
-export const approvalChainStepSchema = z
+const approvalChainStepSchema = z
   .object({
     chainId: z.string().min(1),
     mode: approvalModeSchema,
@@ -48,7 +46,6 @@ export const approvalChainStepSchema = z
     stepCount: z.number().int().positive(),
   })
   .refine((step) => step.stepIndex < step.stepCount, 'stepIndex must be below stepCount')
-export type ApprovalChainStep = z.infer<typeof approvalChainStepSchema>
 
 const terminalOutcomeFields = {
   APPROVED: 'decision',

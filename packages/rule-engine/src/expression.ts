@@ -1,10 +1,10 @@
 import { type RuleId, ruleIdSchema } from '@durable-jev/contracts'
 import { z } from 'zod'
 
-export const collectionScopeSchema = z.enum(['cargoItem', 'leg'])
+const collectionScopeSchema = z.enum(['cargoItem', 'leg'])
 export type CollectionScope = z.infer<typeof collectionScopeSchema>
 
-export type FactValue = string | number | boolean
+type FactValue = string | number | boolean
 
 export type ValueTest = { equals: FactValue } | { includes: FactValue }
 
@@ -53,7 +53,6 @@ const expressionNodeSchema: z.ZodType<Expression> = z.lazy(() =>
 )
 
 export const ref = (ruleId: RuleId): Expression => ({ op: 'ref', ruleId })
-export const fact = (path: string, test: ValueTest): Expression => ({ op: 'fact', path, ...test })
 export const observed = (ruleId: RuleId, test: ValueTest): Expression => ({
   op: 'observed',
   ruleId,

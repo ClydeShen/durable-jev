@@ -36,10 +36,10 @@ const locationSchema = z.object({
   hubId: z.string().min(1).optional(),
 })
 
-export type Carrier = z.infer<typeof carrierSchema>
-export type Vehicle = z.infer<typeof vehicleSchema>
-export type Customer = z.infer<typeof customerSchema>
-export type Location = z.infer<typeof locationSchema>
+type Carrier = z.infer<typeof carrierSchema>
+type Vehicle = z.infer<typeof vehicleSchema>
+type Customer = z.infer<typeof customerSchema>
+type Location = z.infer<typeof locationSchema>
 
 export interface ReferenceData {
   carriers: ReadonlyMap<string, Carrier>
