@@ -108,7 +108,13 @@ describe('humanTaskSchema', () => {
 })
 
 describe('approval chains', () => {
-  const step = { chainId: 'LOG-001:R34', mode: 'sequential', stepIndex: 1, stepCount: 2 }
+  const step = {
+    chainId: 'LOG-001:R34',
+    mode: 'sequential',
+    distinctActors: true,
+    stepIndex: 1,
+    stepCount: 2,
+  }
 
   it('places an approval at a step of its chain', () => {
     expect(humanTaskSchema.safeParse({ ...approvalTask, approvalChain: step }).success).toBe(true)

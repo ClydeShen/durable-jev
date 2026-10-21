@@ -43,6 +43,7 @@ export const approvalChainStepSchema = z
   .object({
     chainId: z.string().min(1),
     mode: approvalModeSchema,
+    distinctActors: z.boolean(),
     stepIndex: z.number().int().nonnegative(),
     stepCount: z.number().int().positive(),
   })
