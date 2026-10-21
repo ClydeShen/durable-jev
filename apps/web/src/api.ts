@@ -64,6 +64,9 @@ export interface AgentStatus {
     cases: number
     openTasksByRole: Partial<Record<Role, number>>
   }
+  card?: { name: string; description: string; url: string }
+  transport: 'native' | 'a2a'
+  a2aTasks: number
 }
 
 export interface TimelineEntry {

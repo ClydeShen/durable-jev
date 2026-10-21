@@ -63,11 +63,3 @@ const severity: CheckStatus[] = [
 export function mostSevere(statuses: readonly CheckStatus[]): CheckStatus | undefined {
   return severity.find((status) => statuses.includes(status))
 }
-
-export const agentResponsibilities: Record<string, string> = {
-  'order-coordination': '接单、汇总各 agent 结论、整单放行与调度确认',
-  'cargo-assurance': '货物分类、受控与冷链检查、文件核对、整改复测',
-  'transport-planning': '路线、车辆、承运商、中转与运力预订',
-  'commercial-control': '授信、报价、额外费用与客户条款',
-  'destination-compliance': '目的地进口要求（扩展）',
-}

@@ -1,9 +1,11 @@
 import { join } from 'node:path'
+import { a2aRoutes, agentCard } from '@durable-jev/a2a-adapter'
 import { agentSummary, CaseStore, LocalAgentClient } from '@durable-jev/agent-core'
 import { agentRouter } from '@durable-jev/agent-transport'
 import { agentIdSchema } from '@durable-jev/contracts'
 import {
   agentMigrations,
+  agentProfiles,
   createLogisticsRuntime,
   loadCaseCatalog,
   RerouteDesk,
@@ -34,10 +36,13 @@ const { runtime, rulePack, reference } = createLogisticsRuntime({
 })
 
 const service = createService(agentId)
+const client = new LocalAgentClient(agentId, runtime, store)
+const summary = () => agentSummary(agentId, rulePack, store)
+service.app.use('/agent', agentRouter(client, summary))
 service.app.use(
-  '/agent',
-  agentRouter(new LocalAgentClient(agentId, runtime, store), () =>
-    agentSummary(agentId, rulePack, store),
+  a2aRoutes(
+    client,
+    agentCard(agentProfiles[agentId], `http://localhost:${port}`, summary().rulePackVersion),
   ),
 )
 if (agentId === 'transport-planning') {

@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { A2aAgentClient, a2aRoutes, agentCard } from '@durable-jev/a2a-adapter'
 import {
   agentSummary,
   CaseOrchestrator,
@@ -8,7 +9,7 @@ import {
 } from '@durable-jev/agent-core'
 import { HttpAgentClient } from '@durable-jev/agent-transport'
 import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
-import { createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
+import { agentProfiles, createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
 import express from 'express'
@@ -47,10 +48,22 @@ const { runtime, rulePack } = createLogisticsRuntime({
   now,
 })
 const endpoints = agentEndpoints(process.env.AGENT_ENDPOINTS)
-const remotes = [...endpoints].map(([agentId, url]) => new HttpAgentClient(agentId, url))
+const transport = process.env.AGENT_TRANSPORT === 'a2a' ? 'a2a' : 'native'
+const a2aTasks = new Map<AgentId, number>()
+const remotes = [...endpoints].map(([agentId, url]) => {
+  const native = new HttpAgentClient(agentId, url)
+  const business =
+    transport === 'a2a'
+      ? new A2aAgentClient(agentId, url, native, (task) =>
+          a2aTasks.set(task.agentId, (a2aTasks.get(task.agentId) ?? 0) + 1),
+        )
+      : native
+  return { agentId, url, native, business }
+})
 const transportUrl = endpoints.get('transport-planning')
 if (!transportUrl) throw new Error('AGENT_ENDPOINTS must include transport-planning')
-const agents = [new LocalAgentClient('order-coordination', runtime, store), ...remotes]
+const coordinationClient = new LocalAgentClient('order-coordination', runtime, store)
+const agents = [coordinationClient, ...remotes.map((remote) => remote.business)]
 const eventLog = EventLog.open(join(dataDirectory, 'observability.sqlite'))
 const orchestrator = new CaseOrchestrator(
   agents,
@@ -58,17 +71,37 @@ const orchestrator = new CaseOrchestrator(
   (caseId) => store.caseRecord(caseId)?.shipment,
 )
 
+const coordinationSummary = () => agentSummary('order-coordination', rulePack, store)
+
+async function cardOf(url: string): Promise<AgentStatus['card']> {
+  const card = (await (await fetch(`${url}/.well-known/agent-card.json`)).json()) as {
+    name: string
+    description: string
+  }
+  return { name: card.name, description: card.description, url }
+}
+
 async function agentStatuses(): Promise<AgentStatus[]> {
   const local: AgentStatus = {
     agentId: 'order-coordination',
     available: true,
-    summary: agentSummary('order-coordination', rulePack, store),
+    summary: coordinationSummary(),
+    card: { ...agentProfiles['order-coordination'], url: `http://localhost:${port}` },
+    transport,
+    a2aTasks: 0,
   }
   const others = await Promise.all(
-    remotes.map((remote) =>
-      remote.summary().then(
-        (summary): AgentStatus => ({ agentId: remote.agentId, available: true, summary }),
-        (): AgentStatus => ({ agentId: remote.agentId, available: false }),
+    remotes.map(({ agentId, url, native }) =>
+      Promise.all([native.summary(), cardOf(url)]).then(
+        ([summary, card]): AgentStatus => ({
+          agentId,
+          available: true,
+          summary,
+          card,
+          transport,
+          a2aTasks: a2aTasks.get(agentId) ?? 0,
+        }),
+        (): AgentStatus => ({ agentId, available: false, transport, a2aTasks: 0 }),
       ),
     ),
   )
@@ -89,6 +122,16 @@ async function waitForAgents(deadline = Date.now() + 30_000) {
 }
 
 const service = createService('order-coordination')
+service.app.use(
+  a2aRoutes(
+    coordinationClient,
+    agentCard(
+      agentProfiles['order-coordination'],
+      `http://localhost:${port}`,
+      coordinationSummary().rulePackVersion,
+    ),
+  ),
+)
 service.app.use(
   '/api',
   coordinatorRoutes({

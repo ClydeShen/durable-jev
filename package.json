@@ -13,6 +13,7 @@
     "test": "vitest run",
     "lint": "biome check .",
     "start": "pnpm build && node --env-file-if-exists=.env tools/launcher/dist/main.js",
+    "start:a2a": "pnpm build && AGENT_TRANSPORT=a2a node --env-file-if-exists=.env tools/launcher/dist/main.js",
     "format": "biome format --write .",
     "spikes": "pnpm --filter @durable-jev/spike-pi-durable crash-recovery && pnpm --filter @durable-jev/spike-pi-durable module-flow && pnpm --filter @durable-jev/spike-a2a round-trip && pnpm --filter @durable-jev/spike-jev semantic-checks && pnpm --filter @durable-jev/spike-trace propagation",
     "models:live-check": "pnpm --filter @durable-jev/model-providers live-check",

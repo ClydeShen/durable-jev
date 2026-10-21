@@ -21,7 +21,14 @@ import { z } from 'zod'
 import type { TimelineEntry } from './event-log.js'
 import type { InvestigationClient } from './investigation-client.js'
 
-export type AgentStatus = { agentId: string; available: boolean; summary?: AgentSummary }
+export type AgentStatus = {
+  agentId: string
+  available: boolean
+  summary?: AgentSummary
+  card?: { name: string; description: string; url: string }
+  transport: 'native' | 'a2a'
+  a2aTasks: number
+}
 
 export interface CoordinatorDependencies {
   coordination: { runtime: CaseRuntime; store: CaseStore }

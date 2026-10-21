@@ -72,8 +72,8 @@
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [ ] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询 | T0.4, T3.2 |
-| [ ] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4） | T5.1 |
+| [x] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询（`a2a-adapter`：Agent Card 列出 5 个业务 skill，每次调用一个 A2A Task；同一 requestKey 重试返回首个任务结果；事件拉取与重置留在原生运维接口） | T0.4, T3.2 |
+| [x] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4）（`pnpm start:a2a`；LOG-001/LOG-004 浏览器 e2e 两种模式结果一致） | T5.1 |
 | [ ] | T5.2a | 目的地合规 agent：用 agent 模板新增第 5 个 agent，经 Agent Card 被发现，R40 加一个依赖 | 已有 4 个 agent 零代码改动；作为扩展演示脚本 | T3.7, T5.1 |
 | [ ] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告 | T4.7, T5.2 |
 | [ ] | T5.4 | F11–F18 | 同上 | T5.3 |

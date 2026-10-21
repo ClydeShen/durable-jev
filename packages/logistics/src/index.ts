@@ -1,3 +1,4 @@
+export * from './agent-profiles.js'
 export * from './case-catalog.js'
 export type { CaseEvent, CaseFile } from './case-file.js'
 export * from './dispatch.js'

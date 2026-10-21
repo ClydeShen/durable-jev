@@ -30,6 +30,7 @@ pnpm start       # 编译并启动全部服务
 |---|---|
 | `pnpm bootstrap` | 安装依赖并编译 |
 | `pnpm start` | 编译并启动全部服务，读取 `.env`（若存在） |
+| `pnpm start:a2a` | 同上，但订单协调 agent 经 A2A（Agent Card + JSON-RPC）调用其他 agent |
 | `pnpm demo:reset` | 重新载入演示案例（服务需在运行） |
 | `pnpm test` | 单元测试 |
 | `pnpm typecheck` | 类型检查（含测试文件） |

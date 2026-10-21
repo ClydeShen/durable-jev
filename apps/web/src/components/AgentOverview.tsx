@@ -15,14 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { agentRelations } from '../agent-relations'
 import type { AgentStatus, RuleInfo } from '../api'
 import { layoutGraph, type Positions } from '../graph-layout'
-import {
-  agentLabels,
-  agentResponsibilities,
-  checkStatusLabels,
-  kindLabels,
-  mostSevere,
-  roleLabels,
-} from '../labels'
+import { agentLabels, checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -36,10 +29,10 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <header>
         <span className={agent.available ? 'dot online' : 'dot offline'} />
-        <strong>{agentLabels[agent.agentId] ?? agent.agentId}</strong>
+        <strong>{agent.card?.name ?? agentLabels[agent.agentId] ?? agent.agentId}</strong>
         {caseStatus && <span className="agent-case-status">{checkStatusLabels[caseStatus]}</span>}
       </header>
-      <p>{agentResponsibilities[agent.agentId]}</p>
+      <p>{agent.card?.description}</p>
       {summary ? (
         <>
           <p className="agent-meta">
@@ -54,6 +47,9 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
               .map(([role, count]) => `${roleLabels[role as keyof typeof roleLabels]} ${count}`)
               .join('、') || '无'}
           </p>
+          {agent.transport === 'a2a' && agent.agentId !== 'order-coordination' && (
+            <p className="agent-meta">A2A 任务 {agent.a2aTasks}</p>
+          )}
         </>
       ) : (
         <p className="agent-meta">离线</p>
@@ -133,7 +129,8 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
       >
         <Background />
         <Panel position="top-left" className="graph-hint">
-          点击 agent 查看其内部规则；连线是跨 agent 的规则依赖
+          点击 agent 查看其内部规则；连线是跨 agent 的规则依赖 · 通信：
+          {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}
         </Panel>
       </ReactFlow>
     </div>
