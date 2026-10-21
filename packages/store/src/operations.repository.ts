@@ -1,4 +1,4 @@
-import type { StoreDatabase } from './database.js'
+import type { StoreDatabase } from './database.helpers.js'
 
 export type OperationRequest = {
   operationId: string

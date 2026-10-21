@@ -1,7 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import Database from 'better-sqlite3'
-import { coreMigrations, type Migration, runMigrations } from './migrations.js'
+import { coreMigrations, type Migration, runMigrations } from './migrations.helpers.js'
 
 export type StoreDatabase = Database.Database
 

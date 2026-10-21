@@ -2,13 +2,13 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
-import { openDatabase, type StoreDatabase } from './database.js'
-import { executeOnce, getOperationStatus, OperationConflictError } from './operations.js'
+import { openDatabase, type StoreDatabase } from './database.helpers.js'
+import { executeOnce, getOperationStatus, OperationConflictError } from './operations.repository.js'
 import {
   appendOutboxEvent,
   markOutboxEventsPublished,
   readUnpublishedOutboxEvents,
-} from './outbox.js'
+} from './outbox.repository.js'
 
 const reservationsMigration = {
   id: 'test-001-reservations',
