@@ -6,12 +6,20 @@
 - pnpm 10+
 - No API key needed: the default `MODEL_MODE=scripted` answers semantic questions from scripted answers in the case files.
 
-## Run it in three steps
+## Run it with one command
+
+```bash
+pnpm demo          # install, build, start everything, load the demo orders, open the browser
+```
+
+Everything after that happens in the workbench: the guided scenarios, the fault drills, the mode switches and the Proof page. On a machine without a desktop the browser does not open; use the address printed in the terminal.
+
+The pieces, if you want them separately:
 
 ```bash
 pnpm bootstrap     # install dependencies and build
 pnpm start         # start the services, the workbench and the local control server
-pnpm demo:reset    # in a second terminal: wipe data and load the demo cases
+pnpm demo:reset    # wipe data and load the demo cases (or use "Reset demo" in the workbench)
 ```
 
 `pnpm start` prints:

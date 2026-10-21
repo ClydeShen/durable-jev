@@ -14,6 +14,7 @@
     "lint": "biome check . && node tools/check-conventions/check.mjs",
     "check:conventions": "node tools/check-conventions/check.mjs",
     "start": "tsc -b && node tools/launcher/dist/main.js",
+    "demo": "pnpm install && pnpm build && node tools/launcher/dist/main.js --open",
     "format": "biome format --write .",
     "spikes": "pnpm --filter @durable-jev/spike-pi-durable crash-recovery && pnpm --filter @durable-jev/spike-a2a round-trip && pnpm --filter @durable-jev/spike-jev semantic-checks && pnpm --filter @durable-jev/spike-trace propagation",
     "demo:reset": "node tools/launcher/dist/demo-reset-cli.js",
