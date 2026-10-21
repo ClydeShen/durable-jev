@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import type { CheckSubject, ReferenceData, Shipment } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
-import type { EvaluationInputs } from './evaluation-inputs.js'
-import { evaluateLeafRule } from './leaf-evaluators.js'
+import type { EvaluationInputs } from './evaluation-inputs.types.js'
+import { evaluateLeafRule } from './leaf.evaluator.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, materials), 'utf8'))

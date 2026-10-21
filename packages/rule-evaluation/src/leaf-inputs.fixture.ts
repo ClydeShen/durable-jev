@@ -7,8 +7,8 @@ import type {
   Shipment,
 } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
-import type { EvaluationInputs, SemanticAnswer } from './evaluation-inputs.js'
-import { evaluateLeafRule } from './leaf-evaluators.js'
+import type { EvaluationInputs, SemanticAnswer } from './evaluation-inputs.types.js'
+import { evaluateLeafRule } from './leaf.evaluator.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 export const readMaterial = (path: string) =>

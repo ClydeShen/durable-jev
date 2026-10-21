@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRuleConfiguration, InvalidRuleConfigurationError } from './configuration.js'
+import { buildRuleConfiguration, InvalidRuleConfigurationError } from './configuration.config.js'
 import { readMaterial } from './leaf-inputs.fixture.js'
 
 describe('buildRuleConfiguration', () => {

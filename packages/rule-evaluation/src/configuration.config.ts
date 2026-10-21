@@ -6,9 +6,9 @@ import {
   type SemanticQuestionTemplate,
 } from '@durable-jev/model-providers'
 import { type ConfigIssue, type RuleDefinition, validateRuleSet } from '@durable-jev/rule-engine'
-import { type DecisionTables, MixingMatrix } from './decision-tables.js'
-import type { PolicyParameters } from './evaluation-inputs.js'
-import { knownLeafRefs } from './leaf-evaluators.js'
+import { type DecisionTables, MixingMatrix } from './decision-tables.rules.js'
+import type { PolicyParameters } from './evaluation-inputs.types.js'
+import { knownLeafRefs } from './leaf.evaluator.js'
 
 export type RuleConfiguration = {
   ruleSetVersion: string

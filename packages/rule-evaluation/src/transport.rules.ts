@@ -5,7 +5,7 @@ import {
   outcome,
   passOrFail,
   semanticNoulOutcome,
-} from './leaf-helpers.js'
+} from './leaf.helpers.js'
 
 const carrierServesLeg: LeafRule = (subject, inputs) => {
   const leg = legOf(subject, inputs)

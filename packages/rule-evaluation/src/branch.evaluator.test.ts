@@ -1,11 +1,11 @@
 import type { BranchEvaluationRequest, RuleEvaluationRecord } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { buildRuleConfiguration } from './configuration.js'
 import {
   evaluateBranch,
   evaluateSelectedRules,
   requiredUpstreamRuleIds,
-} from './evaluate-branch.js'
+} from './branch.evaluator.js'
+import { buildRuleConfiguration } from './configuration.config.js'
 import { baseShipment, logOne, readMaterial, referenceData } from './leaf-inputs.fixture.js'
 
 const configuration = buildRuleConfiguration(

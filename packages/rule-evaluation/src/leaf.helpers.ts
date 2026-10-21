@@ -1,6 +1,6 @@
 import type { CargoItem, CheckSubject, GateStatus, TransportLeg } from '@durable-jev/contracts'
 import type { LeafOutcome } from '@durable-jev/rule-engine'
-import type { EvaluationInputs, PolicyParameters } from './evaluation-inputs.js'
+import type { EvaluationInputs, PolicyParameters } from './evaluation-inputs.types.js'
 
 export type LeafRule = (subject: CheckSubject, inputs: EvaluationInputs) => LeafOutcome
 

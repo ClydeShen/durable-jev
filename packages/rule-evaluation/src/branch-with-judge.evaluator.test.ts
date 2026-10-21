@@ -3,8 +3,8 @@ import type { SemanticJudge } from '@durable-jev/model-providers'
 import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
 import { Telemetry } from '@durable-jev/telemetry'
 import { describe, expect, it } from 'vitest'
-import { buildRuleConfiguration } from './configuration.js'
-import { evaluateBranchWithJudge } from './evaluate-with-judge.js'
+import { evaluateBranchWithJudge } from './branch-with-judge.evaluator.js'
+import { buildRuleConfiguration } from './configuration.config.js'
 import { readMaterial, referenceData } from './leaf-inputs.fixture.js'
 
 const configuration = buildRuleConfiguration(

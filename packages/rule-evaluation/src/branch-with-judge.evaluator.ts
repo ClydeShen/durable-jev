@@ -16,7 +16,7 @@ import {
   type BranchEvaluationDependencies,
   evaluateBranch,
   rulesOfBranches,
-} from './evaluate-branch.js'
+} from './branch.evaluator.js'
 
 export { JudgeUnavailableError }
 

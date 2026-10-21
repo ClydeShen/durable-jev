@@ -13,9 +13,9 @@ import {
   type RuleDefinition,
   upstreamRuleIds,
 } from '@durable-jev/rule-engine'
-import type { RuleConfiguration } from './configuration.js'
-import type { EvaluationInputs } from './evaluation-inputs.js'
-import { evaluateLeafRule } from './leaf-evaluators.js'
+import type { RuleConfiguration } from './configuration.config.js'
+import type { EvaluationInputs } from './evaluation-inputs.types.js'
+import { evaluateLeafRule } from './leaf.evaluator.js'
 
 export type BranchEvaluationDependencies = {
   configuration: RuleConfiguration

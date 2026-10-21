@@ -1,6 +1,6 @@
 import type { TemperatureLog } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { longestExcursionMinutes } from './cold-chain-rules.js'
+import { longestExcursionMinutes } from './cold-chain.rules.js'
 import {
   baseShipment,
   evaluateWith,

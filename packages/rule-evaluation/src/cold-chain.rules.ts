@@ -1,5 +1,5 @@
 import type { CheckSubject, TemperatureLog, TemperatureRange } from '@durable-jev/contracts'
-import type { EvaluationInputs } from './evaluation-inputs.js'
+import type { EvaluationInputs } from './evaluation-inputs.types.js'
 import {
   cargoItemOf,
   conditionHolds,
@@ -12,7 +12,7 @@ import {
   outcome,
   passOrFail,
   temperatureLogFor,
-} from './leaf-helpers.js'
+} from './leaf.helpers.js'
 
 const noRiskChoice = 'no_risk'
 const reworkRequired = 'REWORK_REQUIRED'

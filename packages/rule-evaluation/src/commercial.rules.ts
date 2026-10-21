@@ -1,4 +1,4 @@
-import type { EvaluationInputs } from './evaluation-inputs.js'
+import type { EvaluationInputs } from './evaluation-inputs.types.js'
 import {
   conditionHolds,
   type LeafRule,
@@ -6,7 +6,7 @@ import {
   numericParameter,
   outcome,
   passOrFail,
-} from './leaf-helpers.js'
+} from './leaf.helpers.js'
 
 function creditPosition(inputs: EvaluationInputs) {
   const customer = inputs.referenceData.customers.find(

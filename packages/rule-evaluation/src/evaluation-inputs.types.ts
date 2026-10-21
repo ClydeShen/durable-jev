@@ -9,7 +9,7 @@ import type {
   Shipment,
 } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
-import type { DecisionTables } from './decision-tables.js'
+import type { DecisionTables } from './decision-tables.rules.js'
 
 export type PolicyParameters = Readonly<Record<string, number | string>>
 

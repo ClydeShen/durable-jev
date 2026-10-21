@@ -1,4 +1,4 @@
-import { forbiddenMixes } from './decision-tables.js'
+import { forbiddenMixes } from './decision-tables.rules.js'
 import {
   cargoTokens,
   documentsFor,
@@ -6,7 +6,7 @@ import {
   outcome,
   passOrFail,
   semanticNoulOutcome,
-} from './leaf-helpers.js'
+} from './leaf.helpers.js'
 
 const requiredControlledDocuments = ['SAFETY_DATA_SHEET', 'CONTROLLED_DECLARATION'] as const
 

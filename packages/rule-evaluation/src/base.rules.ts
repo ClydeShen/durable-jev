@@ -9,7 +9,7 @@ import {
   passOrFail,
   semanticNoulOutcome,
   sortedDescending,
-} from './leaf-helpers.js'
+} from './leaf.helpers.js'
 
 const requiredFieldsPresent: LeafRule = (_subject, { shipment }) => {
   const missing = [
