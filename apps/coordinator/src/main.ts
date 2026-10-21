@@ -12,7 +12,8 @@ import { createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
 import express from 'express'
-import { coordinatorRoutes } from './routes.js'
+import { watchAgents } from './agent-watch.js'
+import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
 const repositoryRoot = new URL('../../../', import.meta.url).pathname
 const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
@@ -45,12 +46,25 @@ const remotes = remoteAgents(process.env.AGENT_ENDPOINTS)
 const orchestrator = new CaseOrchestrator(
   [new LocalAgentClient('order-coordination', runtime, store), ...remotes],
   rulePack.ruleSet,
+  (caseId) => store.caseRecord(caseId)?.shipment,
 )
 
-const agentSummaries = async () => [
-  agentSummary('order-coordination', rulePack, store),
-  ...(await Promise.all(remotes.map((remote) => remote.summary()))),
-]
+async function agentStatuses(): Promise<AgentStatus[]> {
+  const local: AgentStatus = {
+    agentId: 'order-coordination',
+    available: true,
+    summary: agentSummary('order-coordination', rulePack, store),
+  }
+  const others = await Promise.all(
+    remotes.map((remote) =>
+      remote.summary().then(
+        (summary): AgentStatus => ({ agentId: remote.agentId, available: true, summary }),
+        (): AgentStatus => ({ agentId: remote.agentId, available: false }),
+      ),
+    ),
+  )
+  return [local, ...others]
+}
 
 async function resetDemo() {
   await orchestrator.reset()
@@ -58,12 +72,7 @@ async function resetDemo() {
 }
 
 async function waitForAgents(deadline = Date.now() + 30_000) {
-  while (
-    !(await agentSummaries().then(
-      () => true,
-      () => false,
-    ))
-  ) {
+  while (!(await agentStatuses()).every((status) => status.available)) {
     if (Date.now() > deadline) throw new Error('agents did not come up within 30s')
     await new Promise((resolve) => setTimeout(resolve, 300))
   }
@@ -77,7 +86,8 @@ service.app.use(
     orchestrator,
     catalog,
     rulePack,
-    agentSummaries,
+    agentStatuses,
+    controlUrl: process.env.CONTROL_URL,
     now,
     resetDemo,
   }),
@@ -90,4 +100,5 @@ if (existsSync(webDist)) {
 }
 await waitForAgents()
 if (store.cases().length === 0) await resetDemo()
+watchAgents(orchestrator, store)
 await service.listen(port)

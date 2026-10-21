@@ -19,12 +19,15 @@ import { actorOf, HttpError } from '@durable-jev/service-kit'
 import { Router } from 'express'
 import { z } from 'zod'
 
+export type AgentStatus = { agentId: string; available: boolean; summary?: AgentSummary }
+
 export interface CoordinatorDependencies {
   coordination: { runtime: CaseRuntime; store: CaseStore }
   orchestrator: CaseOrchestrator
   catalog: CaseCatalog
   rulePack: RulePack
-  agentSummaries(): Promise<AgentSummary[]>
+  agentStatuses(): Promise<AgentStatus[]>
+  controlUrl?: string
   now(): string
   resetDemo(): Promise<void>
 }
@@ -129,7 +132,23 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
   })
 
   router.get('/agents', async (_request, response) => {
-    response.json(await dependencies.agentSummaries())
+    response.json(await dependencies.agentStatuses())
+  })
+
+  router.get('/demo/services', async (_request, response) => {
+    if (!dependencies.controlUrl) throw new HttpError(404, 'demo control is not available')
+    response.json(await (await fetch(`${dependencies.controlUrl}/services`)).json())
+  })
+
+  router.post('/demo/services/:name/:verb', async (request, response) => {
+    if (!dependencies.controlUrl) throw new HttpError(404, 'demo control is not available')
+    const { name, verb } = request.params
+    if (verb !== 'crash' && verb !== 'start')
+      throw new HttpError(400, 'verb must be crash or start')
+    const result = await fetch(`${dependencies.controlUrl}/services/${name}/${verb}`, {
+      method: 'POST',
+    })
+    response.status(result.status).json(await result.json())
   })
 
   router.get('/tasks', async (request, response) => {

@@ -91,6 +91,7 @@ export function createLocalLogisticsAgents(
     orchestrator: new CaseOrchestrator(
       agents.map((agent) => agent.client),
       coordination.rulePack.ruleSet,
+      (caseId) => coordination.store.caseRecord(caseId)?.shipment,
     ),
     coordination: { runtime: coordination.runtime, store: coordination.store },
     rulePack: coordination.rulePack,

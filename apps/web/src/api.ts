@@ -26,6 +26,11 @@ export interface RuleInfo {
   kind: RuleEngineKind
 }
 
+export interface AgentStatus {
+  agentId: string
+  available: boolean
+}
+
 export interface Actor {
   id: string
   role: Role
@@ -64,5 +69,8 @@ export const api = {
     request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/revisions/${index}`, {
       method: 'POST',
     }),
+  agents: () => request<AgentStatus[]>('/agents'),
+  controlService: (name: string, verb: 'crash' | 'start') =>
+    request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),
   reset: () => request<{ cases: number }>('/demo/reset', { method: 'POST' }),
 }

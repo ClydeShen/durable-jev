@@ -29,6 +29,7 @@ export interface ActionContext {
 }
 
 type RefusalReason =
+  | 'AGENT_UNAVAILABLE'
   | 'NOT_FOUND'
   | 'NOT_OPEN'
   | 'UNAUTHORIZED'

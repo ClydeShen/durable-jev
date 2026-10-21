@@ -2,12 +2,18 @@ import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import { type RuleOutcome, type RuleSet, scopeKey } from '@durable-jev/rule-engine'
 import { clearData } from '@durable-jev/store'
-import type { CaseRuntime } from './case-runtime.js'
+import type { CaseRuntime, CaseView } from './case-runtime.js'
 import type { CaseStore } from './case-store.js'
 
 export interface AgentCaseState {
+  caseRevision?: number
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
+}
+
+export interface AgentAvailability {
+  agentId: AgentId
+  available: boolean
 }
 
 export interface AgentClient {
@@ -20,6 +26,12 @@ export interface AgentClient {
   reset(): Promise<void>
 }
 
+const stateOf = (view: CaseView): AgentCaseState => ({
+  caseRevision: view.record.shipment.caseRevision,
+  outcomes: view.outcomes,
+  tasks: view.tasks,
+})
+
 export class LocalAgentClient implements AgentClient {
   constructor(
     readonly agentId: AgentId,
@@ -28,18 +40,17 @@ export class LocalAgentClient implements AgentClient {
   ) {}
 
   async submit(shipment: Shipment) {
-    const { outcomes, tasks } = await this.runtime.submit(shipment)
-    return { outcomes, tasks }
+    return stateOf(await this.runtime.submit(shipment))
   }
 
   async evaluate(caseId: string, foreign: readonly RuleOutcome[]) {
-    const { outcomes, tasks } = await this.runtime.evaluate(caseId, foreign)
-    return { outcomes, tasks }
+    return stateOf(await this.runtime.evaluate(caseId, foreign))
   }
 
-  async state(caseId: string) {
-    const { outcomes, tasks } = this.runtime.view(caseId)
-    return { outcomes, tasks }
+  async state(caseId: string): Promise<AgentCaseState> {
+    return this.store.caseRecord(caseId)
+      ? stateOf(this.runtime.view(caseId))
+      : { outcomes: [], tasks: [] }
   }
 
   decide(humanTaskId: string, action: HumanAction) {
@@ -57,9 +68,11 @@ export class LocalAgentClient implements AgentClient {
 
 const roundLimit = 12
 
-function signatureOf(states: readonly AgentCaseState[]): string {
+type Reachable = AgentCaseState | undefined
+
+function signatureOf(states: readonly Reachable[]): string {
   return states
-    .flatMap((state) => state.outcomes)
+    .flatMap((state) => state?.outcomes ?? [])
     .map(
       (outcome) =>
         `${outcome.ruleId}@${scopeKey(outcome.scope)}=${outcome.status}/${outcome.inputFingerprint}`,
@@ -68,12 +81,14 @@ function signatureOf(states: readonly AgentCaseState[]): string {
     .join('\n')
 }
 
-function merged(states: readonly AgentCaseState[]): AgentCaseState {
+function merged(states: readonly Reachable[]): AgentCaseState {
   return {
-    outcomes: states.flatMap((state) => state.outcomes),
-    tasks: states.flatMap((state) => state.tasks),
+    outcomes: states.flatMap((state) => state?.outcomes ?? []),
+    tasks: states.flatMap((state) => state?.tasks ?? []),
   }
 }
+
+const unreachable = () => undefined
 
 export class CaseOrchestrator {
   private readonly owners: ReadonlyMap<string, AgentId>
@@ -82,58 +97,91 @@ export class CaseOrchestrator {
   constructor(
     private readonly agents: readonly AgentClient[],
     ruleSet: RuleSet,
+    private readonly shipmentOf: (caseId: string) => Shipment | undefined,
   ) {
     this.owners = new Map(ruleSet.rules.map((rule) => [rule.ruleId, rule.owner]))
   }
 
   submit(shipment: Shipment): Promise<AgentCaseState> {
     return this.serialized(shipment.caseId, async () => {
-      const states = await Promise.all(this.agents.map((agent) => agent.submit(shipment)))
+      const states = await Promise.all(
+        this.agents.map((agent) => agent.submit(shipment).catch(unreachable)),
+      )
       return this.propagateFrom(shipment.caseId, states)
     })
   }
 
   propagate(caseId: string): Promise<AgentCaseState> {
     return this.serialized(caseId, async () =>
-      this.propagateFrom(
-        caseId,
-        await Promise.all(this.agents.map((agent) => agent.state(caseId))),
-      ),
+      this.propagateFrom(caseId, await this.synchronized(caseId)),
     )
   }
 
   async state(caseId: string): Promise<AgentCaseState> {
-    return merged(await Promise.all(this.agents.map((agent) => agent.state(caseId))))
+    return merged(
+      await Promise.all(this.agents.map((agent) => agent.state(caseId).catch(unreachable))),
+    )
+  }
+
+  async availability(): Promise<AgentAvailability[]> {
+    return Promise.all(
+      this.agents.map(async (agent) => ({
+        agentId: agent.agentId,
+        available: await agent.openTasks().then(
+          () => true,
+          () => false,
+        ),
+      })),
+    )
   }
 
   async decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
     const [caseId, ruleId] = humanTaskId.split('/')
     const owner = this.agents.find((agent) => agent.agentId === this.owners.get(ruleId ?? ''))
-    if (!caseId || !owner)
+    if (!caseId || !owner) {
       return { ok: false, reason: 'NOT_FOUND', message: `task ${humanTaskId} does not exist` }
-    const decision = await owner.decide(humanTaskId, action)
+    }
+    const decision = await owner.decide(humanTaskId, action).catch(
+      (): Decision => ({
+        ok: false,
+        reason: 'AGENT_UNAVAILABLE',
+        message: `${owner.agentId} is unavailable`,
+      }),
+    )
     if (decision.ok) await this.propagate(caseId)
     return decision
   }
 
   async openTasks(): Promise<HumanTask[]> {
-    return (await Promise.all(this.agents.map((agent) => agent.openTasks()))).flat()
+    return (await Promise.all(this.agents.map((agent) => agent.openTasks().catch(() => [])))).flat()
   }
 
   async reset() {
     await Promise.all(this.agents.map((agent) => agent.reset()))
   }
 
-  private async propagateFrom(caseId: string, initial: AgentCaseState[]): Promise<AgentCaseState> {
+  private async synchronized(caseId: string): Promise<Reachable[]> {
+    const shipment = this.shipmentOf(caseId)
+    return Promise.all(
+      this.agents.map(async (agent) => {
+        const state = await agent.state(caseId).catch(unreachable)
+        if (!state || !shipment || state.caseRevision === shipment.caseRevision) return state
+        return agent.submit(shipment).catch(unreachable)
+      }),
+    )
+  }
+
+  private async propagateFrom(caseId: string, initial: Reachable[]): Promise<AgentCaseState> {
     let states = initial
     for (let round = 0; round < roundLimit; round++) {
       const next = await Promise.all(
-        this.agents.map((agent, index) =>
-          agent.evaluate(
-            caseId,
-            states.flatMap((state, other) => (other === index ? [] : state.outcomes)),
-          ),
-        ),
+        this.agents.map((agent, index) => {
+          if (!states[index]) return undefined
+          const foreign = states.flatMap((state, other) =>
+            other === index ? [] : (state?.outcomes ?? []),
+          )
+          return agent.evaluate(caseId, foreign).catch(unreachable)
+        }),
       )
       const settled = signatureOf(next) === signatureOf(states)
       states = next

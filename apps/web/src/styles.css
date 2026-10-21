@@ -93,7 +93,7 @@ button.danger {
   background: var(--fail);
 }
 
-.case-list,
+.sidebar,
 .task-panel {
   overflow-y: auto;
   padding: 12px;
@@ -332,4 +332,41 @@ td {
 
 .case-header > div:first-child {
   flex: 1;
+}
+
+.agent-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.agent-panel li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.agent-panel li button {
+  margin-left: auto;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.online {
+  background: var(--pass);
+}
+
+.dot.offline {
+  background: var(--fail);
+}
+
+button.small {
+  padding: 2px 8px;
+  font-size: 12px;
 }

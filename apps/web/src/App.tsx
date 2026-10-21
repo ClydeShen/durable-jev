@@ -1,6 +1,7 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
 import { type Actor, api, type RuleInfo, type TaskDecision } from './api'
+import { AgentPanel } from './components/AgentPanel'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseList } from './components/CaseList'
 import { RoleBar } from './components/RoleBar'
@@ -20,6 +21,7 @@ export function App() {
     api.rules().then((response) => setRules(response.rules))
   }, [])
   const cases = usePolling(api.cases)
+  const agents = usePolling(api.agents)
   const loadDetail = useCallback(
     () => (selectedCase ? api.caseDetail(selectedCase) : Promise.resolve(undefined)),
     [selectedCase],
@@ -32,7 +34,8 @@ export function App() {
     if (!selectedCase && cases.data?.[0]) setSelectedCase(cases.data[0].caseId)
   }, [cases.data, selectedCase])
 
-  const refreshAll = () => Promise.all([cases.refresh(), detail.refresh(), tasks.refresh()])
+  const refreshAll = () =>
+    Promise.all([cases.refresh(), detail.refresh(), tasks.refresh(), agents.refresh()])
   const report = async (work: () => Promise<unknown>, success: string) => {
     try {
       await work()
@@ -53,7 +56,19 @@ export function App() {
         onChange={setActor}
         onReset={() => report(() => api.reset(), '演示数据已重置')}
       />
-      <CaseList cases={cases.data ?? []} selected={selectedCase} onSelect={setSelectedCase} />
+      <aside className="sidebar">
+        <CaseList cases={cases.data ?? []} selected={selectedCase} onSelect={setSelectedCase} />
+        <AgentPanel
+          agents={agents.data ?? []}
+          canControl={actor.role === 'technicalEvaluator'}
+          onControl={(agentId, verb) =>
+            report(
+              () => api.controlService(agentId, verb),
+              verb === 'crash' ? `${agentId} 已终止` : `${agentId} 正在重启`,
+            )
+          }
+        />
+      </aside>
       <main>
         {detail.data && (
           <>

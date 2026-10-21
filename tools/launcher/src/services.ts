@@ -2,13 +2,17 @@ export interface ServiceDefinition {
   name: string
   entry: string
   port: number
+  controllable: boolean
   env?: Record<string, string>
 }
+
+export const controlPort = 4199
 
 const agentService = (name: string, port: number): ServiceDefinition => ({
   name,
   entry: 'apps/agent/dist/main.js',
   port,
+  controllable: true,
   env: { AGENT_ID: name },
 })
 
@@ -22,7 +26,9 @@ const coordinator: ServiceDefinition = {
   name: 'order-coordination',
   entry: 'apps/coordinator/dist/main.js',
   port: 4100,
+  controllable: false,
   env: {
+    CONTROL_URL: `http://localhost:${controlPort}`,
     AGENT_ENDPOINTS: agents
       .map((agent) => `${agent.name}=http://localhost:${agent.port}`)
       .join(','),
