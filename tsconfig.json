@@ -1,4 +1,8 @@
 {
   "files": [],
-  "references": [{ "path": "packages/contracts" }, { "path": "packages/model-providers" }]
+  "references": [
+    { "path": "packages/contracts" },
+    { "path": "packages/model-providers" },
+    { "path": "packages/rule-engine" }
+  ]
 }
