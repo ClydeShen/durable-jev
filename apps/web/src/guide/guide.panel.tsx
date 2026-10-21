@@ -1,7 +1,7 @@
 import type { Role } from '@durable-jev/contracts'
 import { useState } from 'react'
-import { Icon } from '../icons.js'
-import { roleLabels } from '../roles.js'
+import { Icon } from '../icons.component.js'
+import { roleLabels } from '../roles.config.js'
 import { currentStepIndex, type GuideState, nameRules, type Scenario } from './scenarios.model.js'
 
 export const GuidePanel = (props: {

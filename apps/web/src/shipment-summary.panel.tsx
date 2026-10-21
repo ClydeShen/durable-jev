@@ -1,5 +1,5 @@
 import type { Shipment } from '@durable-jev/contracts'
-import { Dot, Route } from './icons.js'
+import { Dot, Route } from './icons.component.js'
 
 const kilograms = (grams: number) => `${(grams / 1000).toLocaleString('en-US')} kg`
 const money = (cents: number, currency: string) =>

@@ -1,5 +1,5 @@
 import type { HumanTask, Role } from '@durable-jev/contracts'
-import type { CaseView } from '../api.js'
+import type { CaseView } from '../api.client.js'
 
 export type GuideState = Pick<
   CaseView,

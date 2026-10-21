@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { api, type ProofKind, type ProofRun } from '../api.js'
-import { Icon } from '../icons.js'
+import { api, type ProofKind, type ProofRun } from '../api.client.js'
+import { Icon } from '../icons.component.js'
 
 const sections: { kind: ProofKind; title: string; says: string }[] = [
   {

@@ -1,30 +1,30 @@
 import type { HumanTask, PlanChange, ReferenceData, Role } from '@durable-jev/contracts'
 import { useCallback, useEffect, useState } from 'react'
-import { AppNav } from './AppNav.js'
-import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.js'
-import { attentionFor } from './attention.js'
-import { CaseAttention } from './CaseAttention.js'
-import { CaseList } from './CaseList.js'
-import { ConsolePage } from './console/ConsolePage.js'
-import { DemoControls } from './DemoControls.js'
-import { FlowDiagram } from './flow/FlowDiagram.js'
+import { ApiError, api, type CaseSummary, type CaseView, type RuleCatalog } from './api.client.js'
+import { AppNav } from './app-nav.component.js'
+import { attentionFor } from './attention.model.js'
+import { CaseAttention } from './case-attention.panel.js'
+import { CaseList } from './case-list.panel.js'
+import { ConsolePage } from './console/console.page.js'
+import { DemoControls } from './demo-controls.panel.js'
+import { FlowDiagram } from './flow/flow-diagram.view.js'
 import { GuidePanel } from './guide/guide.panel.js'
 import { scenarioFor } from './guide/scenarios.model.js'
-import { HumanTaskPanel } from './HumanTaskPanel.js'
-import { InvestigationPanel } from './InvestigationPanel.js'
-import { Icon } from './icons.js'
+import { HumanTaskPanel } from './human-task.panel.js'
+import { Icon } from './icons.component.js'
+import { InvestigationPanel } from './investigation.panel.js'
 import {
   formatLocation,
   isConsoleHash,
   parseConsoleLocation,
   parseLocation,
-} from './location-state.js'
-import { PlanChangePanel } from './PlanChangePanel.js'
+} from './location.model.js'
+import { PlanChangePanel } from './plan-change.panel.js'
 import { ProofPage } from './proof/proof.page.js'
-import { RuleTree } from './RuleTree.js'
-import { roleLabels, roles } from './roles.js'
-import { ShipmentSummary } from './ShipmentSummary.js'
-import { StatusBadge } from './StatusBadge.js'
+import { roleLabels, roles } from './roles.config.js'
+import { RuleTree } from './rule-tree.view.js'
+import { ShipmentSummary } from './shipment-summary.panel.js'
+import { StatusBadge } from './status-badge.component.js'
 
 const refreshIntervalMs = 2000
 

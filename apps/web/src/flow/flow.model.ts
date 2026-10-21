@@ -1,6 +1,6 @@
 import type { CheckResult, GateStatus, HumanTask } from '@durable-jev/contracts'
 import type { RuleBranch, RuleDefinition } from '@durable-jev/rule-engine'
-import { rootBlockers, upstreamOf } from '../rule-graph.js'
+import { rootBlockers, upstreamOf } from '../rule-graph.model.js'
 
 const severityOrder: readonly GateStatus[] = [
   'FAIL',

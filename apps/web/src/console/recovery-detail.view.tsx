@@ -1,12 +1,12 @@
 import type { StoredEvent } from '@durable-jev/contracts'
-import { Icon } from '../icons.js'
+import { Icon } from '../icons.component.js'
 import {
   categoryOf,
   describeEvent,
   describeSpan,
   formatDuration,
   isRecoveryEvent,
-} from './console-model.js'
+} from './console.model.js'
 
 export function RecoveryDetail(props: {
   events: StoredEvent[]

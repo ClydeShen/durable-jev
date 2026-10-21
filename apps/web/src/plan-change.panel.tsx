@@ -1,8 +1,8 @@
 import type { CaseChange, PlanChange, ReferenceData, Role, Shipment } from '@durable-jev/contracts'
 import { useState } from 'react'
-import { Dot, Route } from './icons.js'
+import { Dot, Route } from './icons.component.js'
 import { hubChoices, routeThroughHub } from './plan/route-change.model.js'
-import { roleLabels } from './roles.js'
+import { roleLabels } from './roles.config.js'
 
 const changeLabels: Record<PlanChange['kind'], string> = {
   reassignVehicle: 'vehicle reassigned',

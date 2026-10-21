@@ -1,4 +1,4 @@
-import { Icon } from './icons.js'
+import { Icon } from './icons.component.js'
 
 export function AppNav(props: { current: 'workbench' | 'console' | 'proof' }) {
   return (

@@ -1,8 +1,8 @@
 import type { CheckResult, HumanTask } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
-import { roleLabels } from './roles.js'
-import { rootBlockers, upstreamOf } from './rule-graph.js'
-import { StatusBadge } from './StatusBadge.js'
+import { roleLabels } from './roles.config.js'
+import { rootBlockers, upstreamOf } from './rule-graph.model.js'
+import { StatusBadge } from './status-badge.component.js'
 
 const evaluatorLabels: Record<string, string> = {
   code: 'code',

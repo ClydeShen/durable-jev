@@ -1,7 +1,7 @@
 import type { StoredEvent } from '@durable-jev/contracts'
 import { useEffect } from 'react'
-import { Icon } from '../icons.js'
-import { buildTraces, formatDuration, spanRecords } from './console-model.js'
+import { Icon } from '../icons.component.js'
+import { buildTraces, formatDuration, spanRecords } from './console.model.js'
 
 const shortId = (id: string) => id.slice(0, 8)
 

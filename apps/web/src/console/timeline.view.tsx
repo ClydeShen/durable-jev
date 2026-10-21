@@ -1,7 +1,7 @@
 import type { BusinessEvent, StoredEvent } from '@durable-jev/contracts'
 import { useState } from 'react'
-import { Icon, type IconName } from '../icons.js'
-import { StatusBadge } from '../StatusBadge.js'
+import { Icon, type IconName } from '../icons.component.js'
+import { StatusBadge } from '../status-badge.component.js'
 import {
   businessEvents,
   categoryLabels,
@@ -10,7 +10,7 @@ import {
   type EventCategory,
   formatDuration,
   groupTimeline,
-} from './console-model.js'
+} from './console.model.js'
 
 const categoryIcons: Record<EventCategory, IconName> = {
   code: 'code',

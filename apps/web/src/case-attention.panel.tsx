@@ -1,5 +1,5 @@
-import type { Attention } from './attention.js'
-import { Dot, Icon } from './icons.js'
+import type { Attention } from './attention.model.js'
+import { Dot, Icon } from './icons.component.js'
 
 export function CaseAttention({ attention }: { attention: Attention }) {
   const { waiting, failed } = attention

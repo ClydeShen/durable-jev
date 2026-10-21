@@ -1,7 +1,7 @@
 import type { StoredEvent } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import type { CaseSummary } from './console-model.js'
-import { cursorOf, mergeStored, reconcileSnapshot } from './observe-stream.js'
+import type { CaseSummary } from './console.model.js'
+import { cursorOf, mergeStored, reconcileSnapshot } from './observe-stream.client.js'
 
 const stored = (sequence: number, eventId = `e${sequence}`): StoredEvent => ({
   sequence,

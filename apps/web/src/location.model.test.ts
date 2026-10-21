@@ -5,7 +5,7 @@ import {
   isConsoleHash,
   parseConsoleLocation,
   parseLocation,
-} from './location-state.js'
+} from './location.model.js'
 
 describe('location state', () => {
   it('round-trips a case and a view through the hash', () => {

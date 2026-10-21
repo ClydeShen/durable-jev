@@ -10,7 +10,7 @@ import {
   isRecoveryEvent,
   judgements,
   spanRecords,
-} from './console-model.js'
+} from './console.model.js'
 
 const at = (seconds: number) =>
   new Date(Date.parse('2026-11-02T08:00:00.000Z') + seconds * 1000).toISOString()

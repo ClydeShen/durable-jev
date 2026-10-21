@@ -1,6 +1,6 @@
-import type { CaseSummary } from './api.js'
-import { Route } from './icons.js'
-import { StatusBadge } from './StatusBadge.js'
+import type { CaseSummary } from './api.client.js'
+import { Route } from './icons.component.js'
+import { StatusBadge } from './status-badge.component.js'
 
 export function CaseList(props: {
   cases: CaseSummary[]

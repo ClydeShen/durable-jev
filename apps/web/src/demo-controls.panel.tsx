@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { ApiError, api, type ProcessStatus, type RuntimeModes } from './api.js'
-import { Icon } from './icons.js'
+import { ApiError, api, type ProcessStatus, type RuntimeModes } from './api.client.js'
+import { Icon } from './icons.component.js'
 
 const slowServices = ['cargo-assurance', 'transport-planning', 'commercial-control']
 // Longer than the coordinator's 10 s timeout, so the order shows a technical failure.

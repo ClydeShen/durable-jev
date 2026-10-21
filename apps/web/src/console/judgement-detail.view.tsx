@@ -1,7 +1,7 @@
 import type { StoredEvent } from '@durable-jev/contracts'
-import { Icon } from '../icons.js'
-import { StatusBadge } from '../StatusBadge.js'
-import { businessEvents, describeAnswer, formatDuration, judgements } from './console-model.js'
+import { Icon } from '../icons.component.js'
+import { StatusBadge } from '../status-badge.component.js'
+import { businessEvents, describeAnswer, formatDuration, judgements } from './console.model.js'
 
 export function JudgementDetail(props: {
   events: StoredEvent[]

@@ -1,8 +1,8 @@
 import type { HumanTask, Role } from '@durable-jev/contracts'
 import { useState } from 'react'
-import { Dot, Icon } from './icons.js'
-import { roleLabels } from './roles.js'
-import { StatusBadge } from './StatusBadge.js'
+import { Dot, Icon } from './icons.component.js'
+import { roleLabels } from './roles.config.js'
+import { StatusBadge } from './status-badge.component.js'
 
 const dispatchConfirmationRuleId = 'R39-CONFIRM'
 

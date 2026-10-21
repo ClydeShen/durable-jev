@@ -6,7 +6,7 @@ import {
   buildFlowModel,
   edgeStateFor,
   withoutRedundantEdges,
-} from './flow-model.js'
+} from './flow.model.js'
 
 const rule = (ruleId: string, branch: RuleBranch, dependsOn: string[] = []) =>
   ({

@@ -1,19 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Icon } from '../icons.js'
-import { type ConsoleLocation, type ConsoleTab, formatConsoleLocation } from '../location-state.js'
-import { CallTree } from './CallTree.js'
-import { CaseTable } from './CaseTable.js'
-import { type CaseSummary, formatDuration, isRecoveryEvent } from './console-model.js'
-import { JudgementDetail } from './JudgementDetail.js'
-import { type CaseDetail, observeApi } from './observe-api.js'
+import { Icon } from '../icons.component.js'
+import { type ConsoleLocation, type ConsoleTab, formatConsoleLocation } from '../location.model.js'
+import { CallTree } from './call-tree.view.js'
+import { CaseTable } from './case-table.view.js'
+import { type CaseSummary, formatDuration, isRecoveryEvent } from './console.model.js'
+import { JudgementDetail } from './judgement-detail.view.js'
+import { type CaseDetail, observeApi } from './observe.client.js'
 import {
   mergeStored,
   openEventStream,
   reconcileSnapshot,
   type StreamState,
-} from './observe-stream.js'
-import { RecoveryDetail } from './RecoveryDetail.js'
-import { Timeline } from './Timeline.js'
+} from './observe-stream.client.js'
+import { RecoveryDetail } from './recovery-detail.view.js'
+import { Timeline } from './timeline.view.js'
 
 const tabs: { id: ConsoleTab; label: string }[] = [
   { id: 'timeline', label: 'Timeline' },

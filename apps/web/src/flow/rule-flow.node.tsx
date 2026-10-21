@@ -1,8 +1,8 @@
 import type { GateStatus } from '@durable-jev/contracts'
 import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
-import { roleLabels } from '../roles.js'
-import { StatusBadge } from '../StatusBadge.js'
-import type { FlowNodeModel, WaitingOn } from './flow-model.js'
+import { roleLabels } from '../roles.config.js'
+import { StatusBadge } from '../status-badge.component.js'
+import type { FlowNodeModel, WaitingOn } from './flow.model.js'
 
 export type RuleFlowNodeData = FlowNodeModel & { selected: boolean }
 export type RuleFlowNodeType = Node<RuleFlowNodeData, 'rule'>

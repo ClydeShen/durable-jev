@@ -6,8 +6,8 @@ import type {
   Shipment,
 } from '@durable-jev/contracts'
 import { useState } from 'react'
-import { Dot, Icon } from './icons.js'
-import { roleLabels } from './roles.js'
+import { Dot, Icon } from './icons.component.js'
+import { roleLabels } from './roles.config.js'
 
 const plannerRole: Role = 'TRANSPORT_PLANNER'
 

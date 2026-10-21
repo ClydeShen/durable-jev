@@ -1,5 +1,5 @@
 import type { GateStatus, HumanTaskStatus, OrderStatus } from '@durable-jev/contracts'
-import { Icon, iconForStatus } from './icons.js'
+import { Icon, iconForStatus } from './icons.component.js'
 
 const labels: Record<string, string> = {
   PASS: 'Pass',

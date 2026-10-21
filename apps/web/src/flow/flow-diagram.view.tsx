@@ -3,18 +3,18 @@ import type { RuleDefinition } from '@durable-jev/rule-engine'
 import { Background, Controls, type Edge, ReactFlow, useNodesState } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useEffect, useMemo, useState } from 'react'
-import { Icon } from '../icons.js'
-import { formatConsoleLocation } from '../location-state.js'
-import { StatusBadge } from '../StatusBadge.js'
-import { layoutFlow } from './flow-layout.js'
+import { Icon } from '../icons.component.js'
+import { formatConsoleLocation } from '../location.model.js'
+import { StatusBadge } from '../status-badge.component.js'
 import {
   branchLabels,
   buildFlowModel,
   type EdgeState,
   type FlowNodeModel,
   type FlowView,
-} from './flow-model.js'
-import { describeWaitingOn, RuleFlowNode, type RuleFlowNodeType } from './RuleFlowNode.js'
+} from './flow.model.js'
+import { layoutFlow } from './flow-layout.model.js'
+import { describeWaitingOn, RuleFlowNode, type RuleFlowNodeType } from './rule-flow.node.js'
 
 const nodeTypes = { rule: RuleFlowNode }
 

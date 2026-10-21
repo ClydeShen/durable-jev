@@ -1,5 +1,5 @@
 import type { StoredEvent } from '@durable-jev/contracts'
-import type { CaseSummary } from './console-model.js'
+import type { CaseSummary } from './console.model.js'
 
 // Adds incoming events to what is already shown. An event can arrive twice (a snapshot and the
 // stream overlap, or the stream replays after a reconnect): it is kept once, in stream order.

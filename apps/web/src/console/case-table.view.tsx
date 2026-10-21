@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Icon } from '../icons.js'
-import { StatusBadge } from '../StatusBadge.js'
-import { type CaseSummary, formatDuration } from './console-model.js'
+import { Icon } from '../icons.component.js'
+import { StatusBadge } from '../status-badge.component.js'
+import { type CaseSummary, formatDuration } from './console.model.js'
 
 export function CaseTable(props: {
   cases: CaseSummary[]

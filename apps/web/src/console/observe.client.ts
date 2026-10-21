@@ -1,5 +1,5 @@
 import type { StoredEvent } from '@durable-jev/contracts'
-import type { CaseSummary } from './console-model.js'
+import type { CaseSummary } from './console.model.js'
 
 async function get<T>(path: string): Promise<T> {
   const response = await fetch(`/observe${path}`)

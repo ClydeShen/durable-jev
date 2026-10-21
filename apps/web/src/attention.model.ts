@@ -1,6 +1,6 @@
 import type { CheckResult, HumanTask, OrderStatus, Role } from '@durable-jev/contracts'
 import type { RuleDefinition } from '@durable-jev/rule-engine'
-import { roleLabels } from './roles.js'
+import { roleLabels } from './roles.config.js'
 
 export type AttentionItem = { key: string; label: string; detail: string; yours?: boolean }
 

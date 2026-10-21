@@ -1,5 +1,5 @@
 import { Graph, layout } from '@dagrejs/dagre'
-import type { FlowModel } from './flow-model.js'
+import type { FlowModel } from './flow.model.js'
 
 export const flowNodeSize = { width: 172, height: 74 }
 
