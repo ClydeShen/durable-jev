@@ -66,6 +66,9 @@
     },
     {
       "path": "apps/observability"
+    },
+    {
+      "path": "eval/benchmarks"
     }
   ]
 }

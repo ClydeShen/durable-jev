@@ -3,7 +3,12 @@
 // commits its result, like a power cut in the middle of a call.
 import { appendFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { ContextAssembler, defineTool, ToolRegistry } from '@durable-jev/agent-harness'
+import {
+  ContextAssembler,
+  defineTool,
+  InMemoryAgentRuntime,
+  ToolRegistry,
+} from '@durable-jev/agent-harness'
 import { PiDurableAgentRuntime, piRuntimeMigrations } from '@durable-jev/agent-runtime-pi'
 import { openDatabase } from '@durable-jev/store'
 import { initTracing, Telemetry } from '@durable-jev/telemetry'
@@ -31,7 +36,10 @@ for (const tool of investigationTools(logFourDependencies).toolsFor('agent')) {
         const calls = (callsThisProcess.get(tool.name) ?? 0) + 1
         callsThisProcess.set(tool.name, calls)
         if (tool.name === crashTool && calls === Number(crashAtCall)) process.exit(137)
-        return tool.execute(input, context)
+        const result = await tool.execute(input, context)
+        // `<tool>:done` marks a call that really ran to its end, as opposed to an attempt.
+        appendFileSync(executionLog, `${tool.name}:done\n`)
+        return result
       },
     }),
   )
@@ -41,25 +49,34 @@ const stateDatabase = openDatabase(join(workDirectory, 'runs.sqlite'), piRuntime
 const telemetry = new Telemetry('investigator', stateDatabase)
 initTracing(telemetry)
 
-const runtime = new PiDurableAgentRuntime<InvestigationRequest>({
+const runOptions = {
   registry,
   model: new ScriptedInvestigatorModel(logFourDependencies.request.legId),
   assembler: new ContextAssembler(investigatorInstructions),
   describe: describeInvestigation,
   resultTool: resultToolName,
-  storagePath: join(workDirectory, 'pi.sqlite'),
-  stateDatabase,
-  telemetry,
-})
+}
+// RUNTIME=memory is the benchmark's control group: the same loop and tools without persisted
+// execution state, so after a crash the only way forward is to submit the request again.
+const inMemory = process.env.RUNTIME === 'memory'
+const runtime = inMemory
+  ? new InMemoryAgentRuntime<InvestigationRequest>(runOptions)
+  : new PiDurableAgentRuntime<InvestigationRequest>({
+      ...runOptions,
+      storagePath: join(workDirectory, 'pi.sqlite'),
+      stateDatabase,
+      telemetry,
+    })
 const session = await runtime.open({
   caseId: logFourDependencies.investigated.caseId,
   caseRevision: 1,
   purpose: 'replace-carrier',
 })
+const submitAgain = () => session.submit({ requestId: 'inv-1', input: logFourDependencies.request })
 const handle =
   phase === 'start'
-    ? await session.submit({ requestId: 'inv-1', input: logFourDependencies.request })
-    : await session.resume()
+    ? await submitAgain()
+    : ((await session.resume()) ?? (inMemory ? await submitAgain() : undefined))
 const outcome = handle ? await handle.outcome : undefined
 await session.close()
 console.log(JSON.stringify({ outcome, events: session.events() }))

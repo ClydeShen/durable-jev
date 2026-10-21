@@ -92,8 +92,8 @@
 | [~] | T7.0 | 落实此前 live 抽测的改进（如 R27 问法、阈值缓冲带），用真实 Jev 复测 | 复测结果记入 `docs/live-checks.md` | T5.6, T6.5 |
 | [ ] | T7.1 | B1 Jev vs 结构化输出（即 P7 的 live 抽测） | 报告 macro-F1、成本、p95 | T4.2 |
 | [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
-| [ ] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
-| [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
+| [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
+| [x] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
 | [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 结论与组件建议 | 每条假设有证据 | T7.1–T7.4 |
 
 ## P8 规范统一与一键 Demo

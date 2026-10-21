@@ -153,6 +153,27 @@ importers:
         specifier: 8.3.4
         version: 8.3.4(@types/node@22.20.5)(esbuild@0.28.2)(tsx@4.23.15)
 
+  eval/benchmarks:
+    dependencies:
+      '@durable-jev/a2a-adapter':
+        specifier: workspace:*
+        version: link:../../packages/a2a-adapter
+      '@durable-jev/branch-service':
+        specifier: workspace:*
+        version: link:../../packages/branch-service
+      '@durable-jev/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@durable-jev/eval-runner':
+        specifier: workspace:*
+        version: link:../runner
+      '@durable-jev/rule-evaluation':
+        specifier: workspace:*
+        version: link:../../packages/rule-evaluation
+      '@durable-jev/store':
+        specifier: workspace:*
+        version: link:../../packages/store
+
   eval/faults:
     dependencies:
       '@a2a-js/sdk':

@@ -5,6 +5,7 @@ packages:
   - spikes/*
   - eval/runner
   - eval/faults
+  - eval/benchmarks
 onlyBuiltDependencies:
   - esbuild
   - better-sqlite3
