@@ -1,6 +1,6 @@
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { type CaseFile, loadCaseFile } from '@durable-jev/logistics'
+import { type CaseFile, loadCaseFile } from './case-file.js'
 
 export type CaseCatalog = ReadonlyMap<string, CaseFile>
 

@@ -7,12 +7,15 @@ import {
 } from '@durable-jev/agent-core'
 import { roleSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
+import {
+  type CaseCatalog,
+  dispatchCase,
+  orderStatusOf,
+  rolesWaitedOn,
+} from '@durable-jev/logistics'
 import { actorOf, HttpError } from '@durable-jev/service-kit'
 import { Router } from 'express'
 import { z } from 'zod'
-import type { CaseCatalog } from './case-catalog.js'
-import { dispatchCase } from './dispatch.js'
-import { orderStatusOf, rolesWaitedOn } from './order-status.js'
 
 export interface CoordinatorDependencies {
   runtime: CaseRuntime
@@ -75,14 +78,16 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
 
   router.post('/cases/:caseId/dispatch', async (request, response) => {
     viewOf(runtime, request.params.caseId)
-    const view = await dispatchCase(
+    const result = await dispatchCase(
       runtime,
       store,
       request.params.caseId,
       actorOf(request),
       dependencies.now,
     )
-    response.json(summaryOf(view, catalog))
+    if (!result.ok)
+      throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
+    response.json(summaryOf(result.view, catalog))
   })
 
   router.get('/rules', (_request, response) => {

@@ -4,8 +4,10 @@
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
+    { "path": "../agent-core" },
     { "path": "../contracts" },
     { "path": "../model-providers" },
-    { "path": "../rule-engine" }
+    { "path": "../rule-engine" },
+    { "path": "../store" }
   ]
 }
