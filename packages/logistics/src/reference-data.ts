@@ -36,16 +36,25 @@ const locationSchema = z.object({
   hubId: z.string().min(1).optional(),
 })
 
+const hubSchema = z.object({
+  hubId: z.string().min(1),
+  name: z.string().min(1),
+  coldStorage: z.boolean(),
+  securedCage: z.boolean(),
+})
+
 type Carrier = z.infer<typeof carrierSchema>
 type Vehicle = z.infer<typeof vehicleSchema>
 type Customer = z.infer<typeof customerSchema>
 type Location = z.infer<typeof locationSchema>
+type Hub = z.infer<typeof hubSchema>
 
 export interface ReferenceData {
   carriers: ReadonlyMap<string, Carrier>
   vehicles: ReadonlyMap<string, Vehicle>
   customers: ReadonlyMap<string, Customer>
   locations: ReadonlyMap<string, Location>
+  hubs: ReadonlyMap<string, Hub>
 }
 
 function readList<T>(
@@ -69,5 +78,6 @@ export function loadReferenceData(mockDataDirectory: string): ReferenceData {
       (item) => item.customerId,
     ),
     locations: readList(mockDataDirectory, 'locations.json', locationSchema, (item) => item.name),
+    hubs: readList(mockDataDirectory, 'hubs.json', hubSchema, (item) => item.hubId),
   }
 }

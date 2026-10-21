@@ -69,6 +69,7 @@ const documentKindSchema = z.enum([
   'inspectionChecklist',
   'temperatureLog',
   'customerRestrictions',
+  'controlledDeclaration',
 ])
 
 const caseDocumentSchema = z.object({
@@ -79,6 +80,19 @@ const caseDocumentSchema = z.object({
   text: z.string(),
   extractedFields: z.record(z.string(), z.unknown()),
   source: z.string().min(1),
+})
+
+const warehouseRecordSchema = z.object({
+  cargoItemId: cargoItemIdSchema,
+  inspectionNote: z.string().optional(),
+  sensor: z
+    .object({
+      sensorId: z.string().min(1),
+      calibrated: z.boolean(),
+      lastRecordAt: utcTimestampSchema,
+    })
+    .optional(),
+  temperatureReadings: z.array(z.object({ at: utcTimestampSchema, deciCelsius: z.number().int() })),
 })
 
 export const entityVersionsSchema = z.object({
@@ -102,6 +116,7 @@ export const shipmentSchema = z
     handover: z.enum(['dock', 'curbside', 'customerSite']),
     quote: quoteSchema,
     documents: z.array(caseDocumentSchema),
+    warehouseRecords: z.array(warehouseRecordSchema),
   })
   .refine(
     (shipment) => shipment.legs.every((leg, index) => leg.sequence === index + 1),

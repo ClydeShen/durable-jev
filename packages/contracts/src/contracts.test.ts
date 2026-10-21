@@ -40,6 +40,7 @@ const shipment = {
   handover: 'dock',
   quote: { amountCents: 120_000, extraCostCents: 0, currency: 'EUR' },
   documents: [],
+  warehouseRecords: [],
 }
 
 const approvalTask = {

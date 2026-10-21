@@ -30,7 +30,7 @@ describe('LOG-001 materials', () => {
       parameters: pack.parameters,
     })
     const notPassed = graph.outcomes
-      .filter((outcome) => outcome.status !== 'PASS')
+      .filter((outcome) => outcome.status !== 'PASS' && outcome.status !== 'NOT_APPLICABLE')
       .map((outcome) => `${outcome.ruleId}:${outcome.status}`)
     expect(notPassed.sort()).toEqual(['R39:WAITING_HUMAN', 'R40:WAITING_HUMAN'])
     expect(graph.outcomeOf('R40')?.blockedBy).toEqual(['R39'])

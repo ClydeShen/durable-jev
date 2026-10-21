@@ -73,7 +73,7 @@ not above its maximum.
 vehicle is temperature controlled and its range covers the item's target range.
 
 **R17 Sensor valid.** (cargo item, after R15) The item has a calibrated sensor whose latest
-record is no older than `sensorRecordMaxAgeHours` at evaluation time.
+record is no older than `sensorRecordMaxAgeHours` before the first leg's planned departure.
 
 **R18 Inspection risk signal.** (cargo item) The warehouse inspection note is read for signs of
 damaged packaging or compromised temperature control. The observed value is the signal found:
@@ -87,8 +87,7 @@ no continuous period outside the target range longer than `excursionToleranceMin
 the goods may still ship. When the item is also controlled, a compliance reviewer approves after
 the quality reviewer. Different people approve the two steps.
 
-**R21 Repacked.** (cargo item, only when R18 does not pass or the disposition requires it) A
-warehouse operator repacks the item and records the new packaging id and a photo reference.
+**R21 Repacked.** (cargo item, only when R18 does not pass) A warehouse operator repacks the item and records the new packaging id and a photo reference.
 
 **R22 Retest passed.** (cargo item, after R21) A warehouse operator retests the repacked item and
 records the retest temperature and a photo reference; the temperature is inside the target range.
@@ -110,7 +109,9 @@ branch on the order (cold storage for cold chain, a secured cage for controlled)
 current route and handover. Judged on the text; pass at `semanticMatchThreshold`.
 
 **R28 Alternative plan check.** (candidate plan) A proposed alternative plan passes the same
-checks as the current plan for R05–R07, R11, R16 and R24–R27 before a planner may apply it.
+checks as the current plan for R05–R07, R11, R16 and R24–R27 before a planner may apply it. R28
+is a template applied to candidate plans, not a node of the release graph, so it cannot loop back
+into R30 or R40.
 
 **R29 Transport reserved.** (leg, after R05, R06, R07, R24 and R25) Capacity is reserved with the
 carrier for the current plan version. Reserving twice for the same plan version has no effect.
