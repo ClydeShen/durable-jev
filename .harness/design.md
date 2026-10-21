@@ -67,7 +67,7 @@ var/                      运行时数据与日志，gitignore
 | `pnpm faults` | 跑故障场景 runner，输出报告到 `var/reports/` |
 | `pnpm bench` | 跑 benchmark，输出报告到 `var/reports/` |
 
-`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`（暂缓）。默认 `scripted`，无 key 可完整演示。
+`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`。默认 `scripted`，无 key 可完整演示。
 
 Web 中的演示控制（仅本地演示模式开启）：选择案例、扮演角色、执行人工审批/现场动作、修改订单触发失效、杀死/重启服务、注入超时、重复提交。
 
@@ -182,7 +182,7 @@ interface SemanticJudge {
 }
 ```
 
-实现：`JevJudge`、`StructuredOutputJudge`、`ScriptedJudge`（按 questionId + 输入哈希回放）。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+实现：`JevJudge`（官方 SDK，`jev-1.14.0`）、`StructuredOutputJudge`（pi-ai NVIDIA `nemotron-3.5-lightning-30b-a3b`，强制调用 `submit_answer` 工具并按 schema 校验）、`ScriptedJudge`（按 questionId + 输入哈希回放，无精确匹配时用该问题的默认条目）。三者都关闭 SDK 自带重试，由 harness 统一重试。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
 
 ## 9. 可观测性
 

@@ -67,9 +67,9 @@
 | 接口 | `POST https://api.typesafe.ai/v1/systemone`，Bearer `TYPESAFE_API_KEY` |
 | 版本锁定 | 可固定模型 ID `jev-1.14.0`（另有 `jev-1.13.0`），避免 `jev-latest` 别名 |
 | 字段 | Choice：`choice`、`probabilities`、`confidence`；Noul：只有 `noul`（无 confidence），与 PRD 一致 |
-| 用量 | 返回 `usage.input_tokens`；按输入 token 计费（$0.042 / Mtok），输出免费 |
+| 用量 | 返回 `usage.input_tokens` 与 `usage.output_tokens`；按输入 token 计费（$0.042 / Mtok） |
 | 无 key 运行 | 通过。SDK 支持注入 `fetch`，可做 recorded/scripted 模式 |
-| 真实调用 | **待 key**。质量、延迟、限流行为未验证 |
+| 真实调用 | 通过（2026-10-21）。示例问题 Choice 与 Noul 答案合理，单次批量请求约 0.3s；限流行为未验证 |
 
 ### 对设计的影响
 
@@ -116,7 +116,7 @@
 |---|---|---|
 | Pi Durable | 可行 | Experimental；单进程占有存储；`callers` 与 `restartLimit` 尚未验证 |
 | A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
-| Jev | 接口可行 | 真实调用待 key |
+| Jev | 可行 | 限流行为未验证 |
 | OpenTelemetry | 可行 | 无 |
 
 `pnpm spikes` 一次运行全部 spike。
