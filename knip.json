@@ -22,7 +22,12 @@
       "project": ["src/**/*.ts"]
     },
     "eval/runner": {
-      "entry": ["src/main.ts", "src/screening-main.ts"],
+      "entry": [
+        "src/main.ts",
+        "src/screening-main.ts",
+        "src/faults-main.ts",
+        "src/faults/crash-child.ts"
+      ],
       "project": ["src/**/*.ts"]
     }
   }

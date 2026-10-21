@@ -75,9 +75,9 @@
 | [x] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询（`a2a-adapter`：Agent Card 列出 5 个业务 skill，每次调用一个 A2A Task；同一 requestKey 重试返回首个任务结果；事件拉取与重置留在原生运维接口） | T0.4, T3.2 |
 | [x] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4）（`pnpm start:a2a`；LOG-001/LOG-004 浏览器 e2e 两种模式结果一致） | T5.1 |
 | [x] | T5.2a | 目的地合规 agent：用 agent 模板新增第 5 个 agent，经 Agent Card 被发现，R40 加一个依赖 | 已有 4 个 agent 零代码改动；作为扩展演示脚本（规则数据 + launcher 一行配置；agent 集合由规则 owner 推出；Overview 显示第 5 个 agent） | T3.7, T5.1 |
-| [ ] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告 | T4.7, T5.2 |
-| [ ] | T5.4 | F11–F18 | 同上 | T5.3 |
-| [~] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示 | T5.3 |
+| [x] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T4.7, T5.2 |
+| [x] | T5.4 | F11–F18 | 同上（F11–F18 同一 runner，全部通过） | T5.3 |
+| [~] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
 
 ## P6 可观测性与 Console
 
@@ -96,7 +96,7 @@
 | [ ] | T7.0 | 切换 live 调优：全链路 scripted 跑通后，用开发集调 Jev 问题措辞、标签描述、阈值与编写 agent 提示；记录调优前后指标，盲测集不参与调优 | 调优记录；盲测前冻结问题与阈值版本 | T3.6, T4.3, T3.8 |
 | [ ] | T7.1 | B1 Jev vs 结构化输出 | 报告 macro-F1、成本、p95 | T4.2 |
 | [ ] | T7.2 | B2 固定 workflow vs 调查助手 | 完成率、无效调用率 | T3.6, T4.6 |
-| [ ] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
+| [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
 | [ ] | T7.6 | B7 Durable Jev Agent 成本：手写代码占比、Jev/编写 agent 承担的规则占比、现场政策变更耗时、单条规则实现成本、筛选正确率与漏选率、扩展规则中 Jev 占比；附规则分界图 | CEO 版指标表；错误放行单列且为 0 | T3.1, T4.3 |
 | [ ] | T7.7 | `docs/agent-architecture.md`（技术 CEO 视角） | 每节链接到实现与证据 | T5.2a, T6.3a |

@@ -1,5 +1,9 @@
 import type { CaseRuntime, CaseStore } from '@durable-jev/agent-core'
-import { DurableInvestigator, type InvestigatorModel } from '@durable-jev/agent-harness'
+import {
+  DurableInvestigator,
+  type InvestigatorModel,
+  type RunBudget,
+} from '@durable-jev/agent-harness'
 import type { Role } from '@durable-jev/contracts'
 import type { ReferenceData } from '../reference-data.js'
 import {
@@ -30,6 +34,7 @@ export interface RerouteDeskOptions {
   /** Pi Durable storage file, or `memory`. */
   storage: string
   model: InvestigatorModel
+  budget?: Partial<RunBudget>
   now(): string
 }
 
@@ -80,6 +85,7 @@ export class RerouteDesk {
       tools: rerouteTools({ ...options, investigations, settle }),
       scopeOf: (conversationId) => investigations.byConversation(conversationId),
       model: options.model,
+      budget: options.budget,
       onToolCall: ({ scope, tool, args, blocked }) =>
         record(scope, 'investigation.tool_called', { tool, args, blocked }),
     })

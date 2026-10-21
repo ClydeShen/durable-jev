@@ -70,14 +70,20 @@ export interface LocalLogisticsAgents {
   rulePack: RulePack
 }
 
-export function createLocalLogisticsAgents(
-  options: Omit<LogisticsRuntimeOptions, 'agentId' | 'store'>,
-): LocalLogisticsAgents {
+export interface LocalLogisticsOptions extends Omit<LogisticsRuntimeOptions, 'agentId' | 'store'> {
+  /** Keeps each agent's store in this directory so it survives a restart; in memory otherwise. */
+  dataDirectory?: string
+}
+
+export function createLocalLogisticsAgents(options: LocalLogisticsOptions): LocalLogisticsAgents {
   const owners = loadLogisticsRulePack(options.materialsDirectory).ruleSet.rules.map(
     (rule) => rule.owner,
   )
   const agents = [...new Set(owners)].map((agentId) => {
-    const store = CaseStore.open(':memory:', agentMigrations(agentId))
+    const store = CaseStore.open(
+      options.dataDirectory ? join(options.dataDirectory, `${agentId}.sqlite`) : ':memory:',
+      agentMigrations(agentId),
+    )
     const { runtime, rulePack, reference } = createLogisticsRuntime({ ...options, agentId, store })
     return {
       agentId,

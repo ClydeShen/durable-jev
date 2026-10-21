@@ -33,6 +33,7 @@ pnpm start       # 编译并启动全部服务
 | `pnpm start:a2a` | 同上，但订单协调 agent 经 A2A（Agent Card + JSON-RPC）调用其他 agent |
 | `pnpm demo:reset` | 重新载入演示案例（服务需在运行） |
 | `pnpm replay` | 回放 8 个演示案例，按阶段断言 |
+| `pnpm faults` | 故障场景 F01–F18（F01–F03 真实杀进程后恢复），报告写入 `var/reports/faults.md` |
 | `pnpm screening` | 用适用规则筛选样本检查分类与筛选是否漏选（`MODEL_MODE=live` 时用真实 Jev） |
 | `pnpm test` | 单元测试 |
 | `pnpm typecheck` | 类型检查（含测试文件） |
