@@ -18,11 +18,11 @@ export type StateMachine<State extends string> = {
   transition(from: State, to: State): State
 }
 
-export function defineStateMachine<State extends string>(definition: {
+export const defineStateMachine = <State extends string>(definition: {
   name: string
   initial: State
   transitions: Readonly<Record<State, readonly State[]>>
-}): StateMachine<State> {
+}): StateMachine<State> => {
   const states = Object.keys(definition.transitions) as State[]
   const terminalStates = states.filter((state) => definition.transitions[state].length === 0)
   const canTransition = (from: State, to: State) =>

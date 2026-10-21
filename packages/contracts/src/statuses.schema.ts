@@ -20,7 +20,7 @@ export const pendingGateStatuses = [
 ] as const satisfies readonly GateStatus[]
 export type PendingGateStatus = (typeof pendingGateStatuses)[number]
 
-export function isPendingGateStatus(status: GateStatus): status is PendingGateStatus {
+export const isPendingGateStatus = (status: GateStatus): status is PendingGateStatus => {
   return (pendingGateStatuses as readonly GateStatus[]).includes(status)
 }
 
