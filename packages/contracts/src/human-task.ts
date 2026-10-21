@@ -36,6 +36,19 @@ export const actionEvidenceSchema = z.object({
 })
 export type ActionEvidence = z.infer<typeof actionEvidenceSchema>
 
+export const approvalModeSchema = z.enum(['sequential', 'parallel'])
+export type ApprovalMode = z.infer<typeof approvalModeSchema>
+
+export const approvalChainStepSchema = z
+  .object({
+    chainId: z.string().min(1),
+    mode: approvalModeSchema,
+    stepIndex: z.number().int().nonnegative(),
+    stepCount: z.number().int().positive(),
+  })
+  .refine((step) => step.stepIndex < step.stepCount, 'stepIndex must be below stepCount')
+export type ApprovalChainStep = z.infer<typeof approvalChainStepSchema>
+
 const terminalOutcomeFields = {
   APPROVED: 'decision',
   REJECTED: 'decision',
@@ -59,6 +72,7 @@ export const humanTaskSchema = z
     createdAt: utcTimestampSchema,
     expiresAt: utcTimestampSchema,
     supersededBy: humanTaskIdSchema.optional(),
+    approvalChain: approvalChainStepSchema.optional(),
   })
   .superRefine((task, context) => {
     const expectedField =
@@ -76,6 +90,12 @@ export const humanTaskSchema = z
     }
     if (expectedField === 'decision' && task.decision?.outcome !== task.status) {
       context.addIssue({ code: 'custom', message: 'decision outcome must match status' })
+    }
+    if (task.approvalChain && task.taskType !== 'APPROVAL') {
+      context.addIssue({
+        code: 'custom',
+        message: 'only APPROVAL tasks belong to an approval chain',
+      })
     }
     if ((task.status === 'SUPERSEDED') !== Boolean(task.supersededBy)) {
       context.addIssue({ code: 'custom', message: 'supersededBy is set exactly when SUPERSEDED' })

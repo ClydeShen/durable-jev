@@ -92,7 +92,12 @@ type RuleDefinition = {
   combiner?: Expression
   unknownPolicy: 'block' | 'escalateToHuman'
   inputPaths: string[]
-  humanGate?: { taskType: 'APPROVAL' | 'OPERATION'; requiredRole: Role }
+  humanGate?: {
+    taskType: 'APPROVAL' | 'OPERATION'
+    steps: { requiredRole: Role; appliesWhen?: Expression }[]   // 1–3 个角色
+    mode: 'sequential' | 'parallel'
+    distinctActors: boolean                                      // 四眼原则：同一人不能签两步
+  }
   invalidationTriggers: string[]
 }
 ```
@@ -123,6 +128,7 @@ type RuleDefinition = {
 - 每个 check 记录 `inputFingerprint = hash(inputPaths 的值 + 实体版本 + 上游结果 id)`。
 - 实体变更 → 由 `invalidationTriggers` 找到直接受影响规则 → 沿依赖图向下游传递 → 标记 INVALIDATED → 只重算这部分。
 - 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
+- 多角色审批链：每一步是一个独立的 APPROVAL 人工任务（单一角色，带 `approvalChain` 的 chainId/stepIndex/stepCount/mode）。顺序模式下前一步批准后才创建下一步；并行模式下同时创建。全部批准 → 门槛 PASS；任一拒绝 → FAIL 并取消其余步骤；任一过期 → 该链失效，需重新发起；失效时整条链被新链替代。`distinctActors` 时同一人不能批准同链两步，同角色两步即"双人复核"。步骤可带 `appliesWhen`（如受控货追加合规审核员、超二级额度追加第二名商务主管）。在 Pi Durable 中，一条链是父任务依次等待的子任务。
 - 晚到结果的指纹与当前不符时只归档。
 
 ## 6. 服务与流程

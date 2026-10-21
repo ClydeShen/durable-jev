@@ -107,6 +107,21 @@ describe('humanTaskSchema', () => {
   })
 })
 
+describe('approval chains', () => {
+  const step = { chainId: 'LOG-001:R34', mode: 'sequential', stepIndex: 1, stepCount: 2 }
+
+  it('places an approval at a step of its chain', () => {
+    expect(humanTaskSchema.safeParse({ ...approvalTask, approvalChain: step }).success).toBe(true)
+    const outOfRange = { ...approvalTask, approvalChain: { ...step, stepIndex: 2 } }
+    expect(humanTaskSchema.safeParse(outOfRange).success).toBe(false)
+  })
+
+  it('keeps operations out of approval chains', () => {
+    const operation = { ...approvalTask, taskType: 'OPERATION', approvalChain: step }
+    expect(humanTaskSchema.safeParse(operation).success).toBe(false)
+  })
+})
+
 describe('isPendingCheckStatus', () => {
   it('treats waiting and unknown states as pending, never terminal', () => {
     expect(isPendingCheckStatus('UNKNOWN')).toBe(true)
