@@ -86,7 +86,8 @@ export function DemoControls(props: {
           <p className="muted small">
             Switching restarts only the services it affects; orders and tasks are kept.
           </p>
-          <div className="row" role="group" aria-label="How the coordinator calls branch services">
+          <fieldset className="mode-group">
+            <legend className="small muted">Branch calls</legend>
             {(['native', 'a2a'] as const).map((protocol) => (
               <button
                 key={protocol}
@@ -97,8 +98,9 @@ export function DemoControls(props: {
                 {protocol === 'native' ? 'Native HTTP' : 'A2A'}
               </button>
             ))}
-          </div>
-          <div className="row" role="group" aria-label="Where semantic answers come from">
+          </fieldset>
+          <fieldset className="mode-group">
+            <legend className="small muted">Semantic answers</legend>
             {(['scripted', 'live'] as const).map((mode) => (
               <button
                 key={mode}
@@ -115,7 +117,7 @@ export function DemoControls(props: {
                 {mode === 'scripted' ? 'Scripted answers' : 'Live Jev'}
               </button>
             ))}
-          </div>
+          </fieldset>
           {modes.modelMode === 'live' && (
             <p className="warning small">Live Jev uses real quota. Switch back when done.</p>
           )}

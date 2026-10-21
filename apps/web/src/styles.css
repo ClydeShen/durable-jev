@@ -1310,3 +1310,17 @@ button:has(> .icon) {
   margin: 4px 0 8px 24px;
   color: var(--muted);
 }
+
+.mode-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0;
+  padding: 0;
+  border: 0;
+}
+
+.mode-group legend {
+  width: 100%;
+  padding: 0;
+}
