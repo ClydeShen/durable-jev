@@ -380,7 +380,7 @@ type PiMessage = {
 }
 
 // Rebuilds our transcript from Pi's, so the model sees the same history after a restart.
-function toTranscript(messages: readonly unknown[]): TranscriptEntry[] {
+const toTranscript = (messages: readonly unknown[]): TranscriptEntry[] => {
   return (messages as PiMessage[]).flatMap((message): TranscriptEntry[] => {
     if (message.role === 'assistant' && Array.isArray(message.content)) {
       const toolCalls: ToolCall[] = message.content
@@ -409,7 +409,7 @@ function toTranscript(messages: readonly unknown[]): TranscriptEntry[] {
   })
 }
 
-function toToolResult(text: string, isError: boolean): ToolResult {
+const toToolResult = (text: string, isError: boolean): ToolResult => {
   let parsed: unknown = text
   try {
     parsed = JSON.parse(text)

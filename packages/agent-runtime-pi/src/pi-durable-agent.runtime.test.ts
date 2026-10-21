@@ -59,7 +59,7 @@ afterEach(() => {
   for (const directory of directories.splice(0)) rmSync(directory, { recursive: true, force: true })
 })
 
-async function open(turns: ScriptedTurn[]) {
+const open = async (turns: ScriptedTurn[]) => {
   const directory = mkdtempSync(join(tmpdir(), 'pi-runtime-'))
   directories.push(directory)
   const runtime = new PiDurableAgentRuntime<{ caseId: string }>({
