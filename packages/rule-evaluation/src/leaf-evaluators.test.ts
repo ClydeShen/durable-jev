@@ -96,6 +96,24 @@ describe('leaf rule boundaries', () => {
     expect(statusOf('R03', firstItem, missing)).toBe('UNKNOWN')
   })
 
+  it('R03 sends a reading near either line to a person, whichever side it falls', () => {
+    const statusFor = (noul: number) =>
+      statusOf(
+        'R03',
+        firstItem,
+        inputsFor(shipment, { semanticAnswerFor: () => ({ type: 'noul', noul }) }),
+      )
+    expect(statusFor(0.97)).toBe('PASS')
+    expect(statusFor(0.85)).toBe('PASS')
+    expect(statusFor(0.81)).toBe('UNKNOWN')
+    expect(statusFor(0.8)).toBe('UNKNOWN')
+    expect(statusFor(0.76)).toBe('UNKNOWN')
+    expect(statusFor(0.21)).toBe('UNKNOWN')
+    expect(statusFor(0.2)).toBe('UNKNOWN')
+    expect(statusFor(0.15)).toBe('FAIL')
+    expect(statusFor(0.05)).toBe('FAIL')
+  })
+
   it('R08 fails when evaluating a stale revision', () => {
     const stale = inputsFor(shipment, {
       storedVersions: { caseRevision: 2, entityVersions: shipment.entityVersions },

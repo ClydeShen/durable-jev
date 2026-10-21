@@ -40,7 +40,7 @@
       "ruleId": "R27",
       "scope": "order",
       "kind": "noul",
-      "prompt": "The customer's written instructions allow the planned route and handover.",
+      "prompt": "Nothing in the customer's written instructions forbids or restricts the planned route and handover.",
       "state": ["order.customerInstructions", "order.routeSummary"]
     }
   ]

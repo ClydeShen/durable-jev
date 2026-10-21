@@ -97,4 +97,5 @@ See `decision-tables/mixing-matrix.json`. A shipment's tokens are its cargo cate
 | `operationTaskTtlMinutes` | 480 |
 | `semanticNoulPassAtLeast` | 0.8 |
 | `semanticNoulFailAtMost` | 0.2 |
+| `semanticNoulReviewBand` | 0.05 |
 | `semanticChoiceMinProbability` | 0.6 |

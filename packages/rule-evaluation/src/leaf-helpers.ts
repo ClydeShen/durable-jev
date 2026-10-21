@@ -52,10 +52,20 @@ export function semanticNoulOutcome(
   if (answer?.type !== 'noul') return outcome('UNKNOWN', { answer: answer ?? null })
   const passAtLeast = numericParameter(inputs.policy, 'semanticNoulPassAtLeast')
   const failAtMost = numericParameter(inputs.policy, 'semanticNoulFailAtMost')
+  // Jev returns two decimals, so a reading right on a line could fall either side of it from
+  // one run to the next. Readings within the review band of a line go to a person instead.
+  const reviewBand =
+    typeof inputs.policy.semanticNoulReviewBand === 'number'
+      ? inputs.policy.semanticNoulReviewBand
+      : 0
+  const tolerance = 1e-9
   const observedValue = { [observedKey]: answer.noul }
-  if (answer.noul >= passAtLeast) return outcome('PASS', observedValue)
-  if (answer.noul <= failAtMost) return outcome('FAIL', observedValue)
-  return outcome('UNKNOWN', observedValue)
+  if (answer.noul + tolerance >= passAtLeast + reviewBand) return outcome('PASS', observedValue)
+  if (answer.noul - tolerance <= failAtMost - reviewBand) return outcome('FAIL', observedValue)
+  const nearLine =
+    Math.abs(answer.noul - passAtLeast) <= reviewBand + tolerance ||
+    Math.abs(answer.noul - failAtMost) <= reviewBand + tolerance
+  return outcome('UNKNOWN', nearLine ? { ...observedValue, nearThreshold: true } : observedValue)
 }
 
 export type ConfidentChoice = { choice: string; probability: number }

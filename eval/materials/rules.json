@@ -62,7 +62,7 @@
       },
       "unknownPolicy": "escalateToHuman",
       "inputPaths": ["cargoItems.description", "cargoItems.declaredCategories"],
-      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost", "semanticNoulReviewBand"],
       "humanGate": {
         "taskType": "APPROVAL",
         "requiredRole": "TRANSPORT_PLANNER"
@@ -234,7 +234,7 @@
       },
       "unknownPolicy": "escalateToHuman",
       "inputPaths": ["cargoItems.description", "cargoItems.controlledClass"],
-      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost", "semanticNoulReviewBand"],
       "humanGate": {
         "taskType": "APPROVAL",
         "requiredRole": "COMPLIANCE_REVIEWER"
@@ -783,7 +783,7 @@
         "legs.fromLocation",
         "legs.toLocation"
       ],
-      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost"],
+      "parameters": ["semanticNoulPassAtLeast", "semanticNoulFailAtMost", "semanticNoulReviewBand"],
       "humanGate": {
         "taskType": "APPROVAL",
         "requiredRole": "TRANSPORT_PLANNER"
