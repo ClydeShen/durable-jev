@@ -21,12 +21,12 @@ export type RemoteBranchEvaluator = {
   evaluate(request: BranchEvaluationRequest): Promise<BranchEvaluationResult>
 }
 
-export function httpBranchEvaluator(
+export const httpBranchEvaluator = (
   name: string,
   branches: readonly RuleBranch[],
   baseUrl: string,
   timeoutMs = 10_000,
-): RemoteBranchEvaluator {
+): RemoteBranchEvaluator => {
   return {
     name,
     branches,

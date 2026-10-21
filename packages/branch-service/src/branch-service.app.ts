@@ -69,7 +69,7 @@ const handleErrors: ErrorRequestHandler = (error, _request, response, _next) => 
   response.status(500).json({ error: 'INTERNAL', message: String(error) })
 }
 
-export function createBranchServiceApp(dependencies: BranchServiceDependencies): Express {
+export const createBranchServiceApp = (dependencies: BranchServiceDependencies): Express => {
   const now = dependencies.now ?? (() => new Date().toISOString())
   const recordEvaluation = dependencies.database.prepare(
     `INSERT INTO evaluation_log (case_id, case_revision, evaluated_at, result_json) VALUES (?, ?, ?, ?)`,

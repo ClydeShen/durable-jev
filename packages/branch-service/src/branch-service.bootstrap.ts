@@ -11,13 +11,13 @@ import { type Migration, openDatabase, type StoreDatabase } from '@durable-jev/s
 import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
 import { branchServiceMigrations, createBranchServiceApp } from './branch-service.app.js'
 
-export async function startBranchService(options: {
+export const startBranchService = async (options: {
   serviceName: string
   branches: readonly RuleBranch[]
   defaultPort: number
   extraMigrations?: readonly Migration[]
   ensurePlanReservation?: (database: StoreDatabase, request: BranchEvaluationRequest) => boolean
-}) {
+}) => {
   const repositoryRoot = resolve(import.meta.dirname, '../../..')
   const materialsDirectory = resolve(
     process.env.MATERIALS_DIR ?? resolve(repositoryRoot, 'eval/materials'),
