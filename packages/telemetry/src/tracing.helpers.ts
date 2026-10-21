@@ -11,7 +11,7 @@ import {
 import type { ReadableSpan, SpanProcessor } from '@opentelemetry/sdk-trace-base'
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
 import type { NextFunction, Request, RequestHandler, Response } from 'express'
-import { correlationIdFor, type Telemetry } from './telemetry.js'
+import { correlationIdFor, type Telemetry } from './telemetry.service.js'
 
 const tracerName = 'durable-jev'
 // Attributes that become fields of the stored span instead of free-form details.

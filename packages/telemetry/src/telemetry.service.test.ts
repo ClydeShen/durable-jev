@@ -1,8 +1,8 @@
 import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
 import { describe, expect, it } from 'vitest'
-import { OutboxRelay } from './outbox-relay.js'
-import { redact, redactHeaders } from './redact.js'
-import { Telemetry } from './telemetry.js'
+import { OutboxRelay } from './outbox.relay.js'
+import { redact, redactHeaders } from './redact.helpers.js'
+import { Telemetry } from './telemetry.service.js'
 
 describe('redact', () => {
   it('hides secrets, cuts long text and keeps everything else', () => {

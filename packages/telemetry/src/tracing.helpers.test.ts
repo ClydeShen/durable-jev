@@ -3,7 +3,7 @@ import type { SpanRecord } from '@durable-jev/contracts'
 import { openDatabase, readUnpublishedOutboxEvents } from '@durable-jev/store'
 import express from 'express'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { Telemetry } from './telemetry.js'
+import { Telemetry } from './telemetry.service.js'
 import {
   annotateActiveSpan,
   currentTraceparent,
@@ -12,7 +12,7 @@ import {
   startSpan,
   tracingMiddleware,
   withSpan,
-} from './tracing.js'
+} from './tracing.helpers.js'
 
 let database = openDatabase(':memory:')
 beforeEach(() => {

@@ -7,8 +7,8 @@ import {
 } from '@durable-jev/contracts'
 import { appendOutboxEvent, type StoreDatabase } from '@durable-jev/store'
 import { trace } from '@opentelemetry/api'
-import { OutboxRelay } from './outbox-relay.js'
-import { redact } from './redact.js'
+import { OutboxRelay } from './outbox.relay.js'
+import { redact } from './redact.helpers.js'
 
 export type EmitInput = {
   eventName: BusinessEvent['eventName']
