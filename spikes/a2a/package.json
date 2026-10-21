@@ -11,6 +11,6 @@
     "@types/express": "5.0.6"
   },
   "scripts": {
-    "round-trip": "tsx src/round-trip.ts"
+    "round-trip": "tsx src/round-trip.cli.ts"
   }
 }

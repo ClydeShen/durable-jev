@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "propagation": "tsx src/propagation.ts"
+    "propagation": "tsx src/propagation.cli.ts"
   },
   "dependencies": {
     "@opentelemetry/api": "1.9.1",
