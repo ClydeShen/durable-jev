@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import type { SemanticAnswer } from '@durable-jev/contracts'
 import { buildSemanticQuestions, JevJudge, RetryingJudge } from '@durable-jev/model-providers'
-import { listCaseIds, loadCase, loadReferenceData } from './materials.js'
+import { listCaseIds, loadCase, loadReferenceData } from './materials.helpers.js'
 import {
   decide,
   type Reading,
@@ -10,7 +10,7 @@ import {
   scoreReadings,
   type Thresholds,
 } from './reading-score.helpers.js'
-import { loadReplayConfiguration } from './replay.js'
+import { loadReplayConfiguration } from './replay.service.js'
 
 // Asks real Jev every semantic question of the eight cases and scores the answers against what
 // the reviewer expects. It costs quota, so it only runs with MODEL_MODE=live.

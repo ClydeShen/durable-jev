@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { listCaseIds, loadCase } from './materials.js'
-import { loadReplayConfiguration, replayCase } from './replay.js'
+import { listCaseIds, loadCase } from './materials.helpers.js'
+import { loadReplayConfiguration, replayCase } from './replay.service.js'
 
 const configuration = loadReplayConfiguration()
 

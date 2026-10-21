@@ -1,6 +1,6 @@
 import { validateRuleSet } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
-import { loadPolicyParameters, loadRuleSetFile } from './materials.js'
+import { loadPolicyParameters, loadRuleSetFile } from './materials.helpers.js'
 
 describe('eval materials', () => {
   it('rules.json passes configuration validation against policy-v1', () => {

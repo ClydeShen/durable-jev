@@ -18,7 +18,7 @@ import {
 } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
 import { reservationMigrations } from '@durable-jev/transport-reservations'
-import type { CaseFile, EventScriptStep, StageExpectation } from './case-file.js'
+import type { CaseFile, EventScriptStep, StageExpectation } from './case-file.schema.js'
 import {
   listCaseIds,
   loadCase,
@@ -26,7 +26,7 @@ import {
   loadRuleSetFile,
   materialsDirectory,
   readMaterial,
-} from './materials.js'
+} from './materials.helpers.js'
 
 export type StageResult = { index: number; step: EventScriptStep['step']; failures: string[] }
 export type CaseReplay = {

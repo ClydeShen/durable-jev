@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { ObservabilityEvent } from '@durable-jev/contracts'
 import { z } from 'zod'
-import { materialsDirectory } from './materials.js'
+import { materialsDirectory } from './materials.helpers.js'
 
 export const eventSchemaPath = join(materialsDirectory, 'event-schema.json')
 

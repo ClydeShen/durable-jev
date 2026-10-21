@@ -2,7 +2,7 @@ import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { judgeForModelMode, judgeMigrations } from '@durable-jev/rule-evaluation'
 import { openDatabase } from '@durable-jev/store'
-import { replayAllCases } from './replay.js'
+import { replayAllCases } from './replay.service.js'
 
 // MODEL_MODE=live asks Jev; judgements are cached on disk so a rerun costs no quota.
 const cachePath = resolve(

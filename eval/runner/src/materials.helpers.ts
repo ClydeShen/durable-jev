@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { ReferenceData } from '@durable-jev/contracts'
-import { CaseFile } from './case-file.js'
+import { CaseFile } from './case-file.schema.js'
 
 export const materialsDirectory = fileURLToPath(new URL('../../materials/', import.meta.url))
 

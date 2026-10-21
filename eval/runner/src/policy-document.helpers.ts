@@ -6,7 +6,7 @@ import {
   loadRuleSetFile,
   materialsDirectory,
   readMaterial,
-} from './materials.js'
+} from './materials.helpers.js'
 
 const evaluatorLabels: Record<RuleDefinition['evaluator']['kind'], string> = {
   code: 'code',

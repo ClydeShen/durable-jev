@@ -20,9 +20,9 @@
     "@durable-jev/model-providers": "workspace:*"
   },
   "scripts": {
-    "policy:render": "node dist/render-policy.js",
-    "replay": "node dist/replay-cli.js",
-    "event-schema:render": "node dist/render-event-schema.js",
+    "policy:render": "node dist/render-policy.cli.js",
+    "replay": "node dist/replay.cli.js",
+    "event-schema:render": "node dist/render-event-schema.cli.js",
     "accuracy": "node dist/accuracy.cli.js"
   }
 }

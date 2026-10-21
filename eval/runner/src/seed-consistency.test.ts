@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { listCaseIds, loadCase, loadReferenceData } from './materials.js'
+import { listCaseIds, loadCase, loadReferenceData } from './materials.helpers.js'
 
 const referenceData = loadReferenceData()
 
