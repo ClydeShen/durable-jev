@@ -5,10 +5,10 @@ import type { BranchEvaluationRequest } from '@durable-jev/contracts'
 import { openDatabase } from '@durable-jev/store'
 import express from 'express'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { A2aCallError, a2aBranchEvaluator } from './a2a-branch-client.js'
-import { branchAgentCard, evaluationExecutor, mountA2a } from './a2a-server.js'
-import { a2aServerMigrations } from './sqlite-task-store.js'
-import { A2aTaskLinks, a2aClientMigrations } from './task-links.js'
+import { branchAgentCard, evaluationExecutor, mountA2a } from './a2a.server.js'
+import { A2aCallError, a2aBranchEvaluator } from './a2a-branch.client.js'
+import { a2aServerMigrations } from './sqlite-task.repository.js'
+import { A2aTaskLinks, a2aClientMigrations } from './task-links.repository.js'
 
 const materials = new URL('../../../eval/materials/', import.meta.url)
 const logOne = JSON.parse(readFileSync(new URL('cases/LOG-001.json', materials), 'utf8'))

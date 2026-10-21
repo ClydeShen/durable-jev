@@ -14,8 +14,8 @@ import {
 } from '@durable-jev/contracts'
 import type { StoreDatabase } from '@durable-jev/store'
 import type { Express } from 'express'
-import { dataPart, readMessageData } from './parts.js'
-import { SqliteTaskStore } from './sqlite-task-store.js'
+import { dataPart, readMessageData } from './parts.helpers.js'
+import { SqliteTaskStore } from './sqlite-task.repository.js'
 
 export const evaluateSkillId = 'evaluate-branches'
 export const evaluationArtifactName = 'branch-evaluation'

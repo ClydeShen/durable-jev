@@ -13,9 +13,9 @@ import {
   type RuleBranch,
 } from '@durable-jev/contracts'
 import { annotateActiveSpan, fetchWithTrace } from '@durable-jev/telemetry'
-import { evaluationArtifactName } from './a2a-server.js'
-import { dataPart, readData } from './parts.js'
-import type { A2aTaskLinks, TaskLink } from './task-links.js'
+import { evaluationArtifactName } from './a2a.server.js'
+import { dataPart, readData } from './parts.helpers.js'
+import type { A2aTaskLinks, TaskLink } from './task-links.repository.js'
 
 export class A2aCallError extends Error {
   constructor(
