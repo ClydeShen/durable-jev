@@ -1,13 +1,12 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-import { A2aAgentClient, a2aRoutes, agentCard } from '@durable-jev/a2a-adapter'
 import {
   agentSummary,
   CaseOrchestrator,
   CaseStore,
   LocalAgentClient,
 } from '@durable-jev/agent-core'
-import { HttpAgentClient } from '@durable-jev/agent-transport'
+import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-jev/agent-transport'
 import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
 import { agentProfiles, createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'

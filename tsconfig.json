@@ -9,7 +9,6 @@
     { "path": "packages/agent-harness" },
     { "path": "packages/agent-core" },
     { "path": "packages/agent-transport" },
-    { "path": "packages/a2a-adapter" },
     { "path": "packages/logistics" },
     { "path": "packages/service-kit" },
     { "path": "apps/coordinator" },

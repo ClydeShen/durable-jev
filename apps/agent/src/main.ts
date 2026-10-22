@@ -1,7 +1,6 @@
 import { join } from 'node:path'
-import { a2aRoutes, agentCard } from '@durable-jev/a2a-adapter'
 import { agentSummary, CaseStore, LocalAgentClient } from '@durable-jev/agent-core'
-import { agentRouter } from '@durable-jev/agent-transport'
+import { a2aRoutes, agentCard, agentRouter } from '@durable-jev/agent-transport'
 import { agentIdSchema } from '@durable-jev/contracts'
 import {
   agentMigrations,

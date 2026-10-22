@@ -42,7 +42,7 @@ beforeAll(async () => {
 afterAll(() => server.close())
 
 const shipment = (
-  await import('../../../eval/materials/cases/LOG-001.json', { with: { type: 'json' } })
+  await import('../../../../eval/materials/cases/LOG-001.json', { with: { type: 'json' } })
 ).default.shipment as Parameters<AgentClient['submit']>[0]
 
 describe('A2A adapter', () => {

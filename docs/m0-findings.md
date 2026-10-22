@@ -77,7 +77,7 @@
 
 ### 对设计的影响
 
-- F04 需要本项目在 `a2a-adapter` 中维护 `(caseId, revision, capability) → a2aTaskId` 映射，重试时返回原任务。
+- F04 需要本项目在 A2A 适配层（现 `packages/agent-transport/src/a2a`）中维护 `(caseId, revision, capability) → a2aTaskId` 映射，重试时返回原任务。
 - SDK 服务端只提供 Express 适配器（另有 gRPC）。服务统一改用 Express 5，不再使用 Fastify。
 - AgentInterface 必须声明 `protocolVersion: '1.0'`，否则服务端拒绝所有请求。
 - 默认 `InMemoryTaskStore` 重启即丢；SDK 提供基于 Kysely 的 `DatabaseTaskStore`（SQLite 可用），T5.1 再决定是否采用。

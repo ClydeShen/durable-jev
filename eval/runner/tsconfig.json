@@ -12,7 +12,13 @@
       "path": "../../packages/agent-core"
     },
     {
+      "path": "../../packages/agent-transport"
+    },
+    {
       "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/human-tasks"
     },
     {
       "path": "../../packages/logistics"
@@ -22,12 +28,6 @@
     },
     {
       "path": "../../packages/rule-engine"
-    },
-    {
-      "path": "../../packages/a2a-adapter"
-    },
-    {
-      "path": "../../packages/human-tasks"
     },
     {
       "path": "../../packages/store"

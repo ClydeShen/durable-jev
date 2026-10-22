@@ -35,11 +35,10 @@ packages/
   observability/          事件 schema、logger、trace 上下文
   model-providers/        SemanticJudge 接口：jev、structured-output、scripted
   agent-core/             Durable Jev Agent 运行时：规则包、案例求值、人工门槛、AgentClient 与 CaseOrchestrator
-  agent-transport/        AgentClient 的 HTTP 实现与 agent 路由（A2A 实现在 a2a-adapter）
+  agent-transport/        AgentClient 的两种传输：native/（HTTP 客户端与 agent 路由）、a2a/（Agent Card、业务任务 ↔ A2A Task）
   human-tasks/            人工任务状态机与审批链
   logistics/              参考数据、案例文件、事实构建、物流 agent 装配、放行事务
   agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
-  a2a-adapter/            业务任务 ↔ A2A Task 映射，server/client 封装
   service-kit/            服务启动样板：Express、健康检查、本地控制端点
 tools/
   launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
@@ -167,7 +166,7 @@ FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`
 - 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
 - Coordinator 拥有订单版本和整单聚合层（R08、R37–R40），通过 A2A / native 接口获取各模块结果；依赖调度是确定性状态机。
 - 跨 agent 传播：每个 agent 加载完整规则包、只执行自己拥有的规则，他方规则结果由编排器提供（未上报视为 UNKNOWN）。`CaseOrchestrator` 每轮把其他 agent 的最新结果交给每个 agent 并行重算，直到所有结果的状态与指纹不再变化（规则图无环，轮数不超过依赖深度，上限 12）。人工决定按任务 id 中的规则路由到所属 agent，再触发传播。编排器只依赖 `AgentClient` 接口：进程内实现供回放 runner，HTTP 实现供运行时，A2A 实现在 P5 加入。
-- 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。
+- 业务服务暴露原生 HTTP 任务接口；`agent-transport` 的 a2a/ 在其上包一层 A2A server（B4 对照）。
 - 人工任务由所属模块持有（状态机复用 `packages` 中的实现）；跨模块等待通过 A2A `input-required` 表达。Web 汇总各模块任务队列。角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
 

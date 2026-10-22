@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@durable-jev/a2a-adapter": "workspace:*",
     "@durable-jev/agent-core": "workspace:*",
     "@durable-jev/agent-transport": "workspace:*",
     "@durable-jev/contracts": "workspace:*",

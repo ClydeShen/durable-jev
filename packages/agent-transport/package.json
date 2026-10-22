@@ -10,6 +10,7 @@
     }
   },
   "dependencies": {
+    "@a2a-js/sdk": "1.3.0",
     "@durable-jev/agent-core": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",
