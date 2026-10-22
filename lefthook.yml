@@ -1,0 +1,19 @@
+# Fast checks at commit time; the full `pnpm check` runs in CI.
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,css}"
+      run: pnpm exec biome check --error-on-warnings --no-errors-on-unmatched {staged_files}
+    - name: gitleaks
+      run: |
+        if command -v gitleaks >/dev/null; then
+          gitleaks git --pre-commit --staged --redact --no-banner
+        else
+          echo "gitleaks is not installed, so staged secrets are not scanned here; CI still scans."
+        fi
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}

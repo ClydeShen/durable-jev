@@ -7,6 +7,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "prepare": "lefthook install",
     "bootstrap": "pnpm install && pnpm build",
     "build": "tsc -b && pnpm --filter @durable-jev/web build",
     "clean": "tsc -b --clean",
@@ -23,6 +24,7 @@
     "boundaries": "depcruise packages/*/src apps/*/src tools/*/src eval/runner/src --config .dependency-cruiser.cjs",
     "duplication": "jscpd --config .jscpd.json",
     "workspace-lint": "sherif",
+    "security": "pnpm audit --audit-level moderate",
     "demo:reset": "node tools/launcher/dist/demo-reset.js",
     "replay": "node eval/runner/dist/replay-main.js",
     "screening": "node eval/runner/dist/screening-main.js",
@@ -32,10 +34,13 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@commitlint/cli": "21.2.3",
+    "@commitlint/config-conventional": "21.2.3",
     "@types/node": "22.20.5",
     "dependency-cruiser": "18.5.0",
     "jscpd": "5.4.0",
     "knip": "6.42.1",
+    "lefthook": "2.1.17",
     "sherif": "1.13.0",
     "tsx": "4.23.15",
     "typescript": "6.0.3",

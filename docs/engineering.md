@@ -1,11 +1,40 @@
 # Engineering conventions
 
-Every convention below is checked by a tool in `pnpm check`; none relies on memory or review alone.
-A rule that cannot be checked is not listed. `pnpm check` runs, in order:
+Every convention below is enforced by a tool; none relies on memory or review alone. Each concern
+has exactly one owning tool, and each check runs at the earliest stage where it is fast enough.
+
+## When checks run
+
+| Stage | What runs | Time |
+|---|---|---|
+| Editor | Biome (format and lint as you type), `.editorconfig` | instant |
+| Commit ([lefthook.yml](../lefthook.yml), installed by `pnpm install`) | Biome on the staged files; gitleaks on the staged changes (skipped with a notice when gitleaks is not installed); commitlint on the message | about 1 s |
+| CI ([.github/workflows/check.yml](../.github/workflows/check.yml)) and `pnpm check` | everything below, plus the scripted replay, the fault scenarios, `pnpm security` and gitleaks over the whole history | about a minute |
+
+`pnpm check` runs, in order:
 
 ```
-lint → workspace-lint → typecheck → boundaries → knip → duplication → test
+lint → workspace-lint → typecheck → boundaries → architecture graph → knip → duplication → test
 ```
+
+## One owner per concern
+
+| Concern | Owner | Deliberately not used for it |
+|---|---|---|
+| Formatting | Biome formatter, `.editorconfig` | — |
+| Readability, complexity, naming, promise handling | Biome | typescript-eslint, Oxlint |
+| Types and declared APIs | TypeScript | `noUnusedLocals` / `noUnusedParameters` (Biome owns unused code) |
+| Dependency direction, cycles, package entries | dependency-cruiser | Biome `noImportCycles` (it missed type-level cycles that dependency-cruiser found) |
+| Architecture picture | dependency-cruiser, generated into [architecture-graph.md](architecture-graph.md) | hand-drawn diagrams |
+| Unused files, exports and dependencies | knip | dependency-cruiser `no-orphans` |
+| Copy-paste | jscpd | SonarQube or Qlty duplication |
+| Workspace manifests | sherif | — |
+| Commit messages | commitlint ([commitlint.config.mjs](../commitlint.config.mjs)) | — |
+| Secrets | gitleaks 8.30.0 | — |
+| Vulnerable dependencies | `pnpm audit` (`pnpm security`) | — |
+
+Install gitleaks locally to get the commit-time scan: download the pinned release from
+https://github.com/gitleaks/gitleaks/releases and put the `gitleaks` binary on your `PATH`.
 
 ## Conventions and where they are enforced
 
@@ -22,8 +51,13 @@ lint → workspace-lint → typecheck → boundaries → knip → duplication �
 | The pure core (`contracts`, `rule-engine`) does no IO | Rules evaluate the same everywhere and are trivially testable | dependency-cruiser `pure-core-does-no-io` |
 | The investigation harness knows no business | It can host another agent's helper unchanged | dependency-cruiser `harness-knows-no-business` |
 | Another package is imported only through its entry | Its internal files stay private | dependency-cruiser `only-through-package-entry`, plus each `package.json` `exports` map |
-| No import cycles, type-only ones included | A cycle hides which module depends on which | dependency-cruiser `no-circular`, Biome `suspicious/noImportCycles` |
+| No import cycles, type-only ones included | A cycle hides which module depends on which | dependency-cruiser `no-circular` |
 | Production code never imports tests | Test helpers must not leak into runtime | dependency-cruiser `tests-stay-in-tests` |
+| A behaviour package's public API states its types: every exported function and public method declares parameter and return types | The API reads without following inference | TypeScript `isolatedDeclarations` in [tsconfig.declared-api.json](../tsconfig.declared-api.json), used by agent-core, agent-transport, agent-harness, human-tasks, store, model-providers, service-kit |
+| No name shadows an outer one; variables, functions and types follow camelCase / PascalCase (object and type property names may mirror external data) | A reader never has to work out which of two same-named things is meant | Biome `suspicious/noShadow`, `style/useNamingConvention` |
+| The architecture diagram matches the code | A diagram that can drift misleads | `pnpm architecture` generates [architecture-graph.md](architecture-graph.md); `pnpm check` fails when it is stale |
+| Commit messages are Conventional Commits; the scope is the workspace package that changed or a cross-cutting area | History says what each change touched | commitlint, at commit time and on every pull request |
+| No secret is committed | Keys in history cannot be taken back | gitleaks at commit time and over the whole history in CI |
 | Package boundaries are real: a package can only use what it declares | Undeclared imports would break builds elsewhere | TypeScript project references and pnpm's strict `node_modules` |
 | Strict types everywhere, tests and the web app included | Types are the first reviewer | `pnpm typecheck`: `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch` ([tsconfig.base.json](../tsconfig.base.json)) |
 | Copy-paste stays below 1% of the code | Duplicates drift apart; shared logic gets one owner | jscpd, `threshold: 1` ([.jscpd.json](../.jscpd.json)) |
@@ -36,6 +70,11 @@ Deliberately off:
 - `exactOptionalPropertyTypes`: almost every violation was passing `undefined` to an optional
   field of an external library (`fetch`, the Jev SDK, pi-ai, Zod output); satisfying it would add
   conditional spreads that make the code harder to read.
+- `isolatedDeclarations` for contracts, rule-engine and logistics: their public types come from
+  Zod schemas, and the schema is already the explicit declaration; restating it as interfaces or
+  Zod generics would read worse.
+- Biome `noMagicNumbers` (most hits are timeouts and test data), `useExportsLast` (layout churn)
+  and `useSimplifiedLogicExpression` (rewrites are not clearer).
 - TypeScript `noUnusedLocals` / `noUnusedParameters` and `noPropertyAccessFromIndexSignature`:
   Biome already reports unused code, and the index-signature rule is style noise here.
 
@@ -47,6 +86,11 @@ Deliberately off:
 | [jscpd](https://unpkg.com/jscpd@5.4.1/README.md) | Copy-paste detection with a threshold | **Adopted** (`pnpm duplication`) |
 | [sherif](https://github.com/QuiiBz/sherif) | Zero-config monorepo manifest lint | **Adopted** (`pnpm workspace-lint`) |
 | knip | Unused files, exports and dependencies | Already in use |
+| [Lefthook](https://recca0120.github.io/en/2026/03/08/lefthook-git-hooks/) | Git hooks with staged-file filtering in one config | **Adopted** (commit-time checks) |
+| [commitlint](https://commitlint.js.org/guides/getting-started) | Commit message convention | **Adopted** |
+| [gitleaks](https://appsecsanta.com/gitleaks) | Secret scanning | **Adopted** (commit time and CI) |
+| type-coverage | Share of identifiers typed `any` | Not adopted: does not support this TypeScript version yet; Biome `noExplicitAny` covers it |
+| Stryker | Mutation testing: shows whether tests catch injected bugs | Optional one-off on the rule engine; too slow for every check |
 | typescript-eslint | The full set of type-aware rules | Not adopted: Biome covers what this repo needs, and running both doubles configuration; revisit if a type-aware rule Biome lacks becomes necessary |
 | [Oxlint](https://oxc.rs/blog/2025-12-08-type-aware-alpha) (type-aware) | Fast type-aware rules such as `no-floating-promises` | Not yet: type-aware mode was still alpha; Biome's `noFloatingPromises` covers the common cases |
 | [SonarQube Community / SonarJS](https://www.sonarsource.com/ts) | Code smells, cognitive complexity, security hotspots, history | Optional: needs a server; Biome's cognitive-complexity rule is the same metric (it matches SonarJS) |
