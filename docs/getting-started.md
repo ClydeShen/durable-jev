@@ -4,6 +4,7 @@
 
 - Node 22.9+（用到 `--env-file-if-exists`）
 - pnpm 10+
+- 可选：装了 [mise](https://mise.jdx.dev) 的话，在仓库根目录执行 `mise install`，得到与 CI 相同版本的 Node 与 gitleaks（见 `mise.toml`）
 - 无需任何 key：默认 `MODEL_MODE=scripted`，Jev 判断按案例文件里录好的答案回放
 
 ## 一键启动
@@ -36,6 +37,7 @@ pnpm start       # 编译并启动全部服务
 | `pnpm faults` | 故障场景 F01–F18（F01–F03 真实杀进程后恢复），报告写入 `var/reports/faults.md` |
 | `pnpm screening` | 用适用规则筛选样本检查分类与筛选是否漏选（`MODEL_MODE=live` 时用真实 Jev） |
 | `pnpm check` | 提交前全量检查：lint（警告即失败）、workspace 一致性、类型检查（含测试与 web）、架构边界、knip、重复代码、单元测试；每条规则见 [engineering.md](engineering.md) |
+| `pnpm materials:lock` | 受保护文件（PRD、政策、规则、测试物料）的改动经你确认后，重新记录哈希；只由人执行 |
 | `pnpm architecture` | 由真实导入关系重新生成 [architecture-graph.md](architecture-graph.md) |
 | `pnpm security` | 检查依赖的已知漏洞（需联网） |
 | `pnpm spikes` | M0 技术预检 spike，结论见 [m0-findings.md](m0-findings.md) |
