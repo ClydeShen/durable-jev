@@ -55,12 +55,9 @@ var/                      运行时数据与日志，gitignore
 
 ## 3. 工程约定
 
-- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写。文件名 kebab-case（React 组件 PascalCase），由 Biome 检查。
-- 注释只写"为什么"与约束；"做什么"靠命名表达。
-- 模块要"深"：接口小、背后做实事；不加只转发的薄层（Ousterhout，*A Philosophy of Software Design*）。
-- 每个包的 `index.ts` 显式列出公开导出，不用 `export *`；knip（`includeEntryExports`）保证没有无人使用的导出与依赖。
-- 依赖只指向内层：`apps → packages`，具体实现（HTTP/A2A、Jev/脚本化、Pi Durable）在 app 入口装配；包边界由 TS project references 强制。
-- 纯函数优先；IO 集中在 app 边界。
+每条约定由 `pnpm check` 里的工具强制，规则、理由与对应工具见 [docs/engineering.md](../docs/engineering.md)。业务层面的补充：
+
+- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写；注释只写"为什么"与约束。
 - 测试轻量：每个包挑关键语义写少量 Vitest，不追求覆盖率。
 - 所有时间 UTC，金额整数分，重量克，温度 0.1°C 整数。
 

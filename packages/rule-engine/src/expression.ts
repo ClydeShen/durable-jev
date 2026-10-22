@@ -77,3 +77,23 @@ export const anyOf = (scope: CollectionScope, of: Expression): Expression => ({
   scope,
   of,
 })
+
+/** The rules an expression reads, in order of appearance. */
+export function referencedRules(expression: Expression): RuleId[] {
+  switch (expression.op) {
+    case 'ref':
+    case 'observed':
+      return [expression.ruleId]
+    case 'feel':
+      return []
+    case 'and':
+    case 'or':
+      return expression.of.flatMap(referencedRules)
+    case 'not':
+    case 'allOf':
+    case 'anyOf':
+      return referencedRules(expression.of)
+    case 'ifThen':
+      return [...referencedRules(expression.condition), ...referencedRules(expression.consequence)]
+  }
+}

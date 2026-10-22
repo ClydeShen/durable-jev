@@ -1,6 +1,6 @@
 import type { CheckScope, CheckStatus } from '@durable-jev/contracts'
 import { evaluate } from 'feelin'
-import type { CaseFacts, Facts } from './evaluate-rule-graph.js'
+import type { CaseFacts, Facts } from './facts.js'
 
 export type PolicyParameters = Record<string, string | number | boolean>
 

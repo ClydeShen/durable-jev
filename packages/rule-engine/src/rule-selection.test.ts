@@ -1,6 +1,7 @@
 import type { CheckStatus } from '@durable-jev/contracts'
 import { describe, expect, it } from 'vitest'
-import { type CaseFacts, evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
+import { evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
+import type { CaseFacts } from './facts.js'
 import type { RuleDefinition, RuleSet } from './rule-definition.js'
 import { validateRuleSet } from './validate-rule-set.js'
 

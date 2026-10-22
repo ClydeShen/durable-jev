@@ -1,5 +1,5 @@
 import { type CargoCategory, cargoCategorySchema, type RuleId } from '@durable-jev/contracts'
-import type { CollectionScope, Expression } from './expression.js'
+import { type CollectionScope, type Expression, referencedRules } from './expression.js'
 import { feelSyntaxError, parametersReferencedBy } from './feel.js'
 import {
   type MixingRule,
@@ -42,25 +42,6 @@ export interface RuleSetValidation {
 export interface ValidationEnvironment {
   policyParameters: ReadonlySet<string>
   evaluatorRefs?: ReadonlySet<string>
-}
-
-export function referencedRules(expression: Expression): RuleId[] {
-  switch (expression.op) {
-    case 'ref':
-    case 'observed':
-      return [expression.ruleId]
-    case 'feel':
-      return []
-    case 'and':
-    case 'or':
-      return expression.of.flatMap(referencedRules)
-    case 'not':
-    case 'allOf':
-    case 'anyOf':
-      return referencedRules(expression.of)
-    case 'ifThen':
-      return [...referencedRules(expression.condition), ...referencedRules(expression.consequence)]
-  }
 }
 
 function expressionsOf(rule: RuleDefinition): Expression[] {

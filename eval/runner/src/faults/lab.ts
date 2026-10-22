@@ -60,9 +60,8 @@ export class FaultLab {
     return this.agents.orchestrator.submit(shipment)
   }
 
-  async view(): Promise<CaseView> {
-    const { outcomes, tasks } = await this.agents.orchestrator.state(this.caseId)
-    return { record: this.agents.coordination.runtime.view(this.caseId).record, outcomes, tasks }
+  view(): Promise<CaseView> {
+    return this.agents.view(this.caseId)
   }
 
   async status(key: string) {

@@ -132,9 +132,8 @@ class CaseReplayer {
     return this.caseFile.shipment.caseId
   }
 
-  private async view(): Promise<CaseView> {
-    const { outcomes, tasks } = await this.agents.orchestrator.state(this.caseId)
-    return { record: this.agents.coordination.runtime.view(this.caseId).record, outcomes, tasks }
+  private view(): Promise<CaseView> {
+    return this.agents.view(this.caseId)
   }
 
   async start() {

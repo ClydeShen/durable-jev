@@ -3,6 +3,7 @@ import {
   CaseOrchestrator,
   CaseRuntime,
   CaseStore,
+  type CaseView,
   LocalAgentClient,
   loadRulePack,
   type RulePack,
@@ -73,6 +74,8 @@ export interface LocalLogisticsAgents {
     reference: ReferenceData
   }
   rulePack: RulePack
+  /** The case as all agents see it: the coordinator's record with every agent's outcomes and tasks. */
+  view(caseId: string): Promise<CaseView>
 }
 
 export interface LocalLogisticsOptions extends Omit<LogisticsRuntimeOptions, 'agentId' | 'store'> {
@@ -102,12 +105,13 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
   const coordination = agents.find((agent) => agent.agentId === 'order-coordination')
   const transport = agents.find((agent) => agent.agentId === 'transport-planning')
   if (!coordination || !transport) throw new Error('missing logistics agents')
+  const orchestrator = new CaseOrchestrator(
+    agents.map((agent) => agent.client),
+    coordination.rulePack.ruleSet,
+    (caseId) => coordination.store.caseRecord(caseId)?.shipment,
+  )
   return {
-    orchestrator: new CaseOrchestrator(
-      agents.map((agent) => agent.client),
-      coordination.rulePack.ruleSet,
-      (caseId) => coordination.store.caseRecord(caseId)?.shipment,
-    ),
+    orchestrator,
     coordination: { runtime: coordination.runtime, store: coordination.store },
     transport: {
       runtime: transport.runtime,
@@ -116,5 +120,9 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
       reference: transport.reference,
     },
     rulePack: coordination.rulePack,
+    view: async (caseId) => {
+      const { outcomes, tasks } = await orchestrator.state(caseId)
+      return { record: coordination.runtime.view(caseId).record, outcomes, tasks }
+    },
   }
 }

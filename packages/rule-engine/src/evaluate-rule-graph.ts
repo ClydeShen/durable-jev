@@ -7,7 +7,8 @@ import {
 } from '@durable-jev/contracts'
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
-import type { CollectionScope, Expression } from './expression.js'
+import { type CollectionScope, type Expression, referencedRules } from './expression.js'
+import type { CaseFacts, Facts } from './facts.js'
 import {
   evaluateFeel,
   feelContext,
@@ -18,24 +19,8 @@ import {
 } from './feel.js'
 import { ruleInputFingerprint } from './fingerprint.js'
 import { evaluateMixing } from './mixing.js'
-import type {
-  InvalidationTrigger,
-  MixingRule,
-  RuleDefinition,
-  RuleScope,
-  RuleSet,
-} from './rule-definition.js'
+import type { MixingRule, RuleDefinition, RuleScope, RuleSet } from './rule-definition.js'
 import { RuleIndex, type SelectionDecision, type SelectionProfile } from './rule-selection.js'
-import { referencedRules } from './validate-rule-set.js'
-
-export type Facts = Record<string, unknown>
-
-export interface CaseFacts {
-  entityVersions: Partial<Record<InvalidationTrigger, number | string>>
-  order: Facts
-  cargoItems: { cargoItemId: string; facts: Facts }[]
-  legs: { legId: string; facts: Facts }[]
-}
 
 export interface LeafEvaluation {
   status: CheckStatus
