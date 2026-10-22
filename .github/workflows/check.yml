@@ -14,19 +14,16 @@ jobs:
     timeout-minutes: 20
     env:
       MODEL_MODE: scripted
-      GITLEAKS_VERSION: 8.30.0
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      # Node and gitleaks at the versions in mise.toml; pnpm at the packageManager version.
+      - uses: jdx/mise-action@v5
       - uses: pnpm/action-setup@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - name: Lint, workspace, types, boundaries, architecture graph, dead code, duplication, tests
+      - name: Lint, workspace, types, boundaries, architecture graph, protected files, dead code, duplication, tests
         run: pnpm check
       - name: Replay the demo cases
         run: pnpm replay
@@ -35,9 +32,7 @@ jobs:
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
-        run: |
-          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
-          ./gitleaks git --redact --no-banner .
+        run: gitleaks git --redact --no-banner .
       - name: Commit messages of this pull request
         if: github.event_name == 'pull_request'
         run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}

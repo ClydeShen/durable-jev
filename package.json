@@ -4,7 +4,7 @@
   "type": "module",
   "packageManager": "pnpm@10.28.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.9"
   },
   "scripts": {
     "prepare": "lefthook install",
@@ -29,8 +29,9 @@
     "replay": "node eval/runner/dist/replay-main.js",
     "screening": "node eval/runner/dist/screening-main.js",
     "faults": "node eval/runner/dist/faults-main.js",
-    "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && pnpm knip && pnpm duplication && pnpm test",
-    "author": "node tools/rule-authoring/dist/main.js"
+    "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && node scripts/materials-lock.mjs --check && pnpm knip && pnpm duplication && pnpm test",
+    "author": "node tools/rule-authoring/dist/main.js",
+    "materials:lock": "node scripts/materials-lock.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",

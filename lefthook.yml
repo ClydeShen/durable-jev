@@ -10,7 +10,7 @@ pre-commit:
         if command -v gitleaks >/dev/null; then
           gitleaks git --pre-commit --staged --redact --no-banner
         else
-          echo "gitleaks is not installed, so staged secrets are not scanned here; CI still scans."
+          echo "gitleaks is not installed (mise install adds it), so staged secrets are not scanned here; CI still scans."
         fi
 
 commit-msg:
