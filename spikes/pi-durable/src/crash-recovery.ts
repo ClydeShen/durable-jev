@@ -152,7 +152,7 @@ const settled = await submission.wait(context)
 console.log(`[${phase}] settled: ${settled.status}`)
 
 const transcript = await root.entries({}, 100, undefined, context)
-for (const entry of transcript.items.reverse()) {
+for (const entry of [...transcript.items].reverse()) {
   console.log(`  ${JSON.stringify(entry).slice(0, 400)}`)
 }
 console.log(`[${phase}] business ledger: ${JSON.stringify(readLedger())}`)

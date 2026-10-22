@@ -46,6 +46,7 @@ const cargoAssuranceCard: AgentCard = {
       examples: [],
       inputModes: ['application/json'],
       outputModes: ['application/json'],
+      securityRequirements: [],
     },
   ],
   signatures: [],

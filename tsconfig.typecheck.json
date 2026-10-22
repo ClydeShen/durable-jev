@@ -6,5 +6,12 @@
     "declaration": false,
     "declarationMap": false
   },
-  "include": ["packages/*/src", "spikes/pi-durable/src/module-flow.ts"]
+  "include": [
+    "packages/*/src",
+    "apps/agent/src",
+    "apps/coordinator/src",
+    "tools/*/src",
+    "eval/runner/src",
+    "spikes/*/src"
+  ]
 }
