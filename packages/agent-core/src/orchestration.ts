@@ -41,11 +41,11 @@ export class LocalAgentClient implements AgentClient {
     private readonly store: CaseStore,
   ) {}
 
-  async submit(shipment: Shipment) {
+  async submit(shipment: Shipment): Promise<AgentCaseState> {
     return stateOf(await this.runtime.submit(shipment))
   }
 
-  async evaluate(caseId: string, foreign: readonly RuleOutcome[]) {
+  async evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState> {
     return stateOf(await this.runtime.evaluate(caseId, foreign))
   }
 
@@ -55,23 +55,23 @@ export class LocalAgentClient implements AgentClient {
       : { outcomes: [], tasks: [] }
   }
 
-  decide(humanTaskId: string, action: HumanAction) {
+  decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
     return this.runtime.decide(humanTaskId, action)
   }
 
-  async openTasks() {
+  async openTasks(): Promise<HumanTask[]> {
     return this.store.openTasks()
   }
 
-  async events() {
+  async events(): Promise<OutboxEvent[]> {
     return unpublishedEvents(this.store.db)
   }
 
-  async acknowledgeEvents(eventIds: readonly string[]) {
+  async acknowledgeEvents(eventIds: readonly string[]): Promise<void> {
     markPublished(this.store.db, eventIds)
   }
 
-  async reset() {
+  async reset(): Promise<void> {
     clearData(this.store.db)
   }
 }
@@ -166,7 +166,7 @@ export class CaseOrchestrator {
     return (await Promise.all(this.agents.map((agent) => agent.openTasks().catch(() => [])))).flat()
   }
 
-  async reset() {
+  async reset(): Promise<void> {
     await Promise.all(this.agents.map((agent) => agent.reset()))
   }
 

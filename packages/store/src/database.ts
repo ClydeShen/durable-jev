@@ -76,7 +76,7 @@ export function openStore(path: string, serviceMigrations: readonly Migration[] 
   return db
 }
 
-export function clearData(db: Db) {
+export function clearData(db: Db): void {
   const tables = db
     .prepare<[], { name: string }>(
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT IN ('schema_migrations', 'sqlite_sequence')",

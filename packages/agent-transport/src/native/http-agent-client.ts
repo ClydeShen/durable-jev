@@ -33,48 +33,48 @@ export class HttpAgentClient implements AgentClient {
     return (await response.json()) as T
   }
 
-  submit(shipment: Shipment) {
+  submit(shipment: Shipment): Promise<AgentCaseState> {
     return this.call<AgentCaseState>(`/cases/${encodeURIComponent(shipment.caseId)}`, {
       method: 'PUT',
       body: shipment,
     })
   }
 
-  evaluate(caseId: string, foreign: readonly RuleOutcome[]) {
+  evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState> {
     return this.call<AgentCaseState>(`/cases/${encodeURIComponent(caseId)}/evaluate`, {
       method: 'POST',
       body: { foreign },
     })
   }
 
-  state(caseId: string) {
+  state(caseId: string): Promise<AgentCaseState> {
     return this.call<AgentCaseState>(`/cases/${encodeURIComponent(caseId)}`)
   }
 
-  decide(humanTaskId: string, action: HumanAction) {
+  decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
     return this.call<Decision>(`/tasks/${encodeURIComponent(humanTaskId)}/decision`, {
       method: 'POST',
       body: action,
     })
   }
 
-  openTasks() {
+  openTasks(): Promise<HumanTask[]> {
     return this.call<HumanTask[]>('/tasks')
   }
 
-  events() {
+  events(): Promise<OutboxEvent[]> {
     return this.call<OutboxEvent[]>('/events')
   }
 
-  async acknowledgeEvents(eventIds: readonly string[]) {
+  async acknowledgeEvents(eventIds: readonly string[]): Promise<void> {
     await this.call('/events/ack', { method: 'POST', body: { eventIds } })
   }
 
-  async reset() {
+  async reset(): Promise<void> {
     await this.call('/reset', { method: 'POST' })
   }
 
-  summary() {
+  summary(): Promise<AgentSummary> {
     return this.call<AgentSummary>('/summary')
   }
 }

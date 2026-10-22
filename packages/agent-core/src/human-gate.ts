@@ -37,7 +37,7 @@ export class HumanGateSession {
     for (const task of existing) this.tasks.set(task.humanTaskId, task)
   }
 
-  withdrawStale(outcomes: readonly RuleOutcome[]) {
+  withdrawStale(outcomes: readonly RuleOutcome[]): void {
     const current = new Map(
       outcomes.map((outcome) => [
         `${outcome.ruleId}@${scopeKey(outcome.scope)}`,

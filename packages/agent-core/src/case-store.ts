@@ -76,7 +76,7 @@ export class CaseStore {
     return this.db.transaction(work).immediate()
   }
 
-  putCase(shipment: Shipment, now: string) {
+  putCase(shipment: Shipment, now: string): void {
     this.db
       .prepare(
         `INSERT INTO cases (case_id, shipment_json, updated_at) VALUES (?, ?, ?)
@@ -103,7 +103,7 @@ export class CaseStore {
       .map(toRecord)
   }
 
-  markDispatched(caseId: string, now: string) {
+  markDispatched(caseId: string, now: string): void {
     this.db
       .prepare('UPDATE cases SET dispatched_at = ?, updated_at = ? WHERE case_id = ?')
       .run(now, now, caseId)
@@ -118,7 +118,7 @@ export class CaseStore {
       .map((row) => JSON.parse(row.outcome_json))
   }
 
-  replaceOutcomes(caseId: string, outcomes: readonly RuleOutcome[]) {
+  replaceOutcomes(caseId: string, outcomes: readonly RuleOutcome[]): void {
     this.db.prepare('DELETE FROM rule_results WHERE case_id = ?').run(caseId)
     const insert = this.db.prepare(
       'INSERT INTO rule_results (case_id, rule_id, scope_key, outcome_json) VALUES (?, ?, ?, ?)',
@@ -137,7 +137,7 @@ export class CaseStore {
     return row ? JSON.parse(row.outcomes_json) : []
   }
 
-  replaceForeignOutcomes(caseId: string, outcomes: readonly RuleOutcome[]) {
+  replaceForeignOutcomes(caseId: string, outcomes: readonly RuleOutcome[]): void {
     this.db
       .prepare(
         `INSERT INTO foreign_results (case_id, outcomes_json) VALUES (?, ?)
@@ -173,7 +173,7 @@ export class CaseStore {
       .map((row) => JSON.parse(row.task_json))
   }
 
-  putTasks(tasks: readonly HumanTask[]) {
+  putTasks(tasks: readonly HumanTask[]): void {
     const upsert = this.db.prepare(
       `INSERT INTO human_tasks (human_task_id, case_id, status, task_json) VALUES (?, ?, ?, ?)
        ON CONFLICT (human_task_id) DO UPDATE SET status = excluded.status, task_json = excluded.task_json`,
@@ -182,7 +182,7 @@ export class CaseStore {
       upsert.run(task.humanTaskId, task.caseId, task.status, JSON.stringify(task))
   }
 
-  record(event: OutboxEventDraft) {
+  record(event: OutboxEventDraft): void {
     appendToOutbox(this.db, event)
   }
 }

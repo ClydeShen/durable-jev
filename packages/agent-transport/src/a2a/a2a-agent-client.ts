@@ -5,6 +5,7 @@ import type { AgentCaseState, AgentClient } from '@durable-jev/agent-core'
 import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
+import type { OutboxEvent } from '@durable-jev/store'
 import {
   type CaseSkill,
   caseSkills,
@@ -59,7 +60,7 @@ export class A2aAgentClient implements AgentClient {
     private readonly onTask: (record: A2aTaskRecord) => void = () => {},
   ) {}
 
-  submit(shipment: Shipment) {
+  submit(shipment: Shipment): Promise<AgentCaseState> {
     return this.call<AgentCaseState>(
       'submit-case',
       shipment,
@@ -67,31 +68,31 @@ export class A2aAgentClient implements AgentClient {
     )
   }
 
-  evaluate(caseId: string, foreign: readonly RuleOutcome[]) {
+  evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState> {
     return this.call<AgentCaseState>('evaluate-case', { caseId, foreign })
   }
 
-  state(caseId: string) {
+  state(caseId: string): Promise<AgentCaseState> {
     return this.call<AgentCaseState>('case-state', { caseId })
   }
 
-  decide(humanTaskId: string, action: HumanAction) {
+  decide(humanTaskId: string, action: HumanAction): Promise<Decision> {
     return this.call<Decision>('decide-task', { humanTaskId, action })
   }
 
-  openTasks() {
+  openTasks(): Promise<HumanTask[]> {
     return this.call<HumanTask[]>('open-tasks', {})
   }
 
-  events() {
+  events(): Promise<OutboxEvent[]> {
     return this.operations.events()
   }
 
-  acknowledgeEvents(eventIds: readonly string[]) {
+  acknowledgeEvents(eventIds: readonly string[]): Promise<void> {
     return this.operations.acknowledgeEvents(eventIds)
   }
 
-  reset() {
+  reset(): Promise<void> {
     return this.operations.reset()
   }
 
