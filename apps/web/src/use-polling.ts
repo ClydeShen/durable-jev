@@ -12,7 +12,7 @@ export function usePolling<T>(load: () => Promise<T>, intervalMs = 2000) {
     }
   }, [load])
   useEffect(() => {
-    refresh()
+    void refresh()
     const timer = setInterval(refresh, intervalMs)
     return () => clearInterval(timer)
   }, [refresh, intervalMs])

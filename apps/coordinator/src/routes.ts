@@ -78,16 +78,19 @@ function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
 
 const actorHeaderNames = ['x-demo-role', 'x-demo-user']
 
-export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router {
-  const { coordination, orchestrator, catalog, rulePack, investigations } = dependencies
-  const router = Router()
-
-  async function caseView(caseId: string): Promise<CaseView> {
+function caseViews({ coordination, orchestrator }: CoordinatorDependencies) {
+  return async (caseId: string): Promise<CaseView> => {
     const record = coordination.store.caseRecord(caseId)
     if (!record) throw new HttpError(404, `case ${caseId} does not exist`)
     const { outcomes, tasks } = await orchestrator.state(caseId)
     return { record, outcomes, tasks }
   }
+}
+
+type CaseViewOf = ReturnType<typeof caseViews>
+
+function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseView: CaseViewOf) {
+  const { coordination, orchestrator, catalog, investigations } = dependencies
 
   router.get('/cases', async (_request, response) => {
     const views = await Promise.all(
@@ -98,21 +101,22 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
 
   router.get('/cases/:caseId', async (request, response) => {
     const view = await caseView(request.params.caseId)
+    const { shipment } = view.record
     response.json({
       ...summaryOf(view, catalog),
-      shipment: view.record.shipment,
+      shipment,
       outcomes: view.outcomes,
       tasks: view.tasks,
-      revisions: scriptedRevisions(catalog, view.record.shipment.caseId).map((revision, index) => ({
+      revisions: scriptedRevisions(catalog, shipment.caseId).map((revision, index) => ({
         index,
         label: revision.label,
-        applied: view.record.shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
+        applied: shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
       })),
-      incidents: scriptedIncidents(catalog, view.record.shipment.caseId).map((incident, index) => ({
+      incidents: scriptedIncidents(catalog, shipment.caseId).map((incident, index) => ({
         index,
         label: incident.label,
       })),
-      investigations: await investigations.ofCase(view.record.shipment.caseId).catch(() => []),
+      investigations: await investigations.ofCase(shipment.caseId).catch(() => []),
     })
   })
 
@@ -128,6 +132,29 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
     await orchestrator.submit(applyRevision(shipment, revision.patch))
     response.json(summaryOf(await caseView(shipment.caseId), catalog))
   })
+
+  router.post('/cases/:caseId/dispatch', async (request, response) => {
+    const { caseId } = request.params
+    await caseView(caseId)
+    const result = await dispatchCase(
+      orchestrator,
+      coordination.store,
+      caseId,
+      actorOf(request),
+      dependencies.now,
+    )
+    if (!result.ok)
+      throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
+    response.json(summaryOf(await caseView(caseId), catalog))
+  })
+}
+
+function investigationRoutes(
+  router: Router,
+  dependencies: CoordinatorDependencies,
+  caseView: CaseViewOf,
+) {
+  const { orchestrator, catalog, investigations } = dependencies
 
   router.post('/cases/:caseId/incidents/:index', async (request, response) => {
     const { caseId } = (await caseView(request.params.caseId)).record.shipment
@@ -149,22 +176,28 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
     if (result.patch) await orchestrator.submit(applyRevision(shipment, result.patch))
     response.json(summaryOf(await caseView(shipment.caseId), catalog))
   })
+}
 
-  router.post('/cases/:caseId/dispatch', async (request, response) => {
-    const { caseId } = request.params
-    await caseView(caseId)
-    const result = await dispatchCase(
-      orchestrator,
-      coordination.store,
-      caseId,
-      actorOf(request),
-      dependencies.now,
-    )
-    if (!result.ok)
-      throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
-    response.json(summaryOf(await caseView(caseId), catalog))
+function taskRoutes(router: Router, { orchestrator }: CoordinatorDependencies) {
+  router.get('/tasks', async (request, response) => {
+    const role = request.query.role === undefined ? undefined : roleSchema.parse(request.query.role)
+    const tasks = await orchestrator.openTasks()
+    response.json(tasks.filter((task) => role === undefined || task.requiredRole === role))
   })
 
+  router.post('/tasks/:taskId/decision', async (request, response) => {
+    const body = decisionSchema.parse(request.body)
+    const action: HumanAction = { ...body, actor: actorOf(request) }
+    const decision = await orchestrator.decide(request.params.taskId, action)
+    if (!decision.ok) {
+      response.status(decision.reason === 'NOT_FOUND' ? 404 : 422).json(decision)
+      return
+    }
+    response.json(decision)
+  })
+}
+
+function ruleAndAgentRoutes(router: Router, { rulePack, agentStatuses }: CoordinatorDependencies) {
   router.get('/rules', (_request, response) => {
     response.json({
       ruleSetVersion: rulePack.ruleSet.ruleSetVersion,
@@ -183,46 +216,41 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
   })
 
   router.get('/agents', async (_request, response) => {
-    response.json(await dependencies.agentStatuses())
+    response.json(await agentStatuses())
   })
+}
+
+function demoRoutes(router: Router, dependencies: CoordinatorDependencies) {
+  const control = () => {
+    if (!dependencies.controlUrl) throw new HttpError(404, 'demo control is not available')
+    return dependencies.controlUrl
+  }
 
   router.get('/demo/services', async (_request, response) => {
-    if (!dependencies.controlUrl) throw new HttpError(404, 'demo control is not available')
-    response.json(await (await fetch(`${dependencies.controlUrl}/services`)).json())
+    response.json(await (await fetch(`${control()}/services`)).json())
   })
 
   router.post('/demo/services/:name/:verb', async (request, response) => {
-    if (!dependencies.controlUrl) throw new HttpError(404, 'demo control is not available')
     const { name, verb } = request.params
     if (verb !== 'crash' && verb !== 'start')
       throw new HttpError(400, 'verb must be crash or start')
-    const result = await fetch(`${dependencies.controlUrl}/services/${name}/${verb}`, {
-      method: 'POST',
-    })
+    const result = await fetch(`${control()}/services/${name}/${verb}`, { method: 'POST' })
     response.status(result.status).json(await result.json())
-  })
-
-  router.get('/tasks', async (request, response) => {
-    const role = request.query.role === undefined ? undefined : roleSchema.parse(request.query.role)
-    const tasks = await orchestrator.openTasks()
-    response.json(tasks.filter((task) => role === undefined || task.requiredRole === role))
-  })
-
-  router.post('/tasks/:taskId/decision', async (request, response) => {
-    const body = decisionSchema.parse(request.body)
-    const action: HumanAction = { ...body, actor: actorOf(request) }
-    const decision = await orchestrator.decide(request.params.taskId, action)
-    if (!decision.ok) {
-      response.status(decision.reason === 'NOT_FOUND' ? 404 : 422).json(decision)
-      return
-    }
-    response.json(decision)
   })
 
   router.post('/demo/reset', async (_request, response) => {
     await dependencies.resetDemo()
-    response.json({ cases: coordination.store.cases().length })
+    response.json({ cases: dependencies.coordination.store.cases().length })
   })
+}
 
+export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router {
+  const router = Router()
+  const caseView = caseViews(dependencies)
+  caseRoutes(router, dependencies, caseView)
+  investigationRoutes(router, dependencies, caseView)
+  taskRoutes(router, dependencies)
+  ruleAndAgentRoutes(router, dependencies)
+  demoRoutes(router, dependencies)
   return router
 }

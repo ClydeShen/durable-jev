@@ -4,6 +4,7 @@ export {
   type InvestigatorModel,
   type ObservedResult,
   type RunBudget,
+  type RunOutcome,
   type ScriptedStep,
 } from './investigator.js'
 export { defineInvestigationTool, type InvestigationTool } from './tools.js'

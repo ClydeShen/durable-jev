@@ -1,7 +1,7 @@
 import type { CaseRuntime, CaseStore, RulePack } from '@durable-jev/agent-core'
 import { defineInvestigationTool, type InvestigationTool } from '@durable-jev/agent-harness'
 import { Type } from '@earendil-works/pi-ai'
-import type { ReferenceData } from '../reference-data.js'
+import type { CapacityOffer, ReferenceData } from '../reference-data.js'
 import { applyRevision } from '../revision.js'
 import type { Investigation, InvestigationStore, RerouteProposal } from './investigation-store.js'
 import { type PlanCheck, planChecks, planPasses, reroutePatch } from './reroute-plan.js'
@@ -21,24 +21,32 @@ function shipmentOf(cases: CaseStore, caseId: string) {
   return record.shipment
 }
 
-export function rerouteTools(
-  dependencies: RerouteToolDependencies,
-): InvestigationTool<Investigation>[] {
-  const { cases, runtime, reference } = dependencies
-  const titles = new Map(
-    dependencies.rulePack.ruleSet.rules.map((rule) => [rule.ruleId, rule.title]),
-  )
+type OfferCheck = (
+  investigation: Investigation,
+  offerId: string,
+) => Promise<{ offer?: CapacityOffer; checks: PlanCheck[] }>
 
-  async function checkOffer(investigation: Investigation, offerId: string) {
+/** Pre-checks an offer as the replacement for the incident leg with a what-if rule evaluation. */
+function offerChecker({
+  cases,
+  runtime,
+  reference,
+  rulePack,
+}: RerouteToolDependencies): OfferCheck {
+  const titles = new Map(rulePack.ruleSet.rules.map((rule) => [rule.ruleId, rule.title]))
+  return async (investigation, offerId) => {
     const offer = reference.capacityOffers.get(offerId)
-    if (!offer) return { offer, checks: [] as PlanCheck[] }
+    if (!offer) return { checks: [] }
     const shipment = shipmentOf(cases, investigation.caseId)
     const { legId } = investigation.incident
     const candidate = applyRevision(shipment, reroutePatch(shipment, legId, offer))
     return { offer, checks: planChecks(await runtime.whatIf(candidate), legId, titles) }
   }
+}
 
-  const getCase = defineInvestigationTool({
+function getCaseTool(dependencies: RerouteToolDependencies): InvestigationTool<Investigation> {
+  const { cases, reference } = dependencies
+  return defineInvestigationTool({
     name: 'get_case',
     description:
       'Read the shipment under investigation: the incident, legs, cargo needs, delivery window and quote.',
@@ -63,8 +71,11 @@ export function rerouteTools(
       }
     },
   })
+}
 
-  const searchOffers = defineInvestigationTool({
+function searchOffersTool(dependencies: RerouteToolDependencies): InvestigationTool<Investigation> {
+  const { cases, reference } = dependencies
+  return defineInvestigationTool({
     name: 'search_capacity_offers',
     description:
       'List spare capacity offers on the same origin and destination as a leg, cheapest first, with carrier qualifications and vehicle capabilities.',
@@ -89,8 +100,10 @@ export function rerouteTools(
         }))
     },
   })
+}
 
-  const checkPlan = defineInvestigationTool({
+function checkPlanTool(checkOffer: OfferCheck): InvestigationTool<Investigation> {
+  return defineInvestigationTool({
     name: 'check_plan',
     description:
       'Pre-check an offer as the replacement for the incident leg against the rule engine. Only offers whose checks all pass may be proposed.',
@@ -101,8 +114,14 @@ export function rerouteTools(
       return { offerId: offer.offerId, passes: planPasses(checks), checks }
     },
   })
+}
 
-  const submitResult = defineInvestigationTool({
+function submitResultTool(
+  dependencies: RerouteToolDependencies,
+  checkOffer: OfferCheck,
+): InvestigationTool<Investigation> {
+  const { cases } = dependencies
+  return defineInvestigationTool({
     name: 'submit_investigation_result',
     description:
       'Submit the result once: propose one offer that passed check_plan, or escalate to the planner when none does. A planner still has to confirm any proposal.',
@@ -140,6 +159,16 @@ export function rerouteTools(
       return { recorded: true, status: 'PROPOSED' }
     },
   })
+}
 
-  return [getCase, searchOffers, checkPlan, submitResult]
+export function rerouteTools(
+  dependencies: RerouteToolDependencies,
+): InvestigationTool<Investigation>[] {
+  const checkOffer = offerChecker(dependencies)
+  return [
+    getCaseTool(dependencies),
+    searchOffersTool(dependencies),
+    checkPlanTool(checkOffer),
+    submitResultTool(dependencies, checkOffer),
+  ]
 }

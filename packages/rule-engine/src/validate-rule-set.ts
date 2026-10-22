@@ -221,15 +221,18 @@ function feelExpressionsOf(rule: RuleDefinition): string[] {
   ].filter((expression): expression is string => expression !== undefined)
 }
 
+type SemanticPassWhen = NonNullable<RuleDefinition['semantic']>['passWhen']
+
+function thresholdOf(passWhen: Exclude<SemanticPassWhen, { choiceIn: unknown }>): number | string {
+  if ('probabilityAtLeast' in passWhen) return passWhen.probabilityAtLeast
+  if ('probabilityAtMost' in passWhen) return passWhen.probabilityAtMost
+  return passWhen.selectChoicesAtLeast
+}
+
 function semanticThresholdParameter(rule: RuleDefinition): string[] {
   const passWhen = rule.semantic?.passWhen
   if (!passWhen || 'choiceIn' in passWhen) return []
-  const threshold =
-    'probabilityAtLeast' in passWhen
-      ? passWhen.probabilityAtLeast
-      : 'probabilityAtMost' in passWhen
-        ? passWhen.probabilityAtMost
-        : passWhen.selectChoicesAtLeast
+  const threshold = thresholdOf(passWhen)
   return typeof threshold === 'string' ? [threshold] : []
 }
 

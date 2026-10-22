@@ -24,7 +24,35 @@
             "filenameCases": ["kebab-case"],
             "requireAscii": true
           }
+        },
+        "noNestedTernary": "error",
+        "noParameterAssign": "error"
+      },
+      "performance": {
+        "noReExportAll": "error",
+        "noBarrelFile": "error"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "error",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        },
+        "noExcessiveLinesPerFunction": {
+          "level": "error",
+          "options": {
+            "maxLines": 80,
+            "skipBlankLines": true
+          }
         }
+      },
+      "nursery": {
+        "noFloatingPromises": "error",
+        "noMisusedPromises": "error"
+      },
+      "suspicious": {
+        "noImportCycles": "error"
       }
     }
   },
@@ -41,6 +69,26 @@
                 "requireAscii": true
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/*/src/index.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noExcessiveLinesPerFunction": "off"
           }
         }
       }

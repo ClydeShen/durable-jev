@@ -372,13 +372,11 @@ export const scenarios: FaultScenario[] = [
       ) as { parameters: Record<string, unknown> }
       const broken = {
         ...ruleSet,
-        rules: ruleSet.rules.map((rule: { ruleId: string; dependsOn: string[] }) =>
-          rule.ruleId === 'R01'
-            ? { ...rule, dependsOn: ['R40'] }
-            : rule.ruleId === 'R02'
-              ? { ...rule, dependsOn: [...rule.dependsOn, 'R99'] }
-              : rule,
-        ),
+        rules: ruleSet.rules.map((rule: { ruleId: string; dependsOn: string[] }) => {
+          if (rule.ruleId === 'R01') return { ...rule, dependsOn: ['R40'] }
+          if (rule.ruleId === 'R02') return { ...rule, dependsOn: [...rule.dependsOn, 'R99'] }
+          return rule
+        }),
       }
       const codes = new Set(
         validateRuleSet(broken, { policyParameters: new Set(Object.keys(parameters)) }).issues.map(

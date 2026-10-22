@@ -1,37 +1,23 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { type Actor, type AgentNames, api, type RuleInfo, type TaskDecision } from './api'
-import { AgentOverview } from './components/AgentOverview'
 import { AgentPanel } from './components/AgentPanel'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseList } from './components/CaseList'
+import { CaseViews } from './components/CaseViews'
 import { InvestigationPanel } from './components/InvestigationPanel'
 import { RoleBar } from './components/RoleBar'
-import { RuleDetail } from './components/RuleDetail'
-import { RuleGraph } from './components/RuleGraph'
 import { TaskPanel } from './components/TaskPanel'
-import { Timeline } from './components/Timeline'
 import { usePolling } from './use-polling'
-
-type CaseViewMode = 'overview' | 'graph' | 'timeline'
-
-const viewModes: [CaseViewMode, string][] = [
-  ['overview', 'Agent 总览'],
-  ['graph', '规则图'],
-  ['timeline', '时间线'],
-]
 
 export function App() {
   const [actor, setActor] = useState<Actor>({ id: 'wen', role: 'warehouseOperator' })
   const [selectedCase, setSelectedCase] = useState<string>()
-  const [selectedRule, setSelectedRule] = useState<string>()
   const [message, setMessage] = useState<string>()
   const [rules, setRules] = useState<RuleInfo[]>([])
-  const [view, setView] = useState<CaseViewMode>('overview')
-  const [focusAgent, setFocusAgent] = useState<string>()
 
   useEffect(() => {
-    api.rules().then((response) => setRules(response.rules))
+    void api.rules().then((response) => setRules(response.rules))
   }, [])
   const cases = usePolling(api.cases)
   const agents = usePolling(api.agents)
@@ -47,11 +33,6 @@ export function App() {
     [selectedCase],
   )
   const detail = usePolling(loadDetail)
-  const loadTimeline = useCallback(
-    () => (selectedCase && view === 'timeline' ? api.timeline(selectedCase) : Promise.resolve([])),
-    [selectedCase, view],
-  )
-  const timeline = usePolling(loadTimeline)
   const loadTasks = useCallback(() => api.tasks(actor.role), [actor.role])
   const tasks = usePolling(loadTasks)
 
@@ -73,7 +54,6 @@ export function App() {
   const decide = (task: HumanTask, decision: TaskDecision) =>
     report(() => api.decide(task.humanTaskId, decision, actor), `${task.ruleId} 已提交`)
 
-  const rule = rules.find((candidate) => candidate.ruleId === selectedRule)
   return (
     <div className="app">
       <RoleBar
@@ -125,58 +105,13 @@ export function App() {
                 }
               />
             )}
-            <nav className="view-tabs">
-              {viewModes.map(([mode, label]) => (
-                <button
-                  type="button"
-                  key={mode}
-                  className={view === mode ? '' : 'secondary'}
-                  onClick={() => setView(mode)}
-                >
-                  {label}
-                </button>
-              ))}
-              {view === 'graph' && focusAgent && (
-                <button
-                  type="button"
-                  className="secondary"
-                  onClick={() => setFocusAgent(undefined)}
-                >
-                  仅 {agentNames[focusAgent] ?? focusAgent} ✕
-                </button>
-              )}
-            </nav>
-            {view === 'overview' && (
-              <AgentOverview
-                agents={agents.data ?? []}
-                rules={rules}
-                outcomes={detail.data.outcomes}
-                onOpenAgent={(agentId) => {
-                  setFocusAgent(agentId)
-                  setView('graph')
-                }}
-              />
-            )}
-            {view === 'graph' && (
-              <RuleGraph
-                rules={rules}
-                agentNames={agentNames}
-                outcomes={detail.data.outcomes}
-                focusAgent={focusAgent}
-                onSelect={setSelectedRule}
-              />
-            )}
-            {view === 'timeline' && (
-              <Timeline entries={timeline.data ?? []} agentNames={agentNames} />
-            )}
-            {rule && (
-              <RuleDetail
-                rule={rule}
-                agentNames={agentNames}
-                outcomes={detail.data.outcomes.filter((outcome) => outcome.ruleId === rule.ruleId)}
-                onClose={() => setSelectedRule(undefined)}
-              />
-            )}
+            <CaseViews
+              caseId={detail.data.caseId}
+              outcomes={detail.data.outcomes}
+              agents={agents.data ?? []}
+              agentNames={agentNames}
+              rules={rules}
+            />
           </>
         )}
       </main>

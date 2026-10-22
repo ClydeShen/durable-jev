@@ -74,7 +74,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
   const agentIds = agents.map((agent) => agent.agentId).join()
   useEffect(() => {
     const ids = agentIds.split(',')
-    layoutGraph(
+    void layoutGraph(
       ids.map((id) => ({
         id,
         dependsOn: relations

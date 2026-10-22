@@ -114,9 +114,9 @@ export function RuleGraph({ rules, agentNames, outcomes, focusAgent, onSelect }:
   const selectedCount = rules.filter((rule) => rule.extension).length - filteredCount
   useEffect(() => {
     setPositions({})
-    layoutGraph(shown.map(({ rule }) => ({ id: rule.ruleId, dependsOn: rule.dependsOn }))).then(
-      setPositions,
-    )
+    void layoutGraph(
+      shown.map(({ rule }) => ({ id: rule.ruleId, dependsOn: rule.dependsOn })),
+    ).then(setPositions)
   }, [shown])
   const nodes = useMemo<Node<RuleNodeData>[]>(
     () =>

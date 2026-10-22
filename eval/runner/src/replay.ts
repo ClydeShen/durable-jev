@@ -27,46 +27,68 @@ export interface CaseReplay {
 
 const replayStart = Date.parse('2026-10-30T08:00:00Z')
 
-function checkExpectation(view: CaseView, event: Extract<CaseEvent, { kind: 'expect' }>): string[] {
-  const problems: string[] = []
+type Expectation = Extract<CaseEvent, { kind: 'expect' }>
+type OutcomesByKey = ReadonlyMap<string, CaseView['outcomes'][number]>
+
+function orderStatusProblems(view: CaseView, event: Expectation): string[] {
   const status = orderStatusOf(view)
-  if (event.orderStatus && status !== event.orderStatus) {
-    problems.push(`order is ${status}, expected ${event.orderStatus}`)
-  }
+  return event.orderStatus && status !== event.orderStatus
+    ? [`order is ${status}, expected ${event.orderStatus}`]
+    : []
+}
+
+function statusProblems(outcomes: OutcomesByKey, event: Expectation): string[] {
+  return Object.entries(event.statuses).flatMap(([key, expected]) => {
+    const actual = outcomes.get(key)?.status
+    return actual === expected ? [] : [`${key} is ${actual ?? 'missing'}, expected ${expected}`]
+  })
+}
+
+function openTaskProblems(view: CaseView, event: Expectation): string[] {
+  if (!event.openTasks) return []
+  const open = view.tasks
+    .filter((task) => task.status === 'OPEN')
+    .map((task) => caseEventKey(task.ruleId, task.scope))
+  const [actual, expected] = [[...new Set(open)].sort(), [...event.openTasks].sort()]
+  return actual.join() === expected.join()
+    ? []
+    : [`open tasks are [${actual}], expected [${expected}]`]
+}
+
+function invalidationProblems(outcomes: OutcomesByKey, event: Expectation): string[] {
+  return Object.entries(event.invalidatedBy ?? {}).flatMap(([key, change]) => {
+    const actual = outcomes.get(key)?.invalidatedBy
+    return actual === change
+      ? []
+      : [`${key} was invalidated by ${actual ?? 'nothing'}, expected ${change}`]
+  })
+}
+
+function reuseProblems(view: CaseView, event: Expectation): string[] {
+  return (event.reused ?? []).flatMap((ruleId) =>
+    view.outcomes.some((outcome) => outcome.ruleId === ruleId && !outcome.reused)
+      ? [`${ruleId} was re-evaluated, expected its result to be reused`]
+      : [],
+  )
+}
+
+function checkExpectation(view: CaseView, event: Expectation): string[] {
   const outcomes = new Map(
     view.outcomes.map((outcome) => [caseEventKey(outcome.ruleId, outcome.scope), outcome]),
   )
-  for (const [key, expected] of Object.entries(event.statuses)) {
-    const actual = outcomes.get(key)?.status
-    if (actual !== expected) problems.push(`${key} is ${actual ?? 'missing'}, expected ${expected}`)
-  }
-  if (event.openTasks) {
-    const open = view.tasks
-      .filter((task) => task.status === 'OPEN')
-      .map((task) => caseEventKey(task.ruleId, task.scope))
-    const [actual, expected] = [[...new Set(open)].sort(), [...event.openTasks].sort()]
-    if (actual.join() !== expected.join())
-      problems.push(`open tasks are [${actual}], expected [${expected}]`)
-  }
-  for (const [key, change] of Object.entries(event.invalidatedBy ?? {})) {
-    const actual = outcomes.get(key)?.invalidatedBy
-    if (actual !== change)
-      problems.push(`${key} was invalidated by ${actual ?? 'nothing'}, expected ${change}`)
-  }
-  for (const ruleId of event.reused ?? []) {
-    const notReused = view.outcomes.filter(
-      (outcome) => outcome.ruleId === ruleId && !outcome.reused,
-    )
-    if (notReused.length > 0)
-      problems.push(`${ruleId} was re-evaluated, expected its result to be reused`)
-  }
-  return problems
+  return [
+    ...orderStatusProblems(view, event),
+    ...statusProblems(outcomes, event),
+    ...openTaskProblems(view, event),
+    ...invalidationProblems(outcomes, event),
+    ...reuseProblems(view, event),
+  ]
 }
 
 function checkInvestigation(
   desk: RerouteDesk,
   caseId: string,
-  expected: NonNullable<Extract<CaseEvent, { kind: 'expect' }>['investigation']>,
+  expected: NonNullable<Expectation['investigation']>,
 ): string[] {
   const investigation = desk.ofCase(caseId).at(-1)
   if (!investigation) return ['no investigation']

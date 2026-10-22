@@ -3,12 +3,11 @@ import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { AgentNames, RuleInfo } from '../api'
 import { checkStatusLabels, kindLabels } from '../labels'
 
-const scopeLabel = (scope: CheckScope) =>
-  scope.kind === 'order'
-    ? '整单'
-    : scope.kind === 'cargoItem'
-      ? `货物 ${scope.cargoItemId}`
-      : `运输段 ${scope.legId}`
+function scopeLabel(scope: CheckScope): string {
+  if (scope.kind === 'cargoItem') return `货物 ${scope.cargoItemId}`
+  if (scope.kind === 'leg') return `运输段 ${scope.legId}`
+  return '整单'
+}
 
 const show = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value))
 

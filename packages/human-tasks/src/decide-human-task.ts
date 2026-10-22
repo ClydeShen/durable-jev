@@ -98,47 +98,45 @@ function actorRefusal(task: HumanTask, actor: Actor, context: ActionContext): De
   return undefined
 }
 
-export function decideHumanTask(
-  task: HumanTask,
-  action: HumanAction,
-  context: ActionContext,
-): Decision {
-  if (action.type === 'supersede') {
-    if (!['OPEN', 'APPROVED', 'COMPLETED'].includes(task.status)) {
-      return refuse('NOT_OPEN', `a ${task.status} task cannot be superseded`)
-    }
-    return { ok: true, task: { ...task, status: 'SUPERSEDED', supersededBy: action.by } }
+type Completion = Extract<HumanAction, { type: 'complete' }>
+type Verdict = Extract<HumanAction, { type: 'approve' | 'reject' }>
+
+function supersede(task: HumanTask, by: string): Decision {
+  if (!['OPEN', 'APPROVED', 'COMPLETED'].includes(task.status)) {
+    return refuse('NOT_OPEN', `a ${task.status} task cannot be superseded`)
   }
-  if (task.status !== 'OPEN') return refuse('NOT_OPEN', `task is ${task.status}`)
-  if (action.type === 'cancel') return { ok: true, task: { ...task, status: 'CANCELLED' } }
-  if (action.type === 'expire') {
-    if (context.now < task.expiresAt)
-      return refuse('NOT_EXPIRED', `task expires at ${task.expiresAt}`)
-    return { ok: true, task: { ...task, status: 'EXPIRED' } }
+  return { ok: true, task: { ...task, status: 'SUPERSEDED', supersededBy: by } }
+}
+
+function expire(task: HumanTask, now: string): Decision {
+  if (now < task.expiresAt) return refuse('NOT_EXPIRED', `task expires at ${task.expiresAt}`)
+  return { ok: true, task: { ...task, status: 'EXPIRED' } }
+}
+
+function complete(task: HumanTask, action: Completion, now: string): Decision {
+  if (task.taskType !== 'OPERATION')
+    return refuse('WRONG_TASK_TYPE', 'only operations are completed')
+  const missing = missingEvidence(task, action.fields)
+  if (missing.length > 0) {
+    return refuse('MISSING_EVIDENCE', `missing evidence: ${missing.join(', ')}`)
   }
-  const actorIssue = actorRefusal(task, action.actor, context)
-  if (actorIssue) return actorIssue
-  if (action.type === 'complete') {
-    if (task.taskType !== 'OPERATION')
-      return refuse('WRONG_TASK_TYPE', 'only operations are completed')
-    const missing = missingEvidence(task, action.fields)
-    if (missing.length > 0)
-      return refuse('MISSING_EVIDENCE', `missing evidence: ${missing.join(', ')}`)
-    return {
-      ok: true,
-      task: {
-        ...task,
-        status: 'COMPLETED',
-        actionEvidence: {
-          completedByRole: action.actor.role,
-          completedBy: action.actor.id,
-          completedAt: context.now,
-          fields: action.fields,
-          evidenceRefs: action.evidenceRefs,
-        },
+  return {
+    ok: true,
+    task: {
+      ...task,
+      status: 'COMPLETED',
+      actionEvidence: {
+        completedByRole: action.actor.role,
+        completedBy: action.actor.id,
+        completedAt: now,
+        fields: action.fields,
+        evidenceRefs: action.evidenceRefs,
       },
-    }
+    },
   }
+}
+
+function decideApproval(task: HumanTask, action: Verdict, context: ActionContext): Decision {
   if (task.taskType !== 'APPROVAL') {
     return refuse('WRONG_TASK_TYPE', 'an approval cannot stand in for a field operation')
   }
@@ -159,4 +157,21 @@ export function decideHumanTask(
       },
     },
   }
+}
+
+/** Applies a lifecycle action (supersede, cancel, expire) or a person's decision to a task. */
+export function decideHumanTask(
+  task: HumanTask,
+  action: HumanAction,
+  context: ActionContext,
+): Decision {
+  if (action.type === 'supersede') return supersede(task, action.by)
+  if (task.status !== 'OPEN') return refuse('NOT_OPEN', `task is ${task.status}`)
+  if (action.type === 'cancel') return { ok: true, task: { ...task, status: 'CANCELLED' } }
+  if (action.type === 'expire') return expire(task, context.now)
+  const actorIssue = actorRefusal(task, action.actor, context)
+  if (actorIssue) return actorIssue
+  return action.type === 'complete'
+    ? complete(task, action, context.now)
+    : decideApproval(task, action, context)
 }

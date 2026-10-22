@@ -3,6 +3,7 @@ import {
   DurableInvestigator,
   type InvestigatorModel,
   type RunBudget,
+  type RunOutcome,
 } from '@durable-jev/agent-harness'
 import type { Role } from '@durable-jev/contracts'
 import type { ReferenceData } from '../reference-data.js'
@@ -53,6 +54,12 @@ export type DecisionResult =
       reason: 'NOT_FOUND' | 'ROLE_NOT_ALLOWED' | 'NOT_PROPOSED' | 'STALE'
       message: string
     }
+
+function escalationReason(outcome: RunOutcome): string {
+  if (outcome.status === 'timedOut') return 'the helper ran out of time'
+  if (outcome.status === 'unanswered') return `the helper stopped: ${outcome.reason}`
+  return 'the helper finished without submitting a result'
+}
 
 /**
  * The transport planning agent's incident desk: starts the investigation helper for an incident,
@@ -215,12 +222,7 @@ export class RerouteDesk {
       .then((outcome) => {
         const current = this.investigations.get(investigationId) ?? investigation
         if (current.status !== 'RUNNING') return current
-        const escalation =
-          outcome.status === 'timedOut'
-            ? 'the helper ran out of time'
-            : outcome.status === 'unanswered'
-              ? `the helper stopped: ${outcome.reason}`
-              : 'the helper finished without submitting a result'
+        const escalation = escalationReason(outcome)
         const escalated: Investigation = { ...current, status: 'ESCALATED', escalation }
         this.investigations.put(escalated)
         this.options.cases.record({
