@@ -40,7 +40,7 @@ export interface Investigation {
     plannedArrival: string
     extraCostCents: number
     rationale: string
-    checks: { ruleId: string; scope: string; status: CheckStatus }[]
+    checks: { ruleId: string; title: string; scope: string; status: CheckStatus }[]
   }
   escalation?: string
   decidedBy?: { id: string; role: Role; at: string }

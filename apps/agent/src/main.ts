@@ -48,6 +48,7 @@ if (agentId === 'transport-planning') {
   const desk = await RerouteDesk.open({
     cases: store,
     runtime,
+    rulePack,
     reference,
     storage: join(dataDirectory, `${agentId}.investigations.sqlite`),
     model: rerouterModel(),

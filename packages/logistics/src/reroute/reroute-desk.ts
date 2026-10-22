@@ -1,4 +1,4 @@
-import type { CaseRuntime, CaseStore } from '@durable-jev/agent-core'
+import type { CaseRuntime, CaseStore, RulePack } from '@durable-jev/agent-core'
 import {
   DurableInvestigator,
   type InvestigatorModel,
@@ -20,7 +20,9 @@ const instructions = [
   'A leg of a shipment lost its carrier. Find a replacement from the spare capacity offers.',
   'Read the case, list the offers for the incident leg, and pre-check candidates with check_plan.',
   'Only propose an offer whose checks all pass; prefer the cheapest such offer.',
-  'If no offer passes, escalate to the planner. Explain your choice in the rationale.',
+  'If no offer passes, escalate to the planner. Explain your choice in the rationale,',
+  'written for the planner in Simplified Chinese (简体中文, never Traditional characters),',
+  'naming the rules each rejected offer failed.',
   'Call submit_investigation_result exactly once, then give a one-sentence summary.',
   'You cannot approve, apply or dispatch anything; a human planner decides on your proposal.',
 ].join('\n')
@@ -30,6 +32,7 @@ const task = 'Investigate the incident and submit a reroute proposal or an escal
 export interface RerouteDeskOptions {
   cases: CaseStore
   runtime: CaseRuntime
+  rulePack: RulePack
   reference: ReferenceData
   /** Pi Durable storage file, or `memory`. */
   storage: string

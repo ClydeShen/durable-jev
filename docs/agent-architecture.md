@@ -22,9 +22,9 @@ best: one rule in 150 is code (R29, booking transport capacity).
 | Order coordination | Takes the order, aggregates every agent's verdict, release and dispatch | 7 (3 / 0 / 1 / 3 / 0) | Warehouse operator (loading), dispatcher |
 | Cargo assurance | Classification, controlled and cold-chain checks, documents, repack and retest | 16 (6 / 3 / 4 / 2 / 1 decision table) | Compliance and quality reviewers, warehouse operator |
 | Transport planning | Route, vehicle, carrier, transfer hubs, capacity booking; investigation helper when a carrier cancels | 9 (7 / 0 / 0 / 1 / 1 code) | Transport planner |
-| Commercial control | Credit, quote, extra cost, customer contract terms | 44 (35 / 5 / 2 / 2 / 0) | Commercial manager |
+| Commercial control | Credit, quote, extra cost, customer contract terms | 44 (35 / 4 / 3 / 2 / 0) | Commercial manager |
 | Destination compliance *(added as the extension)* | Destination import requirements, commodity classification | 74 (48 / 25 / 0 / 1 / 0) | – |
-| **Total** | | **150 (99 / 33 / 7 / 9 / 2)** | 7 roles |
+| **Total** | | **150 (99 / 32 / 8 / 9 / 2)** | 7 roles |
 
 Each agent is the same program (`apps/agent`) started with a different `AGENT_ID`; it executes only
 the rules it owns and receives the other agents' results ([orchestration.ts](../packages/agent-core/src/orchestration.ts)).
@@ -71,7 +71,7 @@ with the rules it depends on in other agents drawn as dashed boundary nodes.
 ## Growing and maintaining it
 
 **Adding rules** is writing policy text. Appendices G and H of `policy-v1.md` added 108 rules (80
-expression, 28 Jev) through `pnpm author "<section>"`, which validates the proposal (references,
+expression, 27 Jev, 1 human step) through `pnpm author "<section>"`, which validates the proposal (references,
 parameters, cycles, FEEL syntax, selection keys) and produces a diff to review; `pnpm author
 --apply` merges it. Today those two appendices replay draft recordings; with `MODEL_MODE=live` the
 authoring model writes them.
@@ -108,9 +108,10 @@ yet (the console polls snapshots; there is no SSE).
 
 ## What is not proven yet
 
-- Every model answer in the runs above is scripted. Live Jev, the live investigation helper and
-  the live authoring model are switched on and tuned in T7.0; the benchmarks (Jev vs structured
-  output, fixed workflow vs helper, native vs A2A, cost per rule) follow.
+- Live runs: all 8 demo cases replay with live Jev and the live investigation helper, three runs
+  in a row, and screening has no missed rule; see [tuning-log.md](tuning-log.md). These are
+  development-set numbers; there is no blind set yet, and the benchmarks (Jev vs structured
+  output, fixed workflow vs helper, native vs A2A, cost per rule) are still to run.
 - Draft materials: the screening samples' expected groups and the appendix recordings need a
   reviewer.
 - Trace propagation across agents and a restart cap for the helper are open (see

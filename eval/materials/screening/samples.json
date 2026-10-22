@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "note": "Expected groups are a reviewer draft; scripted answers stand in for Jev until live runs.",
+  "note": "Expected groups are a reviewer draft; scripted answers stand in for Jev until live runs. S24 follows the live classification (accepted 2026-10-22).",
   "samples": [
     {
       "sampleId": "S01",
@@ -478,14 +478,13 @@
             "kind": "choice",
             "choice": "pharmaceutical",
             "probabilities": {
-              "pharmaceutical": 0.62,
-              "chemical": 0.31,
-              "general": 0.05
+              "pharmaceutical": 0.94,
+              "chemical": 0.06
             }
           }
         }
       ],
-      "expectedGroups": ["pharmaceutical", "chemical"]
+      "expectedGroups": ["pharmaceutical"]
     },
     {
       "sampleId": "S25",

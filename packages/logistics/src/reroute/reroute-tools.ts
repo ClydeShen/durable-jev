@@ -1,4 +1,4 @@
-import type { CaseRuntime, CaseStore } from '@durable-jev/agent-core'
+import type { CaseRuntime, CaseStore, RulePack } from '@durable-jev/agent-core'
 import { defineInvestigationTool, type InvestigationTool } from '@durable-jev/agent-harness'
 import { Type } from '@earendil-works/pi-ai'
 import type { ReferenceData } from '../reference-data.js'
@@ -9,6 +9,7 @@ import { type PlanCheck, planChecks, planPasses, reroutePatch } from './reroute-
 export interface RerouteToolDependencies {
   cases: CaseStore
   runtime: CaseRuntime
+  rulePack: RulePack
   reference: ReferenceData
   investigations: InvestigationStore
   settle(investigation: Investigation): void
@@ -24,6 +25,9 @@ export function rerouteTools(
   dependencies: RerouteToolDependencies,
 ): InvestigationTool<Investigation>[] {
   const { cases, runtime, reference } = dependencies
+  const titles = new Map(
+    dependencies.rulePack.ruleSet.rules.map((rule) => [rule.ruleId, rule.title]),
+  )
 
   async function checkOffer(investigation: Investigation, offerId: string) {
     const offer = reference.capacityOffers.get(offerId)
@@ -31,7 +35,7 @@ export function rerouteTools(
     const shipment = shipmentOf(cases, investigation.caseId)
     const { legId } = investigation.incident
     const candidate = applyRevision(shipment, reroutePatch(shipment, legId, offer))
-    return { offer, checks: planChecks(await runtime.whatIf(candidate), legId) }
+    return { offer, checks: planChecks(await runtime.whatIf(candidate), legId, titles) }
   }
 
   const getCase = defineInvestigationTool({

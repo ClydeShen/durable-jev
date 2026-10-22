@@ -363,7 +363,7 @@ Clauses from customer framework agreements. A clause applies only to its own cus
 
 **CUST-MEDI-4 Invoice currency.** The quote is in EUR.
 
-**CUST-MEDI-5 Contract clause.** Medical goods are handed to named clinic staff at the rear dock and are never left unattended.
+**CUST-MEDI-5 Named recipient.** Medical goods are handed to named clinic staff at the rear dock and are never left unattended. A plan cannot show this, so before loading a warehouse operator records the named recipient and the delivery note reference; the driver hands the goods to that person.
 
 ### H.NORDA Norda Foods (CUS-NORDA)
 

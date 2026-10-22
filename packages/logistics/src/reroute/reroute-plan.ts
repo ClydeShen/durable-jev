@@ -7,11 +7,16 @@ const planRules = new Set(['R05', 'R06', 'R07', 'R11', 'R16', 'R24', 'R25', 'R26
 
 export interface PlanCheck {
   ruleId: string
+  title: string
   scope: string
   status: RuleOutcome['status']
 }
 
-export function planChecks(outcomes: readonly RuleOutcome[], legId: string): PlanCheck[] {
+export function planChecks(
+  outcomes: readonly RuleOutcome[],
+  legId: string,
+  titles: ReadonlyMap<string, string>,
+): PlanCheck[] {
   return outcomes
     .filter(
       (outcome) =>
@@ -21,6 +26,7 @@ export function planChecks(outcomes: readonly RuleOutcome[], legId: string): Pla
     )
     .map((outcome) => ({
       ruleId: outcome.ruleId,
+      title: titles.get(outcome.ruleId) ?? outcome.ruleId,
       scope: scopeKey(outcome.scope),
       status: outcome.status,
     }))

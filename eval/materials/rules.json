@@ -3860,8 +3860,8 @@
     },
     {
       "ruleId": "CUST-MEDI-5",
-      "version": "3",
-      "title": "Southgate Clinics: contract clause",
+      "version": "4",
+      "title": "Southgate Clinics: named recipient on the delivery note",
       "owner": "commercial-control",
       "scope": "order",
       "applicability": {
@@ -3869,29 +3869,25 @@
       },
       "dependsOn": [],
       "evaluator": {
-        "kind": "semantic",
+        "kind": "humanGate",
         "ref": "CUST-MEDI-5"
-      },
-      "semantic": {
-        "promptVersion": "cust-medi-5-v3",
-        "question": {
-          "kind": "noul",
-          "text": "Judging only what the plan shows (handover type, route, carriers and goods), the plan is consistent with this contract clause: \"Medical goods are handed to named clinic staff at the rear dock and are never left unattended.\" Duties carried out on site at delivery are checked then, not here."
-        },
-        "state": {
-          "handover": "order.handover",
-          "route": "for l in legs return l.origin + \" -> \" + l.destination",
-          "carriers": "for l in legs return l.carrier.qualifications",
-          "goods": "for i in cargoItems return i.description"
-        },
-        "passWhen": {
-          "probabilityAtLeast": "semanticMatchThreshold"
-        }
       },
       "unknownPolicy": "block",
       "inputPaths": [],
-      "parameters": ["semanticMatchThreshold"],
-      "invalidationTriggers": ["route", "cargo"]
+      "parameters": [],
+      "invalidationTriggers": [],
+      "humanGate": {
+        "taskType": "OPERATION",
+        "steps": [
+          {
+            "requiredRole": "warehouseOperator"
+          }
+        ],
+        "mode": "sequential",
+        "distinctActors": true,
+        "evidenceRequirements": ["recipientName", "deliveryNoteRef"],
+        "expiresAfterHours": 12
+      }
     },
     {
       "ruleId": "CUST-NORDA-1",

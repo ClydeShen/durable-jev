@@ -66,7 +66,12 @@ export function createLogisticsRuntime(options: LogisticsRuntimeOptions): Logist
 export interface LocalLogisticsAgents {
   orchestrator: CaseOrchestrator
   coordination: { runtime: CaseRuntime; store: CaseStore }
-  transport: { runtime: CaseRuntime; store: CaseStore; reference: ReferenceData }
+  transport: {
+    runtime: CaseRuntime
+    store: CaseStore
+    rulePack: RulePack
+    reference: ReferenceData
+  }
   rulePack: RulePack
 }
 
@@ -107,6 +112,7 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
     transport: {
       runtime: transport.runtime,
       store: transport.store,
+      rulePack: transport.rulePack,
       reference: transport.reference,
     },
     rulePack: coordination.rulePack,

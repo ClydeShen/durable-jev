@@ -69,7 +69,7 @@
         "documentId": "DOC-007-IMPORT",
         "kind": "importPermit",
         "version": 1,
-        "text": "Einfuhrgenehmigung DE-2026-5531 for diagnostic reagents manufactured by Lumen Assays GmbH.",
+        "text": "Einfuhrgenehmigung DE-2026-5531 for LumaTest CRP diagnostic reagent kits manufactured by Lumen Assays GmbH.",
         "extractedFields": {},
         "source": "customs broker"
       },
@@ -156,9 +156,8 @@
         "kind": "choice",
         "choice": "pharmaceutical",
         "probabilities": {
-          "pharmaceutical": 0.62,
-          "chemical": 0.31,
-          "general": 0.05
+          "pharmaceutical": 0.94,
+          "chemical": 0.06
         }
       }
     },
@@ -167,20 +166,6 @@
       "judgement": {
         "kind": "noul",
         "probability": 0.86
-      }
-    },
-    {
-      "questionId": "DEST-DE-CHEM-3",
-      "judgement": {
-        "kind": "noul",
-        "probability": 0.84
-      }
-    },
-    {
-      "questionId": "CUST-MEDI-5",
-      "judgement": {
-        "kind": "noul",
-        "probability": 0.92
       }
     }
   ],
@@ -196,11 +181,28 @@
         "R40": "FAIL",
         "R41": "PASS",
         "DEST-DE-PHARMA-1": "PASS",
-        "DEST-DE-CHEM-1": "PASS",
-        "DEST-NZ-PHARMA-1": "NOT_APPLICABLE"
+        "DEST-NZ-PHARMA-1": "NOT_APPLICABLE",
+        "DEST-DE-CHEM-1": "NOT_APPLICABLE"
       },
       "orderStatus": "ON_HOLD",
-      "openTasks": []
+      "openTasks": ["CUST-MEDI-5"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Lab lead Sofia Weber",
+          "deliveryNoteRef": "DN-007-01"
+        },
+        "evidenceRefs": []
+      }
     },
     {
       "kind": "revise",

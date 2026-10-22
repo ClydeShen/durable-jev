@@ -149,13 +149,6 @@
         "kind": "noul",
         "probability": 0.92
       }
-    },
-    {
-      "questionId": "CUST-MEDI-5",
-      "judgement": {
-        "kind": "noul",
-        "probability": 0.92
-      }
     }
   ],
   "events": [
@@ -169,7 +162,24 @@
         "R40": "WAITING_HUMAN"
       },
       "orderStatus": "AWAITING_HUMAN",
-      "openTasks": ["R21@ITEM-1"]
+      "openTasks": ["R21@ITEM-1", "CUST-MEDI-5"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Dr. Aroha Ngata",
+          "deliveryNoteRef": "DN-002-01"
+        },
+        "evidenceRefs": []
+      }
     },
     {
       "kind": "act",

@@ -49,3 +49,26 @@ can make the clause a plan-time check. No change was made.
    expectation (pharmaceutical + chemical) needs a reviewer's decision.
 3. DEST-DE-PHARMA-3 sits at the threshold (0.80) on LOG-007; a more specific product name in the
    permit would make it robust.
+
+## Decisions after round 3 (2026-10-22)
+
+- **CUST-MEDI-5 is now a human step.** Before loading, a warehouse operator records the named
+  clinic recipient and the delivery note reference; the driver hands the goods to that person.
+  The plan-time part (dock handover) stays CUST-MEDI-1.
+- **The live classification of diagnostic reagents is accepted** (pharmaceutical only): the test
+  materials are made up, and a real project follows local regulation. LOG-007 and S24 now expect
+  it, and LOG-007's permit names the product (LumaTest CRP), which keeps DEST-DE-PHARMA-3 clear of
+  the threshold.
+- **Investigation helper:** `check_plan` now returns each rule's title, so the rationale no longer
+  guesses what a rule means; the rationale is asked for in Simplified Chinese.
+
+| Final, live | Result |
+|---|---|
+| `MODEL_MODE=live pnpm replay` | 8 cases, 0 failing steps, three runs in a row |
+| `MODEL_MODE=live pnpm screening` | 26 samples, 0 missed, 1 over-selection (toner also selects chemical) |
+| Browser demo with live models (LOG-004 to dispatch, LOG-007) | Passes |
+| Investigation helper, 6 live runs | Always proposes OFF-FROST-0630 with 6 tool calls, 12–25 s |
+
+Known limitation: the helper's rationale sometimes comes back in Traditional rather than
+Simplified Chinese despite the instruction.
+
