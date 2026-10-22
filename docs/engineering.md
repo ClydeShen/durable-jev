@@ -14,7 +14,7 @@ has exactly one owning tool, and each check runs at the earliest stage where it 
 `pnpm check` runs, in order:
 
 ```
-lint → workspace-lint → typecheck → boundaries → architecture graph → knip → duplication → test
+lint → workspace-lint → typecheck → boundaries → architecture graph → protected files → knip → duplication → test
 ```
 
 ## One owner per concern
@@ -30,11 +30,25 @@ lint → workspace-lint → typecheck → boundaries → architecture graph → 
 | Copy-paste | jscpd | SonarQube or Qlty duplication |
 | Workspace manifests | sherif | — |
 | Commit messages | commitlint ([commitlint.config.mjs](../commitlint.config.mjs)) | — |
-| Secrets | gitleaks 8.30.0 | — |
+| Secrets | gitleaks | — |
+| Tool versions | [mise.toml](../mise.toml) for Node and gitleaks, used locally and in CI; `packageManager` in `package.json` for pnpm | `actions/setup-node` versions, `.nvmrc` |
+| Protected files | [eval/materials.lock.json](../eval/materials.lock.json), [.claude/settings.json](../.claude/settings.json), [CODEOWNERS](../.github/CODEOWNERS) (see below) | — |
 | Vulnerable dependencies | `pnpm audit` (`pnpm security`) | — |
 
-Install gitleaks locally to get the commit-time scan: download the pinned release from
-https://github.com/gitleaks/gitleaks/releases and put the `gitleaks` binary on your `PATH`.
+Run `mise install` once to get the pinned Node and gitleaks; without gitleaks the commit-time
+secret scan is skipped with a notice and CI still runs it.
+
+## Protected files
+
+The PRD (`.harness/prd.md`) and everything under `eval/materials/` (policy, rules, test cases,
+screening samples, mock data) are source material, not code: an agent must not reshape them to
+make a check pass. Three layers, each catching what the previous one cannot:
+
+| Layer | What it does | Covers |
+|---|---|---|
+| Agent | `.claude/settings.json` denies Claude Code edits to these files, the lock and the protection config itself | everything except `rules.json`, whose Jev questions are tuned with the owner's approval |
+| Check | `pnpm check` (and so CI) fails when a protected file no longer matches its hash in `eval/materials.lock.json`; an approved change is recorded with `pnpm materials:lock`, run by a person | all protected files, including `rules.json` and changes made through the shell |
+| Merge | `CODEOWNERS` assigns these paths to the owner | effective once branch protection on `main` requires review from code owners |
 
 ## Conventions and where they are enforced
 
@@ -63,6 +77,7 @@ https://github.com/gitleaks/gitleaks/releases and put the `gitleaks` binary on y
 | Copy-paste stays below 1% of the code | Duplicates drift apart; shared logic gets one owner | jscpd, `threshold: 1` ([.jscpd.json](../.jscpd.json)) |
 | Workspace manifests are consistent: one version per dependency, sorted dependencies, no empty sections | Version drift between packages causes subtle bugs | sherif |
 | Formatting: 2 spaces, single quotes, no semicolons, 100 columns, LF | No formatting debates or diffs | Biome formatter, [.editorconfig](../.editorconfig) |
+| PRD, policy, rules and test materials change only with the owner's approval | Agents must not reshape the source material to pass a check | the three layers under Protected files |
 | Each project's build info stays in its `dist/` | Deleting `dist/` must force a rebuild | `tsBuildInfoFile` in each `tsconfig.json` |
 
 Deliberately off:

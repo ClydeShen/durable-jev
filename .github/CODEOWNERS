@@ -1,0 +1,7 @@
+# Changes to the PRD, the policy, the rules and the test materials need the owner's review.
+# Takes effect once branch protection on main requires review from code owners.
+/.harness/prd.md          @ClydeShen
+/eval/materials/          @ClydeShen
+/eval/materials.lock.json @ClydeShen
+/.claude/settings.json    @ClydeShen
+/.github/CODEOWNERS       @ClydeShen
