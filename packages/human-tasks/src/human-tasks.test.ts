@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { type ChainShape, chainOutcome, gateStatusOf, stepsToOpen } from './approval-chain.js'
 
 const stepsOf = (...tasks: HumanTask[]) =>
-  new Map(tasks.map((task) => [task.approvalChain?.stepIndex ?? 0, task]))
+  new Map(tasks.map((chainTask) => [chainTask.approvalChain?.stepIndex ?? 0, chainTask]))
 
 import { type ActionContext, type Actor, decideHumanTask } from './decide-human-task.js'
 

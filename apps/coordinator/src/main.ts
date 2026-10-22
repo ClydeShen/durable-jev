@@ -24,10 +24,10 @@ const webDist = process.env.WEB_DIST ?? join(repositoryRoot, 'apps/web/dist')
 const port = Number(process.env.PORT ?? 4100)
 const now = () => new Date().toISOString()
 
-function agentEndpoints(endpoints: string | undefined): Map<AgentId, string> {
-  if (!endpoints) throw new Error('AGENT_ENDPOINTS is required; start the demo with pnpm start')
+function agentEndpoints(setting: string | undefined): Map<AgentId, string> {
+  if (!setting) throw new Error('AGENT_ENDPOINTS is required; start the demo with pnpm start')
   return new Map(
-    endpoints.split(',').map((entry) => {
+    setting.split(',').map((entry) => {
       const [agentId, url] = entry.split('=')
       return [agentIdSchema.parse(agentId), url ?? '']
     }),

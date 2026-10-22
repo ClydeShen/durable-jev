@@ -29,10 +29,10 @@ function threshold(value: number | string, parameters: PolicyParameters): number
 }
 
 /** Every label at or above the threshold, most likely first; the answer's choice at least. */
-function selectedChoices(judgement: SemanticJudgement, threshold: number): string[] {
+function selectedChoices(judgement: SemanticJudgement, minimum: number): string[] {
   if (judgement.kind !== 'choice') return []
   const likely = Object.entries(judgement.probabilities ?? {})
-    .filter(([, probability]) => probability >= threshold)
+    .filter(([, probability]) => probability >= minimum)
     .sort(([, left], [, right]) => right - left)
     .map(([label]) => label)
   return likely.includes(judgement.choice) ? likely : [judgement.choice, ...likely]

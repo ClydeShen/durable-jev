@@ -87,14 +87,14 @@ const executionsByMessageId = new Map<string, number>()
 
 const cargoAssuranceExecutor: AgentExecutor = {
   execute: async (requestContext: RequestContext, eventBus) => {
-    const { taskId, contextId, userMessage } = requestContext
+    const { taskId, contextId, userMessage: incoming } = requestContext
     executionsByMessageId.set(
-      userMessage.messageId,
-      (executionsByMessageId.get(userMessage.messageId) ?? 0) + 1,
+      incoming.messageId,
+      (executionsByMessageId.get(incoming.messageId) ?? 0) + 1,
     )
     const accumulatedInput = {
       ...Object.assign({}, ...(requestContext.task?.history ?? []).map(readDataParts)),
-      ...readDataParts(userMessage),
+      ...readDataParts(incoming),
     }
     const task: Task = requestContext.task ?? {
       id: taskId,
@@ -105,7 +105,7 @@ const cargoAssuranceExecutor: AgentExecutor = {
         timestamp: new Date().toISOString(),
       },
       artifacts: [],
-      history: [userMessage],
+      history: [incoming],
       metadata: { caseId: accumulatedInput.caseId, caseRevision: accumulatedInput.caseRevision },
     }
     eventBus.publish(AgentEvent.task(task))

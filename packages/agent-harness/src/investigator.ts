@@ -127,9 +127,9 @@ export class DurableInvestigator<Scope> {
     private readonly budget: RunBudget,
   ) {}
 
-  static async open<Scope>(
-    options: InvestigatorOptions<Scope>,
-  ): Promise<DurableInvestigator<Scope>> {
+  static async open<ToolScope>(
+    options: InvestigatorOptions<ToolScope>,
+  ): Promise<DurableInvestigator<ToolScope>> {
     const budget = { ...defaultBudget, ...options.budget }
     // Counted in memory: a restart resets the count, and restarts are capped by the caller.
     const toolCalls = new Map<ConversationId, number>()

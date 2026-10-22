@@ -41,7 +41,7 @@ beforeAll(async () => {
 
 afterAll(() => server.close())
 
-const shipment = (
+const log001Shipment = (
   await import('../../../../eval/materials/cases/LOG-001.json', { with: { type: 'json' } })
 ).default.shipment as Parameters<AgentClient['submit']>[0]
 
@@ -52,8 +52,8 @@ describe('A2A adapter', () => {
   })
 
   it('answers a retried submit from the first task without running it again', async () => {
-    await client.submit(shipment)
-    await client.submit(shipment)
+    await client.submit(log001Shipment)
+    await client.submit(log001Shipment)
     expect(submitted).toEqual(['LOG-001'])
     const [first, retry] = tasks.slice(-2)
     expect(retry?.duplicateOf).toBe(first?.taskId)

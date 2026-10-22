@@ -66,8 +66,8 @@ export interface EvaluationOptions {
   provided?: readonly RuleOutcome[]
 }
 
-const outcomeKey = (outcome: { ruleId: RuleId; scope: CheckScope }) =>
-  `${outcome.ruleId}@${scopeKey(outcome.scope)}`
+const outcomeKey = (result: { ruleId: RuleId; scope: CheckScope }) =>
+  `${result.ruleId}@${scopeKey(result.scope)}`
 
 function providedOutcome(
   provided: ReadonlyMap<string, RuleOutcome>,
@@ -465,7 +465,7 @@ export async function evaluateRuleGraph(
   }
   const executed = new Set(ruleSet.rules.filter(executes).map((rule) => rule.ruleId))
   return {
-    outcomes: state.all().filter((outcome) => executed.has(outcome.ruleId)),
+    outcomes: state.all().filter((result) => executed.has(result.ruleId)),
     escalations,
     outcomeOf: (ruleId, scope = { kind: 'order' }) => state.resultOf(ruleId, scope),
   }

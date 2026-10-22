@@ -26,7 +26,33 @@
           }
         },
         "noNestedTernary": "error",
-        "noParameterAssign": "error"
+        "noParameterAssign": "error",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false,
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "objectLiteralProperty"
+                },
+                "match": ".*"
+              },
+              {
+                "selector": {
+                  "kind": "typeProperty"
+                },
+                "match": ".*"
+              },
+              {
+                "selector": {
+                  "kind": "classProperty"
+                },
+                "match": ".*"
+              }
+            ]
+          }
+        }
       },
       "performance": {
         "noReExportAll": "error",
@@ -52,7 +78,7 @@
         "noMisusedPromises": "error"
       },
       "suspicious": {
-        "noImportCycles": "error"
+        "noShadow": "error"
       }
     }
   },

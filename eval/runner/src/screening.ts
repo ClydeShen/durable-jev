@@ -80,7 +80,7 @@ export async function screenSample(
   const selectedGroups = [
     ...new Set(evaluations.flatMap((evaluation) => evaluation.observedValue as string[])),
   ]
-  const index = new RuleIndex(ruleSet.rules)
+  const ruleIndex = new RuleIndex(ruleSet.rules)
   const extensionRules = ruleSet.rules.filter((rule) => rule.applicability)
   const selectedBy = (groups: string[]) => {
     const profile: SelectionProfile = {
@@ -90,7 +90,7 @@ export async function screenSample(
     }
     return new Set(
       extensionRules
-        .filter((rule) => index.decide(rule.ruleId, profile) === 'selected')
+        .filter((rule) => ruleIndex.decide(rule.ruleId, profile) === 'selected')
         .map((rule) => rule.ruleId),
     )
   }
