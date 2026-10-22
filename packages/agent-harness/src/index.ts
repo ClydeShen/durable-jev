@@ -1,7 +1,10 @@
-export * from './agent-model.types.js'
-export * from './agent-runtime.types.js'
-export * from './context-assembler.service.js'
-export * from './in-memory-agent.runtime.js'
-export * from './run-budget.guard.js'
-export * from './tool.registry.js'
-export * from './tool.types.js'
+export type { ConversationId } from '@earendil-works/pi-durable'
+export {
+  DurableInvestigator,
+  type InvestigatorModel,
+  type ObservedResult,
+  type RunBudget,
+  type RunOutcome,
+  type ScriptedStep,
+} from './investigator.js'
+export { defineInvestigationTool, type InvestigationTool } from './tools.js'

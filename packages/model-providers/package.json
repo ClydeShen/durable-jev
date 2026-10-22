@@ -9,10 +9,12 @@
       "default": "./dist/index.js"
     }
   },
+  "scripts": {
+    "live-check": "MODEL_MODE=live tsx src/live-check.ts"
+  },
   "dependencies": {
     "@durable-jev/contracts": "workspace:*",
-    "@durable-jev/store": "workspace:*",
-    "@typesafe-ai/sdk": "0.7.0",
-    "zod": "4.6.7"
+    "@earendil-works/pi-ai": "1.3.0",
+    "@typesafe-ai/sdk": "0.7.0"
   }
 }

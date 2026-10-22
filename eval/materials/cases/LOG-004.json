@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-004",
-  "title": "Controlled cold chain cargo whose primary carrier cancels",
   "reviewStatus": "draft",
+  "story": "冷链受控货，主承运商取消。运输 agent 的调查助手找出备用承运商，计划员确认改派后，温控、合规签核、预订和额外费用审批失效重做，客户基础状态不重跑。",
   "shipment": {
-    "caseId": "CASE-LOG-004",
-    "shipmentId": "LOG-004",
-    "customerId": "CUST-BLUE-CLINIC",
+    "caseId": "LOG-004",
+    "correlationId": "corr-LOG-004",
+    "shipmentId": "SHP-004",
+    "customerId": "CUS-MEDI",
+    "destinationCountry": "NZ",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,280 +14,371 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "NKG-DC3",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-004-ITEM-1",
-        "description": "Clinical trial samples with lithium-powered data loggers, 12 boxes",
-        "declaredCategories": ["COLD_CHAIN", "CONTROLLED"],
-        "controlledClass": "CLASS-9",
-        "weightGrams": 36000,
-        "lengthMm": 800,
-        "widthMm": 600,
-        "heightMm": 600,
+        "cargoItemId": "ITEM-1",
+        "description": "Insulin pens in insulated cartons, 2-8C, 30 cartons (controlled class C1)",
+        "declaredCategories": ["coldChain", "controlled"],
+        "quantity": 30,
+        "weightGrams": 90000,
+        "dimensionsMillimetres": {
+          "length": 500,
+          "width": 300,
+          "height": 300
+        },
         "temperatureRange": {
           "minDeciCelsius": 20,
           "maxDeciCelsius": 80
         },
-        "packagingId": "PKG-004-1"
+        "controlledClass": "C1"
       }
     ],
     "legs": [
       {
-        "legId": "LOG-004-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "NKG-DC3",
-        "carrierId": "CAR-SECURA",
-        "vehicleId": "VEH-SC-REEFER-3T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-004-1",
-      "amountCents": 120000,
-      "currency": "CNY"
-    }
-  },
-  "evidence": {
+      "amountCents": 420000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
     "documents": [
       {
-        "documentId": "LOG-004-SDS",
-        "kind": "SAFETY_DATA_SHEET",
-        "cargoItemId": "LOG-004-ITEM-1",
-        "text": "Data loggers contain lithium metal coin cells, UN3091, class 9.",
-        "extractedFields": {}
+        "documentId": "DOC-004-SDS",
+        "kind": "safetyDataSheet",
+        "version": 1,
+        "text": "Safety data sheet: insulin pens, pharmaceutical product, store at 2-8C.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
       },
       {
-        "documentId": "LOG-004-DECL",
-        "kind": "CONTROLLED_DECLARATION",
-        "cargoItemId": "LOG-004-ITEM-1",
-        "text": "Clinical samples shipped with lithium coin cell data loggers, class 9.",
-        "extractedFields": {}
+        "documentId": "DOC-004-DECL",
+        "kind": "controlledDeclaration",
+        "version": 1,
+        "text": "Controlled goods declaration C1 for 30 cartons of insulin pens.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
+      },
+      {
+        "documentId": "DOC-004-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit NZ-MED-2026-0377 issued by Medsafe for insulin pens manufactured by NovaPharm Ltd.",
+        "extractedFields": {},
+        "source": "customs broker"
       }
     ],
-    "temperatureLogs": [
+    "warehouseRecords": [
       {
-        "cargoItemId": "LOG-004-ITEM-1",
-        "sensorId": "SENSOR-LOG-004-ITEM-1",
-        "calibrationValidUntil": "2027-01-01T00:00:00Z",
-        "readings": [
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Cartons intact, ice packs frozen, no damage noted.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
           {
-            "at": "2026-11-03T02:00:00Z",
-            "deciCelsius": 40
+            "at": "2026-11-02T18:30:00Z",
+            "deciCelsius": 45
           },
           {
-            "at": "2026-11-03T03:40:00Z",
-            "deciCelsius": 44
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 48
           }
         ]
-      }
-    ],
-    "inspectionNotes": [
-      {
-        "cargoItemId": "LOG-004-ITEM-1",
-        "inspectedAt": "2026-11-03T03:00:00Z",
-        "note": "All boxes sealed and intact; data loggers running."
       }
     ]
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-004-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.93
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.94
       }
     },
     {
-      "ruleId": "R10",
-      "entityId": "LOG-004-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.9
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
       }
     },
     {
-      "ruleId": "R18",
-      "entityId": "LOG-004-ITEM-1",
-      "answer": {
-        "type": "choice",
-        "choice": "no_risk",
+      "questionId": "R10",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "no_risk"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
         "probabilities": {
-          "no_risk": 0.91,
-          "damaged_packaging": 0.04,
-          "cold_chain_risk": 0.05
+          "pharmaceutical": 0.97,
+          "general": 0.02
         }
+      }
+    },
+    {
+      "questionId": "DEST-NZ-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R11": "PASS",
-          "R16": "PASS",
-          "R23": "PASS",
-          "R13": "WAITING_HUMAN",
-          "R14": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R13",
-            "requiredRole": "COMPLIANCE_REVIEWER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "approveHumanTask",
-      "ruleId": "R13",
-      "actor": "COMPLIANCE_REVIEWER",
-      "expect": {
-        "gates": {
-          "R13": "PASS",
-          "R14": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "investigateCarrier",
-      "actor": "TRANSPORT_PLANNER",
-      "legId": "LOG-004-LEG-1",
-      "unavailableCarrierIds": ["CAR-SECURA"],
-      "reason": "Secura cancelled the booking after its reefer broke down.",
-      "expect": {
-        "gates": {
-          "R13": "PASS",
-          "R14": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ],
-        "latestInvestigation": {
-          "status": "PROPOSED",
-          "carrierId": "CAR-GLACIER"
-        }
-      }
-    },
-    {
-      "step": "acceptInvestigation",
-      "actor": "TRANSPORT_PLANNER",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R11": "PASS",
-          "R16": "PASS",
-          "R25": "PASS",
-          "R29": "PASS",
-          "R13": "WAITING_HUMAN",
-          "R36": "PASS"
-        },
-        "invalidated": [
-          "R05",
-          "R11",
-          "R13",
-          "R14",
-          "R16",
-          "R23",
-          "R24",
-          "R25",
-          "R29",
-          "R30",
-          "R37",
-          "R38",
-          "R39-LOAD",
-          "R40"
-        ],
-        "notInvalidated": [
-          "R02",
-          "R03",
-          "R09",
-          "R10",
-          "R12",
-          "R15",
-          "R17",
-          "R18",
-          "R19",
-          "R31",
-          "R32",
-          "R36"
-        ],
-        "openHumanTasks": [
-          {
-            "ruleId": "R13",
-            "requiredRole": "COMPLIANCE_REVIEWER"
-          }
-        ],
-        "latestInvestigation": {
-          "status": "ACCEPTED",
-          "carrierId": "CAR-GLACIER"
-        }
-      }
-    },
-    {
-      "step": "approveHumanTask",
-      "ruleId": "R13",
-      "actor": "COMPLIANCE_REVIEWER",
-      "expect": {
-        "gates": {
-          "R14": "PASS",
-          "R37": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "初始：合规签核两步，先合规员",
+      "statuses": {
+        "R12": "PASS",
+        "R13@ITEM-1": "WAITING_HUMAN",
+        "DEST-NZ-PHARMA-1": "PASS",
+        "CUST-MEDI-5": "WAITING_HUMAN"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1", "CUST-MEDI-5"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Nurse Mere Tane",
+          "deliveryNoteRef": "DN-004-01"
+        },
+        "evidenceRefs": []
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
-        },
-        "openHumanTasks": []
+      "kind": "act",
+      "label": "合规审核员签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
       }
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员签核（冷链追加）",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "签核完成，等待装载",
+      "statuses": {
+        "R13@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "incident",
+      "label": "主承运商 Polar 取消，运输 agent 启动调查助手",
+      "incident": {
+        "type": "carrierCancelled",
+        "legId": "LEG-1"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "调查助手预检三个备选运力，提出 Frostline 06:30 班次",
+      "statuses": {},
+      "investigation": {
+        "status": "PROPOSED",
+        "offerId": "OFF-FROST-0630",
+        "extraCostCents": 80000
+      }
+    },
+    {
+      "kind": "decideProposal",
+      "label": "仓库操作员不能确认改派",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": "confirm",
+      "expectRefusal": "ROLE_NOT_ALLOWED"
+    },
+    {
+      "kind": "decideProposal",
+      "label": "计划员确认改派，产生额外费用",
+      "actor": {
+        "id": "pat",
+        "role": "transportPlanner"
+      },
+      "decision": "confirm"
+    },
+    {
+      "kind": "expect",
+      "label": "改派后：签核与预订重做，额外费用需审批，客户状态复用",
+      "statuses": {
+        "R13@ITEM-1": "WAITING_HUMAN",
+        "R35": "WAITING_HUMAN",
+        "R29@LEG-1": "PASS",
+        "R31": "PASS",
+        "R39": "BLOCKED_DEPENDENCY"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1", "R35"],
+      "reused": ["R31"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管批准额外费用",
+      "task": "R35",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "失效原因可追溯到这次改派",
+      "statuses": {},
+      "invalidatedBy": {
+        "R13@ITEM-1": "r2 (route, carrier, quote)",
+        "R29@LEG-1": "r2 (route, carrier, quote)"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "合规审核员重新签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员重新签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "重新签核完成",
+      "statuses": {
+        "R13@ITEM-1": "PASS",
+        "R35": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

@@ -1,97 +1,165 @@
-import { resolve } from 'node:path'
-import { A2aTaskLinks, a2aClientMigrations } from '@durable-jev/a2a-adapter'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import {
-  judgeForModelMode,
-  judgeMigrations,
-  loadReferenceData,
-  loadRuleConfiguration,
-} from '@durable-jev/rule-evaluation'
-import { startService } from '@durable-jev/service-kit'
-import { openDatabase } from '@durable-jev/store'
-import { initTracing, startServiceTelemetry } from '@durable-jev/telemetry'
-import { reservationMigrations } from '@durable-jev/transport-reservations'
-import { inProcessEvaluators, serviceEvaluators } from './branch.evaluator.js'
-import { CoordinatorService } from './coordinator.service.js'
-import { createCoordinatorApp } from './http/coordinator.app.js'
-import { inProcessInvestigator } from './investigator.service.js'
-import { coordinatorMigrations } from './persistence/coordinator.migrations.js'
+  agentSummary,
+  CaseOrchestrator,
+  CaseStore,
+  LocalAgentClient,
+} from '@durable-jev/agent-core'
+import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-jev/agent-transport'
+import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
+import { agentProfiles, createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
+import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
+import { createService } from '@durable-jev/service-kit'
+import express from 'express'
+import { watchAgents } from './agent-watch.js'
+import { collectEvents, EventLog } from './event-log.js'
+import { InvestigationClient } from './investigation-client.js'
+import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
-const repositoryRoot = resolve(import.meta.dirname, '../../..')
-const materialsDirectory = resolve(
-  process.env.MATERIALS_DIR ?? resolve(repositoryRoot, 'eval/materials'),
-)
-const databasePath = resolve(
-  process.env.COORDINATOR_DB ?? resolve(repositoryRoot, 'var/data/coordinator.sqlite'),
-)
-const port = Number(process.env.COORDINATOR_PORT ?? 4100)
+const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
+const dataDirectory = process.env.DATA_DIR ?? join(repositoryRoot, 'var/data')
+const webDist = process.env.WEB_DIST ?? join(repositoryRoot, 'apps/web/dist')
+const port = Number(process.env.PORT ?? 4100)
+const now = () => new Date().toISOString()
 
-const branchServiceUrls =
-  process.env.CARGO_ASSURANCE_URL &&
-  process.env.TRANSPORT_PLANNING_URL &&
-  process.env.COMMERCIAL_CONTROL_URL
-    ? {
-        cargoAssurance: process.env.CARGO_ASSURANCE_URL,
-        transportPlanning: process.env.TRANSPORT_PLANNING_URL,
-        commercialControl: process.env.COMMERCIAL_CONTROL_URL,
-      }
-    : undefined
+function agentEndpoints(setting: string | undefined): Map<AgentId, string> {
+  if (!setting) throw new Error('AGENT_ENDPOINTS is required; start the demo with pnpm start')
+  return new Map(
+    setting.split(',').map((entry) => {
+      const [agentId, url] = entry.split('=')
+      return [agentIdSchema.parse(agentId), url ?? '']
+    }),
+  )
+}
 
-const database = openDatabase(databasePath, [
-  ...coordinatorMigrations,
-  ...judgeMigrations,
-  ...a2aClientMigrations,
-])
-// BRANCH_PROTOCOL=a2a delegates to the branch services over A2A instead of native HTTP.
-const protocol = process.env.BRANCH_PROTOCOL === 'a2a' ? 'a2a' : 'native'
-const judgeFor = judgeForModelMode(process.env.MODEL_MODE, {
-  apiKey: process.env.TYPESAFE_API_KEY,
-  cacheDatabase: database,
+const catalog = loadCaseCatalog(join(materials, 'cases'))
+const store = CaseStore.open(join(dataDirectory, 'order-coordination.sqlite'))
+const liveJudge: SemanticJudge | undefined =
+  process.env.MODEL_MODE === 'live' ? new JevJudge() : undefined
+const { runtime, rulePack } = createLogisticsRuntime({
+  agentId: 'order-coordination',
+  materialsDirectory: materials,
+  store,
+  judgeFor: (shipment) =>
+    liveJudge ?? new ScriptedJudge(catalog.get(shipment.caseId)?.scriptedJudgements ?? []),
+  now,
 })
-// Events go to the outbox in the coordinator's own database; the relay delivers them to the
-// collector in the background and the coordinator never waits on it.
-const { telemetry, stop: stopTelemetry } = startServiceTelemetry({
-  service: 'coordinator',
-  database,
-  collectorUrl: process.env.OBSERVABILITY_URL,
+const endpoints = agentEndpoints(process.env.AGENT_ENDPOINTS)
+const transport = process.env.AGENT_TRANSPORT === 'a2a' ? 'a2a' : 'native'
+const a2aTasks = new Map<AgentId, number>()
+const remotes = [...endpoints].map(([agentId, url]) => {
+  const native = new HttpAgentClient(agentId, url)
+  const business =
+    transport === 'a2a'
+      ? new A2aAgentClient(agentId, url, native, (task) =>
+          a2aTasks.set(task.agentId, (a2aTasks.get(task.agentId) ?? 0) + 1),
+        )
+      : native
+  return { agentId, url, native, business }
 })
-initTracing(telemetry)
-const configuration = loadRuleConfiguration(materialsDirectory)
-const referenceData = loadReferenceData(
-  resolve(materialsDirectory, 'mock-data/reference-data.json'),
+const transportUrl = endpoints.get('transport-planning')
+if (!transportUrl) throw new Error('AGENT_ENDPOINTS must include transport-planning')
+const coordinationClient = new LocalAgentClient('order-coordination', runtime, store)
+const agents = [coordinationClient, ...remotes.map((remote) => remote.business)]
+const eventLog = EventLog.open(join(dataDirectory, 'observability.sqlite'))
+const orchestrator = new CaseOrchestrator(
+  agents,
+  rulePack.ruleSet,
+  (caseId) => store.caseRecord(caseId)?.shipment,
 )
-const coordinator = new CoordinatorService({
-  database,
-  telemetry,
-  configuration,
-  evaluators: branchServiceUrls
-    ? serviceEvaluators(configuration, referenceData, branchServiceUrls, judgeFor, {
-        protocol,
-        links: new A2aTaskLinks(database),
-        telemetry,
-      })
-    : inProcessEvaluators(
-        configuration,
-        referenceData,
-        openDatabase(
-          resolve(
-            process.env.TRANSPORT_PLANNING_DB ??
-              resolve(repositoryRoot, 'var/data/transport-planning.sqlite'),
-          ),
-          reservationMigrations,
-        ),
-        judgeFor,
-        telemetry,
+
+const coordinationSummary = () => agentSummary('order-coordination', rulePack, store)
+
+async function cardOf(url: string): Promise<AgentStatus['card']> {
+  const card = (await (await fetch(`${url}/.well-known/agent-card.json`)).json()) as {
+    name: string
+    description: string
+  }
+  return { name: card.name, description: card.description, url }
+}
+
+async function agentStatuses(): Promise<AgentStatus[]> {
+  const local: AgentStatus = {
+    agentId: 'order-coordination',
+    available: true,
+    summary: coordinationSummary(),
+    card: { ...agentProfiles['order-coordination'], url: `http://localhost:${port}` },
+    transport,
+    a2aTasks: 0,
+  }
+  const others = await Promise.all(
+    remotes.map(({ agentId, url, native }) =>
+      Promise.all([native.summary(), cardOf(url)]).then(
+        ([summary, card]): AgentStatus => ({
+          agentId,
+          available: true,
+          summary,
+          card,
+          transport,
+          a2aTasks: a2aTasks.get(agentId) ?? 0,
+        }),
+        (): AgentStatus => ({
+          agentId,
+          available: false,
+          card: { ...agentProfiles[agentId], url },
+          transport,
+          a2aTasks: 0,
+        }),
       ),
-  investigator: inProcessInvestigator(configuration, referenceData),
-})
+    ),
+  )
+  return [local, ...others]
+}
 
-coordinator.recordRestart()
+async function resetDemo() {
+  await orchestrator.reset()
+  eventLog.clear()
+  for (const caseFile of catalog.values()) await orchestrator.submit(caseFile.shipment)
+}
 
-await startService(createCoordinatorApp(coordinator, referenceData), {
-  serviceName: 'coordinator',
-  port,
-  onClose: () => {
-    stopTelemetry()
-    database.close()
-  },
-})
+async function waitForAgents(deadline = Date.now() + 30_000) {
+  while (!(await agentStatuses()).every((status) => status.available)) {
+    if (Date.now() > deadline) throw new Error('agents did not come up within 30s')
+    await new Promise((resolve) => setTimeout(resolve, 300))
+  }
+}
+
+const service = createService('order-coordination')
+service.app.use(
+  a2aRoutes(
+    coordinationClient,
+    agentCard(
+      agentProfiles['order-coordination'],
+      `http://localhost:${port}`,
+      coordinationSummary().rulePackVersion,
+    ),
+  ),
+)
+service.app.use(
+  '/api',
+  coordinatorRoutes({
+    coordination: { runtime, store },
+    orchestrator,
+    catalog,
+    rulePack,
+    investigations: new InvestigationClient(transportUrl),
+    agentStatuses,
+    controlUrl: process.env.CONTROL_URL,
+    timeline: (caseId) => eventLog.timeline(caseId),
+    now,
+    resetDemo,
+  }),
+)
+if (existsSync(webDist)) {
+  service.app.use(express.static(webDist))
+  service.app.get('/{*path}', (_request, response) =>
+    response.sendFile(join(webDist, 'index.html')),
+  )
+}
+await waitForAgents()
+if (store.cases().length === 0) await resetDemo()
+watchAgents(orchestrator, store)
+collectEvents(agents, eventLog)
+await service.listen(port)

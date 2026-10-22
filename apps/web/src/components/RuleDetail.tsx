@@ -1,0 +1,66 @@
+import type { CheckScope } from '@durable-jev/contracts'
+import type { RuleOutcome } from '@durable-jev/rule-engine'
+import type { AgentNames, RuleInfo } from '../api'
+import { checkStatusLabels, kindLabels } from '../labels'
+
+function scopeLabel(scope: CheckScope): string {
+  if (scope.kind === 'cargoItem') return `货物 ${scope.cargoItemId}`
+  if (scope.kind === 'leg') return `运输段 ${scope.legId}`
+  return '整单'
+}
+
+const show = (value: unknown) => (typeof value === 'string' ? value : JSON.stringify(value))
+
+interface Props {
+  rule: RuleInfo
+  agentNames: AgentNames
+  outcomes: RuleOutcome[]
+  onClose(): void
+}
+
+export function RuleDetail({ rule, agentNames, outcomes, onClose }: Props) {
+  return (
+    <aside className="rule-detail">
+      <header>
+        <h3>
+          {rule.ruleId} {rule.title}
+        </h3>
+        <button type="button" className="secondary" onClick={onClose}>
+          关闭
+        </button>
+      </header>
+      <p>
+        {agentNames[rule.owner] ?? rule.owner} · {kindLabels[rule.kind]} · 依赖{' '}
+        {rule.dependsOn.join('、') || '无'}
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>作用域</th>
+            <th>状态</th>
+            <th>观察值</th>
+            <th>阻塞于</th>
+            <th>失效原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          {outcomes.map((outcome) => (
+            <tr key={JSON.stringify(outcome.scope)}>
+              <td>{scopeLabel(outcome.scope)}</td>
+              <td className={`check-status ${outcome.status}`}>
+                {checkStatusLabels[outcome.status]}
+                {outcome.reused ? '（复用）' : ''}
+              </td>
+              <td>
+                {outcome.error ??
+                  (outcome.observedValue === undefined ? '' : show(outcome.observedValue))}
+              </td>
+              <td>{outcome.blockedBy.join('、')}</td>
+              <td>{outcome.invalidatedBy ?? ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </aside>
+  )
+}

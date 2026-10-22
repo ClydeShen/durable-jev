@@ -3,32 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+  "scripts": {
+    "start": "node dist/main.js"
   },
   "dependencies": {
-    "@durable-jev/a2a-adapter": "workspace:*",
-    "@durable-jev/agent-harness": "workspace:*",
-    "@durable-jev/branch-service": "workspace:*",
+    "@durable-jev/agent-core": "workspace:*",
+    "@durable-jev/agent-transport": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",
-    "@durable-jev/rule-engine": "workspace:*",
-    "@durable-jev/rule-evaluation": "workspace:*",
+    "@durable-jev/logistics": "workspace:*",
+    "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/service-kit": "workspace:*",
     "@durable-jev/store": "workspace:*",
-    "@durable-jev/telemetry": "workspace:*",
-    "@durable-jev/transport-investigation": "workspace:*",
-    "@durable-jev/transport-reservations": "workspace:*",
     "express": "5.3.0",
     "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/express": "5.0.6"
-  },
-  "scripts": {
-    "start": "node dist/main.js"
   }
 }

@@ -1,0 +1,543 @@
+{
+  "reviewStatus": "draft",
+  "note": "Expected groups are a reviewer draft; scripted answers stand in for Jev until live runs. S24 follows the live classification (accepted 2026-10-22).",
+  "samples": [
+    {
+      "sampleId": "S01",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "Influenza vaccine vials, 2-8C",
+          "declaredCategories": ["coldChain"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.96,
+              "general": 0.03
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical"]
+    },
+    {
+      "sampleId": "S02",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-NORDA",
+      "cargoItems": [
+        {
+          "description": "Vitamin C gummies for children, 200 jars",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.58,
+              "pharmaceutical": 0.37,
+              "general": 0.05
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food", "pharmaceutical"]
+    },
+    {
+      "sampleId": "S03",
+      "destinationCountry": "AU",
+      "customerId": "CUS-VOLT",
+      "cargoItems": [
+        {
+          "description": "Portable power banks, 20000 mAh lithium-ion, 100 units",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "lithiumBattery",
+            "probabilities": {
+              "lithiumBattery": 0.95,
+              "general": 0.04
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["lithiumBattery"]
+    },
+    {
+      "sampleId": "S04",
+      "destinationCountry": "US",
+      "customerId": "CUS-VOLT",
+      "cargoItems": [
+        {
+          "description": "Electric bicycles with removable lithium battery packs",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "lithiumBattery",
+            "probabilities": {
+              "lithiumBattery": 0.81,
+              "general": 0.18
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["lithiumBattery"]
+    },
+    {
+      "sampleId": "S05",
+      "destinationCountry": "DE",
+      "customerId": "CUS-KAPA",
+      "cargoItems": [
+        {
+          "description": "Hand sanitizer gel, 70% ethanol, 500 bottles",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "chemical",
+            "probabilities": {
+              "chemical": 0.55,
+              "pharmaceutical": 0.4,
+              "general": 0.05
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["chemical", "pharmaceutical"]
+    },
+    {
+      "sampleId": "S06",
+      "destinationCountry": "SG",
+      "customerId": "CUS-NORDA",
+      "cargoItems": [
+        {
+          "description": "Dry pet food kibble, 40 sacks",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.88,
+              "general": 0.12
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food"]
+    },
+    {
+      "sampleId": "S07",
+      "destinationCountry": "JP",
+      "customerId": "CUS-KAPA",
+      "cargoItems": [
+        {
+          "description": "Laboratory grade ethanol, 99.8%, 12 drums",
+          "declaredCategories": ["controlled"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "chemical",
+            "probabilities": {
+              "chemical": 0.96,
+              "general": 0.02
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["chemical"]
+    },
+    {
+      "sampleId": "S08",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "First aid kits with bandages, antiseptic wipes and paracetamol",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.52,
+              "general": 0.41,
+              "chemical": 0.07
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical"]
+    },
+    {
+      "sampleId": "S09",
+      "destinationCountry": "AU",
+      "customerId": "CUS-HARU",
+      "cargoItems": [
+        {
+          "description": "Smartwatches with built-in lithium batteries, 300 units",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "lithiumBattery",
+            "probabilities": {
+              "lithiumBattery": 0.79,
+              "general": 0.21
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["lithiumBattery"]
+    },
+    {
+      "sampleId": "S10",
+      "destinationCountry": "US",
+      "customerId": "CUS-NORDA",
+      "cargoItems": [
+        {
+          "description": "Extra virgin olive oil, 1L bottles, 60 cases",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.97,
+              "general": 0.03
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food"]
+    },
+    {
+      "sampleId": "S11",
+      "destinationCountry": "DE",
+      "customerId": "CUS-OAK",
+      "cargoItems": [
+        {
+          "description": "Paint thinner, flammable liquid, 30 cans",
+          "declaredCategories": ["controlled"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "chemical",
+            "probabilities": {
+              "chemical": 0.93,
+              "general": 0.07
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["chemical"]
+    },
+    {
+      "sampleId": "S12",
+      "destinationCountry": "SG",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "Contact lens cleaning solution, 360 bottles",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.48,
+              "chemical": 0.42,
+              "general": 0.1
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical", "chemical"]
+    },
+    {
+      "sampleId": "S13",
+      "destinationCountry": "JP",
+      "customerId": "CUS-NORDA",
+      "cargoItems": [
+        {
+          "description": "Whey protein powder, 2kg tubs",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.86,
+              "pharmaceutical": 0.11,
+              "general": 0.03
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food"]
+    },
+    {
+      "sampleId": "S14",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-ACME",
+      "cargoItems": [
+        {
+          "description": "Printer toner cartridges, 80 boxes",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "general",
+            "probabilities": {
+              "general": 0.71,
+              "chemical": 0.27,
+              "lithiumBattery": 0.02
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["general"]
+    },
+    {
+      "sampleId": "S15",
+      "destinationCountry": "AU",
+      "customerId": "CUS-OAK",
+      "cargoItems": [
+        {
+          "description": "Solid oak dining tables, flat-packed",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "general",
+            "probabilities": {
+              "general": 0.98
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["general"]
+    },
+    {
+      "sampleId": "S16",
+      "destinationCountry": "SG",
+      "customerId": "CUS-VOLT",
+      "cargoItems": [
+        {
+          "description": "Cordless drills with spare lithium battery, 50 kits",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "lithiumBattery",
+            "probabilities": {
+              "lithiumBattery": 0.74,
+              "general": 0.26
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["lithiumBattery"]
+    },
+    {
+      "sampleId": "S17",
+      "destinationCountry": "US",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "Insulin pens in insulated cartons, 2-8C",
+          "declaredCategories": ["coldChain", "controlled"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.97,
+              "general": 0.02
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical"]
+    },
+    {
+      "sampleId": "S18",
+      "destinationCountry": "DE",
+      "customerId": "CUS-NORDA",
+      "cargoItems": [
+        {
+          "description": "Frozen salmon fillets, -18C, 20 cartons",
+          "declaredCategories": ["coldChain"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.96,
+              "general": 0.04
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food"]
+    },
+    {
+      "sampleId": "S19",
+      "destinationCountry": "JP",
+      "customerId": "CUS-HARU",
+      "cargoItems": [
+        {
+          "description": "Green tea leaves in sealed tins",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.9,
+              "general": 0.1
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food"]
+    },
+    {
+      "sampleId": "S20",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-KAPA",
+      "cargoItems": [
+        {
+          "description": "Pool chlorine tablets, oxidiser, 40 tubs",
+          "declaredCategories": ["controlled"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "chemical",
+            "probabilities": {
+              "chemical": 0.95,
+              "general": 0.05
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["chemical"]
+    },
+    {
+      "sampleId": "S21",
+      "destinationCountry": "AU",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "Blood glucose test strips and lancets",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.83,
+              "general": 0.15
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical"]
+    },
+    {
+      "sampleId": "S22",
+      "destinationCountry": "SG",
+      "customerId": "CUS-BRISK",
+      "cargoItems": [
+        {
+          "description": "Garden furniture sets, flat-packed",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "general",
+            "probabilities": {
+              "general": 0.97
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["general"]
+    },
+    {
+      "sampleId": "S23",
+      "destinationCountry": "US",
+      "customerId": "CUS-KAPA",
+      "cargoItems": [
+        {
+          "description": "Industrial descaling concentrate, corrosive",
+          "declaredCategories": ["controlled"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "chemical",
+            "probabilities": {
+              "chemical": 0.94,
+              "general": 0.04
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["chemical"]
+    },
+    {
+      "sampleId": "S24",
+      "destinationCountry": "DE",
+      "customerId": "CUS-MEDI",
+      "cargoItems": [
+        {
+          "description": "Chilled diagnostic reagents, 2-8C",
+          "declaredCategories": ["coldChain"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "pharmaceutical",
+            "probabilities": {
+              "pharmaceutical": 0.94,
+              "chemical": 0.06
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["pharmaceutical"]
+    },
+    {
+      "sampleId": "S25",
+      "destinationCountry": "NZ",
+      "customerId": "CUS-HARU",
+      "cargoItems": [
+        {
+          "description": "Herbal sleep supplement capsules",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "food",
+            "probabilities": {
+              "food": 0.46,
+              "pharmaceutical": 0.44,
+              "general": 0.1
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["food", "pharmaceutical"]
+    },
+    {
+      "sampleId": "S26",
+      "destinationCountry": "JP",
+      "customerId": "CUS-VOLT",
+      "cargoItems": [
+        {
+          "description": "Laptops with lithium-ion batteries and USB chargers, two pallets",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "lithiumBattery",
+            "probabilities": {
+              "lithiumBattery": 0.68,
+              "general": 0.32
+            }
+          }
+        },
+        {
+          "description": "USB chargers and cables, one pallet",
+          "declaredCategories": ["general"],
+          "scriptedAnswer": {
+            "kind": "choice",
+            "choice": "general",
+            "probabilities": {
+              "general": 0.93,
+              "lithiumBattery": 0.07
+            }
+          }
+        }
+      ],
+      "expectedGroups": ["lithiumBattery", "general"]
+    }
+  ]
+}

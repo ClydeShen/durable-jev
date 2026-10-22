@@ -1,4 +1,9 @@
-export * from './database.helpers.js'
-export * from './migrations.helpers.js'
-export * from './operations.repository.js'
-export * from './outbox.repository.js'
+export { clearData, type Db, type Migration, migrate, openDatabase, openStore } from './database.js'
+export { runOnce } from './operations.js'
+export {
+  appendToOutbox,
+  markPublished,
+  type OutboxEvent,
+  type OutboxEventDraft,
+  unpublishedEvents,
+} from './outbox.js'

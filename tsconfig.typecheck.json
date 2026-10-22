@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "composite": false,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": [
+    "packages/*/src",
+    "apps/agent/src",
+    "apps/coordinator/src",
+    "tools/*/src",
+    "eval/runner/src",
+    "spikes/*/src"
+  ]
+}

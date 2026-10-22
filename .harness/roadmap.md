@@ -14,6 +14,7 @@
 | [x] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
 | [x] | T0.5 | spike Jev：确定 TS 客户端或 HTTP 接口；Choice 与 Noul 各一次 | 有 key 时真实调用；无 key 时记录接口形状 | T0.1 |
 | [x] | T0.6 | spike trace：两个 Express 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
+| [x] | T0.8 | spike：Pi Durable 承载一个模块级流程（确定性规则求值 + 等待人工 + 杀进程恢复），不经过 LLM 决定下一步 | 可行或明确不可行，结论写入 m0-findings 并回写 design | T0.3 |
 | [x] | T0.7 | `docs/m0-findings.md` + 锁定版本 + 回写 design | 每个依赖：版本、可行性、限制、对设计的影响 | T0.3–T0.6 |
 
 ## P1 确定性核心
@@ -22,33 +23,36 @@
 |---|---|---|---|---|
 | [x] | T1.1 | `contracts`：ids、状态枚举、shipment、check、humanTask | 类型与 Zod schema 可导出 | T0.1 |
 | [x] | T1.2 | `rule-engine` 表达式与组合器（design 5.3） | 组合语义测试：UNKNOWN 不经 OR/NOT 变 PASS，空集合为 UNKNOWN | T1.1 |
-| [x] | T1.3 | 配置校验：缺引用、类型、环、缺参数 | 对应 F16 测试 | T1.2 |
+| [x] | T1.3 | 配置校验：缺引用、类型、环、缺参数、混装矩阵矛盾；规则适用范围字段（目的地/货物类别/客户） | 对应 F16 测试 | T1.2 |
 | [x] | T1.4 | 图求值：作用域展开（cargoItem/leg）、blockedBy、appliesWhen | 多货件一件失败整单不过（F17） | T1.2 |
 | [x] | T1.5 | 指纹与失效传播、增量重算 | 改车辆只失效预期集合 | T1.4 |
 | [x] | T1.6 | `store`：SQLite 连接、迁移、幂等操作表、outbox | 同一 operationId 重复执行只写一条 | T0.1 |
-| [x] | T1.7 | 人工任务状态机：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定 | 未授权、过期、旧版本不能生效（F11、F12） | T1.1 |
-| [x] | T1.8 | 统一状态机：订单、人工任务、预订用同一 `defineStateMachine`，终态不可变 | 非法转移被拒；已发运订单不被重新求值覆盖；改派后已批准任务转 SUPERSEDED | T1.7, T2.3 |
+| [x] | T1.7 | 人工任务状态机（模块共用包）：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定；2–3 角色审批链（顺序/并行、四眼原则、条件步骤） | 未授权、过期、旧版本不能生效（F11、F12）；链中任一拒绝即 FAIL，同一人不能签两步 | T1.1 |
 
 ## P2 纵切面：LOG-001 端到端
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [x] | T2.1 | `eval/materials`：policy 参数、LOG-001 所需规则子集的 rules.json | 通过配置校验 | T1.3 |
-| [x] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | 种子与案例通过 schema 与交叉引用校验；`demo:reset` 载入随 T2.4 接入 | T1.6 |
-| [x] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务 | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
+| [x] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | `demo:reset` 可载入 | T1.6 |
+| [x] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务（纵切面先单进程；人工任务在 T3.2 下放到模块） | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
 | [x] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
-| [x] | T2.5 | `web` 最小版：案例列表、规则树（状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
+| [x] | T2.5 | `web` 最小版：案例列表、规则图（共用图组件，design 9.1 内部视图；状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
 | [x] | T2.6 | `docs/getting-started.md` | 新环境照做可演示 | T2.4, T2.5 |
 
 ## P3 完整规则与业务服务
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [x] | T3.1 | 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力） | 全部 40 条通过配置校验 | T2.1 |
-| [x] | T3.2 | 拆出 cargo-assurance、transport-planning、commercial-control，原生 HTTP 任务接口 | 各自 SQLite，launcher 启动 | T2.4 |
+| [x] | T3.0 | 规则编写 agent：`policy-v1.md` → 规则图配置、结构化表达式、Jev 问题；输出待人工审核的 diff | 由政策原文生成 LOG-001 规则子集并与 T2.1 手写版一致 | T1.3, T4.2 |
+| [~] | T3.1 | 用编写 agent 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力），人工审核 | 全部 40 条通过配置校验；记录生成与审核耗时、人工修改量 | T2.1, T3.0 |
+| [x] | T3.2 | 拆出货物合规、运输计划、商务三个 Durable Jev Agent（design 2），各自持有规则图与人工任务，原生 HTTP 任务接口，`GET /agent/summary` | 各自 SQLite，launcher 启动 | T2.4 |
+| [~] | T3.2a | agent 间点对点协作（随 T4.6 调查助手与 T5.1 A2A 一起做）：运输 → 商务（R35 额外费用审批）、运输 → 货物（R28 候选计划复核）、换承运商通知货物 agent 使 R13 审批链失效 | LOG-004 中三种往来均出现（运输→商务、运输→货物经 r2 传播出现；计划员确认在运输 agent） | T3.2 |
 | [x] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
 | [x] | T3.4 | 变更：改车辆/路线/报价触发失效，UI 显示"哪次变更导致失效" | LOG-004 失效集符合预期 | T1.5, T3.3 |
 | [x] | T3.5 | LOG-002–008 案例、事件脚本、draft 标注 | 文件齐全，标 `reviewStatus: draft` | T3.1 |
+| [x] | T3.7 | 扩展包：`policy-v1.md` 附录（客户合同条款、目的地进口要求，仿 MPI IHS 结构），编写 agent 生成 100–200 条扩展规则（`CUST-*`、`DEST-*`），挂到 R27 与新增 R41（汇入 R37）；LOG-001–008 补目的地与客户；20–30 份筛选样本（draft） | 扩展规则通过配置校验；每单命中少数几条（Appendix G/H：108 条扩展规则 + R41/R42/R43，经编写工具校验与应用；录制为草稿，T7.0 用真实模型重录） | T3.0, T3.1 |
+| [x] | T3.8 | 适用规则筛选：Jev 分类订单（货物类别、目的地要求组）+ 索引取规则；不确定时多选或转人工 | 筛选样本零漏选；UI 显示"已筛掉 N 条"（R42 Jev 多选分类 + `RuleIndex` 按目的地/客户/货物组索引；`pnpm screening` 26 份样本零漏选（脚本化答案，live 待 T7.0）） | T3.7, T4.2 |
 | [x] | T3.6 | 回放 runner（固定 workflow 基线），按阶段断言 | 8 个演示订单阶段断言通过 | T3.5 |
 
 ## P4 模型适配与 runtime harness
@@ -56,54 +60,44 @@
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [x] | T4.1 | `model-providers`：SemanticJudge 接口 + ScriptedJudge | 回放稳定 | T1.1 |
-| [~] | T4.2 | JevJudge、StructuredOutputJudge（live 模式）；JevJudge 已完成，StructuredOutputJudge 待 NVIDIA key | 有 key 时同一问题两种 provider 均可答 | T0.5, T4.1 |
+| [x] | T4.2 | JevJudge、StructuredOutputJudge（live 模式） | 有 key 时同一问题两种 provider 均可答 | T0.5, T4.1 |
 | [x] | T4.3 | 接入语义规则 R03、R10、R18、R27；observedValue 与 gateStatus 分开 | LOG-002、LOG-003 语义节点正确 | T4.1, T3.1 |
-| [x] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard（含重启上限）、ContextAssembler | 预算、重启上限与白名单测试 | T1.6 |
-| [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完 | T4.4 |
-| [x] | T4.6 | transport-planning 调查 Agent：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算 | T4.5, T3.4 |
-| [x] | T4.7 | PiDurableAgentRuntime | 同一调查杀进程后恢复 | T0.3, T4.5 |
+| [x] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard、ContextAssembler | 预算与白名单测试（实现：`DurableInvestigator` 只注册只读/幂等提交工具、工具调用预算 hook、`assembleInput` 资料隔离） | T1.6 |
+| [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完（脚本化模型直接跑在 Pi Durable 内存存储上，不另做 InMemory 运行时） | T4.4 |
+| [x] | T4.6 | 运输计划 agent 的调查助手：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算（LOG-004：三个备选运力经规则预检，计划员确认后成为 r2） | T4.5, T3.4 |
+| [x] | T4.7 | PiDurableAgentRuntime；按 T0.8 结论扩展到模块级流程 | 同一调查、同一模块等待人工时杀进程后恢复（同进程重开存储的恢复测试；杀进程恢复放进故障 runner） | T0.8, T4.5 |
 | [x] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
 
 ## P5 A2A、持久化与故障
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [x] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询 | T0.4, T3.2 |
-| [x] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4） | T5.1 |
-| [x] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告 | T4.7, T5.2 |
-| [x] | T5.4 | F11–F18 | 同上 | T5.3 |
-| [x] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示 | T5.3 |
-| [x] | T5.6 | 阶段 live 抽测：真实 Jev 跑全部案例（经 A2A 路径），记录并转成改进 | `docs/live-checks.md` 有 P5 条目，发现已转任务 | T5.2 |
+| [x] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询（`agent-transport/src/a2a`：Agent Card 列出 5 个业务 skill，每次调用一个 A2A Task；同一 requestKey 重试返回首个任务结果；事件拉取与重置留在原生运维接口） | T0.4, T3.2 |
+| [x] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4）（`pnpm start:a2a`；LOG-001/LOG-004 浏览器 e2e 两种模式结果一致） | T5.1 |
+| [x] | T5.2a | 目的地合规 agent：用 agent 模板新增第 5 个 agent，经 Agent Card 被发现，R40 加一个依赖 | 已有 4 个 agent 零代码改动；作为扩展演示脚本（规则数据 + launcher 一行配置；agent 集合由规则 owner 推出；Overview 显示第 5 个 agent） | T3.7, T5.1 |
+| [x] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T4.7, T5.2 |
+| [x] | T5.4 | F11–F18 | 同上（F11–F18 同一 runner，全部通过） | T5.3 |
+| [~] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
 
 ## P6 可观测性与 Console
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
 | [x] | T6.1 | 事件 schema、各服务 outbox、收集器 | 事件汇入观察库 | T1.6 |
-| [x] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
-| [x] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
-| [x] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
-| [x] | T6.5 | 阶段 live 抽测：真实 Jev 跑案例，在 Console 中核对 Jev span 与判断详情 | `docs/live-checks.md` 有 P6 条目 | T6.3 |
+| [ ] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
+| [~] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
+| [~] | T6.3a | Overview：agent 级图（design 9.1），节点卡片基础信息，A2A 关系与实时叠加；单击进入 agent 内部规则图 | 一屏看清 5 个 agent 状态；选中案例后显示其 A2A 往来 | T6.3, T5.2a |
+| [ ] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
 
 ## P7 Benchmark 与结论
 
 | 状态 | ID | 任务 | 完成标准 | 依赖 |
 |---|---|---|---|---|
-| [x] | T7.0 | 落实此前 live 抽测的改进（如 R27 问法、阈值缓冲带），用真实 Jev 复测 | 复测结果记入 `docs/live-checks.md` | T5.6, T6.5 |
-| [ ] | T7.1 | B1 Jev vs 结构化输出（即 P7 的 live 抽测） | 报告 macro-F1、成本、p95 | T4.2 |
-| [ ] | T7.2 | B2 固定 workflow vs 动态 Agent | 完成率、无效调用率 | T3.6, T4.6 |
-| [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用 | T5.3 |
-| [x] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
-| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 结论与组件建议（已写；H1 缺 B1 对照、H2 缺 B2，待 NVIDIA key） | 每条假设有证据 | T7.1–T7.4 |
-
-## P8 规范统一与一键 Demo
-
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
-|---|---|---|---|---|
-| [x] | T8.1 | 写 `docs/conventions.md`（arrow function 能用就用、目录分层、`<概念>.<角色>.ts` 命名、术语表）并加 `pnpm check:conventions` 棘轮检查 | lint 包含该检查；基线只增不减 | - |
-| [x] | T8.2 | Dashboard 场景导览：8 个案例与故障演示做成可点的场景，步骤随真实状态推进 | 全部场景不开终端即可演完 | T8.1 |
-| [x] | T8.3 | 补缺失控件：换路线（LOG-007）、记录新包装（LOG-008）；故障按钮（Jev 不可用、并发改报价） | replay 里的每一步 UI 都能做 | T8.2 |
-| [x] | T8.4 | Dashboard 内切换 native/A2A 与 scripted/live；证明页显示 replay 与 faults 结果并可重跑 | 无需改环境变量或敲命令 | T8.2 |
-| [x] | T8.5 | 一键启动（bootstrap+start 合一，自动打开浏览器） | 一条命令进入 Dashboard | T8.2 |
-| [x] | T8.6 | 按包迁移到新规范（每包一组小 commit，每包迁完跑全套验证），基线清零 | `baseline.json` 为空 | T8.1 |
-| [x] | T8.7 | 重写 `docs/demo-guide.md`，只描述 Dashboard 内的操作 | 全程无命令 | T8.2–T8.5 |
+| [x] | T7.0 | 切换 live 调优：全链路 scripted 跑通后，用开发集调 Jev 问题措辞、标签描述、阈值与编写 agent 提示；记录调优前后指标，盲测集不参与调优 | 调优记录；盲测前冻结问题与阈值版本（3 轮完成，见 `docs/tuning-log.md`；CUST-MEDI-5 改为人工步骤，live 回放 8/8、筛选零漏选；盲测集未建） | T3.6, T4.3, T3.8 |
+| [ ] | T7.1 | B1 Jev vs 结构化输出 | 报告 macro-F1、成本、p95 | T4.2 |
+| [ ] | T7.2 | B2 固定 workflow vs 调查助手 | 完成率、无效调用率 | T3.6, T4.6 |
+| [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
+| [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
+| [ ] | T7.6 | B7 Durable Jev Agent 成本：手写代码占比、Jev/编写 agent 承担的规则占比、现场政策变更耗时、单条规则实现成本、筛选正确率与漏选率、扩展规则中 Jev 占比；附规则分界图 | CEO 版指标表；错误放行单列且为 0 | T3.1, T4.3 |
+| [x] | T7.7 | `docs/agent-architecture.md`（技术 CEO 视角） | 每节链接到实现与证据（先以 scripted 证据写成，live 指标出来后补） | T5.2a, T6.3a |
+| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 与 Durable Jev Agent 结论、组件建议 | 每条假设有证据（`docs/demo-guide.md` 已写；`docs/report.md` 待 benchmark） | T7.1–T7.4, T7.6 |

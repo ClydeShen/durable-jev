@@ -1,0 +1,15 @@
+{
+  "policyVersion": "policy-v1",
+  "parameters": {
+    "minLegConnectionMinutes": 60,
+    "sensorRecordMaxAgeHours": 24,
+    "excursionToleranceMinutes": 30,
+    "creditExceptionLimitCents": 2000000,
+    "secondCreditApprovalAboveCents": 1000000,
+    "extraCostApprovalThresholdCents": 50000,
+    "semanticMatchThreshold": 0.8,
+    "approvalExpiryHours": 24,
+    "operationExpiryHours": 12,
+    "commodityInclusionThreshold": 0.15
+  }
+}

@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-007",
-  "title": "Transfer hub on the second leg cannot keep cargo cold",
   "reviewStatus": "draft",
+  "story": "两段运输，中转站不支持冷链：第一段本身没问题也不能整单发运；改经支持冷藏的中转站后重算通过。",
   "shipment": {
-    "caseId": "CASE-LOG-007",
-    "shipmentId": "LOG-007",
-    "customerId": "CUST-BLUE-CLINIC",
+    "caseId": "LOG-007",
+    "correlationId": "corr-LOG-007",
+    "shipmentId": "SHP-007",
+    "customerId": "CUS-MEDI",
+    "destinationCountry": "DE",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,196 +14,270 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "CAN-CLINIC",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-007-ITEM-1",
-        "description": "Blood plasma units, 30 bags in a cold box",
-        "declaredCategories": ["COLD_CHAIN"],
-        "weightGrams": 15000,
-        "lengthMm": 600,
-        "widthMm": 400,
-        "heightMm": 400,
+        "cargoItemId": "ITEM-1",
+        "description": "Chilled diagnostic reagents, 2-8C, 10 boxes",
+        "declaredCategories": ["coldChain"],
+        "quantity": 10,
+        "weightGrams": 50000,
+        "dimensionsMillimetres": {
+          "length": 400,
+          "width": 300,
+          "height": 300
+        },
         "temperatureRange": {
           "minDeciCelsius": 20,
-          "maxDeciCelsius": 60
-        },
-        "packagingId": "PKG-007-1"
+          "maxDeciCelsius": 80
+        }
       }
     ],
     "legs": [
       {
-        "legId": "LOG-007-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "SZX-HUB",
+        "origin": "Northport Warehouse A",
+        "destination": "Riverside Cross-dock",
         "carrierId": "CAR-POLAR",
-        "vehicleId": "VEH-PL-REEFER-5T",
-        "plannedDepartureAt": "2026-11-03T02:00:00Z",
-        "plannedArrivalAt": "2026-11-03T04:30:00Z"
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-06T05:00:00Z",
+        "plannedArrival": "2026-11-06T08:00:00Z"
       },
       {
-        "legId": "LOG-007-LEG-2",
+        "legId": "LEG-2",
         "sequence": 2,
-        "fromLocation": "SZX-HUB",
-        "toLocation": "CAN-CLINIC",
+        "origin": "Riverside Cross-dock",
+        "destination": "Southgate Clinic Store",
         "carrierId": "CAR-POLAR",
-        "vehicleId": "VEH-PL-REEFER-5T",
-        "plannedDepartureAt": "2026-11-03T05:15:00Z",
-        "plannedArrivalAt": "2026-11-03T07:45:00Z"
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-06T09:30:00Z",
+        "plannedArrival": "2026-11-06T13:00:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-06T09:00:00Z",
+      "to": "2026-11-06T15:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-007-1",
-      "amountCents": 130000,
-      "currency": "CNY"
-    }
-  },
-  "evidence": {
-    "documents": [],
-    "temperatureLogs": [
+      "amountCents": 280000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [
       {
-        "cargoItemId": "LOG-007-ITEM-1",
-        "sensorId": "SENSOR-LOG-007-ITEM-1",
-        "calibrationValidUntil": "2027-01-01T00:00:00Z",
-        "readings": [
+        "documentId": "DOC-007-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Einfuhrgenehmigung DE-2026-5531 for LumaTest CRP diagnostic reagent kits manufactured by Lumen Assays GmbH.",
+        "extractedFields": {},
+        "source": "customs broker"
+      },
+      {
+        "documentId": "DOC-007-SAFETY",
+        "kind": "safetyDataSheet",
+        "version": 1,
+        "text": "Safety data sheet: buffered diagnostic reagent, hazard class: not classified as hazardous under CLP, store at 2-8C.",
+        "extractedFields": {},
+        "source": "customs broker"
+      }
+    ],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Boxes intact, cool packs in place.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-05T22:00:00Z"
+        },
+        "temperatureReadings": [
           {
-            "at": "2026-11-03T00:30:00Z",
-            "deciCelsius": 40
+            "at": "2026-11-05T18:30:00Z",
+            "deciCelsius": 45
           },
           {
-            "at": "2026-11-03T01:30:00Z",
-            "deciCelsius": 42
+            "at": "2026-11-05T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-05T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-05T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-05T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-05T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-05T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-05T22:00:00Z",
+            "deciCelsius": 48
           }
         ]
-      }
-    ],
-    "inspectionNotes": [
-      {
-        "cargoItemId": "LOG-007-ITEM-1",
-        "inspectedAt": "2026-11-03T01:00:00Z",
-        "note": "Cold box sealed and intact."
       }
     ]
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-007-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.96
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
       }
     },
     {
-      "ruleId": "R18",
-      "entityId": "LOG-007-ITEM-1",
-      "answer": {
-        "type": "choice",
-        "choice": "no_risk",
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "no_risk"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
         "probabilities": {
-          "no_risk": 0.92,
-          "damaged_packaging": 0.03,
-          "cold_chain_risk": 0.05
+          "pharmaceutical": 0.94,
+          "chemical": 0.06
         }
+      }
+    },
+    {
+      "questionId": "DEST-DE-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.86
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "ON_HOLD",
-        "gates": {
-          "R24": "PASS",
-          "R25": "PASS",
-          "R26@LOG-007-LEG-1": "FAIL",
-          "R26@LOG-007-LEG-2": "NOT_APPLICABLE",
-          "R30": "FAIL",
-          "R23": "PASS",
-          "R40": "FAIL"
+      "kind": "expect",
+      "label": "中转站不支持冷链，整单不能放行",
+      "statuses": {
+        "R24@LEG-1": "PASS",
+        "R24@LEG-2": "PASS",
+        "R26@LEG-1": "FAIL",
+        "R30": "FAIL",
+        "R40": "FAIL",
+        "R41": "PASS",
+        "DEST-DE-PHARMA-1": "PASS",
+        "DEST-NZ-PHARMA-1": "NOT_APPLICABLE",
+        "DEST-DE-CHEM-1": "NOT_APPLICABLE"
+      },
+      "orderStatus": "ON_HOLD",
+      "openTasks": ["CUST-MEDI-5"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Lab lead Sofia Weber",
+          "deliveryNoteRef": "DN-007-01"
         },
-        "openHumanTasks": []
+        "evidenceRefs": []
       }
     },
     {
-      "step": "changePlan",
-      "actor": "TRANSPORT_PLANNER",
-      "change": {
-        "kind": "replaceLegs",
+      "kind": "revise",
+      "label": "改经 Glacier Cold Hub 中转",
+      "patch": {
+        "caseRevision": 2,
+        "entityVersions": {
+          "route": 2
+        },
         "legs": [
           {
-            "legId": "LOG-007-LEG-1",
+            "legId": "LEG-1",
             "sequence": 1,
-            "fromLocation": "SHA-WH1",
-            "toLocation": "SHA-HUB",
+            "origin": "Northport Warehouse A",
+            "destination": "Glacier Cold Hub",
             "carrierId": "CAR-POLAR",
-            "vehicleId": "VEH-PL-REEFER-5T",
-            "plannedDepartureAt": "2026-11-03T02:00:00Z",
-            "plannedArrivalAt": "2026-11-03T04:30:00Z"
+            "vehicleId": "VEH-12",
+            "plannedDeparture": "2026-11-06T05:00:00Z",
+            "plannedArrival": "2026-11-06T08:00:00Z"
           },
           {
-            "legId": "LOG-007-LEG-2",
+            "legId": "LEG-2",
             "sequence": 2,
-            "fromLocation": "SHA-HUB",
-            "toLocation": "CAN-CLINIC",
+            "origin": "Glacier Cold Hub",
+            "destination": "Southgate Clinic Store",
             "carrierId": "CAR-POLAR",
-            "vehicleId": "VEH-PL-REEFER-5T",
-            "plannedDepartureAt": "2026-11-03T05:15:00Z",
-            "plannedArrivalAt": "2026-11-03T07:45:00Z"
-          }
-        ]
-      },
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R26@LOG-007-LEG-1": "PASS",
-          "R29": "PASS",
-          "R30": "PASS"
-        },
-        "invalidated": ["R07", "R17", "R24", "R26", "R29", "R30"],
-        "notInvalidated": ["R15", "R18", "R31", "R32"],
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
+            "vehicleId": "VEH-12",
+            "plannedDeparture": "2026-11-06T09:30:00Z",
+            "plannedArrival": "2026-11-06T13:00:00Z"
           }
         ]
       }
     },
     {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "重算通过，等待装载",
+      "statuses": {
+        "R26@LEG-1": "PASS",
+        "R30": "PASS",
+        "R39": "WAITING_HUMAN"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
-        },
-        "openHumanTasks": []
-      }
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

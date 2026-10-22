@@ -9,6 +9,7 @@
 - 代码自解释：有意义的命名，避免注释。
 - 一键编译、一键启动；简单操作即可演示和验证 PRD 的关键内容。
 - 不依赖 key 也能完整演示：模型调用支持 `scripted` 回放模式；用户自行获取 key 后切到 `live`。
+- 开发阶段一律 `scripted`，不调用真实 Jev / NVIDIA（2026-10-21 用户要求）。只有显式 `MODEL_MODE=live` 才允许真实调用，`JevJudge` / `StructuredOutputJudge` 未注入测试传输时在非 live 模式下直接拒绝构造。全部跑通后再切 live 调优：调的是问题措辞、标签描述、概率阈值和编写 agent 的提示，不训练或微调模型（PRD 1.2 非目标）。
 
 ## 2. 目录职责
 
@@ -45,20 +46,21 @@
 ## 7. 模型选择（2026-10-19）
 
 - 现阶段只接 Jev（`TYPESAFE_API_KEY`，模型 `jev-1.14.0`）。
-- 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。用户提供 key 前暂缓；在此之前调查 Agent 与结构化输出只用脚本化模型（pi-ai faux provider）。
+- 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。key 已于 2026-10-21 到位；`MODEL_MODE=scripted` 时仍用脚本化模型（pi-ai faux provider）。
 - 除 Jev 与 NVIDIA 外不引入其他 LLM。
 
-## 8. API 额度（2026-10-19）
+## 8. 核心概念：Durable Jev Agent（2026-10-21）
 
-- Jev key 额度有限。开发与搭建验证一律用 mock/scripted/recorded，默认不发真实请求。
-- 只有显式 `MODEL_MODE=live` 才调用真实 API；仅在功能跑通后的关键完整测试（如 T4.2 验收、B1）使用，并控制样本量。
-- 自动化测试（`pnpm test`、`pnpm spikes`）不得触发真实调用。
-- 每个大阶段（P5 起每个 P）在功能跑通后安排一次真实 Jev 抽测（2026-10-20 用户要求）：用真实案例数据跑 `MODEL_MODE=live pnpm replay`（必要时加工作台 live 演示），跑完关回 scripted。结果记入 `docs/live-checks.md`（调用量、与脚本值对比、失败原因），由此得出的改进（问法、标注、阈值等）作为后续任务的依据；改进落地后用缓存或少量调用复测。
+POC 的出发点：规则数量上来（如进出口监管上万条、跨国物流上千种场景）、结构化与非结构化规则交织、带状态和人工环节时，传统"代码 + rule engine + decision table"需要大团队多年开发。目标是证明：小团队用少数几个 Durable Jev Agent 就能做出同样结果，成本低一个数量级。原则是尽可能让 agent 做，手写代码只剩框架。业务场景不变（物流），只是演示与报告围绕这个方向组织。
 
-## 9. 语言（2026-10-19）
+- 一个业务模块 = 一个 Durable Jev Agent：规则图（声明式配置：依赖、适用条件、状态、失效） + 叶子求值器 + 人工门槛 + Pi Durable 持久化，对外是 A2A agent。
+- 规则由编写 agent（生成式模型）从政策原文生成：规则图、结构化规则表达式、非结构化规则的 Jev 问题；人工审核后生效。政策变更 = 改原文 → 重新生成 → 回放标注案例。
+- 运行时分工：非结构化规则（描述、备注、文件、客户说明）由 Jev 回答；结构化规则（重量、时间、金额、矩阵）确定性执行编写 agent 生成的表达式，做代码最擅长的事。
+- 依据：2026-10-21 探针中，把结构化规则直接写成 Jev Noul 问题，12 个案例里 4 个稳定判错，且全部是错误放行（超载、超授信、温度超标、违规混装）。
+- 人工任务由各模块持有；Coordinator 只聚合各模块状态并执行最终放行事务。
+- 调查助手（生成式模型 + Pi Durable，agent 内部的可选部件）只在规则给不出结论、需要找证据或替代方案时启用。"agent" 一词只指 Durable Jev Agent。
+- agent 清单：订单协调、货物合规、运输计划、商务，外加扩展演示用的目的地合规 agent。agent 之间有派单汇总、点对点请求、变更通知三种协作。
+- Console 有 Overview：zoom out 到 agent 级，一眼看出每个 agent 的基础信息与相互关系；同一图形表达 zoom in 到 agent 内部规则流程。
+- 面向技术 CEO 的 `docs/agent-architecture.md`：agent 清单与职责、协作模式、扩展步骤、维护与运维、已知限制。
+- 要验证的问题（面向 CEO 的指标）：手写代码占比；Jev 运行时承担与编写 agent 生成的规则占比；一次政策变更的耗时；单条规则的实现成本；盲测零错误放行。40 条规则的结论只外推为单位成本，并写明外推前提。
 
-用户主要是英文使用者。
-
-- 所有 UI（工作台、Console、演示控制、服务返回给界面的消息）一律使用英文。
-- 面向用户的文字一律英文：`README.md`、`docs/`、`eval/materials` 中的文字材料（如 policy-v1.md、案例标题与描述）。
-- `.harness/` 是 agent 工作区，继续用中文与用户对齐。

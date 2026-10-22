@@ -1,150 +1,149 @@
-# M0 technical spike findings
+# M0 技术预检结论
 
-Every spike is reproducible in this repository. Findings apply only to the pinned versions.
+每个 spike 可在本仓库复现。结论只针对锁定版本。
 
 ## Pi Durable 1.3.0
 
-Reproduce: `pnpm --filter @durable-jev/spike-pi-durable crash-recovery` (scripted model, no key needed)
+复现：`pnpm --filter @durable-jev/spike-pi-durable crash-recovery`（脚本化模型，无需 key）
 
-Scenario: an investigation agent calls the read-only tool `get_vehicle`, the human-only tool `approve_compliance`, then the write tool `reserve_transport`. The process is killed after the write lands in the business ledger but before the result is committed (F02), then restarted.
+场景：调查 agent 依次调用只读工具 `get_vehicle`、人工专属工具 `approve_compliance`、写工具 `reserve_transport`。写工具在业务账本落库后、结果提交前杀进程（对应 F02），再重启。
 
-| Check | Result |
+| 验证项 | 结果 |
 |---|---|
-| Resume the same task after restart | Pass. The same `requestId` returns the same submission and continues from the checkpoint to completion |
-| Completed read-only tools are not re-run | Pass. Results are read back from storage |
-| Write tools are not replayed | Pass. A tool without `replay: "safe"` gets an `interrupted` error after restart and is not executed again |
-| Handling the uncertain state | Pass. On `interrupted` the model calls `get_operation_status`, which confirms the write took effect; the ledger has exactly one entry |
-| Human-only tool blocked | Pass. The `beforeTool` hook returns block and the model receives a `blocked` error result |
-| Usage accounting | Pass. `harness.usage()` aggregates by provider/model, including failed attempts |
-| Runs without a key | Pass. pi-ai ships a faux provider for scripted model responses |
+| 重启后恢复同一任务 | 通过。同一 `requestId` 返回同一 submission，从检查点继续直到完成 |
+| 已完成的只读工具不重跑 | 通过。结果从存储读出 |
+| 写工具不重放 | 通过。未声明 `replay: "safe"` 的工具在重启后得到 `interrupted` 错误，不再执行 |
+| 不确定状态的处理路径 | 通过。模型收到 `interrupted` 后调用 `get_operation_status` 核对为已生效；业务账本只有 1 条 |
+| 人工专属工具拦截 | 通过。`beforeTool` hook 返回 block，模型得到 `blocked` 错误结果 |
+| 用量记录 | 通过。`harness.usage()` 按 provider/model 汇总，含失败尝试 |
+| 无 key 运行 | 通过。pi-ai 自带 faux provider，可脚本化模型响应 |
 
-Not provided by 1.3.0 (checked against the installed package's types and README):
+尚未验证：`callers` / `modelTools` 不向模型暴露工具、`restartLimit` 崩溃循环保护。
 
-- No `restartLimit` / `retryTask`. An earlier note saying "restartLimit not yet verified" was wrong; it came from the unreleased README on the GitHub main branch. Crash-loop protection is implemented by this project's `RunBudgetGuard`.
-- `callers` only distinguishes `"model"` and `"tools"`; there is no "human only" caller. Human-only tools are protected by not registering them with the agent plus a `beforeTool` hook.
+### 对设计的影响
 
-### Impact on the design
+- `replayPolicy: verifyByOperationId` 可直接映射为 Pi 的默认（非 replay-safe）行为，再配合业务端 `get_operation_status`。
+- Pi 的 `requestId` 只保证"提交"幂等，业务副作用幂等仍由我们的 operationId 和业务库唯一约束负责。
+- 人工专属工具优先"不注册给 agent"，hook 拦截作为第二道防线。
+- faux provider 可作为 `ScriptedJudge` / 脚本化调查模型的底座。
 
-- `replayPolicy: verifyByOperationId` maps directly onto Pi's default (non-replay-safe) behaviour, combined with the business-side `get_operation_status`.
-- Pi's `requestId` only makes *submission* idempotent; idempotent business side effects still rely on our operationId and unique constraints in the business database.
-- Human-only tools are never registered with the agent; the hook is a second line of defence (Pi's `callers` cannot express "human only").
-- Restart limits and crash-loop protection are implemented by this project and must not be listed as provided by Pi in runtime-controls.
-- The faux provider can back `ScriptedJudge` and the scripted investigation model.
+### 限制
 
-### Limitations
+- API 标为 Experimental；版本锁定为 1.3.0。
+- 一个存储只能被一个进程拥有，无跨进程锁。
+- SQLite 存储依赖 Node 内置 `node:sqlite`（运行时打印 ExperimentalWarning）。
+- 断电或主机故障可能丢最新一次提交（`synchronous = NORMAL`），与 PRD 只承诺进程崩溃恢复一致。
 
-- The API is marked Experimental; pinned to 1.3.0.
-- A store can be owned by one process only; there is no cross-process lock.
-- SQLite storage uses Node's built-in `node:sqlite` (prints an ExperimentalWarning).
-- Power loss or host failure may lose the latest commit (`synchronous = NORMAL`), consistent with the PRD only promising recovery from process crashes.
+### 模块级流程（T0.8，Durable Jev Agent）
 
-## A2A SDK `@a2a-js/sdk` 1.3.0 (protocol v1.0)
+复现：`pnpm --filter @durable-jev/spike-pi-durable module-flow`（有 `TYPESAFE_API_KEY` 时 R18 走真实 Jev，否则脚本化）
 
-Reproduce: `pnpm --filter @durable-jev/spike-a2a round-trip`
+场景：Cargo 模块流程不经过 LLM，用 Pi Durable 的 durable task（`defineTask`，分阶段检查点）执行：代码规则 R02 → Jev 规则 R18 → 创建合规审批子任务 R13 并等待 → 杀进程 → 重启 → 再杀 → 重启后人工批准 → 求出 R14。
 
-Scenario: Cargo Assurance exposes its capability over A2A JSON-RPC; a client discovers the Agent Card, starts a verification, receives input-required, supplies the missing data and gets a structured Artifact.
-
-| Check | Result |
+| 验证项 | 结果 |
 |---|---|
-| Capability discovery | Pass. `ClientFactory.createFromUrl` reads `/.well-known/agent-card.json` |
-| Task lookup | Pass. `getTask` returns the same task state |
-| Missing-information mapping | Pass. `INPUT_REQUIRED` carries the missing fields; a follow-up message with the original taskId moves the task to `COMPLETED` |
-| Structured business result | Pass. Business checks are placed in the Artifact as a data part |
-| Duplicate request deduplication (F04) | **Not provided.** Resending the same `messageId` creates a new task and runs it again |
+| 不经 LLM 的持久化流程 | 通过。`defineTask` + `createModels()` 空 provider 即可，流程逻辑全在代码里 |
+| 已完成的规则不重算 | 通过。两次崩溃后 R02、R18 各只执行一次（Jev 只调用一次），结果从检查点读出 |
+| 等待人工跨进程重启 | 通过。父任务以 `waiting` 挂在审批子任务上；子任务重启后重新监听决定文档 |
+| 人工决定送达 | 通过。外部用 `harness.commit` 写 session 文档，子任务 `watchDoc` 收到后终结，父任务自动进入 `decide` 阶段 |
+| 审批过期 | 结构上支持（子任务里 `runtime.sleep(expiresAt)` 与决定竞速），本次未实测 |
 
-### Impact on the design
+注意事项：
 
-- For F04, `a2a-adapter` keeps a `(caseId, revision, capability) → a2aTaskId` mapping and returns the original task on retry.
-- The SDK server only offers an Express adapter (plus gRPC). All services use Express 5 instead of Fastify.
-- AgentInterface must declare `protocolVersion: '1.0'` or the server rejects every request.
-- The default `InMemoryTaskStore` is lost on restart; the SDK offers a Kysely-based `DatabaseTaskStore` (works with SQLite). Whether to adopt it is decided in T5.1.
+- `watchDoc` 不会创建文档。必须在发起审批的同一次提交里 `tx.doc()` 创建决定文档，否则监听为空、任务永远等待。
+- **`Harness.waitForTask` 在重启后对处于 `waiting` 的任务会立即返回非终态记录**（类型声明为终态）。原因是该任务尚不在调度器的内存 live 集合中，直接读了存储。调用方需检查 `state.status` 并重试，或改用 `watchTaskGraph`。
+- 一个阶段在提交检查点前崩溃会整体重跑；Jev 调用可能重复计费（符合 FR-17），有副作用的步骤仍需 operationId 幂等。
+- 子任务终结后记录被回收，`getTask` 返回 `undefined`；结果只能通过父任务的 `outcomes()` 读取。
+
+### 对设计的影响（模块级）
+
+- Durable Jev Agent 的模块流程可以直接建在 Pi Durable 的 durable task 上，规则求值仍是确定性代码；调查 Agent 是同一 Harness 里的另一个对话，按需启用。
+- 人工任务 = 一个 durable 子任务 + 一份决定文档；业务侧的人工任务状态机（T1.7）负责角色、版本、过期校验，校验通过后才写入决定文档。
+- 整单规则图的依赖调度可映射为父任务的阶段与 `waiting on` 子任务，但规则图本身仍由 `rule-engine` 计算，Pi Durable 只负责持久化与唤醒。
+
+## A2A SDK `@a2a-js/sdk` 1.3.0（协议 v1.0）
+
+复现：`pnpm --filter @durable-jev/spike-a2a round-trip`
+
+场景：Cargo Assurance 以 A2A JSON-RPC 暴露能力；客户端发现 Agent Card、发起核验、收到 input-required、补充资料后取得结构化 Artifact。
+
+| 验证项 | 结果 |
+|---|---|
+| 能力发现 | 通过。`ClientFactory.createFromUrl` 读取 `/.well-known/agent-card.json` |
+| 任务查询 | 通过。`getTask` 返回同一任务状态 |
+| 补资料映射 | 通过。`INPUT_REQUIRED` 携带缺失字段；带原 taskId 的后续消息使任务进入 `COMPLETED` |
+| 结构化业务结果 | 通过。业务 checks 以 data part 放入 Artifact |
+| 重复请求去重（F04） | **不提供**。相同 `messageId` 重发会新建任务并再次执行 |
+
+### 对设计的影响
+
+- F04 需要本项目在 A2A 适配层（现 `packages/agent-transport/src/a2a`）中维护 `(caseId, revision, capability) → a2aTaskId` 映射，重试时返回原任务。
+- SDK 服务端只提供 Express 适配器（另有 gRPC）。服务统一改用 Express 5，不再使用 Fastify。
+- AgentInterface 必须声明 `protocolVersion: '1.0'`，否则服务端拒绝所有请求。
+- 默认 `InMemoryTaskStore` 重启即丢；SDK 提供基于 Kysely 的 `DatabaseTaskStore`（SQLite 可用），T5.1 再决定是否采用。
 
 ## Jev `@typesafe-ai/sdk` 0.7.0
 
-Reproduce: `pnpm --filter @durable-jev/spike-jev semantic-checks`. Defaults to recorded mode (an injected `fetch` returns a response recorded from a real call), so it uses no quota. It only calls the real API when `MODEL_MODE=live` and `TYPESAFE_API_KEY` is set.
+复现：`pnpm --filter @durable-jev/spike-jev semantic-checks`。未设置 `TYPESAFE_API_KEY` 时用 recorded 模式（注入 `fetch` 返回录制响应），设置后真实调用。
 
-Scenario: one request asks R18 (risk signal in an inspection note, Choice) and R10 (safety data sheet consistent with the declaration, Noul) together.
+场景：一次请求同时问 R18（检查备注的风险信号，Choice）和 R10（安全说明与声明是否一致，Noul）。
 
-| Check | Result |
+| 验证项 | 结果 |
 |---|---|
-| Official TS SDK | Yes: `@typesafe-ai/sdk`, `TypeSafeClient.systemOne()`, answer types inferred from the questions |
-| Endpoint | `POST https://api.typesafe.ai/v1/systemone`, Bearer `TYPESAFE_API_KEY` |
-| Version pinning | Model ID `jev-1.14.0` can be pinned (`jev-1.13.0` also available), avoiding the `jev-latest` alias |
-| Fields | Choice: `choice`, `probabilities`, `confidence`; Noul: only `noul` (no confidence), as the PRD assumes |
-| Usage | Returns `usage.input_tokens` and `usage.output_tokens` (measured 440 / 77). Official pricing bills input tokens ($0.042 / Mtok); whether output tokens are billed has not been checked against an invoice |
-| Runs without a key | Pass. The SDK accepts an injected `fetch`, enabling recorded/scripted modes |
-| Live calls | Pass (2026-10-19, 6 calls). See the table below |
-| Authentication failure | A bad key throws `AuthenticationError` (401), which can be reported as ERROR rather than a business UNKNOWN |
+| 官方 TS SDK | 有：`@typesafe-ai/sdk`，`TypeSafeClient.systemOne()`，答案类型由问题推断 |
+| 接口 | `POST https://api.typesafe.ai/v1/systemone`，Bearer `TYPESAFE_API_KEY` |
+| 版本锁定 | 可固定模型 ID `jev-1.14.0`（另有 `jev-1.13.0`），避免 `jev-latest` 别名 |
+| 字段 | Choice：`choice`、`probabilities`、`confidence`；Noul：只有 `noul`（无 confidence），与 PRD 一致 |
+| 用量 | 返回 `usage.input_tokens` 与 `usage.output_tokens`；按输入 token 计费（$0.042 / Mtok） |
+| 无 key 运行 | 通过。SDK 支持注入 `fetch`，可做 recorded/scripted 模式 |
+| 真实调用 | 通过（2026-10-21）。示例问题 Choice 与 Noul 答案合理，单次批量请求约 0.3s；限流行为未验证 |
 
-Live results (same input, 6 consecutive calls, `jev-1.14.0`):
+### 对设计的影响
 
-| Question | Result | Stability |
-|---|---|---|
-| R18 `packagingRisk` (Choice) | 6/6 `damaged_packaging`; probability 0.84–0.88, `cold_chain_risk` 0.12–0.16, `no_risk` 0; confidence 0.76–0.82 | Stable decision, small probability drift |
-| R10 `documentMatchesDeclaration` (Noul) | 0.04–0.05 (vaccines vs a lithium battery SDS, correctly judged inconsistent) | Stable |
-| Latency | 224–319 ms (including TLS setup, two questions per request) | |
-| Usage | input 440 / output 77 tokens per call | Deterministic |
+- `JevJudge` 直接使用官方 SDK；`ScriptedJudge` 通过注入 `fetch` 回放，走同一解析路径。
+- 一次请求可批量问多个问题，同一订单的多个语义判断可以合并成一次调用。
+- SDK 自带重试（默认 2 次，单次超时 10s）。为了让预算守卫准确计数，SDK 重试关掉（`maxRetries: 0`），由 harness 统一管理重试。
+- 环境变量统一用官方名 `TYPESAFE_API_KEY`。
 
-Not yet verified: rate limiting (429), latency for large question batches, quality across the full sample set (left to B1).
+## Trace 传播（OpenTelemetry API 1.9.1 / SDK 2.12.0）
 
-Choice `confidence` is derived entirely from `probabilities`: `(n·p_max − 1) / (n − 1)` (measured n=3, p_max=0.85 → 0.775, returned 0.77). It is not an independent signal. Noul has no confidence.
+复现：`pnpm --filter @durable-jev/spike-trace propagation`
 
-Officially documented limitations (only a `jev-1.13` limitations page has been published; none for `1.14` yet):
-
-| Limitation | How this project handles it |
+| 验证项 | 结果 |
 |---|---|
-| Arithmetic, counting and date comparison are unreliable | Always done in code rules; Jev only answers semantic questions (FR-06) |
-| Injected content in the state influences answers | F09; `ContextAssembler` partitions input and sends only the required fields; decisions still come from the rule engine and human gates |
-| Choice favours the first-listed option | B1 adds a variant with shuffled option order |
-| More irrelevant state lowers accuracy | Input is filtered by `inputPaths` so each question only gets the fields it needs |
+| 跨服务传播 | 通过。Coordinator 通过 `propagation.inject` 写入 W3C `traceparent`，Cargo Assurance `extract` 后的 span 与上游同 traceId，parent 为上游 span |
+| 恢复后的新 trace | 通过。`run.resumed` 是新的根 span（新 traceId），用 span link 指向中断前的 span |
+| 业务关联 | 通过。correlationId 作为 span 属性，跨两个 trace 保持一致 |
 
-### Impact on the design
+### 对设计的影响
 
-- `JevJudge` uses the official SDK directly; `ScriptedJudge` replays through an injected `fetch` and shares the same parsing path.
-- One request can carry several questions, so multiple semantic checks for the same order can be batched into one call.
-- The SDK retries by itself (2 retries, 10 s per attempt by default). To keep the budget guard's counts accurate, SDK retries are disabled (`maxRetries: 0`) and the harness owns retries.
-- The environment variable uses the official name `TYPESAFE_API_KEY`.
-- Probability/confidence drift slightly for identical input, so replay and regression tests must not depend on live results and must go through `ScriptedJudge`. Gate decisions depend only on the mapped discrete outcome, and thresholds should stay clear of the observed drift range.
+- 只用 `@opentelemetry/api` + SDK 的手动传播，不用自动插桩，行为可预测。
+- 观察库存 span 时同时存 links，Console 用 correlationId 和 links 串起新旧 trace。
+- A2A 客户端可用 SDK 的 `CallInterceptor` 注入 `traceparent`，T5.1 验证。
 
-## Trace propagation (OpenTelemetry API 1.9.1 / SDK 2.12.0)
+## 版本锁定
 
-Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
-
-| Check | Result |
-|---|---|
-| Cross-service propagation | Pass. The coordinator writes a W3C `traceparent` via `propagation.inject`; after `extract`, Cargo Assurance's span has the upstream traceId and the upstream span as parent |
-| New trace after recovery | Pass. `run.resumed` is a new root span (new traceId) with a span link to the span before the interruption |
-| Business correlation | Pass. correlationId is a span attribute and stays the same across both traces |
-
-### Impact on the design
-
-- Use `@opentelemetry/api` plus manual propagation with the SDK, no auto-instrumentation, for predictable behaviour.
-- The observability store keeps span links; the Console joins old and new traces by correlationId and links.
-- The A2A client can inject `traceparent` through the SDK's `CallInterceptor`; to be verified in T5.1.
-
-## Pinned versions
-
-| Dependency | Version |
+| 依赖 | 版本 |
 |---|---|
 | Node | 22.22.0 |
 | pnpm | 10.28.0 |
 | TypeScript | 6.0.3 |
 | `@earendil-works/pi-durable` / `pi-ai` / `chord` | 1.3.0 |
 | `@a2a-js/sdk` | 1.3.0 |
-| `@typesafe-ai/sdk` | 0.7.0, model `jev-1.14.0` |
+| `@typesafe-ai/sdk` | 0.7.0，模型 `jev-1.14.0` |
 | `@opentelemetry/api` | 1.9.1 |
 | `@opentelemetry/sdk-trace-node` / `sdk-trace-base` | 2.12.0 |
 | Express | 5.3.0 |
 
-All dependencies are pinned to exact versions in `package.json` (`save-exact=true` in `.npmrc`), and the lockfile is committed.
+所有依赖以精确版本写入 `package.json`（`.npmrc` 中 `save-exact=true`），lockfile 已提交。
 
-## Summary
+## 总结
 
-| Dependency | Feasibility | Main limitations |
+| 依赖 | 可行性 | 主要限制 |
 |---|---|---|
-| Pi Durable | Feasible | Experimental; one process owns a store; no `restartLimit`; `callers` cannot express human-only |
-| A2A SDK | Feasible | No retry deduplication; only Express/gRPC server adapters |
-| Jev | Feasible (live calls verified) | Small probability drift; rate limiting not verified |
-| OpenTelemetry | Feasible | None |
+| Pi Durable | 可行（agent 与模块级流程） | Experimental；单进程占有存储；重启后 `waitForTask` 可能返回非终态；`callers` 与 `restartLimit` 尚未验证 |
+| A2A SDK | 可行 | 不提供重试去重；只有 Express/gRPC 服务端适配 |
+| Jev | 可行 | 限流行为未验证 |
+| OpenTelemetry | 可行 | 无 |
 
-`pnpm spikes` runs every spike.
+`pnpm spikes` 一次运行全部 spike。

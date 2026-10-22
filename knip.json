@@ -1,0 +1,45 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "includeEntryExports": true,
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.mjs"]
+    },
+    "packages/*": {
+      "project": ["src/**/*.ts"]
+    },
+    "apps/agent": {
+      "entry": ["src/main.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "apps/coordinator": {
+      "entry": ["src/main.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "apps/web": {
+      "entry": ["src/main.tsx"],
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "tools/launcher": {
+      "entry": ["src/main.ts", "src/demo-reset.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "tools/rule-authoring": {
+      "entry": ["src/main.ts"],
+      "project": ["src/**/*.ts"]
+    },
+    "eval/runner": {
+      "entry": [
+        "src/replay-main.ts",
+        "src/screening-main.ts",
+        "src/faults-main.ts",
+        "src/faults/crash-child.ts"
+      ],
+      "project": ["src/**/*.ts"]
+    },
+    "spikes/*": {
+      "entry": ["src/*.ts"],
+      "project": ["src/**/*.ts"]
+    }
+  }
+}

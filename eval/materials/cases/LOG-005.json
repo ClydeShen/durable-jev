@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-005",
-  "title": "Reroute pushes the order over credit and adds extra cost",
   "reviewStatus": "draft",
+  "story": "改派后超授信并增加费用：授信例外（超二级额度需两名商务主管）与额外费用是两个独立审批，只通过一个仍不得放行。",
   "shipment": {
-    "caseId": "CASE-LOG-005",
-    "shipmentId": "LOG-005",
-    "customerId": "CUST-BLUE-CLINIC",
+    "caseId": "LOG-005",
+    "correlationId": "corr-LOG-005",
+    "shipmentId": "SHP-005",
+    "customerId": "CUS-BRISK",
+    "destinationCountry": "JP",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,169 +14,224 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "HGH-DC2",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-005-ITEM-1",
-        "description": "Hospital beds, 6 units, flat packed",
-        "declaredCategories": ["GENERAL"],
+        "cargoItemId": "ITEM-1",
+        "description": "Garden furniture sets, flat-packed, 18 cartons",
+        "declaredCategories": ["general"],
+        "quantity": 18,
         "weightGrams": 540000,
-        "lengthMm": 2200,
-        "widthMm": 1000,
-        "heightMm": 1200
+        "dimensionsMillimetres": {
+          "length": 1200,
+          "width": 800,
+          "height": 300
+        }
       }
     ],
     "legs": [
       {
-        "legId": "LOG-005-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "HGH-DC2",
-        "carrierId": "CAR-NORTHLINE",
-        "vehicleId": "VEH-NL-BOX-7T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-HARBOUR",
+        "vehicleId": "VEH-7",
+        "plannedDeparture": "2026-11-05T07:00:00Z",
+        "plannedArrival": "2026-11-05T13:30:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-05T10:00:00Z",
+      "to": "2026-11-05T18:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-005-1",
-      "amountCents": 120000,
-      "currency": "CNY"
-    }
-  },
-  "evidence": {
+      "amountCents": 900000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
     "documents": [],
-    "temperatureLogs": [],
-    "inspectionNotes": []
+    "warehouseRecords": []
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-005-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.96
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.96
+      }
+    },
+    {
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.98
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "general",
+        "probabilities": {
+          "general": 0.97
+        }
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R32": "PASS",
-          "R36": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "changePlan",
-      "actor": "COMMERCIAL_MANAGER",
-      "change": {
-        "kind": "changeQuote",
-        "amountCents": 240000
+      "kind": "expect",
+      "label": "初始：授信内，等待装载",
+      "statuses": {
+        "R32": "PASS",
+        "R33": "NOT_APPLICABLE",
+        "R34": "NOT_APPLICABLE",
+        "R35": "NOT_APPLICABLE"
       },
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R32": "FAIL",
-          "R33": "PASS",
-          "R34": "WAITING_HUMAN",
-          "R35-REQUIRED": "PASS",
-          "R35": "WAITING_HUMAN",
-          "R36": "BLOCKED_DEPENDENCY",
-          "R39-LOAD": "BLOCKED_DEPENDENCY"
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "revise",
+      "label": "改派绕行，额外费用 13,000",
+      "patch": {
+        "caseRevision": 2,
+        "entityVersions": {
+          "route": 2,
+          "quote": 2
         },
-        "invalidated": ["R32", "R33", "R34", "R35", "R36", "R40"],
-        "notInvalidated": ["R05", "R24", "R25", "R29", "R30"],
-        "openHumanTasks": [
+        "legs": [
           {
-            "ruleId": "R34",
-            "requiredRole": "COMMERCIAL_MANAGER"
-          },
-          {
-            "ruleId": "R35",
-            "requiredRole": "COMMERCIAL_MANAGER"
+            "legId": "LEG-1",
+            "sequence": 1,
+            "origin": "Northport Warehouse A",
+            "destination": "Central Retail DC",
+            "carrierId": "CAR-HARBOUR",
+            "vehicleId": "VEH-7",
+            "plannedDeparture": "2026-11-05T09:00:00Z",
+            "plannedArrival": "2026-11-05T16:30:00Z"
           }
-        ]
+        ],
+        "quote": {
+          "amountCents": 900000,
+          "extraCostCents": 1300000,
+          "currency": "EUR"
+        }
       }
     },
     {
-      "step": "approveHumanTask",
-      "ruleId": "R34",
-      "actor": "COMMERCIAL_MANAGER",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R34": "PASS",
-          "R35": "WAITING_HUMAN",
-          "R36": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R35",
-            "requiredRole": "COMMERCIAL_MANAGER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "approveHumanTask",
-      "ruleId": "R35",
-      "actor": "COMMERCIAL_MANAGER",
-      "expect": {
-        "gates": {
-          "R36": "PASS",
-          "R38": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "超授信：授信例外与额外费用两个审批",
+      "statuses": {
+        "R32": "FAIL",
+        "R33": "PASS",
+        "R34": "WAITING_HUMAN",
+        "R35": "WAITING_HUMAN"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R34", "R35"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管批准额外费用",
+      "task": "R35",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
-        },
-        "openHumanTasks": []
+      "kind": "expect",
+      "label": "只通过额外费用仍不能放行",
+      "statuses": {
+        "R35": "PASS",
+        "R36": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R34"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管 carol 批准授信例外第一步",
+      "task": "R34",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
       }
+    },
+    {
+      "kind": "act",
+      "label": "同一人不能批第二步",
+      "task": "R34",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      },
+      "expectRefusal": "SAME_ACTOR"
+    },
+    {
+      "kind": "act",
+      "label": "另一名商务主管 dave 批准第二步",
+      "task": "R34",
+      "actor": {
+        "id": "dave",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "商务分支就绪",
+      "statuses": {
+        "R34": "PASS",
+        "R36": "PASS"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

@@ -2,16 +2,17 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "dist"
+    "outDir": "dist",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts"],
   "references": [
     {
-      "path": "../../packages/a2a-adapter"
+      "path": "../../packages/agent-core"
     },
     {
-      "path": "../../packages/branch-service"
+      "path": "../../packages/agent-transport"
     },
     {
       "path": "../../packages/contracts"
@@ -20,28 +21,16 @@
       "path": "../../packages/human-tasks"
     },
     {
-      "path": "../../packages/rule-engine"
+      "path": "../../packages/logistics"
     },
     {
-      "path": "../../packages/rule-evaluation"
+      "path": "../../packages/model-providers"
     },
     {
       "path": "../../packages/service-kit"
     },
     {
       "path": "../../packages/store"
-    },
-    {
-      "path": "../../packages/transport-reservations"
-    },
-    {
-      "path": "../../packages/agent-harness"
-    },
-    {
-      "path": "../../packages/transport-investigation"
-    },
-    {
-      "path": "../../packages/telemetry"
     }
   ]
 }

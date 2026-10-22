@@ -1,0 +1,20 @@
+{
+  "name": "@durable-jev/agent-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@durable-jev/contracts": "workspace:*",
+    "@durable-jev/human-tasks": "workspace:*",
+    "@durable-jev/model-providers": "workspace:*",
+    "@durable-jev/rule-engine": "workspace:*",
+    "@durable-jev/store": "workspace:*",
+    "zod": "4.6.7"
+  }
+}

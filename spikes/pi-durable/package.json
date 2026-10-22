@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@durable-jev/model-providers": "workspace:*",
     "@earendil-works/chord": "1.3.0",
     "@earendil-works/pi-ai": "1.3.0",
     "@earendil-works/pi-durable": "1.3.0"
   },
   "scripts": {
-    "crash-recovery": "rm -rf var && (tsx src/crash-recovery.cli.ts start || true) && tsx src/crash-recovery.cli.ts resume"
+    "crash-recovery": "rm -rf var && (tsx src/crash-recovery.ts start || true) && tsx src/crash-recovery.ts resume",
+    "module-flow": "rm -rf var/module && (tsx src/module-flow.ts start || true) && (tsx src/module-flow.ts restart || true) && tsx src/module-flow.ts approve"
   }
 }

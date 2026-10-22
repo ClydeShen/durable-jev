@@ -1,74 +1,20 @@
 {
   "files": [],
   "references": [
-    {
-      "path": "packages/contracts"
-    },
-    {
-      "path": "packages/rule-engine"
-    },
-    {
-      "path": "packages/store"
-    },
-    {
-      "path": "packages/telemetry"
-    },
-    {
-      "path": "packages/a2a-adapter"
-    },
-    {
-      "path": "packages/transport-reservations"
-    },
-    {
-      "path": "packages/model-providers"
-    },
-    {
-      "path": "packages/agent-harness"
-    },
-    {
-      "path": "packages/agent-runtime-pi"
-    },
-    {
-      "path": "packages/rule-evaluation"
-    },
-    {
-      "path": "packages/transport-investigation"
-    },
-    {
-      "path": "packages/branch-service"
-    },
-    {
-      "path": "packages/service-kit"
-    },
-    {
-      "path": "packages/human-tasks"
-    },
-    {
-      "path": "eval/runner"
-    },
-    {
-      "path": "eval/faults"
-    },
-    {
-      "path": "apps/cargo-assurance"
-    },
-    {
-      "path": "apps/commercial-control"
-    },
-    {
-      "path": "apps/transport-planning"
-    },
-    {
-      "path": "apps/coordinator"
-    },
-    {
-      "path": "tools/launcher"
-    },
-    {
-      "path": "apps/observability"
-    },
-    {
-      "path": "eval/benchmarks"
-    }
+    { "path": "packages/contracts" },
+    { "path": "packages/model-providers" },
+    { "path": "packages/rule-engine" },
+    { "path": "packages/store" },
+    { "path": "packages/human-tasks" },
+    { "path": "packages/agent-harness" },
+    { "path": "packages/agent-core" },
+    { "path": "packages/agent-transport" },
+    { "path": "packages/logistics" },
+    { "path": "packages/service-kit" },
+    { "path": "apps/coordinator" },
+    { "path": "apps/agent" },
+    { "path": "tools/launcher" },
+    { "path": "eval/runner" },
+    { "path": "tools/rule-authoring" }
   ]
 }

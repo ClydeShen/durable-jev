@@ -1,1 +1,8 @@
-export * from './human-task-lifecycle.rules.js'
+export {
+  type ChainShape,
+  type ChainSteps,
+  chainOutcome,
+  gateStatusOf,
+  stepsToOpen,
+} from './approval-chain.js'
+export { type Decision, decideHumanTask, type HumanAction } from './decide-human-task.js'

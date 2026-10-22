@@ -1,0 +1,348 @@
+{
+  "section": "Part A. Order and cargo basics",
+  "note": "Scripted stand-in for the authoring model: the first attempt mistypes a policy parameter, the second fixes it. Live runs replace this with the model's own output.",
+  "attempts": [
+    {
+      "rules": [
+        {
+          "ruleId": "R01",
+          "version": "1",
+          "title": "Order complete",
+          "owner": "order-coordination",
+          "scope": "order",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R01"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "route", "quote"],
+          "expression": {
+            "passWhen": "order.customerId != null and order.deliveryWindow.from != null and order.deliveryWindow.to != null and count(cargoItems) > 0 and count(legs) > 0"
+          }
+        },
+        {
+          "ruleId": "R02",
+          "version": "1",
+          "title": "Measurements valid",
+          "owner": "order-coordination",
+          "scope": "cargoItem",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R02"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "item.weightGrams > 0 and item.quantity > 0 and item.volumeCubicCm > 0 and item.dimensionsMillimetres.length > 0 and item.dimensionsMillimetres.width > 0 and item.dimensionsMillimetres.height > 0",
+            "observe": "item.weightGrams"
+          }
+        },
+        {
+          "ruleId": "R03",
+          "version": "1",
+          "title": "Description matches declaration",
+          "owner": "cargo-assurance",
+          "scope": "cargoItem",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "R03"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "r03-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The cargo description describes goods of the declared categories (general, coldChain, controlled)."
+            },
+            "state": {
+              "description": "item.description",
+              "declaredCategories": "item.declaredCategories"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "R04",
+          "version": "1",
+          "title": "Branch determined",
+          "owner": "cargo-assurance",
+          "scope": "cargoItem",
+          "dependsOn": ["R02", "R03"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R04"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "count(item.declaredCategories) > 0",
+            "observe": "item.declaredCategories"
+          }
+        },
+        {
+          "ruleId": "R05",
+          "version": "1",
+          "title": "Vehicle payload",
+          "owner": "transport-planning",
+          "scope": "leg",
+          "dependsOn": ["R02"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R05"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "route"],
+          "expression": {
+            "passWhen": "sum(cargoItems.weightGrams) <= leg.vehicle.maxPayloadGrams",
+            "observe": "sum(cargoItems.weightGrams)"
+          }
+        },
+        {
+          "ruleId": "R06",
+          "version": "1",
+          "title": "Delivery window",
+          "owner": "transport-planning",
+          "scope": "order",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R06"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) >= date and time(order.deliveryWindow.from) and date and time(legs[-1].plannedArrival) <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "R07",
+          "version": "1",
+          "title": "Leg sequence",
+          "owner": "transport-planning",
+          "scope": "leg",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R07"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["minLegConnectionMinutes"],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(leg.plannedDeparture) < date and time(leg.plannedArrival) and (leg.sequence = 1 or date and time(leg.plannedDeparture) - date and time(legs[leg.sequence - 1].plannedArrival) >= duration(\"PT\" + string(params.minConnectionMinutes) + \"M\"))"
+          }
+        },
+        {
+          "ruleId": "R08",
+          "version": "1",
+          "title": "No conflicting identities",
+          "owner": "order-coordination",
+          "scope": "order",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R08"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "every i in cargoItems satisfies i.shipmentId = order.shipmentId"
+          }
+        }
+      ]
+    },
+    {
+      "rules": [
+        {
+          "ruleId": "R01",
+          "version": "1",
+          "title": "Order complete",
+          "owner": "order-coordination",
+          "scope": "order",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R01"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "route", "quote"],
+          "expression": {
+            "passWhen": "order.customerId != null and order.deliveryWindow.from != null and order.deliveryWindow.to != null and count(cargoItems) > 0 and count(legs) > 0"
+          }
+        },
+        {
+          "ruleId": "R02",
+          "version": "1",
+          "title": "Measurements valid",
+          "owner": "order-coordination",
+          "scope": "cargoItem",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R02"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "item.weightGrams > 0 and item.quantity > 0 and item.volumeCubicCm > 0 and item.dimensionsMillimetres.length > 0 and item.dimensionsMillimetres.width > 0 and item.dimensionsMillimetres.height > 0",
+            "observe": "item.weightGrams"
+          }
+        },
+        {
+          "ruleId": "R03",
+          "version": "1",
+          "title": "Description matches declaration",
+          "owner": "cargo-assurance",
+          "scope": "cargoItem",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "semantic",
+            "ref": "R03"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["semanticMatchThreshold"],
+          "invalidationTriggers": ["cargo", "documents"],
+          "semantic": {
+            "promptVersion": "r03-v1",
+            "question": {
+              "kind": "noul",
+              "text": "The cargo description describes goods of the declared categories (general, coldChain, controlled)."
+            },
+            "state": {
+              "description": "item.description",
+              "declaredCategories": "item.declaredCategories"
+            },
+            "passWhen": {
+              "probabilityAtLeast": "semanticMatchThreshold"
+            }
+          }
+        },
+        {
+          "ruleId": "R04",
+          "version": "1",
+          "title": "Branch determined",
+          "owner": "cargo-assurance",
+          "scope": "cargoItem",
+          "dependsOn": ["R02", "R03"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R04"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "count(item.declaredCategories) > 0",
+            "observe": "item.declaredCategories"
+          }
+        },
+        {
+          "ruleId": "R05",
+          "version": "1",
+          "title": "Vehicle payload",
+          "owner": "transport-planning",
+          "scope": "leg",
+          "dependsOn": ["R02"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R05"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo", "route"],
+          "expression": {
+            "passWhen": "sum(cargoItems.weightGrams) <= leg.vehicle.maxPayloadGrams",
+            "observe": "sum(cargoItems.weightGrams)"
+          }
+        },
+        {
+          "ruleId": "R06",
+          "version": "1",
+          "title": "Delivery window",
+          "owner": "transport-planning",
+          "scope": "order",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R06"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(legs[-1].plannedArrival) >= date and time(order.deliveryWindow.from) and date and time(legs[-1].plannedArrival) <= date and time(order.deliveryWindow.to)",
+            "observe": "legs[-1].plannedArrival"
+          }
+        },
+        {
+          "ruleId": "R07",
+          "version": "1",
+          "title": "Leg sequence",
+          "owner": "transport-planning",
+          "scope": "leg",
+          "dependsOn": [],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R07"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": ["minLegConnectionMinutes"],
+          "invalidationTriggers": ["route"],
+          "expression": {
+            "passWhen": "date and time(leg.plannedDeparture) < date and time(leg.plannedArrival) and (leg.sequence = 1 or date and time(leg.plannedDeparture) - date and time(legs[leg.sequence - 1].plannedArrival) >= duration(\"PT\" + string(params.minLegConnectionMinutes) + \"M\"))"
+          }
+        },
+        {
+          "ruleId": "R08",
+          "version": "1",
+          "title": "No conflicting identities",
+          "owner": "order-coordination",
+          "scope": "order",
+          "dependsOn": ["R01"],
+          "evaluator": {
+            "kind": "expression",
+            "ref": "R08"
+          },
+          "unknownPolicy": "block",
+          "inputPaths": [],
+          "parameters": [],
+          "invalidationTriggers": ["cargo"],
+          "expression": {
+            "passWhen": "every i in cargoItems satisfies i.shipmentId = order.shipmentId"
+          }
+        }
+      ]
+    }
+  ]
+}

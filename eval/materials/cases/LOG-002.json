@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-002",
-  "title": "Cold chain shipment arrives with damaged packaging",
   "reviewStatus": "draft",
+  "story": "冷链疫苗到仓检查发现外箱压损。Jev 读检查备注提示包装风险，仓库重新包装并复测后才解除阻塞，再装载发运。",
   "shipment": {
-    "caseId": "CASE-LOG-002",
-    "shipmentId": "LOG-002",
-    "customerId": "CUST-BLUE-CLINIC",
+    "caseId": "LOG-002",
+    "correlationId": "corr-LOG-002",
+    "shipmentId": "SHP-002",
+    "customerId": "CUS-MEDI",
+    "destinationCountry": "NZ",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,215 +14,277 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "CAN-CLINIC",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-002-ITEM-1",
-        "description": "Influenza vaccines, 200 doses in an insulated shipper",
-        "declaredCategories": ["COLD_CHAIN"],
-        "weightGrams": 18000,
-        "lengthMm": 600,
-        "widthMm": 400,
-        "heightMm": 450,
+        "cargoItemId": "ITEM-1",
+        "description": "Influenza vaccine vials in an insulated shipper, keep at 2-8C",
+        "declaredCategories": ["coldChain"],
+        "quantity": 4,
+        "weightGrams": 40000,
+        "dimensionsMillimetres": {
+          "length": 600,
+          "width": 400,
+          "height": 400
+        },
         "temperatureRange": {
           "minDeciCelsius": 20,
           "maxDeciCelsius": 80
-        },
-        "packagingId": "PKG-002-1"
+        }
       }
     ],
     "legs": [
       {
-        "legId": "LOG-002-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "CAN-CLINIC",
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
         "carrierId": "CAR-POLAR",
-        "vehicleId": "VEH-PL-REEFER-5T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
       }
     ],
-    "quote": {
-      "quoteId": "Q-LOG-002-1",
-      "amountCents": 95000,
-      "currency": "CNY"
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
     },
-    "customerInstructions": "Hand over to the clinic pharmacy only and keep the shipper refrigerated."
-  },
-  "evidence": {
-    "documents": [],
-    "temperatureLogs": [
+    "handover": "dock",
+    "quote": {
+      "amountCents": 240000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [
       {
-        "cargoItemId": "LOG-002-ITEM-1",
-        "sensorId": "SENSOR-LOG-002-ITEM-1",
-        "calibrationValidUntil": "2027-01-01T00:00:00Z",
-        "readings": [
+        "documentId": "DOC-002-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit NZ-MED-2026-0412 issued by Medsafe for influenza vaccine vials manufactured by Kestrel Biologics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      }
+    ],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Outer carton crushed on one corner, condensation visible inside the shipper.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
           {
-            "at": "2026-11-03T02:00:00Z",
+            "at": "2026-11-02T18:30:00Z",
             "deciCelsius": 45
           },
           {
-            "at": "2026-11-03T03:30:00Z",
-            "deciCelsius": 52
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
+            "deciCelsius": 47
+          },
+          {
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 46
+          },
+          {
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 49
+          },
+          {
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 51
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 48
           }
         ]
-      }
-    ],
-    "inspectionNotes": [
-      {
-        "cargoItemId": "LOG-002-ITEM-1",
-        "inspectedAt": "2026-11-03T03:00:00Z",
-        "note": "Outer carton crushed on one corner; inner shipper dented; ice packs intact."
       }
     ]
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-002-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.95
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
       }
     },
     {
-      "ruleId": "R27",
-      "entityId": "order",
-      "answer": {
-        "type": "noul",
-        "noul": 0.92
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
       }
     },
     {
-      "ruleId": "R18",
-      "entityId": "LOG-002-ITEM-1",
-      "answer": {
-        "type": "choice",
-        "choice": "damaged_packaging",
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "damaged_packaging"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
         "probabilities": {
-          "no_risk": 0.02,
-          "damaged_packaging": 0.85,
-          "cold_chain_risk": 0.13
+          "pharmaceutical": 0.96,
+          "general": 0.03
         }
+      }
+    },
+    {
+      "questionId": "DEST-NZ-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R18": "PASS",
-          "R18-RISK": "PASS",
-          "R20": "NOT_APPLICABLE",
-          "R21": "WAITING_HUMAN",
-          "R22-CAPTURE": "BLOCKED_DEPENDENCY",
-          "R23": "BLOCKED_DEPENDENCY",
-          "R39-LOAD": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R21",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "approveHumanTask",
-      "ruleId": "R21",
-      "actor": "WAREHOUSE_OPERATOR",
-      "expect": {
-        "error": "UNPROCESSABLE",
-        "orderStatus": "AWAITING_HUMAN",
-        "openHumanTasks": [
-          {
-            "ruleId": "R21",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R21",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "repackPhotoRef": "PHOTO-002-1",
-        "packagingId": "PKG-002-2"
+      "kind": "expect",
+      "label": "初始：包装风险，等待仓库整改",
+      "statuses": {
+        "R18@ITEM-1": "FAIL",
+        "R21@ITEM-1": "WAITING_HUMAN",
+        "R22@ITEM-1": "BLOCKED_DEPENDENCY",
+        "R40": "WAITING_HUMAN"
       },
-      "expect": {
-        "gates": {
-          "R21": "PASS",
-          "R22-CAPTURE": "WAITING_HUMAN",
-          "R23": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R22-CAPTURE",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R21@ITEM-1", "CUST-MEDI-5"]
     },
     {
-      "step": "completeHumanTask",
-      "ruleId": "R22-CAPTURE",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "retestReadingDeciCelsius": "46",
-        "retestBy": "warehouse-op-02"
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
       },
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R22": "PASS",
-          "R23": "PASS",
-          "R38": "PASS"
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Dr. Aroha Ngata",
+          "deliveryNoteRef": "DN-002-01"
         },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
+        "evidenceRefs": []
       }
     },
     {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "act",
+      "label": "调度员不能代做整改",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-2001",
+          "photoRef": "photo-repack-1"
+        },
+        "evidenceRefs": ["photo-repack-1"]
+      },
+      "expectRefusal": "UNAUTHORIZED"
+    },
+    {
+      "kind": "act",
+      "label": "仓库重新包装",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-2001",
+          "photoRef": "photo-repack-1"
+        },
+        "evidenceRefs": ["photo-repack-1"]
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
+      "kind": "expect",
+      "label": "整改完成只解锁复测，不解锁发运",
+      "statuses": {
+        "R21@ITEM-1": "PASS",
+        "R22@ITEM-1": "WAITING_HUMAN",
+        "R39": "BLOCKED_DEPENDENCY"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R22@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库复测",
+      "task": "R22@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "retestDeciCelsius": "46",
+          "photoRef": "photo-retest-1"
         },
-        "openHumanTasks": []
+        "evidenceRefs": ["photo-retest-1"]
       }
+    },
+    {
+      "kind": "expect",
+      "label": "复测通过，冷链分支就绪",
+      "statuses": {
+        "R23@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

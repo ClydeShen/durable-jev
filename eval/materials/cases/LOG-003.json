@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-003",
-  "title": "Controlled goods whose documents conflict with the declaration",
   "reviewStatus": "draft",
+  "story": "受控货的安全说明与货物描述冲突。补交正确的安全说明后，合规审核员签核；商务主管批准不能替代合规签核。",
   "shipment": {
-    "caseId": "CASE-LOG-003",
-    "shipmentId": "LOG-003",
-    "customerId": "CUST-ACME-RETAIL",
+    "caseId": "LOG-003",
+    "correlationId": "corr-LOG-003",
+    "shipmentId": "SHP-003",
+    "customerId": "CUS-ACME",
+    "destinationCountry": "SG",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,198 +14,238 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "NKG-DC3",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-003-ITEM-1",
-        "description": "Lithium ion battery packs for warehouse scanners, 40 units",
-        "declaredCategories": ["CONTROLLED"],
-        "controlledClass": "CLASS-9",
-        "weightGrams": 120000,
-        "lengthMm": 1200,
-        "widthMm": 800,
-        "heightMm": 1000
+        "cargoItemId": "ITEM-1",
+        "description": "Industrial descaling concentrate, corrosive, 12 drums of 25 L (controlled class C2)",
+        "declaredCategories": ["controlled"],
+        "quantity": 12,
+        "weightGrams": 360000,
+        "dimensionsMillimetres": {
+          "length": 400,
+          "width": 400,
+          "height": 600
+        },
+        "controlledClass": "C2"
       }
     ],
     "legs": [
       {
-        "legId": "LOG-003-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "NKG-DC3",
-        "carrierId": "CAR-NORTHLINE",
-        "vehicleId": "VEH-NL-BOX-7T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-POLAR",
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-04T07:00:00Z",
+        "plannedArrival": "2026-11-04T13:00:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-04T10:00:00Z",
+      "to": "2026-11-04T18:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-003-1",
-      "amountCents": 260000,
-      "currency": "CNY"
-    }
-  },
-  "evidence": {
+      "amountCents": 310000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
     "documents": [
       {
-        "documentId": "LOG-003-SDS",
-        "kind": "SAFETY_DATA_SHEET",
-        "cargoItemId": "LOG-003-ITEM-1",
-        "text": "Safety data sheet: lithium metal cells, UN3090, class 9. Keep away from heat.",
-        "extractedFields": {}
+        "documentId": "DOC-003-SDS",
+        "kind": "safetyDataSheet",
+        "version": 1,
+        "text": "Safety data sheet: lithium-ion battery packs, UN3480, class 9 dangerous goods.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
       },
       {
-        "documentId": "LOG-003-DECL",
-        "kind": "CONTROLLED_DECLARATION",
-        "cargoItemId": "LOG-003-ITEM-1",
-        "text": "Declared goods: lithium ion battery packs for handheld scanners, class 9.",
-        "extractedFields": {}
+        "documentId": "DOC-003-DECL",
+        "kind": "controlledDeclaration",
+        "version": 1,
+        "text": "Controlled goods declaration C2 for 12 drums of descaling concentrate.",
+        "extractedFields": {},
+        "source": "customer upload",
+        "cargoItemId": "ITEM-1"
       }
     ],
-    "temperatureLogs": [],
-    "inspectionNotes": []
+    "warehouseRecords": []
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-003-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.93
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.92
       }
     },
     {
-      "ruleId": "R10",
-      "entityId": "LOG-003-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.5
-      }
-    }
-  ],
-  "eventScript": [
-    {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "ON_HOLD",
-        "gates": {
-          "R09": "PASS",
-          "R10": "WAITING_HUMAN",
-          "R11": "FAIL",
-          "R13": "BLOCKED_DEPENDENCY",
-          "R14": "FAIL",
-          "R40": "FAIL"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R10",
-            "requiredRole": "COMPLIANCE_REVIEWER"
-          }
-        ]
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.97
       }
     },
     {
-      "step": "approveHumanTask",
-      "ruleId": "R10",
-      "actor": "COMMERCIAL_MANAGER",
-      "expect": {
-        "error": "FORBIDDEN",
-        "orderStatus": "ON_HOLD",
-        "gates": {
-          "R10": "WAITING_HUMAN"
+      "questionId": "R10",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.08
+      }
+    },
+    {
+      "questionId": "R10",
+      "stateIncludes": "citric acid",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.94
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "chemical",
+        "probabilities": {
+          "chemical": 0.94,
+          "general": 0.04
         }
       }
     },
     {
-      "step": "approveHumanTask",
-      "ruleId": "R10",
-      "actor": "COMPLIANCE_REVIEWER",
-      "expect": {
-        "orderStatus": "ON_HOLD",
-        "gates": {
-          "R10": "PASS",
-          "R11": "FAIL",
-          "R13": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": []
+      "questionId": "DEST-SG-CHEM-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.15
       }
     },
     {
-      "step": "changePlan",
-      "actor": "TRANSPORT_PLANNER",
-      "change": {
-        "kind": "changeCarrier",
-        "legId": "LOG-003-LEG-1",
-        "carrierId": "CAR-SECURA",
-        "vehicleId": "VEH-SC-REEFER-3T"
+      "questionId": "DEST-SG-CHEM-3",
+      "stateIncludes": "hazard class 8",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.9
+      }
+    }
+  ],
+  "events": [
+    {
+      "kind": "expect",
+      "label": "初始：文件与货物不一致，不能放行",
+      "statuses": {
+        "R09@ITEM-1": "PASS",
+        "R10@ITEM-1": "FAIL",
+        "R13@ITEM-1": "BLOCKED_DEPENDENCY",
+        "R40": "FAIL"
       },
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R10": "PASS",
-          "R11": "PASS",
-          "R13": "WAITING_HUMAN"
-        },
-        "invalidated": ["R11", "R13", "R24", "R25", "R29"],
-        "notInvalidated": ["R10", "R31", "R32"],
-        "openHumanTasks": [
+      "orderStatus": "ON_HOLD",
+      "openTasks": []
+    },
+    {
+      "kind": "revise",
+      "label": "客户补交正确的安全说明",
+      "patch": {
+        "caseRevision": 2,
+        "documents": [
           {
-            "ruleId": "R13",
-            "requiredRole": "COMPLIANCE_REVIEWER"
+            "documentId": "DOC-003-SDS",
+            "kind": "safetyDataSheet",
+            "version": 2,
+            "text": "Safety data sheet: citric acid descaling concentrate, UN 3265, hazard class 8 (corrosive liquid), 12 x 25 L drums.",
+            "extractedFields": {},
+            "source": "customer upload",
+            "cargoItemId": "ITEM-1"
+          },
+          {
+            "documentId": "DOC-003-DECL",
+            "kind": "controlledDeclaration",
+            "version": 1,
+            "text": "Controlled goods declaration C2 for 12 drums of descaling concentrate.",
+            "extractedFields": {},
+            "source": "customer upload",
+            "cargoItemId": "ITEM-1"
           }
         ]
       }
     },
     {
-      "step": "approveHumanTask",
-      "ruleId": "R13",
-      "actor": "COMPLIANCE_REVIEWER",
-      "expect": {
-        "gates": {
-          "R14": "PASS",
-          "R37": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "文件一致，等待合规签核",
+      "statuses": {
+        "R10@ITEM-1": "PASS",
+        "R13@ITEM-1": "WAITING_HUMAN"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R13@ITEM-1"]
+    },
+    {
+      "kind": "act",
+      "label": "商务主管不能代替合规签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "carol",
+        "role": "commercialManager"
+      },
+      "decision": {
+        "type": "approve"
+      },
+      "expectRefusal": "UNAUTHORIZED"
+    },
+    {
+      "kind": "act",
+      "label": "合规审核员签核",
+      "task": "R13@ITEM-1",
+      "actor": {
+        "id": "alice",
+        "role": "complianceReviewer"
+      },
+      "decision": {
+        "type": "approve"
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
+      "kind": "expect",
+      "label": "受控分支就绪",
+      "statuses": {
+        "R14@ITEM-1": "PASS",
+        "R39": "WAITING_HUMAN"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
         },
-        "openHumanTasks": []
+        "evidenceRefs": []
       }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

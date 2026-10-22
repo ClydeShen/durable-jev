@@ -3,26 +3,18 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
   "dependencies": {
+    "@durable-jev/agent-core": "workspace:*",
+    "@durable-jev/agent-transport": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
-    "@durable-jev/coordinator": "workspace:*",
+    "@durable-jev/human-tasks": "workspace:*",
+    "@durable-jev/logistics": "workspace:*",
+    "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
-    "@durable-jev/rule-evaluation": "workspace:*",
     "@durable-jev/store": "workspace:*",
-    "@durable-jev/transport-reservations": "workspace:*",
-    "zod": "4.6.7",
-    "@durable-jev/model-providers": "workspace:*"
+    "express": "5.3.0"
   },
-  "scripts": {
-    "policy:render": "node dist/render-policy.cli.js",
-    "replay": "node dist/replay.cli.js",
-    "event-schema:render": "node dist/render-event-schema.cli.js",
-    "accuracy": "node dist/accuracy.cli.js"
+  "devDependencies": {
+    "@types/express": "5.0.6"
   }
 }

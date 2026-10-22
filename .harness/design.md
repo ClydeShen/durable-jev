@@ -21,39 +21,43 @@
 
 ```
 apps/
-  coordinator/            订单版本、规则图调度、人工任务、整单状态、放行事务
-  cargo-assurance/        货件规则 + Jev 判断
-  transport-planning/     运输段规则 + 调查 Agent
-  commercial-control/     授信与费用规则
+  coordinator/            订单协调 agent（R01、R02、R08、R37–R40、调度员确认）+ 编排器 + 网关（API、静态页面）
+  agent/                  通用 Durable Jev Agent 服务，按 AGENT_ID 启动为：
+                            cargo-assurance     R03、R04、R09–R15、R17–R23；合规/质量/仓库人工任务
+                            transport-planning  R05–R07、R16、R24–R26、R29、R30；调查助手、计划员确认
+                            commercial-control  R27、R31–R36 + CUST-* 扩展规则；商务审批
+                            destination-compliance（扩展演示）R41 + DEST-* 扩展规则
   web/                    工作台 + Console + 演示控制
 packages/
-  contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
-  rule-engine/            纯函数：配置校验、组合器、求值、失效计算
-  store/                  SQLite 连接、迁移、幂等操作表、outbox
-  human-tasks/            人工任务纯状态机：角色校验、过期、版本绑定、替代、人工门槛状态
-  observability/          事件 schema、logger、trace 上下文
+  contracts/              Zod 契约：ids、shipment、check、humanTask、agents
+  rule-engine/            纯函数：配置校验、组合器、求值、失效计算、扩展规则筛选索引
+  store/                  SQLite 连接、迁移、幂等操作表、outbox（事件由协调者汇入观察库）
   model-providers/        SemanticJudge 接口：jev、structured-output、scripted
-  agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
-  a2a-adapter/            业务任务 ↔ A2A Task 映射，server/client 封装
-  service-kit/            服务启动样板：Express、健康检查、本地控制端点
+  agent-core/             Durable Jev Agent 运行时：规则包、案例求值、人工门槛、AgentClient 与 CaseOrchestrator
+  agent-transport/        AgentClient 的两种传输：native/（HTTP 客户端与 agent 路由）、a2a/（Agent Card、业务任务 ↔ A2A Task）
+  human-tasks/            人工任务状态机与审批链
+  logistics/              参考数据、案例文件、事实构建、物流 agent 装配、放行事务、改派调查（reroute/）
+  agent-harness/          调查助手运行时：Pi Durable 上的 DurableInvestigator 与控制点（工具预算、资料隔离）
+  service-kit/            服务启动样板：Express、pino 日志、健康检查、演示角色头、错误处理
 tools/
   launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
+  rule-authoring/         规则编写 agent：政策文本 → 校验过的规则提案与 diff
 spikes/                   P0 一次性验证，不被正式代码依赖
 eval/
-  materials/              policy-v1.md、rules.json、cases/、mock-data/、event-scripts
-  blind/                  盲测标准答案，仅 runner 读取
-  runner/                 回放、故障注入、benchmark
+  materials/              policy-v1.md、rules.json、cases/、mock-data/、screening/、authoring/（编写录制）
+  blind/                  盲测标准答案，仅 runner 读取（待建）
+  runner/                 回放（replay-main）、筛选（screening-main）、故障场景（faults-main）
 docs/                     用户文档
 var/                      运行时数据与日志，gitignore
 ```
 
-依赖方向：`apps → packages`；`rule-engine`、`human-tasks` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
+依赖方向：`apps → packages`；`rule-engine` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
 
 ## 3. 工程约定
 
-- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写。
-- 不写解释性注释；需要解释的逻辑拆成命名良好的函数。
-- 函数小、纯函数优先；IO 集中在 app 边界。
+每条约定由 `pnpm check` 里的工具强制，规则、理由与对应工具见 [docs/engineering.md](../docs/engineering.md)。业务层面的补充：
+
+- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写；注释只写"为什么"与约束。
 - 测试轻量：每个包挑关键语义写少量 Vitest，不追求覆盖率。
 - 所有时间 UTC，金额整数分，重量克，温度 0.1°C 整数。
 
@@ -62,13 +66,13 @@ var/                      运行时数据与日志，gitignore
 | 命令 | 作用 |
 |---|---|
 | `pnpm bootstrap` | install + build 全部 |
-| `pnpm start` | launcher 启动 4 个服务 + web，打印访问地址 |
+| `pnpm start` / `pnpm start:a2a` | launcher 启动 5 个 agent 服务 + web（后者经 A2A 通信），打印访问地址 |
 | `pnpm demo:reset` | 清库并载入 LOG-001 ~ LOG-008 |
-| `pnpm test` | 全部 unit test |
-| `pnpm faults` | 跑故障场景 runner，输出报告到 `var/reports/` |
-| `pnpm bench` | 跑 benchmark，输出报告到 `var/reports/` |
+| `pnpm check` | lint、全量类型检查（含测试与 web）、knip、unit test |
+| `pnpm replay` / `pnpm screening` / `pnpm faults` | 回放、筛选、故障场景，报告到 `var/reports/` |
+| `pnpm bench` | 跑 benchmark（待建） |
 
-`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`（暂缓）。默认 `scripted`，无 key 可完整演示。
+`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`。默认 `scripted`，无 key 可完整演示。
 
 Web 中的演示控制（仅本地演示模式开启）：选择案例、扮演角色、执行人工审批/现场动作、修改订单触发失效、杀死/重启服务、注入超时、重复提交。
 
@@ -93,13 +97,29 @@ type RuleDefinition = {
   combiner?: Expression
   unknownPolicy: 'block' | 'escalateToHuman'
   inputPaths: string[]
-  parameters: string[]
-  humanGate?: { taskType: 'APPROVAL' | 'OPERATION'; requiredRole: Role }
+  humanGate?: {
+    taskType: 'APPROVAL' | 'OPERATION'
+    steps: { requiredRole: Role; appliesWhen?: Expression }[]   // 1–3 个角色
+    mode: 'sequential' | 'parallel'
+    distinctActors: boolean                                      // 四眼原则：同一人不能签两步
+  }
   invalidationTriggers: string[]
 }
 ```
 
-`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树。`ifThen` 的分支字段名为 `consequence`（避免 `then` 使对象成为 thenable）。`parameters` 列出规则使用的 policy 参数名，供配置校验。
+叶子求值方式：
+
+| kind | 配置 | 由谁执行 | 谁来写 |
+|---|---|---|---|
+| `expression` | `expression.passWhen`（FEEL，true/false/null → PASS/FAIL/UNKNOWN），可选 `observe` | rule-engine 内置 | 编写 agent 生成，人工审核 |
+| `semantic` | `semantic`：问题（choice / noul）、`state`（FEEL 取值）、`passWhen`（choiceIn / probabilityAtLeast / probabilityAtMost） | agent 层用 SemanticJudge（Jev） | 编写 agent 生成 |
+| `humanGate` | `humanGate`：步骤、模式、四眼、`evidenceRequirements`、`expiresAfterHours` | agent 层用人工任务状态机 | 编写 agent 生成 |
+| `combinator` | `combiner` 表达式树 | rule-engine 内置 | 编写 agent 生成 |
+| `code` / `decisionTable` | `evaluator.ref` 指向注册的函数 | agent 层注册的手写代码 | 人；计入"手写代码"指标 |
+
+FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`、`params`（政策参数）。不用 FEEL 过滤语法 `list[条件]`（feelin 8.2 在这些情形下返回空列表，配合 `every` 会空真通过），一律写成 `every i in list satisfies (not(适用) or 条件)`。条件树里可用 `feel` 叶子写数值或事实条件；`allOf`/`anyOf` 可在任何作用域使用，只要不嵌套在同一作用域内（如运输段规则读"任一货件是受控货"）。`decisionTable` 目前是混装矩阵：`mixing.categories` / `mixing.qualifications` 两个 FEEL 取值，按规则包中的 `mixingMatrix` 判定，观察值列出违规组合。表达式里的 `params.X` 必须在规则的 `parameters` 中声明，且存在于政策参数；FEEL 语法在启动校验时检查。
+
+`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。另有两个叶子：`fact(path, equals|includes)` 读输入事实（`order.` 前缀读订单级，否则读当前作用域成员），`observed(ruleId, equals|includes)` 读上游规则的 observedValue（如 R04 判定的分支）；值缺失为 UNKNOWN。
 
 ### 5.3 组合语义
 
@@ -116,74 +136,39 @@ type RuleDefinition = {
 
 依赖未完成时规则本身为 BLOCKED_DEPENDENCY，并记录 `blockedBy`。
 
-规则层的阻塞语义（按现实操作常识）：
+图求值（`evaluateRuleGraph`）按拓扑序、按作用域成员逐实例求值：
 
-- WAITING_HUMAN 只属于人工门槛本身。任何直接依赖或在组合中嵌套引用它的规则，状态是 BLOCKED_DEPENDENCY，不是 WAITING_HUMAN。
-- 组合规则（combinator）的表达式求值结果若为 pending，且存在未决的上游，规则状态为 BLOCKED_DEPENDENCY，`blockedBy` 记录直接上游。
-- 没有上游可等的 pending（如 `allOf` 空集合的 UNKNOWN）保持原状态，不伪装成被阻塞。
-- 上表的组合语义只用于表达式内部求值；界面沿 `blockedBy` 追溯到根因（等待中的人工门槛或 UNKNOWN 规则），并显示需要的角色。
-
-### 5.3.1 规则建模约定（T3.1）
-
-- **条件规则**（ID 带后缀，如 `R04-COLD`、`R04-CONTROLLED`、`R18-RISK`、`R19-EXCURSION`、`R21-REQUIRED`、`R32-OVER`、`R35-REQUIRED`）：情况成立为 PASS，不成立为 NOT_APPLICABLE，从不 FAIL。只供 `appliesWhen` 引用。
-- **事实 vs 门槛**：R18、R19 的 gateStatus 表示"检查已完成"，异常事实放 observedValue；是否触发后续流程由条件规则决定。
-- **人工门槛拆分**：一个门槛一个角色。R39 = `R39-LOAD` + `R39-CONFIRM`；R22 = `R22-CAPTURE`（仓库采集复测读数）+ R22（代码判定读数在温区内）；R35 = `R35-REQUIRED`（代码）+ R35（商务主管审批）。
-- **R20 处置**：批准时可带 `conditions: ['REWORK_REQUIRED']`；`R20-REWORK` 读取该条件。
-- **R38**：组合规则，聚合装载前人工门槛（R13、R20、R21、R22-CAPTURE、R34、R35），NOT_APPLICABLE 忽略；没有任何装载前任务时为 NOT_APPLICABLE。
-- **不确定转人工**：`unknownPolicy: 'escalateToHuman'` 必须带 `humanGate`（复核角色）。语义判断 UNKNOWN 时 Coordinator 创建该角色的复核任务：批准 → PASS，拒绝 → FAIL。
-- **证据**：`CaseEvidence`（资料、温控记录、检查备注）与 `Shipment` 分开提交与存储。
-- **决策表**：混装兼容矩阵 `decision-tables/mixing-matrix.json`；中转能力取 reference data 的 hubs。
+1. `appliesWhen`：FAIL/NOT_APPLICABLE → 本规则 NOT_APPLICABLE；pending → BLOCKED_DEPENDENCY；ERROR → ERROR。
+2. 组合规则直接求 `combiner`，不做依赖门控（组合语义自己处理 pending）。
+3. 叶子规则：`dependsOn` 中除 `appliesWhen` 已引用者外，每个依赖必须为 PASS 或 NOT_APPLICABLE，否则 BLOCKED_DEPENDENCY 且 `blockedBy` 列出这些依赖；订单级规则依赖货件/运输段级规则时按 ALL 聚合（空集合为 UNKNOWN）。像 R33"仅 R32 失败时"这类规则，把 R32 写进 `appliesWhen`，就不会被 R32 的 FAIL 门控。
+4. 求值器抛错 → ERROR；缺求值器 → ERROR；返回 UNKNOWN 且 `unknownPolicy = escalateToHuman` → 记入 `escalations`，由人工任务模块（T1.7）创建任务。
 
 ### 5.4 配置校验
 
-启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`、`escalateToHuman` 必须带 `humanGate`。失败则服务拒绝发起放行。
+启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`。失败则服务拒绝发起放行。
 
 ### 5.5 失效与增量重算
 
 - 每个 check 记录 `inputFingerprint = hash(inputPaths 的值 + 实体版本 + 上游结果 id)`。
 - 实体变更 → 由 `invalidationTriggers` 找到直接受影响规则 → 沿依赖图向下游传递 → 标记 INVALIDATED → 只重算这部分。
 - 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
+- 多角色审批链：每一步是一个独立的 APPROVAL 人工任务（单一角色，带 `approvalChain` 的 chainId/stepIndex/stepCount/mode）。顺序模式下前一步批准后才创建下一步；并行模式下同时创建。全部批准 → 门槛 PASS；任一拒绝 → FAIL 并取消其余步骤；任一过期 → 该链失效，需重新发起；失效时整条链被新链替代。`distinctActors` 时同一人不能批准同链两步，同角色两步即"双人复核"。步骤可带 `appliesWhen`（如受控货追加合规审核员、超二级额度追加第二名商务主管）。在 Pi Durable 中，一条链是父任务依次等待的子任务。实现在 `packages/human-tasks`：`decideHumanTask` 校验角色、过期、目标版本（指纹）、证据字段、步骤顺序与四眼原则后才落定；`chainOutcome` / `stepsToOpen` / `gateStatusOf` 计算链状态、该开哪几步、门槛状态。链过期或被取消/替代时门槛为 UNKNOWN，由所属 agent 重新发起新链。
 - 晚到结果的指纹与当前不符时只归档。
-
-#### 变更与失效（T3.4）
-
-- 变更命令：`reassignVehicle(legId, vehicleId)`、`changeCarrier(legId, carrierId, vehicleId)`（运输计划员）、`changeQuote(amountCents)`（商务主管）。终态订单不接受变更。
-- 每次变更：caseRevision +1，相关实体版本 +1，记录变更（changeId、类型、triggers、操作人、时间）。触发词：vehicle → `vehicle`（route 版本 +1）；carrier → `carrier`、`vehicle`（carrier、route 版本 +1）；quote → `quote`（quote 版本 +1）。
-- 提交变更的事务内：沿 `invalidationTriggers` 与依赖图计算失效集，把当前结果标为 INVALIDATED 并记录 `invalidatedByChange`，订单转 EVALUATING；随后重新求值，失效集内规则的新结果带 `affectedByChange`，界面显示"变更 #N 后重新检查"。
-- 人工任务目标只绑定规则相关的实体版本：触发词 → 实体（cargo、documents、temperature、inspection → cargo；route、vehicle、reservation → route；carrier → carrier；quote、customer → quote；loading → 全部）。目标匹配只比较输入指纹（含相关实体版本），不再比较 caseRevision。
-- 变更后仍打开、但目标已过期且没有替代任务的人工任务（门槛暂时到达不了）转为 CANCELLED，不再可操作。
-- 运输预订：新 route 版本预订后，同一订单更早 route 版本的有效预订幂等取消（RESERVED → CANCELLED）。
+- 实现：订单改版时由 CaseRuntime 比较新旧事实的实体版本得出变更（如 `r2 (route, carrier, quote)`），`invalidateDependentsOf` 求出受影响规则，写 `result.invalidated` 事件，重算出的结果带 `invalidatedBy` 供 UI 显示"哪次变更导致失效"；文档版本取文档与仓库记录内容的短哈希，只在内容变化时变化；`evaluateRuleGraph(..., { previous })` 重算时，code / decisionTable / semantic 规则指纹不变即复用（不重复调用 Jev），humanGate 与组合规则每次重新求值。实体版本是订单级的，改一个运输段会让同一触发下所有运输段重算：保守，不会误复用。
 
 ## 6. 服务与流程
 
-- Coordinator 拥有订单版本和整单规则图（R01–R40 的聚合层），通过各服务接口获取分支结果；依赖调度是确定性状态机。
-- 业务服务暴露原生 HTTP 任务接口；`a2a-adapter` 在其上包一层 A2A server（B4 对照）。
-- 人工任务由 Coordinator 持有；角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
-
-### 6.1 分支服务拆分（T3.2）
-
-| 服务 | 负责的 `branch` | 自有数据 |
-|---|---|---|
-| coordinator | base、release | 订单、人工任务、检查结果 |
-| cargo-assurance | controlled、coldChain | 求值记录 |
-| transport-planning | plan | 求值记录、运输预订（幂等操作表） |
-| commercial-control | commercial | 求值记录 |
-
-- 求值代码在 `packages/rule-evaluation`（叶子规则、决策表、配置加载、`evaluateBranch`），各服务只启用自己的分支；规则集仍是同一个 `rules.json`。
-- 原生接口 `POST /evaluations`：请求带订单、证据、语义答案、本服务规则引用的上游结果、相关人工门槛的当前状态（状态、决定、操作字段）；响应带本服务规则的求值结果和 `humanGateRequests`（到达但没有有效任务的人工门槛，含"不确定转人工"）。服务把这些门槛视为 WAITING_HUMAN。
-- Coordinator 通过 `BranchEvaluator` 接口调用（进程内或 HTTP，同一求值代码）。启动时由规则依赖算出分层（T3.3）：同层并行，层间按依赖顺序；当前为 [base、commercial] → [cargo-assurance] → [transport-planning] → [release]。每个服务只收到它的规则引用的上游结果。重复或遗漏覆盖、循环依赖都拒绝启动。
-- 人工任务仍由 Coordinator 创建与持有；服务不直接改人工任务。
-- 放行：先求值（确认视为已批准），再在同一 SQLite 事务内重读订单，版本或确认任务状态已变则返回 CONFLICT；否则写入批准、检查结果，R40 通过才写 DISPATCHED，不通过整体回滚（乐观并发）。
+- 术语："agent" 只指 Durable Jev Agent（对外 A2A 身份 + 内部 Jev + Pi Durable + 规则包）。会自己选工具的 LLM 循环称"调查助手"，是 agent 内部的可选部件。
+- 协作模式（均走 A2A）：派单与汇总（订单协调 agent ↔ 各 agent，每个"订单版本 × 能力"一个 A2A Task）；点对点请求（运输 → 商务：改派额外费用审批 R35；运输 → 货物：候选计划的冷链/受控复核 R28/R16/R26）；变更通知与失效（换承运商 → 货物 agent 的 R13 审批链失效重发）；人工/补材料统一为 `input-required`。agent 之间不共享数据库、不调用对方内部代码，约定只有 Agent Card 与 `contracts` 中的业务结果契约。
+- 扩展：新 agent 用同一模板（service-kit + 规则包 + Agent Card）起服务，订单协调 agent 经 Agent Card 发现，R40 增加一个依赖；已有 agent 不改代码。拆分依据是业务责任、审批人、发布节奏、数据归属，不是规则数量。
+- 每个业务模块是一个 Durable Jev Agent（spec 8）：持有本模块规则图、叶子求值、人工任务与等待状态，通过 Pi Durable 在等待人工和进程重启后恢复。
+- 模块流程实现为 Pi Durable durable task（不经 LLM）：分阶段检查点，人工审批为子任务 + 决定文档，详见 `docs/m0-findings.md` T0.8。
+- 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
+- Coordinator 拥有订单版本和整单聚合层（R08、R37–R40），通过 A2A / native 接口获取各模块结果；依赖调度是确定性状态机。
+- 跨 agent 传播：每个 agent 加载完整规则包、只执行自己拥有的规则，他方规则结果由编排器提供（未上报视为 UNKNOWN）。`CaseOrchestrator` 每轮把其他 agent 的最新结果交给每个 agent 并行重算，直到所有结果的状态与指纹不再变化（规则图无环，轮数不超过依赖深度，上限 12）。人工决定按任务 id 中的规则路由到所属 agent，再触发传播。编排器只依赖 `AgentClient` 接口：进程内实现供回放 runner，HTTP 实现供运行时，A2A 实现在 P5 加入。
+- 业务服务暴露原生 HTTP 任务接口；`agent-transport` 的 a2a/ 在其上包一层 A2A server（B4 对照）。
+- 人工任务由所属模块持有（状态机复用 `packages` 中的实现）；跨模块等待通过 A2A `input-required` 表达。Web 汇总各模块任务队列。角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
 - 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
-- R39 拆为两个人工门槛 `R39-LOAD`（仓库操作员，装载扫码与复核证据）与 `R39-CONFIRM`（调度员确认），R39 为二者 AND。调度员确认在放行事务内记录；R40 不通过则整个事务回滚，确认也不保留。
-
-### 6.2 A2A 适配（T5.1）
-
-- `packages/a2a-adapter`：服务端 `mountA2a` 在业务服务的 Express 上挂 Agent Card（`/.well-known/agent-card.json`）与 JSON-RPC（`/a2a/jsonrpc`），技能 `evaluate-branches`，输入为 `BranchEvaluationRequest` data part，结果放 Artifact `branch-evaluation`；与原生 `/evaluations` 用同一求值函数。
-- 任务存储：自实现 `SqliteTaskStore`（服务自己的库），重启不丢 A2A Task。
-- F04：SDK 不按 messageId 去重；适配层包一层 request handler，已见过的 messageId 直接返回原 Task，不再执行。
-- 客户端（Coordinator）：`a2a_task_links` 映射表，键为请求内容哈希，记录 caseId、revision、能力、messageId、a2aTaskId、状态、之前的 taskId。发送前先落库；同一请求已完成则 `getTask` 取结果，不重复委派；已失败/取消/拒绝的任务不继续，新建 Task 并在 `referenceTaskIds` 指向旧任务。
-- 业务状态与 A2A Task 生命周期分开：A2A 只承载一次求值，订单状态仍由 Coordinator 状态机决定。
 
 ## 7. Runtime harness
 
@@ -222,7 +207,7 @@ type ToolDefinition = {
 | 输入通道隔离 | `ContextAssembler`：政策/系统指令与资料文本分区，资料只作为数据 |
 | 输出无权限 | agent 只能 `submit_investigation_result`；结论由规则引擎和人工门槛决定 |
 | 版本绑定 | 结果携带 `caseRevision` 与指纹，提交时校验 |
-| 循环/反复崩溃 | 预算守卫 + 重启上限（本项目实现，Pi 1.3.0 无 restartLimit），超限转人工 |
+| 循环/反复崩溃 | 预算守卫 + 重启上限，超限转人工 |
 | 可追溯 | 每个 run、tool、model 调用发出 `observability` 事件 |
 
 每一行在 `docs/runtime-controls.md` 对应一个证据测试或故障场景。
@@ -235,69 +220,23 @@ interface SemanticJudge {
 }
 ```
 
-实现：`JevJudge`、`StructuredOutputJudge`（NVIDIA，暂缓）、`ScriptedJudge`。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
-
-#### 落地（T4.1–T4.3）
-
-- `packages/model-providers`：`SemanticJudge.ask(questions) → judgements`；一次求值把同一分支的问题合并成一次调用。
-- 问题模板 `eval/materials/semantic-questions.json`：每条语义规则一个模板（种类 noul/choice、问题文本、choice 选项、state 来源名）。state 来源由代码解析（如 `item.description`、`item.document:SAFETY_DATA_SHEET`、`item.inspectionNote`、`order.customerInstructions`、`order.routeSummary`），只放该问题需要的字段；缺来源则不提问（规则保持 UNKNOWN）。
-- `ScriptedJudge`：按 `ruleId + entityId` 回放案例文件里的脚本化答案。`JevJudge`：官方 SDK，固定 `jev-1.14.0`，`retry.maxRetries = 0`，超时 10s。`CachingJudge`：按 (modelId, 问题, 选项, state) 的哈希缓存在服务自己的 SQLite，live 模式下无关变更不重复计费。
-- 模式由 `MODEL_MODE` 决定：`scripted`（默认）或 `live`（需 `TYPESAFE_API_KEY`）。服务先按模板生成问题、问 judge，再把答案交给 `evaluateBranch`（同步求值不变）。语义规则的 observedValue 记录 provider 与 modelId。
-
-- state 只放该问题 `inputPaths` 对应的字段；资料文本作为数据分区，不与指令混放。
-- 门槛判定只用映射后的离散结论；Choice 的 confidence 由 probabilities 推出，不当作独立信号。
-- B1 对 Choice 问题增加选项顺序打乱的变体，测位置偏差。
+实现：`JevJudge`（官方 SDK，`jev-1.14.0`）、`StructuredOutputJudge`（pi-ai NVIDIA `nemotron-3.5-lightning-30b-a3b`，强制调用 `submit_answer` 工具并按 schema 校验）、`ScriptedJudge`（按 questionId + 输入哈希回放，无精确匹配时用该问题的默认条目）。三者都关闭 SDK 自带重试，由 harness 统一重试。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
 
 ## 9. 可观测性
+
+### 9.1 两级图视图（Console）
+
+同一个图组件（`@xyflow/react` 12.12.0 + `elkjs` 0.12.0 自动分层布局）用于两个层级，交互一致：点节点看摘要，双击 zoom in，面包屑返回。
+
+| 层级 | 节点 | 连线 | 节点卡片（不展开内部细节） |
+|---|---|---|---|
+| Overview（agent 级） | 每个 Durable Jev Agent | A2A 协作关系：静态来自 Agent Card 声明的依赖，实时叠加 A2A Task 数与等待状态 | 名称、负责的业务流程、健康（运行/重启中/离线）、规则包版本与规则数（代码 / Jev 占比）、固定的模型版本、进行中案例数、待处理人工任务数（按角色）、最近错误、Agent Card 链接 |
+| Agent 内部（规则级） | 规则、人工门槛（含审批链）、调查助手、指向其他 agent 的边界节点（如"→ 商务 agent R35"） | `dependsOn` | 规则 ID 与名称、求值方式（代码 / Jev / 人工）、所选案例下的状态与 blockedBy |
+| 节点详情 | — | — | 规则结果、Jev 原始答案与业务映射、审批链进度、证据（即 T6.3 判断详情） |
+
+- 选中某个案例时，两级视图都按该案例着色：Overview 显示这单在各 agent 的状态与 A2A 往来，内部视图显示规则状态。未选案例时，Overview 显示架构与汇总指标。
+- 数据来源：Agent Card（静态）、各 agent 的 `GET /agent/summary`（service-kit 提供，`contracts` 定义 `AgentSummary`）、规则包配置（内部图）、观察库（A2A Task、事件）。
 
 - 事件写各服务 outbox 表，`observability` 收集器汇入 `var/data/observability.sqlite`；Console 通过查询 API + SSE 读取。
 - 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
 - 业务正确性不依赖观察库。
-
-### 9.1 落地（T6.1–T6.4）
-
-**事件与 span 同一张表，两种 kind。** `ObservabilityEvent`（contracts，zod，`eval/materials/event-schema.json` 由它生成并有一致性测试）：
-- `kind: 'event'`：业务时间线上的一件事（`case.submitted`、`rule.evaluated`、`jev.requested`/`jev.completed`、`information.requested`/`information.received`、`run.interrupted`/`run.resumed`、`result.invalidated`、`case.recommended`、`task.failed` 等 PRD 15.3 列出的类型）。
-- `kind: 'span'`：一次调用的起止、父子与 link，用于调用树。
-- 公共字段：`eventId`、`causationId?`、`timestamp`（UTC）、`severity`、`service`、`correlationId`、`caseId`、`caseRevision?`、`traceId?`、`spanId?`、`parentSpanId?`、`links?`、`a2aTaskId?`、`runId?`、`attempt?`、`status?`、`durationMs?`、`errorCode?`、`attributes?`。不适用的字段省略，不填假值；usage/成本未知写 `unknown`，不写 0。
-- 不存完整提示、文档、密钥；`redact()` 统一处理 attributes 与 headers（Authorization、api key 一类键）。
-
-**写入路径。** `packages/telemetry`：`Telemetry.emit()` 把事件同步写入本服务自己的 `outbox`（同一个 SQLite，业务事务内可一起提交）；`OutboxRelay` 轮询未发布事件，批量 POST 到收集器，成功后标记已发布，失败退避重试，不影响业务。收集器 `apps/observability`（端口 4200）按 `eventId` 幂等入库到 `observability.sqlite`，每条事件有递增 `sequence` 作游标。观察层不可用时业务照常运行，恢复后由 outbox 回补；未收集到的 span 不事后伪造。
-
-**Trace。** `@opentelemetry/api` + `sdk-trace-node`（M0 验证），不用自动埋点。`initTracing(service, telemetry)` 注册 tracer provider，自定义 SpanProcessor 把结束的 span 转成 `kind: 'span'` 事件。跨服务：HTTP（原生与 A2A）注入 `traceparent`，服务端 Express 中间件提取后在该上下文内处理请求。等待人工或进程重启后的处理开新 trace，用 span link 指回创建该任务/运行时的 span（`traceparent` 存在任务/运行记录里），同一 `correlationId`，不保持 span 打开数小时。
-
-**查询与实时。** 收集器提供只读查询：案例列表（历时、机器处理时间、人工等待、最后活动）、案例时间线、trace 的 span 树、事件详情；`GET /stream?after=<sequence>` 为 SSE，每条带 `id: <sequence>`，客户端先取快照得到游标再续订，断线用 `Last-Event-ID` 补齐，按 `eventId` 去重。机器处理时间 = 各 span 的并集时长，不含人工等待，并行 span 不简单累加。
-
-**Console。** 工作台新增 `/console` 视图（只读，故障注入仍在 Demo controls）：案例列表、时间线（区分代码规则、Jev、工具、A2A、人工）、调用视图（span 树）、判断详情（Jev 原始答案与业务映射并排，注明 probability 不等于准确率）、恢复详情（中断、恢复、幂等命中、旧结果失效）；从流程图规则节点可跳到对应 Jev span、A2A Task、人工操作证据。
-
-## 10. 状态机
-
-所有持久化状态用 `contracts` 中的 `defineStateMachine` 定义：状态、允许的转移、初始态；没有出边的状态即终态。任何写状态的代码都经过 `machine.transition(from, to)`，非法转移抛错；同态转移视为 no-op。
-
-| 状态机 | 状态 | 终态 | 谁触发 |
-|---|---|---|---|
-| 订单 `orderStatusMachine` | SUBMITTED → EVALUATING → ON_HOLD / AWAITING_HUMAN / READY_TO_DISPATCH / TECHNICAL_FAILURE（相互可转）→ DISPATCHED（只从 READY_TO_DISPATCH，经放行事务）或 REJECTED | DISPATCHED、REJECTED | Coordinator 求值后派生；放行事务 |
-| 人工任务 `humanTaskMachine` | OPEN → APPROVED / REJECTED / COMPLETED / EXPIRED / CANCELLED / SUPERSEDED；APPROVED / REJECTED / COMPLETED → SUPERSEDED（目标版本变化时） | EXPIRED、CANCELLED、SUPERSEDED | 角色命令、到期、版本变化 |
-| 运输预订 `reservationMachine` | RESERVED → CANCELLED | CANCELLED | 预订 / 取消工具 |
-
-规则门槛状态（GateStatus）不是状态机：它是规则输入、上游结果和人工任务的纯函数，每次求值重算，不做转移校验。
-
-终态订单不再重新求值，也不接受人工任务命令（返回 CONFLICT）。目标版本变化时，旧任务无论处于 OPEN 还是已决定，都转为 SUPERSEDED 并记录 `supersededBy`，旧决定不复用。
-
-## 11. 工作台流程图视图
-
-默认视图是规则流程图（React Flow + dagre 自动布局，左→右，终点 R40）；规则树保留为第二个 tab。
-
-- 节点 = 规则，状态为跨货件/运输段的聚合：FAIL > ERROR > WAITING_HUMAN > BLOCKED_DEPENDENCY > UNKNOWN > INVALIDATED > PASS > NOT_APPLICABLE（全部 N/A 才是 N/A）。
-- 边 = 上游 → 下游，样式由上游状态决定：PASS 绿色流动；WAITING_HUMAN 琥珀静止；BLOCKED/UNKNOWN/INVALIDATED 灰色虚线静止；FAIL/ERROR 红色静止；N/A 淡灰。
-- 人工门槛节点单独形状并标角色；等待中时呼吸提示。
-- N/A 规则默认隐藏（可切换）。点击节点显示各实体状态、observedValue 与根因阻塞。
-- `prefers-reduced-motion` 时不播放动画，只靠颜色和线型区分。
-
-## 12. 演示案例与回放（T3.5、T3.6）
-
-- 案例文件 `eval/materials/cases/LOG-00x.json`：订单、证据、脚本化语义答案、事件脚本；`reviewStatus: draft` 直到用户审定。
-- 事件脚本步骤：`submit`、`completeHumanTask`、`approveHumanTask`（可带 conditions）、`rejectHumanTask`、`changePlan`、`restartCoordinator`、`dispatch`。人工任务按 `ruleId` 定位当前唯一打开的任务（同一规则多个打开任务时 runner 报错，需要时再加实体定位）。
-- 每步断言（都可选）：`orderStatus`、`gates`（`R13` 或 `R21@ITEM-1`）、`openHumanTasks`（精确集合）、`invalidated` / `notInvalidated`（最近一次变更的失效集）、`error`（期望的错误码，如重复提交 CONFLICT）。
-- 新变更命令：`replaceLegs`（运输计划员，替换运输段，触发 route、carrier、vehicle）、`recordPackaging`（仓库操作员，记录货件新包装版本，触发 cargo；旧质量处置和整改任务作废）。
-- 回放 runner 在 `eval/runner`：进程内 Coordinator + 进程内求值（与服务同一求值代码），临时 SQLite 文件，`restartCoordinator` 重新打开同一文件。vitest 跑全部案例；`pnpm replay` 输出报告到终端。

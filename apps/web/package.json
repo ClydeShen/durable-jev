@@ -5,15 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "typecheck": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json --noEmit && vite build"
   },
   "dependencies": {
-    "@dagrejs/dagre": "3.1.1",
     "@xyflow/react": "12.12.0",
-    "lucide-react": "1.60.0",
-    "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "elkjs": "0.12.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@durable-jev/contracts": "workspace:*",
@@ -21,6 +19,6 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.2",
-    "vite": "8.3.4"
+    "vite": "8.1.6"
   }
 }

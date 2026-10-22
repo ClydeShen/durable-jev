@@ -1,9 +1,21 @@
-export * from './combinators.rules.js'
-export * from './dependency-graph.model.js'
-export * from './expression.evaluator.js'
-export * from './expression.types.js'
-export * from './fingerprint.helpers.js'
-export * from './invalidation.rules.js'
-export * from './rule-definition.schema.js'
-export * from './rule-graph.evaluator.js'
-export * from './rule-set-validation.rules.js'
+export {
+  evaluateRuleGraph,
+  type LeafEvaluation,
+  type LeafEvaluator,
+  type LeafInput,
+  type RuleOutcome,
+  scopeKey,
+} from './evaluate-rule-graph.js'
+export type { CaseFacts, Facts } from './facts.js'
+export { feelContext, type PolicyParameters, semanticState } from './feel.js'
+export { type EntityChange, invalidateDependentsOf } from './invalidation.js'
+export {
+  type HumanGate,
+  invalidationTriggers,
+  type RuleDefinition,
+  type RuleSet,
+  ruleDefinitionSchema,
+  type SemanticRule,
+} from './rule-definition.js'
+export { RuleIndex, type SelectionProfile } from './rule-selection.js'
+export { type ValidationIssue, validateRuleSet } from './validate-rule-set.js'

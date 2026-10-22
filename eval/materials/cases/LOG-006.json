@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-006",
-  "title": "Service restarts while the quality review is pending",
   "reviewStatus": "draft",
+  "story": "温控越界 120 分钟且外包装受损：等待质量处置时可终止并重启服务恢复原任务；仓库重复提交整改事件不会重复记账。",
   "shipment": {
-    "caseId": "CASE-LOG-006",
-    "shipmentId": "LOG-006",
-    "customerId": "CUST-BLUE-CLINIC",
+    "caseId": "LOG-006",
+    "correlationId": "corr-LOG-006",
+    "shipmentId": "SHP-006",
+    "customerId": "CUS-MEDI",
+    "destinationCountry": "AU",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,228 +14,285 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "CAN-CLINIC",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-006-ITEM-1",
-        "description": "Insulin pens, 500 units in a validated cold box",
-        "declaredCategories": ["COLD_CHAIN"],
-        "weightGrams": 22000,
-        "lengthMm": 600,
-        "widthMm": 500,
-        "heightMm": 500,
+        "cargoItemId": "ITEM-1",
+        "description": "Blood sample kits in a temperature-controlled shipper, 2-8C",
+        "declaredCategories": ["coldChain"],
+        "quantity": 6,
+        "weightGrams": 30000,
+        "dimensionsMillimetres": {
+          "length": 500,
+          "width": 400,
+          "height": 350
+        },
         "temperatureRange": {
           "minDeciCelsius": 20,
           "maxDeciCelsius": 80
-        },
-        "packagingId": "PKG-006-1"
+        }
       }
     ],
     "legs": [
       {
-        "legId": "LOG-006-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "CAN-CLINIC",
+        "origin": "Northport Warehouse A",
+        "destination": "Southgate Clinic Store",
         "carrierId": "CAR-POLAR",
-        "vehicleId": "VEH-PL-REEFER-5T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "vehicleId": "VEH-12",
+        "plannedDeparture": "2026-11-03T06:00:00Z",
+        "plannedArrival": "2026-11-03T11:30:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-03T09:00:00Z",
+      "to": "2026-11-03T15:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-006-1",
-      "amountCents": 110000,
-      "currency": "CNY"
-    }
-  },
-  "evidence": {
-    "documents": [],
-    "temperatureLogs": [
+      "amountCents": 260000,
+      "extraCostCents": 0,
+      "currency": "EUR"
+    },
+    "documents": [
       {
-        "cargoItemId": "LOG-006-ITEM-1",
-        "sensorId": "SENSOR-LOG-006-ITEM-1",
-        "calibrationValidUntil": "2027-01-01T00:00:00Z",
-        "readings": [
+        "documentId": "DOC-006-IMPORT",
+        "kind": "importPermit",
+        "version": 1,
+        "text": "Import permit AU-BIO-2026-1190 for blood sample collection kits manufactured by Meridian Diagnostics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      },
+      {
+        "documentId": "DOC-006-PRODUC",
+        "kind": "productRegistration",
+        "version": 1,
+        "text": "ARTG registration 331245: blood sample collection kit, Meridian Diagnostics.",
+        "extractedFields": {},
+        "source": "customs broker"
+      }
+    ],
+    "warehouseRecords": [
+      {
+        "cargoItemId": "ITEM-1",
+        "inspectionNote": "Shipper lid dented, seal tape torn on one side.",
+        "sensor": {
+          "sensorId": "SNS-ITEM-1",
+          "calibrated": true,
+          "lastRecordAt": "2026-11-02T22:00:00Z"
+        },
+        "temperatureReadings": [
           {
-            "at": "2026-11-03T00:00:00Z",
-            "deciCelsius": 50
+            "at": "2026-11-02T18:30:00Z",
+            "deciCelsius": 45
           },
           {
-            "at": "2026-11-03T00:30:00Z",
+            "at": "2026-11-02T19:00:00Z",
+            "deciCelsius": 48
+          },
+          {
+            "at": "2026-11-02T19:30:00Z",
+            "deciCelsius": 90
+          },
+          {
+            "at": "2026-11-02T20:00:00Z",
             "deciCelsius": 95
           },
           {
-            "at": "2026-11-03T01:00:00Z",
-            "deciCelsius": 98
+            "at": "2026-11-02T20:30:00Z",
+            "deciCelsius": 96
           },
           {
-            "at": "2026-11-03T01:20:00Z",
-            "deciCelsius": 60
+            "at": "2026-11-02T21:00:00Z",
+            "deciCelsius": 92
           },
           {
-            "at": "2026-11-03T03:30:00Z",
-            "deciCelsius": 48
+            "at": "2026-11-02T21:30:00Z",
+            "deciCelsius": 50
+          },
+          {
+            "at": "2026-11-02T22:00:00Z",
+            "deciCelsius": 47
           }
         ]
-      }
-    ],
-    "inspectionNotes": [
-      {
-        "cargoItemId": "LOG-006-ITEM-1",
-        "inspectedAt": "2026-11-03T03:00:00Z",
-        "note": "Cold box sealed; no visible damage."
       }
     ]
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-006-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.95
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.95
       }
     },
     {
-      "ruleId": "R18",
-      "entityId": "LOG-006-ITEM-1",
-      "answer": {
-        "type": "choice",
-        "choice": "no_risk",
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.93
+      }
+    },
+    {
+      "questionId": "R18",
+      "judgement": {
+        "kind": "choice",
+        "choice": "damaged_packaging"
+      }
+    },
+    {
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "pharmaceutical",
         "probabilities": {
-          "no_risk": 0.9,
-          "damaged_packaging": 0.03,
-          "cold_chain_risk": 0.07
+          "pharmaceutical": 0.81,
+          "general": 0.12
         }
+      }
+    },
+    {
+      "questionId": "DEST-AU-PHARMA-3",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.9
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R19": "PASS",
-          "R19-EXCURSION": "PASS",
-          "R20": "WAITING_HUMAN",
-          "R23": "BLOCKED_DEPENDENCY"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R20",
-            "requiredRole": "QUALITY_REVIEWER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "restartCoordinator",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R20": "WAITING_HUMAN"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R20",
-            "requiredRole": "QUALITY_REVIEWER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "approveHumanTask",
-      "ruleId": "R20",
-      "actor": "QUALITY_REVIEWER",
-      "expect": {
-        "gates": {
-          "R20": "PASS",
-          "R20-REWORK": "NOT_APPLICABLE",
-          "R21": "NOT_APPLICABLE",
-          "R23": "PASS"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "越界超出容许时长，等待质量处置与仓库整改",
+      "statuses": {
+        "R19@ITEM-1": "FAIL",
+        "R20@ITEM-1": "WAITING_HUMAN",
+        "R21@ITEM-1": "WAITING_HUMAN"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
-      }
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R20@ITEM-1", "R21@ITEM-1", "CUST-MEDI-5"]
     },
     {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "act",
+      "label": "仓库登记诊所指定收货人与送货单号",
+      "task": "CUST-MEDI-5",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
       },
-      "reuseLastTask": true,
-      "expect": {
-        "error": "CONFLICT",
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "restartCoordinator",
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-CONFIRM",
-            "requiredRole": "DISPATCHER"
-          }
-        ]
-      }
-    },
-    {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "recipientName": "Dr. Liam Chen",
+          "deliveryNoteRef": "DN-006-01"
         },
-        "openHumanTasks": []
+        "evidenceRefs": []
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED"
+      "kind": "act",
+      "label": "仓库重新包装",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-6001",
+          "photoRef": "photo-repack-6"
+        },
+        "evidenceRefs": ["photo-repack-6"]
       }
+    },
+    {
+      "kind": "act",
+      "label": "整改完成事件重发：不重复记账",
+      "task": "R21@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "newPackagingId": "PKG-6001",
+          "photoRef": "photo-repack-6"
+        },
+        "evidenceRefs": ["photo-repack-6"]
+      },
+      "expectRefusal": "NOT_OPEN"
+    },
+    {
+      "kind": "act",
+      "label": "质量审核员处置：可继续发运",
+      "task": "R20@ITEM-1",
+      "actor": {
+        "id": "bob",
+        "role": "qualityReviewer"
+      },
+      "decision": {
+        "type": "approve"
+      }
+    },
+    {
+      "kind": "act",
+      "label": "仓库复测",
+      "task": "R22@ITEM-1",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "retestDeciCelsius": "49",
+          "photoRef": "photo-retest-6"
+        },
+        "evidenceRefs": ["photo-retest-6"]
+      }
+    },
+    {
+      "kind": "expect",
+      "label": "质量处置与整改链完成",
+      "statuses": {
+        "R20@ITEM-1": "PASS",
+        "R23@ITEM-1": "PASS"
+      },
+      "orderStatus": "AWAITING_HUMAN",
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-9001",
+          "sealNumber": "SEAL-501"
+        },
+        "evidenceRefs": []
+      }
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "statuses": {},
+      "orderStatus": "DISPATCHED"
     }
   ]
 }

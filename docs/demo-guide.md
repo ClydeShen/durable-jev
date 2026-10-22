@@ -1,90 +1,90 @@
-# Demo guide
+# 演示脚本
 
-A 15 to 20 minute walkthrough. After the first command everything happens in the browser: each order carries its own step-by-step guide, the fault drills and mode switches are buttons, and the Proof page runs the checks. Scripted answers are the default, so a run costs nothing and repeats exactly. Screens are described in [getting-started.md](getting-started.md).
+约 20 分钟。前 10 分钟面向业务（"以前一个大团队三年的规则引擎，现在一个小团队三个月"），后 10
+分钟面向技术负责人（几个 agent、怎么协作、怎么扩展和维护）。架构说明见
+[agent-architecture.md](agent-architecture.md)。
 
-## Start
+## 准备
 
 ```bash
-pnpm demo
+pnpm bootstrap
+pnpm start          # 或 pnpm start:a2a：agent 之间改走 A2A
 ```
 
-This installs, builds, starts every service, loads the eight demo orders and opens http://127.0.0.1:5173/. (On a machine without a desktop, open that address yourself.) "Reset demo" in the top bar returns to the starting state at any time.
+打开 http://localhost:4100 。右上角选择**角色**并填**姓名**，每一步按下表切换；"重置演示"恢复全部案例。
+默认用脚本化模型回答（`MODEL_MODE=scripted`）；在 `.env` 里设 `MODEL_MODE=live` 并填好 `TYPESAFE_API_KEY`、`NVIDIA_API_KEY` 就用真实 Jev 与调查助手（调查一次约 12–25 秒）。
 
-## What to say first
+## 1. 一眼看全局（Agent 总览）
 
-Orders are checked against 50 rules. Some need a person, some need a text to be read. The question this demo answers is whether a language model and an agent can sit inside that process without taking decisions that belong to people, and without breaking when things go wrong. The rules decide; the model answers narrow questions; people approve; the system stays correct when services fail.
+选中任意案例，停在 **Agent 总览**：
 
-## Running order
+- 5 个 Durable Jev Agent，每个对应一个业务模块；卡片上是它负责什么、规则构成（表达式 / Jev /
+  人工 / 组合）、在办案例、各角色待办。
+- 连线是跨 agent 的规则依赖（"4 条依赖"）。agent 之间只通过结果协作，不共享数据库。
+- 要点：150 条规则里只有 1 条是代码（R29 预订运力），32 条由 Jev 判断非结构化内容，其余是从政策
+  文本生成的配置。
 
-| Min | Order or page | Message |
+点击**货物合规**，进入它的内部规则图：本 agent 的规则 + 虚线框的外部依赖。
+
+## 2. 正常放行（LOG-001）
+
+| 步骤 | 角色 | 操作 |
 |---|---|---|
-| 0-3 | LOG-001 | One order, a flow of rules, who is being waited on |
-| 3-7 | LOG-003, LOG-005 | Only the right person can approve; a change re-checks only what depends on it |
-| 7-10 | LOG-004 | An agent proposes, a person decides |
-| 10-14 | LOG-006, LOG-002 | Crashes, slow services, duplicates and an unavailable model |
-| 14-17 | Console | Every claim can be traced to events, calls and model judgements |
-| 17-20 | Proof | Replay of the eight orders and the fault scenarios, run from the page |
+| 1 | 仓库操作员 wen | 右侧待办 LOG-001 · R39 填扫码号、封条号，提交 |
+| 2 | 调度员 dee | 案例头部"确认发运" |
 
-Select an order and a guide card appears above its flow diagram. It lists the steps, tells you which role to act as (one click switches it), shows what to type and what you should see. It moves on by itself when the order changes. Steps marked optional can be skipped.
+规则图里 R40 变绿，案例状态"已发运"。点开任意规则可以看到观察值和"复用"标记。
 
-## 1. LOG-001, the happy path
+## 3. 主线：冷链受控药品改派（LOG-004）
 
-Follow the guide. The points to make:
+| 步骤 | 角色 | 操作 | 看点 |
+|---|---|---|---|
+| 0 | 仓库操作员 wen | LOG-004 · CUST-MEDI-5 填诊所指定收货人与送货单号 | 合同条款里计划看不出的部分交给人工确认 |
+| 1 | 合规审核员 alice | 批准 LOG-004 · R13 | 两段审批链的第一步 |
+| 2 | 质量审核员 bob | 批准 R13 第二步 | 同一人不能签两步 |
+| 3 | 任意 | 头部"演示事件：主承运商 Polar 取消…" | 运输 agent 的调查助手启动 |
+| 4 | — | 看调查卡片 | 预检了 3 个备选运力：Harbour 不合格（R11、R16、R24），Frostline 11:00 班次超出送达窗口（R06），选 Frostline 06:30，额外费用 €800 |
+| 5 | 仓库操作员 | 卡片上没有确认按钮 | 只有计划员能确认 |
+| 6 | 运输计划员 pat | "确认改派" | 生成 r2，各 agent 重新评估 |
+| 7 | — | 规则图 | R13 失效原因"r2 (route, carrier, quote)"，客户状态 R31 复用；R35 额外费用审批出现 |
+| 8 | 商务主管 carol | 批准 R35 | |
+| 9 | 合规 alice、质量 bob | 重新签核 R13 | 旧签核不能沿用 |
+| 10 | 仓库 wen → 调度 dee | 装载、确认发运 | |
 
-- Green dashed lines flow where a check passed; the amber line stops where a person is needed; grey dotted lines are blocked behind it.
-- Acting as the wrong role, the server refuses (403). The task stays open.
-- Dispatch re-checks the final rule inside the same transaction as the status change.
-- Optional step: "Two changes at once" under Demo controls. Both changes are based on the same revision; one is applied, one is refused (409).
+切到**时间线**：每一步调查助手调用了什么工具、提了什么建议、谁确认的，都有记录。
 
-## 2. LOG-003 and LOG-005, approvals and changes
+## 4. 规则多了怎么办（LOG-007）
 
-- LOG-003: the order is on hold because a check failed. Approvals cannot override a failed check. Changing the carrier re-checks only what depends on it; the credit result is kept; the compliance sign-off is asked for again.
-- LOG-005: a quote change re-asks only the commercial approvals, one at a time.
+选中 LOG-007，打开**规则图**，左上角："本单命中 8 条 · 已按目的地、客户与货物分类筛掉 100 条"。
 
-## 3. LOG-004, the investigation agent
+- 108 条扩展规则来自政策附录 G（目的地进口要求，仿新西兰 MPI 进口健康标准的结构）和附录 H
+  （客户合同条款），由编写 agent 从文本生成并校验。
+- Jev 分类（R42）把诊断试剂归为药品，只选德国药品要求。分类拿不准时会把几组都选上，宁多勿漏：
+  例如维生素软糖，真实 Jev 给出食品 0.61、药品 0.37，两组要求都会被选中（筛选样本 S02）。
+- `pnpm screening`：26 份筛选样本零漏选。
 
-The agent proposes a replacement carrier; nothing changes until the transport planner accepts. The cancellation reason contains an instruction to approve the order; the agent only reads it as data and has no tool that could approve. Accepting voids the compliance sign-off and asks for it again.
+## 5. 不怕宕机（技术）
 
-## 4. Failures (LOG-006, LOG-002)
+| 步骤 | 角色 | 操作 |
+|---|---|---|
+| 1 | 技术评估员 | 左下 Agents 面板，终止"货物合规" |
+| 2 | 合规审核员 | 待办里看不到货物合规的任务，相关放行也不会通过 |
+| 3 | 技术评估员 | 重启货物合规；任务原样回来，继续审批 |
 
-Open "Demo controls" in the sidebar.
+命令行跑 `pnpm faults`：18 个故障场景，包括调查进行到一半、预订已写入、等待人工时真实杀进程
+再恢复，结果写在 `var/reports/faults.md`。
 
-- Kill and start the coordinator while a review is open: the same task is still there.
-- "Send again" repeats the last action: refused with 409.
-- "Slow down" a service, change the quote, then "Normal speed" and "Re-evaluate": the order shows a technical failure, then recovers.
-- "Jev unavailable", then "Re-evaluate" on LOG-006: technical failure, no rule is passed on a guess. "Jev available again" and "Re-evaluate" recovers.
-- LOG-007 and LOG-008 have their own guides: routing around a hub that cannot keep cargo cold, and a packaging change that voids earlier approvals and asks for them again.
+## 6. 怎么扩展、谁来维护（技术）
 
-## 5. The Console
+- **加规则 = 写政策文本**：`pnpm author "Appendix G"` 生成并校验提案（引用、参数、环、FEEL 语法、
+  筛选键），给出 diff，审核后 `pnpm author --apply <proposal>`。
+- **加 agent = 配置**：目的地合规 agent 是后加的。它的规则（owner 指向它）、Agent Card 上的名称与
+  描述、launcher 里一行服务定义；原有 4 个 agent 没有改动。
+- **换通信方式**：`pnpm start:a2a` 后总览显示"通信：A2A"和每个 agent 处理的 A2A 任务数，业务结果
+  不变。
+- 控制点与证据：[runtime-controls.md](runtime-controls.md)。
 
-Open Console in the top bar and pick the order you just worked on.
+## 上线前还要做的
 
-| Tab | Show |
-|---|---|
-| Cases | Machine time and time waiting for people, per order |
-| Timeline | Everything in time order, with who did it; the coordinator restart is visible |
-| Calls | Waterfall of service calls; a late human answer is its own trace, linked back |
-| Judgements | What the model returned next to what the rule decided |
-| Recovery | Restarts, voided results, failures |
-
-From a rule node in the workbench, the links under the rule name open the Console on that rule.
-
-## 6. Proof
-
-Open Proof in the top bar. "Run" starts the replay of the eight orders (about 10 seconds) or the fault scenarios (a minute or two). Each result can be expanded. They run on their own copy of the services with scripted answers, so the orders on the workbench are not touched.
-
-## Modes
-
-Under "Demo controls", "Modes" switches between Native HTTP and A2A (how the coordinator calls the branch services) and between Scripted answers and Live Jev. Switching restarts only what it affects; orders and tasks are kept. Live Jev needs `TYPESAFE_API_KEY` in the environment the stack was started with and uses real quota. With live answers, readings near a threshold go to a person, so more tasks open than the guides describe.
-
-## What each part supports
-
-| Claim | Where |
-|---|---|
-| Rules decide; the model answers narrow questions | Judgements tab; the review band in [live-checks.md](live-checks.md) |
-| People are gated by role and bound to a version | LOG-003 and LOG-004 guides |
-| An agent has no authority | LOG-004 |
-| Work survives crashes and duplicates | Demo controls; Proof |
-| Delegation over A2A matches plain calls | Modes; [benchmarks.md](benchmarks.md) |
-
-All expected results for LOG-001 to LOG-008 are drafts until a reviewer signs them off.
+真实模型（Jev、调查助手、规则编写）尚未打开；接下来用开发集调问题措辞与阈值（T7.0），再跑
+benchmark（T7.1–T7.6）。

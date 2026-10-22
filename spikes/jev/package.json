@@ -7,6 +7,6 @@
     "@typesafe-ai/sdk": "0.7.0"
   },
   "scripts": {
-    "semantic-checks": "tsx src/semantic-checks.cli.ts"
+    "semantic-checks": "tsx src/semantic-checks.ts"
   }
 }

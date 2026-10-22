@@ -1,0 +1,4 @@
+[
+  { "hubId": "HUB-RIV", "name": "Riverside Cross-dock", "coldStorage": false, "securedCage": true },
+  { "hubId": "HUB-ICE", "name": "Glacier Cold Hub", "coldStorage": true, "securedCage": true }
+]

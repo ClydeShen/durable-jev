@@ -1,11 +1,12 @@
 {
-  "caseId": "CASE-LOG-001",
-  "title": "General cargo, single leg, complete documents",
+  "story": "General cargo, one leg, complete documents. Every applicable rule passes; the warehouse loads and the dispatcher releases.",
   "reviewStatus": "draft",
   "shipment": {
-    "caseId": "CASE-LOG-001",
-    "shipmentId": "LOG-001",
-    "customerId": "CUST-ACME-RETAIL",
+    "caseId": "LOG-001",
+    "correlationId": "corr-LOG-001",
+    "shipmentId": "SHP-001",
+    "customerId": "CUS-ACME",
+    "destinationCountry": "AU",
     "caseRevision": 1,
     "entityVersions": {
       "cargo": 1,
@@ -13,121 +14,173 @@
       "carrier": 1,
       "quote": 1
     },
-    "origin": "SHA-WH1",
-    "destination": "HGH-DC2",
-    "deliveryWindow": {
-      "earliestAt": "2026-11-03T06:00:00Z",
-      "latestAt": "2026-11-03T12:00:00Z"
-    },
     "cargoItems": [
       {
-        "cargoItemId": "LOG-001-ITEM-1",
-        "description": "Boxed kitchen appliances: 24 electric kettles in retail cartons",
-        "declaredCategories": ["GENERAL"],
-        "weightGrams": 96000,
-        "lengthMm": 1200,
-        "widthMm": 1000,
-        "heightMm": 1100
+        "cargoItemId": "ITEM-1",
+        "description": "Flat-packed office chairs, 20 cartons, no hazardous components",
+        "declaredCategories": ["general"],
+        "quantity": 20,
+        "weightGrams": 360000,
+        "dimensionsMillimetres": {
+          "length": 900,
+          "width": 700,
+          "height": 400
+        }
       },
       {
-        "cargoItemId": "LOG-001-ITEM-2",
-        "description": "Shrink-wrapped pallet of cotton bath towels",
-        "declaredCategories": ["GENERAL"],
-        "weightGrams": 180000,
-        "lengthMm": 1200,
-        "widthMm": 1000,
-        "heightMm": 1400
+        "cargoItemId": "ITEM-2",
+        "description": "A4 printer paper, 40 boxes on one pallet",
+        "declaredCategories": ["general"],
+        "quantity": 40,
+        "weightGrams": 480000,
+        "dimensionsMillimetres": {
+          "length": 430,
+          "width": 300,
+          "height": 270
+        }
       }
     ],
     "legs": [
       {
-        "legId": "LOG-001-LEG-1",
+        "legId": "LEG-1",
         "sequence": 1,
-        "fromLocation": "SHA-WH1",
-        "toLocation": "HGH-DC2",
-        "carrierId": "CAR-NORTHLINE",
-        "vehicleId": "VEH-NL-BOX-7T",
-        "plannedDepartureAt": "2026-11-03T04:00:00Z",
-        "plannedArrivalAt": "2026-11-03T07:30:00Z"
+        "origin": "Northport Warehouse A",
+        "destination": "Central Retail DC",
+        "carrierId": "CAR-HARBOUR",
+        "vehicleId": "VEH-7",
+        "plannedDeparture": "2026-11-02T08:00:00Z",
+        "plannedArrival": "2026-11-02T14:30:00Z"
       }
     ],
+    "deliveryWindow": {
+      "from": "2026-11-02T10:00:00Z",
+      "to": "2026-11-02T18:00:00Z"
+    },
+    "handover": "dock",
     "quote": {
-      "quoteId": "Q-LOG-001-1",
-      "amountCents": 180000,
-      "currency": "CNY"
+      "amountCents": 185000,
+      "extraCostCents": 0,
+      "currency": "EUR"
     },
-    "customerInstructions": "Deliver to dock 3; call the receiving desk 30 minutes before arrival."
+    "documents": [
+      {
+        "documentId": "DOC-001-PL",
+        "kind": "packingList",
+        "version": 1,
+        "text": "20 cartons office chairs (flat-packed); 40 boxes A4 paper on one pallet.",
+        "extractedFields": {
+          "cartons": 60
+        },
+        "source": "customer upload"
+      }
+    ],
+    "warehouseRecords": []
   },
-  "scriptedSemanticAnswers": [
+  "scriptedJudgements": [
     {
-      "ruleId": "R03",
-      "entityId": "LOG-001-ITEM-1",
-      "answer": {
-        "type": "noul",
-        "noul": 0.97
+      "questionId": "R03",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.97
       }
     },
     {
-      "ruleId": "R03",
-      "entityId": "LOG-001-ITEM-2",
-      "answer": {
-        "type": "noul",
-        "noul": 0.95
+      "questionId": "R27",
+      "judgement": {
+        "kind": "noul",
+        "probability": 0.98
       }
     },
     {
-      "ruleId": "R27",
-      "entityId": "order",
-      "answer": {
-        "type": "noul",
-        "noul": 0.93
+      "questionId": "R42",
+      "judgement": {
+        "kind": "choice",
+        "choice": "general",
+        "probabilities": {
+          "general": 0.95,
+          "chemical": 0.02
+        }
       }
     }
   ],
-  "eventScript": [
+  "events": [
     {
-      "step": "submit",
-      "expect": {
-        "orderStatus": "AWAITING_HUMAN",
-        "gates": {
-          "R30": "PASS",
-          "R36": "PASS",
-          "R37": "PASS",
-          "R39-LOAD": "WAITING_HUMAN"
-        },
-        "openHumanTasks": [
-          {
-            "ruleId": "R39-LOAD",
-            "requiredRole": "WAREHOUSE_OPERATOR"
-          }
-        ]
-      }
-    },
-    {
-      "step": "completeHumanTask",
-      "ruleId": "R39-LOAD",
-      "actor": "WAREHOUSE_OPERATOR",
-      "fields": {
-        "loadScanRef": "SCAN-LOG-001-01",
-        "physicalCheckBy": "warehouse-op-02"
+      "kind": "expect",
+      "label": "所有适用规则通过，等待仓库装载",
+      "orderStatus": "AWAITING_HUMAN",
+      "statuses": {
+        "R40": "WAITING_HUMAN",
+        "R39": "WAITING_HUMAN",
+        "R41": "NOT_APPLICABLE",
+        "CUST-ACME-1": "PASS"
       },
-      "expect": {
-        "orderStatus": "READY_TO_DISPATCH",
-        "gates": {
-          "R39-LOAD": "PASS",
-          "R39-CONFIRM": "WAITING_HUMAN"
-        }
+      "openTasks": ["R39"]
+    },
+    {
+      "kind": "dispatch",
+      "label": "装载前调度员不能放行",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": true
+    },
+    {
+      "kind": "act",
+      "label": "缺少封条号被拒绝",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-001"
+        },
+        "evidenceRefs": []
+      },
+      "expectRefusal": "MISSING_EVIDENCE"
+    },
+    {
+      "kind": "act",
+      "label": "仓库装载并提交扫码与封条",
+      "task": "R39",
+      "actor": {
+        "id": "wen",
+        "role": "warehouseOperator"
+      },
+      "decision": {
+        "type": "complete",
+        "fields": {
+          "loadScanId": "SCAN-001",
+          "sealNumber": "SEAL-77"
+        },
+        "evidenceRefs": []
       }
     },
     {
-      "step": "dispatch",
-      "actor": "DISPATCHER",
-      "expect": {
-        "orderStatus": "DISPATCHED",
-        "gates": {
-          "R40": "PASS"
-        }
-      }
+      "kind": "expect",
+      "label": "可发运",
+      "orderStatus": "READY_TO_DISPATCH",
+      "statuses": {
+        "R40": "PASS"
+      },
+      "openTasks": []
+    },
+    {
+      "kind": "dispatch",
+      "label": "调度员确认发运",
+      "actor": {
+        "id": "dee",
+        "role": "dispatcher"
+      },
+      "expectRefusal": false
+    },
+    {
+      "kind": "expect",
+      "label": "已发运",
+      "orderStatus": "DISPATCHED"
     }
   ]
 }
