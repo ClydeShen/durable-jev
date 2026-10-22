@@ -1,5 +1,4 @@
 import type { AgentStatus } from '../api'
-import { agentLabels } from '../labels'
 
 interface Props {
   agents: AgentStatus[]
@@ -15,7 +14,7 @@ export function AgentPanel({ agents, canControl, onControl }: Props) {
         {agents.map((agent) => (
           <li key={agent.agentId}>
             <span className={agent.available ? 'dot online' : 'dot offline'} />
-            {agentLabels[agent.agentId] ?? agent.agentId}
+            {agent.card?.name ?? agent.agentId}
             {canControl && agent.agentId !== 'order-coordination' && (
               <button
                 type="button"

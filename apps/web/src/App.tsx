@@ -1,6 +1,6 @@
 import type { HumanTask } from '@durable-jev/contracts'
-import { useCallback, useEffect, useState } from 'react'
-import { type Actor, api, type RuleInfo, type TaskDecision } from './api'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { type Actor, type AgentNames, api, type RuleInfo, type TaskDecision } from './api'
 import { AgentOverview } from './components/AgentOverview'
 import { AgentPanel } from './components/AgentPanel'
 import { CaseHeader } from './components/CaseHeader'
@@ -11,7 +11,6 @@ import { RuleDetail } from './components/RuleDetail'
 import { RuleGraph } from './components/RuleGraph'
 import { TaskPanel } from './components/TaskPanel'
 import { Timeline } from './components/Timeline'
-import { agentLabels } from './labels'
 import { usePolling } from './use-polling'
 
 type CaseViewMode = 'overview' | 'graph' | 'timeline'
@@ -36,6 +35,13 @@ export function App() {
   }, [])
   const cases = usePolling(api.cases)
   const agents = usePolling(api.agents)
+  const agentNames = useMemo<AgentNames>(
+    () =>
+      Object.fromEntries(
+        (agents.data ?? []).map((agent) => [agent.agentId, agent.card?.name ?? agent.agentId]),
+      ),
+    [agents.data],
+  )
   const loadDetail = useCallback(
     () => (selectedCase ? api.caseDetail(selectedCase) : Promise.resolve(undefined)),
     [selectedCase],
@@ -136,7 +142,7 @@ export function App() {
                   className="secondary"
                   onClick={() => setFocusAgent(undefined)}
                 >
-                  仅 {agentLabels[focusAgent] ?? focusAgent} ✕
+                  仅 {agentNames[focusAgent] ?? focusAgent} ✕
                 </button>
               )}
             </nav>
@@ -154,15 +160,19 @@ export function App() {
             {view === 'graph' && (
               <RuleGraph
                 rules={rules}
+                agentNames={agentNames}
                 outcomes={detail.data.outcomes}
                 focusAgent={focusAgent}
                 onSelect={setSelectedRule}
               />
             )}
-            {view === 'timeline' && <Timeline entries={timeline.data ?? []} />}
+            {view === 'timeline' && (
+              <Timeline entries={timeline.data ?? []} agentNames={agentNames} />
+            )}
             {rule && (
               <RuleDetail
                 rule={rule}
+                agentNames={agentNames}
                 outcomes={detail.data.outcomes.filter((outcome) => outcome.ruleId === rule.ruleId)}
                 onClose={() => setSelectedRule(undefined)}
               />

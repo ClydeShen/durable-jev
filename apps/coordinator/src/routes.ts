@@ -169,13 +169,14 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
     response.json({
       ruleSetVersion: rulePack.ruleSet.ruleSetVersion,
       rules: rulePack.ruleSet.rules.map(
-        ({ ruleId, title, owner, scope, dependsOn, evaluator }) => ({
+        ({ ruleId, title, owner, scope, dependsOn, evaluator, applicability }) => ({
           ruleId,
           title,
           owner,
           scope,
           dependsOn,
           kind: evaluator.kind,
+          extension: applicability !== undefined,
         }),
       ),
     })

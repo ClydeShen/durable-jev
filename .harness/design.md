@@ -29,24 +29,24 @@ apps/
                             destination-compliance（扩展演示）R41 + DEST-* 扩展规则
   web/                    工作台 + Console + 演示控制
 packages/
-  contracts/              Zod 契约：ids、shipment、check、humanTask、artifact、events
-  rule-engine/            纯函数：配置校验、组合器、求值、失效计算
-  store/                  SQLite 连接、迁移、幂等操作表、outbox
-  observability/          事件 schema、logger、trace 上下文
+  contracts/              Zod 契约：ids、shipment、check、humanTask、agents
+  rule-engine/            纯函数：配置校验、组合器、求值、失效计算、扩展规则筛选索引
+  store/                  SQLite 连接、迁移、幂等操作表、outbox（事件由协调者汇入观察库）
   model-providers/        SemanticJudge 接口：jev、structured-output、scripted
   agent-core/             Durable Jev Agent 运行时：规则包、案例求值、人工门槛、AgentClient 与 CaseOrchestrator
   agent-transport/        AgentClient 的两种传输：native/（HTTP 客户端与 agent 路由）、a2a/（Agent Card、业务任务 ↔ A2A Task）
   human-tasks/            人工任务状态机与审批链
-  logistics/              参考数据、案例文件、事实构建、物流 agent 装配、放行事务
-  agent-harness/          AgentRuntime 接口与控制点：in-memory、pi-durable
-  service-kit/            服务启动样板：Express、健康检查、本地控制端点
+  logistics/              参考数据、案例文件、事实构建、物流 agent 装配、放行事务、改派调查（reroute/）
+  agent-harness/          调查助手运行时：Pi Durable 上的 DurableInvestigator 与控制点（工具预算、资料隔离）
+  service-kit/            服务启动样板：Express、pino 日志、健康检查、演示角色头、错误处理
 tools/
   launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
+  rule-authoring/         规则编写 agent：政策文本 → 校验过的规则提案与 diff
 spikes/                   P0 一次性验证，不被正式代码依赖
 eval/
-  materials/              policy-v1.md、rules.json、cases/、mock-data/、event-scripts
-  blind/                  盲测标准答案，仅 runner 读取
-  runner/                 回放、故障注入、benchmark
+  materials/              policy-v1.md、rules.json、cases/、mock-data/、screening/、authoring/（编写录制）
+  blind/                  盲测标准答案，仅 runner 读取（待建）
+  runner/                 回放（replay-main）、筛选（screening-main）、故障场景（faults-main）
 docs/                     用户文档
 var/                      运行时数据与日志，gitignore
 ```
@@ -55,9 +55,12 @@ var/                      运行时数据与日志，gitignore
 
 ## 3. 工程约定
 
-- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写。
-- 不写解释性注释；需要解释的逻辑拆成命名良好的函数。
-- 函数小、纯函数优先；IO 集中在 app 边界。
+- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写。文件名 kebab-case（React 组件 PascalCase），由 Biome 检查。
+- 注释只写"为什么"与约束；"做什么"靠命名表达。
+- 模块要"深"：接口小、背后做实事；不加只转发的薄层（Ousterhout，*A Philosophy of Software Design*）。
+- 每个包的 `index.ts` 显式列出公开导出，不用 `export *`；knip（`includeEntryExports`）保证没有无人使用的导出与依赖。
+- 依赖只指向内层：`apps → packages`，具体实现（HTTP/A2A、Jev/脚本化、Pi Durable）在 app 入口装配；包边界由 TS project references 强制。
+- 纯函数优先；IO 集中在 app 边界。
 - 测试轻量：每个包挑关键语义写少量 Vitest，不追求覆盖率。
 - 所有时间 UTC，金额整数分，重量克，温度 0.1°C 整数。
 
@@ -66,11 +69,11 @@ var/                      运行时数据与日志，gitignore
 | 命令 | 作用 |
 |---|---|
 | `pnpm bootstrap` | install + build 全部 |
-| `pnpm start` | launcher 启动 4 个服务 + web，打印访问地址 |
+| `pnpm start` / `pnpm start:a2a` | launcher 启动 5 个 agent 服务 + web（后者经 A2A 通信），打印访问地址 |
 | `pnpm demo:reset` | 清库并载入 LOG-001 ~ LOG-008 |
-| `pnpm test` | 全部 unit test |
-| `pnpm faults` | 跑故障场景 runner，输出报告到 `var/reports/` |
-| `pnpm bench` | 跑 benchmark，输出报告到 `var/reports/` |
+| `pnpm check` | lint、全量类型检查（含测试与 web）、knip、unit test |
+| `pnpm replay` / `pnpm screening` / `pnpm faults` | 回放、筛选、故障场景，报告到 `var/reports/` |
+| `pnpm bench` | 跑 benchmark（待建） |
 
 `.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`。默认 `scripted`，无 key 可完整演示。
 

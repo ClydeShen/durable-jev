@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import {
+  type CheckScope,
   checkStatusSchema,
   orderStatusSchema,
   roleSchema,
@@ -105,4 +106,11 @@ export type CaseFile = z.infer<typeof caseFileSchema> & { scriptedJudgements: Sc
 
 export function loadCaseFile(path: string): CaseFile {
   return caseFileSchema.parse(JSON.parse(readFileSync(path, 'utf8')))
+}
+
+/** How case files name a rule result or task: `R13@ITEM-1`, `R29@LEG-1`, or `R40` for the order. */
+export function caseEventKey(ruleId: string, scope: CheckScope): string {
+  if (scope.kind === 'cargoItem') return `${ruleId}@${scope.cargoItemId}`
+  if (scope.kind === 'leg') return `${ruleId}@${scope.legId}`
+  return ruleId
 }

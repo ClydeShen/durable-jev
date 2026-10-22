@@ -12,12 +12,13 @@ import {
   ReactFlow,
 } from '@xyflow/react'
 import { useEffect, useMemo, useState } from 'react'
-import type { RuleInfo } from '../api'
+import type { AgentNames, RuleInfo } from '../api'
 import { layoutGraph, nodeSize, type Positions } from '../graph-layout'
-import { agentLabels, checkStatusLabels, kindLabels, mostSevere } from '../labels'
+import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
 
 type RuleNodeData = {
   rule: RuleInfo
+  ownerName: string
   status?: CheckStatus
   count: number
   invalidatedBy?: string
@@ -25,7 +26,7 @@ type RuleNodeData = {
 }
 
 function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
-  const { rule, status, count, invalidatedBy, boundary } = data
+  const { rule, ownerName, status, count, invalidatedBy, boundary } = data
   return (
     <div
       className={`rule-node check-status ${status ?? 'NONE'}${boundary ? ' boundary' : ''}`}
@@ -45,7 +46,7 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
         <span>{kindLabels[rule.kind]}</span>
         <span>
           {boundary ? '→ ' : ''}
-          {agentLabels[rule.owner] ?? rule.owner}
+          {ownerName}
         </span>
         <span>
           {status ? checkStatusLabels[status] : '未评估'}
@@ -61,12 +62,11 @@ const nodeTypes = { rule: RuleNode }
 
 interface Props {
   rules: RuleInfo[]
+  agentNames: AgentNames
   outcomes: RuleOutcome[]
   focusAgent?: string
   onSelect(ruleId: string): void
 }
-
-const isExtensionRule = (ruleId: string) => !/^R\d{2}$/.test(ruleId)
 
 /** Extension rules that rule selection filtered out for every scope of this case. */
 function filteredRuleIds(outcomes: readonly RuleOutcome[]): string {
@@ -103,7 +103,7 @@ function visibleRules(
   ]
 }
 
-export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
+export function RuleGraph({ rules, agentNames, outcomes, focusAgent, onSelect }: Props) {
   const [positions, setPositions] = useState<Positions>({})
   const filteredKey = filteredRuleIds(outcomes)
   const shown = useMemo(
@@ -111,7 +111,7 @@ export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
     [rules, focusAgent, filteredKey],
   )
   const filteredCount = filteredKey ? filteredKey.split(',').length : 0
-  const selectedCount = rules.filter((rule) => isExtensionRule(rule.ruleId)).length - filteredCount
+  const selectedCount = rules.filter((rule) => rule.extension).length - filteredCount
   useEffect(() => {
     setPositions({})
     layoutGraph(shown.map(({ rule }) => ({ id: rule.ruleId, dependsOn: rule.dependsOn }))).then(
@@ -128,6 +128,7 @@ export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
           position: positions[rule.ruleId] ?? { x: 0, y: 0 },
           data: {
             rule,
+            ownerName: agentNames[rule.owner] ?? rule.owner,
             status: mostSevere(own.map((outcome) => outcome.status)),
             count: own.length,
             invalidatedBy: own.find((outcome) => outcome.invalidatedBy)?.invalidatedBy,
@@ -135,7 +136,7 @@ export function RuleGraph({ rules, outcomes, focusAgent, onSelect }: Props) {
           },
         }
       }),
-    [shown, outcomes, positions],
+    [shown, outcomes, positions, agentNames],
   )
   const edges = useMemo<Edge[]>(
     () =>

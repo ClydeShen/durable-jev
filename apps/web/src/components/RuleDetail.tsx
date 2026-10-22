@@ -1,7 +1,7 @@
 import type { CheckScope } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
-import type { RuleInfo } from '../api'
-import { agentLabels, checkStatusLabels, kindLabels } from '../labels'
+import type { AgentNames, RuleInfo } from '../api'
+import { checkStatusLabels, kindLabels } from '../labels'
 
 const scopeLabel = (scope: CheckScope) =>
   scope.kind === 'order'
@@ -14,11 +14,12 @@ const show = (value: unknown) => (typeof value === 'string' ? value : JSON.strin
 
 interface Props {
   rule: RuleInfo
+  agentNames: AgentNames
   outcomes: RuleOutcome[]
   onClose(): void
 }
 
-export function RuleDetail({ rule, outcomes, onClose }: Props) {
+export function RuleDetail({ rule, agentNames, outcomes, onClose }: Props) {
   return (
     <aside className="rule-detail">
       <header>
@@ -30,7 +31,7 @@ export function RuleDetail({ rule, outcomes, onClose }: Props) {
         </button>
       </header>
       <p>
-        {agentLabels[rule.owner] ?? rule.owner} · {kindLabels[rule.kind]} · 依赖{' '}
+        {agentNames[rule.owner] ?? rule.owner} · {kindLabels[rule.kind]} · 依赖{' '}
         {rule.dependsOn.join('、') || '无'}
       </p>
       <table>

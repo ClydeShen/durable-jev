@@ -41,14 +41,6 @@ export const kindLabels: Record<RuleEngineKind, string> = {
   combinator: '组合',
 }
 
-export const agentLabels: Record<string, string> = {
-  'order-coordination': '订单协调',
-  'cargo-assurance': '货物合规',
-  'transport-planning': '运输计划',
-  'commercial-control': '商务',
-  'destination-compliance': '目的地合规',
-}
-
 const severity: CheckStatus[] = [
   'ERROR',
   'FAIL',

@@ -100,7 +100,13 @@ async function agentStatuses(): Promise<AgentStatus[]> {
           transport,
           a2aTasks: a2aTasks.get(agentId) ?? 0,
         }),
-        (): AgentStatus => ({ agentId, available: false, transport, a2aTasks: 0 }),
+        (): AgentStatus => ({
+          agentId,
+          available: false,
+          card: { ...agentProfiles[agentId], url },
+          transport,
+          a2aTasks: 0,
+        }),
       ),
     ),
   )

@@ -1,6 +1,6 @@
 export { agentProfiles } from './agent-profiles.js'
 export { type CaseCatalog, loadCaseCatalog } from './case-catalog.js'
-export type { CaseEvent, CaseFile } from './case-file.js'
+export { type CaseEvent, type CaseFile, caseEventKey } from './case-file.js'
 export { dispatchCase } from './dispatch.js'
 export {
   agentMigrations,

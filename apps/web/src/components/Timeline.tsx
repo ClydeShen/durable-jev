@@ -1,7 +1,7 @@
 import type { CheckScope, CheckStatus } from '@durable-jev/contracts'
 import { useState } from 'react'
-import type { TimelineEntry } from '../api'
-import { agentLabels, checkStatusLabels } from '../labels'
+import type { AgentNames, TimelineEntry } from '../api'
+import { checkStatusLabels } from '../labels'
 
 const scopeSuffix = (scope: unknown) => {
   const value = scope as CheckScope | undefined
@@ -60,9 +60,10 @@ function describe(entry: TimelineEntry): string {
 
 interface Props {
   entries: TimelineEntry[]
+  agentNames: AgentNames
 }
 
-export function Timeline({ entries }: Props) {
+export function Timeline({ entries, agentNames }: Props) {
   const [showRuleChanges, setShowRuleChanges] = useState(false)
   const visible = entries.filter((entry) => showRuleChanges || entry.eventName !== 'rule.evaluated')
   return (
@@ -90,7 +91,7 @@ export function Timeline({ entries }: Props) {
               <td>{new Date(entry.createdAt).toLocaleTimeString('zh-CN', { hour12: false })}</td>
               <td>
                 <span className={`agent-chip ${entry.agentId}`}>
-                  {agentLabels[entry.agentId] ?? entry.agentId}
+                  {agentNames[entry.agentId] ?? entry.agentId}
                 </span>
               </td>
               <td>{entry.eventName}</td>

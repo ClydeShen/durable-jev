@@ -53,7 +53,11 @@ export interface RuleInfo {
   scope: 'order' | 'cargoItem' | 'leg'
   dependsOn: string[]
   kind: RuleEngineKind
+  /** Selected per order by destination, customer or commodity group. */
+  extension: boolean
 }
+
+export type AgentNames = Readonly<Record<string, string>>
 
 export interface AgentStatus {
   agentId: string

@@ -4,6 +4,7 @@ import type { HumanTask, Role, Shipment } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
   type CaseFile,
+  caseEventKey,
   createLocalLogisticsAgents,
   dispatchCase,
   type LocalLogisticsAgents,
@@ -25,13 +26,6 @@ export function caseFile(caseId: string): CaseFile {
 }
 
 export const actor = (id: string, role: Role) => ({ id, role })
-
-const keyOf = (task: HumanTask) =>
-  task.scope.kind === 'cargoItem'
-    ? `${task.ruleId}@${task.scope.cargoItemId}`
-    : task.scope.kind === 'leg'
-      ? `${task.ruleId}@${task.scope.legId}`
-      : task.ruleId
 
 export interface LabOptions {
   dataDirectory?: string
@@ -72,19 +66,14 @@ export class FaultLab {
   }
 
   async status(key: string) {
-    const [ruleId, scopeId] = key.split('@')
     const { outcomes } = await this.view()
-    return outcomes.find(
-      (outcome) =>
-        outcome.ruleId === ruleId &&
-        (scopeId === undefined ||
-          (outcome.scope.kind === 'cargoItem' && outcome.scope.cargoItemId === scopeId) ||
-          (outcome.scope.kind === 'leg' && outcome.scope.legId === scopeId)),
-    )?.status
+    return outcomes.find((outcome) => caseEventKey(outcome.ruleId, outcome.scope) === key)?.status
   }
 
   async openTask(key: string): Promise<HumanTask | undefined> {
-    return (await this.view()).tasks.find((task) => task.status === 'OPEN' && keyOf(task) === key)
+    return (await this.view()).tasks.find(
+      (task) => task.status === 'OPEN' && caseEventKey(task.ruleId, task.scope) === key,
+    )
   }
 
   async decide(task: HumanTask, action: HumanAction) {

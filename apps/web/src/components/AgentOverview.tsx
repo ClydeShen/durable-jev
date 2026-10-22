@@ -15,7 +15,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { agentRelations } from '../agent-relations'
 import type { AgentStatus, RuleInfo } from '../api'
 import { layoutGraph, type Positions } from '../graph-layout'
-import { agentLabels, checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
+import { checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -29,7 +29,7 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <header>
         <span className={agent.available ? 'dot online' : 'dot offline'} />
-        <strong>{agent.card?.name ?? agentLabels[agent.agentId] ?? agent.agentId}</strong>
+        <strong>{agent.card?.name ?? agent.agentId}</strong>
         {caseStatus && <span className="agent-case-status">{checkStatusLabels[caseStatus]}</span>}
       </header>
       <p>{agent.card?.description}</p>

@@ -4,6 +4,7 @@ import {
   applyRevision,
   type CaseEvent,
   type CaseFile,
+  caseEventKey,
   createLocalLogisticsAgents,
   dispatchCase,
   type LocalLogisticsAgents,
@@ -26,23 +27,15 @@ export interface CaseReplay {
 
 const replayStart = Date.parse('2026-10-30T08:00:00Z')
 
-function keyOf(ruleId: string, scope: HumanTask['scope']): string {
-  if (scope.kind === 'cargoItem') return `${ruleId}@${scope.cargoItemId}`
-  if (scope.kind === 'leg') return `${ruleId}@${scope.legId}`
-  return ruleId
-}
-
-function outcomeKey(outcome: CaseView['outcomes'][number]) {
-  return keyOf(outcome.ruleId, outcome.scope)
-}
-
 function checkExpectation(view: CaseView, event: Extract<CaseEvent, { kind: 'expect' }>): string[] {
   const problems: string[] = []
   const status = orderStatusOf(view)
   if (event.orderStatus && status !== event.orderStatus) {
     problems.push(`order is ${status}, expected ${event.orderStatus}`)
   }
-  const outcomes = new Map(view.outcomes.map((outcome) => [outcomeKey(outcome), outcome]))
+  const outcomes = new Map(
+    view.outcomes.map((outcome) => [caseEventKey(outcome.ruleId, outcome.scope), outcome]),
+  )
   for (const [key, expected] of Object.entries(event.statuses)) {
     const actual = outcomes.get(key)?.status
     if (actual !== expected) problems.push(`${key} is ${actual ?? 'missing'}, expected ${expected}`)
@@ -50,7 +43,7 @@ function checkExpectation(view: CaseView, event: Extract<CaseEvent, { kind: 'exp
   if (event.openTasks) {
     const open = view.tasks
       .filter((task) => task.status === 'OPEN')
-      .map((task) => keyOf(task.ruleId, task.scope))
+      .map((task) => caseEventKey(task.ruleId, task.scope))
     const [actual, expected] = [[...new Set(open)].sort(), [...event.openTasks].sort()]
     if (actual.join() !== expected.join())
       problems.push(`open tasks are [${actual}], expected [${expected}]`)
@@ -90,7 +83,7 @@ function checkInvestigation(
 }
 
 function taskFor(view: CaseView, key: string): HumanTask | undefined {
-  const matching = view.tasks.filter((task) => keyOf(task.ruleId, task.scope) === key)
+  const matching = view.tasks.filter((task) => caseEventKey(task.ruleId, task.scope) === key)
   return matching.find((task) => task.status === 'OPEN') ?? matching.at(-1)
 }
 
