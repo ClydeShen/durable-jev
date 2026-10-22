@@ -97,7 +97,7 @@ export class FaultLab {
     return this.decide(task, { type: 'approve', actor: approver })
   }
 
-  dispatch(dispatcher = actor('dee', 'dispatcher')) {
+  dispatch(dispatcher = actor('dee', 'dispatcher')): ReturnType<typeof dispatchCase> {
     return dispatchCase(
       this.agents.orchestrator,
       this.agents.coordination.store,

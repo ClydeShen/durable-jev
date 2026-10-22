@@ -1,11 +1,20 @@
-export * from './agent-profiles.js'
-export * from './case-catalog.js'
+export { agentProfiles } from './agent-profiles.js'
+export { type CaseCatalog, loadCaseCatalog } from './case-catalog.js'
 export type { CaseEvent, CaseFile } from './case-file.js'
-export * from './dispatch.js'
-export * from './logistics-runtime.js'
-export * from './order-status.js'
+export { dispatchCase } from './dispatch.js'
+export {
+  agentMigrations,
+  createLocalLogisticsAgents,
+  createLogisticsRuntime,
+  type LocalLogisticsAgents,
+  loadLogisticsRulePack,
+} from './logistics-runtime.js'
+export { orderStatusOf, rolesWaitedOn } from './order-status.js'
 export type { Incident, Investigation } from './reroute/investigation-store.js'
-export * from './reroute/reroute-desk.js'
-export * from './reroute/scripted-rerouter.js'
-export * from './revision.js'
-export * from './transport-reservation.js'
+export {
+  type DecisionResult,
+  RerouteDesk,
+  type RerouteDeskOptions,
+} from './reroute/reroute-desk.js'
+export { rerouterModel, scriptedRerouter } from './reroute/scripted-rerouter.js'
+export { applyRevision } from './revision.js'

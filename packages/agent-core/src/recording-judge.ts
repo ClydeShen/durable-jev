@@ -10,7 +10,7 @@ export class RecordingJudge implements SemanticJudge {
 
   constructor(private readonly inner: SemanticJudge) {}
 
-  get provider() {
+  get provider(): SemanticJudge['provider'] {
     return this.inner.provider
   }
 

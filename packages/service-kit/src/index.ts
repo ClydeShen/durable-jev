@@ -1,1 +1,1 @@
-export * from './service.js'
+export { actorOf, createService, HttpError } from './service.js'

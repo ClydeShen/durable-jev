@@ -1,2 +1,8 @@
-export * from './approval-chain.js'
-export * from './decide-human-task.js'
+export {
+  type ChainShape,
+  type ChainSteps,
+  chainOutcome,
+  gateStatusOf,
+  stepsToOpen,
+} from './approval-chain.js'
+export { type Decision, decideHumanTask, type HumanAction } from './decide-human-task.js'
