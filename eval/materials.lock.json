@@ -1,6 +1,6 @@
 {
   ".harness/prd.md": "3c6c4eb84ae858c9790e0caf6f51c481db0d7543c0357baccd76642898af1b9d",
-  "eval/materials/authoring/part-a.json": "4725b5d5178e84c956fa2ee7e0c16a2fbb9b177e5f2bdbd3a26880e99671610e",
+  "eval/materials/authoring/part-a.json": "aeab8f2bf4c34ca22e52656100dab1a67629b20391603e4beda01fa1ddcd6dc5",
   "eval/materials/authoring/schedule-g.json": "83b3f35b3668b3ed8c2d9e5f442628d00fd26390f8acdd73fdf757c2c96a5359",
   "eval/materials/authoring/schedule-h.json": "7573f26bf5ddc279b8acff802bfe4bbddaba67afc7d533091d58bb7225de53f1",
   "eval/materials/cases/LOG-001.json": "7af25aa1d900893608bcf6f56a71cbbd1dd1f565ef8f9966d3501cf7361014a3",
@@ -11,15 +11,15 @@
   "eval/materials/cases/LOG-006.json": "d1c280a70f8d5677686db4c8bebeda16c81be16fccddb7f5ff58f716f6694640",
   "eval/materials/cases/LOG-007.json": "ed718ba7fa9b85a003e0c26b8e25884affd2a2d4ea36d17b170357b74e16a4ad",
   "eval/materials/cases/LOG-008.json": "a7b72a7fccebb2b5731d5c0136c6e1fba447bf37afa7becfdf319a385bb4e52e",
-  "eval/materials/facts-catalog.md": "42c2ce926b18079c1123f58b7521aed225ed209b6260b69228ed2de8b3a2c9bd",
-  "eval/materials/mock-data/capacity-offers.json": "0872869ca7634e566d2d6fff7f56bca625f6c8e3a38e89d6bb58770fa5156c27",
-  "eval/materials/mock-data/carriers.json": "e10c136647d10a4a838dd9b7718cb581a38fbba6327619fdcf49985b2ea30b90",
-  "eval/materials/mock-data/customers.json": "dd8370bf94c6d177c40dbdee06e8df6603b62a76ae1873a23c0d06cc4c55e2e1",
-  "eval/materials/mock-data/hubs.json": "07dfc55dc4e554e6d215419ce9e82042901da460b6577715e4b94c98e91e87ba",
-  "eval/materials/mock-data/locations.json": "fcdfce584562f05a0569a82776383f6f2be8cf816eb76564d53f77d8f6aa663e",
-  "eval/materials/mock-data/vehicles.json": "be89d138d4ddfbbefd060d987834603a71432242d3cebdaa3f2070295ad062e7",
-  "eval/materials/policy-parameters.json": "926bda75cbcc604a311fbf4e17981ef6aa2741dcdbe954c4b3dbd171e8ff4110",
+  "eval/materials/facts-catalog.md": "a395b78f8bbb5828cec4a1a949bd7832d681c4b7c51f1b06dfe9029b72c11a5d",
+  "eval/materials/mock-data/capacity-offers.json": "355456ce3a9a0bdb962fcce3f58d68cb07f64f518a70ef275f796496973b238f",
+  "eval/materials/mock-data/carriers.json": "d0472d453fdc0286ac522527a0fe4887b736512025016a7ab93d7b25693662f2",
+  "eval/materials/mock-data/customers.json": "0c9045f785e388a672925386fa511cbefb4a57a8ee55913b39d8c286fa97d018",
+  "eval/materials/mock-data/hubs.json": "36fe3062824ddb7bdba7be46d6bdf19f86e3e9c896fe47a44c4b76f3b827efc2",
+  "eval/materials/mock-data/locations.json": "657b5b82381ecf47992cfff962318ecf6e1fa821edfa9c12e8decdeba3e257b8",
+  "eval/materials/mock-data/vehicles.json": "53142a058fe4fffb3e0faaf0abce6e4848fdb26660eb681b76350cad9709b9b9",
+  "eval/materials/policy-parameters.json": "d36c78e663c884a5ef745300cdc76788f6dfbdfcbc08135826a6305db506d077",
   "eval/materials/policy-v1.md": "d0eabfd03602fb1076aa0a1044f15501a39145199048624c260b7ad542236913",
   "eval/materials/rules.json": "5fa43140a9dc97e29cde0b7416af0b6195feaebad19750d190d28142566cfc4e",
-  "eval/materials/screening/samples.json": "39bd9fb5e182a803e67eaa95da6f9b211d0999b06ee57ca37cd6e8f581f8ccbe"
+  "eval/materials/screening/samples.json": "08b1e87266ce228691e533cd728b2aa905f97351f66b23f5cba6b04d4567d4fc"
 }
