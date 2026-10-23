@@ -1,7 +1,7 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { useState } from 'react'
 import type { RuleInfo, TaskDecision } from '../api'
-import { evidenceLabels } from '../labels'
+import { countOf, evidenceLabels } from '../labels'
 import { Chip, Tag } from './chips'
 import { Field, Fields } from './ui'
 
@@ -91,24 +91,39 @@ interface Props {
   onSelectCase(caseId: string): void
 }
 
-/** Other cases with tasks for this role, so the presenter can switch to them. */
+/** Tasks this role has in other cases, folded away; open, they are grouped by case. */
 function OtherCases({
-  counts,
+  tasks,
+  titles,
   onSelectCase,
 }: {
-  counts: Map<string, number>
+  tasks: readonly HumanTask[]
+  titles: ReadonlyMap<string, string>
   onSelectCase(caseId: string): void
 }) {
-  if (counts.size === 0) return null
+  if (tasks.length === 0) return null
+  const byCase = new Map<string, HumanTask[]>()
+  for (const task of tasks) byCase.set(task.caseId, [...(byCase.get(task.caseId) ?? []), task])
   return (
-    <p className="other-cases">
-      <span className="stat-label">Tasks in other cases</span>
-      {[...counts].map(([caseId, count]) => (
-        <Chip key={caseId} onClick={() => onSelectCase(caseId)} title="Switch to this case">
-          {caseId} {count}
-        </Chip>
-      ))}
-    </p>
+    <details className="other-cases">
+      <summary>{countOf(tasks.length, 'task')} in other cases</summary>
+      <ul>
+        {[...byCase].map(([caseId, caseTasks]) => (
+          <li key={caseId}>
+            <button type="button" className="link-action" onClick={() => onSelectCase(caseId)}>
+              {caseId}
+            </button>
+            <ul>
+              {caseTasks.map((task) => (
+                <li key={task.humanTaskId}>
+                  {task.ruleId} {titles.get(task.ruleId)}
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </details>
   )
 }
 
@@ -116,10 +131,7 @@ export function TaskPanel(props: Props) {
   const { tasks, rules, caseId, message, onDecide, onShowRule, onSelectCase } = props
   const titles = new Map(rules.map((rule) => [rule.ruleId, rule.title]))
   const own = tasks.filter((task) => task.caseId === caseId)
-  const others = new Map<string, number>()
-  for (const task of tasks) {
-    if (task.caseId !== caseId) others.set(task.caseId, (others.get(task.caseId) ?? 0) + 1)
-  }
+  const others = tasks.filter((task) => task.caseId !== caseId)
   return (
     <section className="task-panel">
       <h2>
@@ -146,7 +158,7 @@ export function TaskPanel(props: Props) {
           ))}
         </ul>
       )}
-      <OtherCases counts={others} onSelectCase={onSelectCase} />
+      <OtherCases tasks={others} titles={titles} onSelectCase={onSelectCase} />
     </section>
   )
 }

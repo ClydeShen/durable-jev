@@ -1254,16 +1254,6 @@ span.judgement-bar > span {
   margin-right: min(520px, 100%);
 }
 
-.other-cases {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
 /* Accessibility (WCAG 2.2 AA) */
 
 /* 2.4.7: keyboard focus is always visible. */
@@ -2236,4 +2226,31 @@ button.focus-filter {
   margin: 12px 0 0;
   padding-left: 20px;
   line-height: 1.6;
+}
+
+/* Tasks in other cases: secondary, so folded into one muted line until opened. */
+details.other-cases {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+details.other-cases > summary {
+  cursor: pointer;
+}
+
+details.other-cases ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+details.other-cases > ul {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+details.other-cases li > ul {
+  padding-left: 12px;
 }
