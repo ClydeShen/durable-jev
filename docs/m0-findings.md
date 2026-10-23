@@ -144,7 +144,7 @@ safety data sheet match the declaration, Noul) together.
   accurately, SDK retries are off (`maxRetries: 0`) and the harness manages retries.
 - The environment variable is the official `TYPESAFE_API_KEY`.
 
-## Trace propagation (OpenTelemetry API 1.9.1 / SDK 2.12.0)
+## Trace propagation (OpenTelemetry API 1.10.0 / SDK 3.0.0)
 
 Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
@@ -158,6 +158,8 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
 - Only `@opentelemetry/api` plus the SDK's manual propagation, no automatic instrumentation, so the
   behaviour is predictable.
+- SDK 3.0 sets nothing up by itself: the spike registers the `TracerProvider`, the
+  `AsyncLocalStorage` context manager and the W3C trace-context propagator explicitly.
 - When spans are stored for observation their links are stored too; the console joins old and new
   traces by correlationId and links.
 - The A2A client can inject `traceparent` with the SDK's `CallInterceptor`; to be verified in T5.1.
@@ -173,7 +175,7 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 | `@a2a-js/sdk` | 1.3.0 |
 | `@typesafe-ai/sdk` | 0.7.0, model `jev-1.14.0` |
 | `@opentelemetry/api` | 1.10.0 |
-| `@opentelemetry/sdk-trace-node` / `sdk-trace-base` | 2.12.0 |
+| `@opentelemetry/sdk-trace` / `core` / `context-async-hooks` | 3.0.0 |
 | Express | 5.3.0 |
 
 Every dependency is written to `package.json` at an exact version (`save-exact=true` in `.npmrc`),
