@@ -2,11 +2,13 @@ import type { HumanTask } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import { useEffect, useState } from 'react'
 import type { AgentNames, AgentStatus, RuleInfo } from '../api'
+import { agentLegend, type Legend, ruleLegend } from '../legend-text'
 import type { PlaybackSpeed } from '../playback'
 import { useCaseHistory } from '../use-case-history'
 import { AgentCard } from './AgentCard'
 import { AgentOverview } from './AgentOverview'
 import { EventFeed } from './EventFeed'
+import { GraphLegend } from './GraphLegend'
 import { RuleDetail } from './RuleDetail'
 import { RuleGraph } from './RuleGraph'
 import { Timeline } from './Timeline'
@@ -27,7 +29,13 @@ interface ViewTabsProps {
   onClearFocus(): void
 }
 
+const legends: Partial<Record<CaseViewMode, Legend>> = {
+  overview: agentLegend,
+  graph: ruleLegend,
+}
+
 function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
+  const legend = legends[view]
   return (
     <nav className="view-tabs">
       {viewModes.map(([mode, label]) => (
@@ -45,6 +53,7 @@ function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
           仅 {focusName} ✕
         </button>
       )}
+      {legend && <GraphLegend legend={legend} />}
     </nav>
   )
 }

@@ -621,7 +621,6 @@ button.primary-action {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  overflow: hidden;
   padding: 6px 8px;
   border-radius: 8px;
   border: 2px solid var(--status, var(--border));
@@ -1957,4 +1956,103 @@ button.order-send {
   .order-summary {
     position: static;
   }
+}
+
+/* The graph legend: a strip of colours at the end of the view tabs; its details open below it. */
+
+.graph-legend {
+  position: relative;
+  margin-left: auto;
+}
+
+button.legend-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-height: var(--control-height-small);
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: help;
+}
+
+.legend-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--status);
+}
+
+.legend-swatch.upstream {
+  background: var(--upstream);
+}
+
+.legend-swatch.downstream {
+  background: var(--downstream);
+}
+
+.legend-details {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: none;
+  width: 340px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.graph-legend:hover .legend-details,
+.graph-legend:focus-within .legend-details {
+  display: block;
+}
+
+div.legend-details > dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 10px;
+  margin: 0;
+}
+
+div.legend-details > dl > div {
+  display: contents;
+}
+
+div.legend-details > dl dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+div.legend-details > dl dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+div.legend-details > dl dt.legend-mark {
+  font-weight: 500;
 }
