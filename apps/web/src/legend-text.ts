@@ -26,7 +26,7 @@ const statusEntries: LegendEntry[] = [
   },
   {
     colour: 'WAITING_HUMAN',
-    name: 'Needs a person',
+    name: 'Pending action',
     meaning: 'Someone has to confirm, sign or do field work; it waits for that role.',
   },
   {

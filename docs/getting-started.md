@@ -25,7 +25,7 @@ that case.
 
 ## Walk through LOG-001: general cargo from order to dispatch
 
-1. Pick **LOG-001** on the left. Its status is "Needs people": it waits for the warehouse operator.
+1. Pick **LOG-001** on the left. Its status is "Action required": it waits for the warehouse operator.
 2. The middle shows the rule graph: boxes are rules, lines are dependencies, colours are statuses.
    Everything passes except R39 (loading) and R40 (release). Click any box to see each item's or
    leg's result, observed value and what blocks it.

@@ -2022,16 +2022,6 @@ ul.order-documents li {
   gap: 6px;
 }
 
-.order-next {
-  margin: 0;
-  padding: 8px 10px 8px 28px;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--muted);
-  background: var(--bg);
-  border-radius: 6px;
-}
-
 button.order-send {
   font-weight: 600;
 }

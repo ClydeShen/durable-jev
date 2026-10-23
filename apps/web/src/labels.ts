@@ -35,7 +35,7 @@ export const checkStatusLabels: Record<CheckStatus, string> = {
   NOT_APPLICABLE: 'Not applicable',
   ERROR: 'Error',
   BLOCKED_DEPENDENCY: 'Blocked',
-  WAITING_HUMAN: 'Needs a person',
+  WAITING_HUMAN: 'Pending action',
   INVALIDATED: 'Invalidated',
 }
 
@@ -43,7 +43,7 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
   SUBMITTED: 'Submitted',
   EVALUATING: 'Evaluating',
   ON_HOLD: 'On hold',
-  AWAITING_HUMAN: 'Needs people',
+  AWAITING_HUMAN: 'Action required',
   READY_TO_DISPATCH: 'Ready to dispatch',
   DISPATCHED: 'Dispatched',
   REJECTED: 'Rejected',

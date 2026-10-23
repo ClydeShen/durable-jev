@@ -94,11 +94,6 @@ export function OrderSummary({ sampleId, sample, shipment, options, onRestore, o
           )}
         </Field>
       </Fields>
-      <ol className="order-next">
-        <li>Order coordination receives the order</li>
-        <li>Every agent decides its rules one by one from the first</li>
-        <li>Where a person is needed, a task waits for that role</li>
-      </ol>
       <button type="submit" className="order-send">
         Submit order
       </button>
