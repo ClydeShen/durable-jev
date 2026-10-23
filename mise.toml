@@ -1,4 +1,4 @@
 # Tool versions for local work and CI. pnpm is pinned by packageManager in package.json instead.
 [tools]
-node = "22.23.4"
+node = "26.11.1"
 gitleaks = "8.30.0"

@@ -2,7 +2,7 @@
 
 ## 环境
 
-- Node 22（22.9 或更新的 22.x；用到 `--env-file-if-exists`）。只有 Node 22 经过 CI 验证，`pnpm install` 会直接拒绝其他大版本：better-sqlite3 没有对应预编译包时（例如 Node 26）会退回本地编译，在 Windows 上需要 Visual Studio C++ 工具才能成功。用 nvm 的话：`nvm install 22.23.4` 后 `nvm use 22.23.4`
+- Node 26（26.11 或更新的 26.x，与 `mise.toml` 和 CI 一致；其他大版本 `pnpm install` 会直接拒绝）。用 nvm 的话：`nvm install 26.11.1` 后 `nvm use 26.11.1`
 - pnpm 10+
 - 可选：装了 [mise](https://mise.jdx.dev) 的话，在仓库根目录执行 `mise install`，得到与 CI 相同版本的 Node 与 gitleaks（见 `mise.toml`）
 - 无需任何 key：默认 `MODEL_MODE=scripted`，Jev 判断按案例文件里录好的答案回放
