@@ -7,7 +7,7 @@
     "@durable-jev/agent-core": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
-    "@earendil-works/pi-ai": "1.3.0",
+    "@earendil-works/pi-ai": "1.4.0",
     "zod": "4.6.7"
   }
 }

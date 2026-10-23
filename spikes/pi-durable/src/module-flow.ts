@@ -6,7 +6,7 @@ import {
   type SemanticJudge,
   type SemanticQuestion,
 } from '@durable-jev/model-providers'
-import { BACKGROUND_CONTEXT, type Context } from '@earendil-works/chord/context'
+import { BACKGROUND_CONTEXT } from '@earendil-works/chord/context'
 import { createModels } from '@earendil-works/pi-ai/models'
 import {
   createRegistry,
@@ -62,13 +62,18 @@ const HumanDecisions = defineDoc<{ decisions: Record<string, Decision> }>({
   version: 1,
   scope: 'session',
   initial: () => ({ decisions: {} }),
+  checkpointWhen: () => false,
 })
 
 type GateInput = { humanTaskId: string; expiresAt: number }
 type GateResult = { humanTaskId: string; decision: Decision }
 
 async function awaitDecision(
-  runtime: { watchDoc: Harness['watchDoc']; sleep(until: number, context: Context): Promise<void> },
+  runtime: {
+    watchDoc: Harness['watchDoc']
+    now(): number
+    setTimer(callback: () => void, delayMs: number): () => void
+  },
   input: GateInput,
 ): Promise<Decision> {
   const watch = await runtime.watchDoc(HumanDecisions, context)
@@ -84,8 +89,13 @@ async function awaitDecision(
       if (decision) resolve(decision)
     }),
   )
-  const expired = runtime.sleep(input.expiresAt, context).then(() => 'EXPIRED' as const)
+  // A phase timer is not durable; after a restart the phase runs again and arms what is left.
+  let disarm = () => {}
+  const expired = new Promise<'EXPIRED'>((resolve) => {
+    disarm = runtime.setTimer(() => resolve('EXPIRED'), input.expiresAt - runtime.now())
+  })
   const decision = await Promise.race([decided, expired])
+  disarm()
   await watch.stop()
   return decision
 }

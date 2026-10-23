@@ -16,7 +16,7 @@
     "@durable-jev/model-providers": "workspace:*",
     "@durable-jev/rule-engine": "workspace:*",
     "@durable-jev/store": "workspace:*",
-    "@earendil-works/pi-ai": "1.3.0",
+    "@earendil-works/pi-ai": "1.4.0",
     "zod": "4.6.7"
   }
 }
