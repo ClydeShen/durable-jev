@@ -6,4 +6,3 @@ packages:
   - eval/runner
 onlyBuiltDependencies:
   - esbuild
-  - better-sqlite3
