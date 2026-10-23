@@ -10,6 +10,17 @@ export const roleLabels: Record<Role, string> = {
   technicalEvaluator: '技术评估者',
 }
 
+/** The person who acts in each role, as in the demo script; switching role switches person. */
+export const demoOperators: Record<Role, string> = {
+  transportPlanner: 'pat',
+  complianceReviewer: 'alice',
+  qualityReviewer: 'bob',
+  commercialManager: 'carol',
+  warehouseOperator: 'wen',
+  dispatcher: 'dee',
+  technicalEvaluator: 'eve',
+}
+
 export const checkStatusLabels: Record<CheckStatus, string> = {
   PASS: '通过',
   FAIL: '不通过',
@@ -54,4 +65,39 @@ const severity: CheckStatus[] = [
 
 export function mostSevere(statuses: readonly CheckStatus[]): CheckStatus | undefined {
   return severity.find((status) => statuses.includes(status))
+}
+
+/** What a rule of each kind does, in words for the audience. */
+export const kindExplanations: Record<RuleEngineKind, string> = {
+  expression: '按公式自动判断',
+  code: '由一段代码判断',
+  decisionTable: '查决策表判断',
+  semantic: '由 Jev 阅读文字后判断',
+  humanGate: '需要人来批准或操作',
+  combinator: '汇总其他规则的结论',
+}
+
+export const ruleScopeLabels: Record<'order' | 'cargoItem' | 'leg', string> = {
+  order: '整单检查一次',
+  cargoItem: '每件货物各检查一次',
+  leg: '每个运输段各检查一次',
+}
+
+export const changeLabels: Record<string, string> = {
+  cargo: '货物',
+  route: '路线',
+  carrier: '承运商',
+  quote: '报价',
+  documents: '文件',
+}
+
+/** Field names a human task asks for, as the person filling them in reads them. */
+export const evidenceLabels: Record<string, string> = {
+  loadScanId: '装载扫码号',
+  sealNumber: '封条号',
+  deliveryNoteRef: '送货单号',
+  recipientName: '收货人姓名',
+  newPackagingId: '新包装编号',
+  photoRef: '照片编号',
+  retestDeciCelsius: '复测温度（0.1 °C）',
 }

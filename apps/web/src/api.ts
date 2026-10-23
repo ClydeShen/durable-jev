@@ -6,7 +6,7 @@ import type {
   RuleEngineKind,
   Shipment,
 } from '@durable-jev/contracts'
-import type { RuleOutcome } from '@durable-jev/rule-engine'
+import type { RuleDefinition, RuleOutcome, SemanticRule } from '@durable-jev/rule-engine'
 
 export interface CaseSummary {
   caseId: string
@@ -55,7 +55,25 @@ export interface RuleInfo {
   kind: RuleEngineKind
   /** Selected per order by destination, customer or commodity group. */
   extension: boolean
+  /** The policy text that defines the rule. */
+  clause?: { section: string; paragraphs: string[] }
+  definition: RuleCheck
+  /** The policy parameters the rule reads, with their values. */
+  parameters: Record<string, string | number | boolean>
 }
+
+/** How a rule is checked, as the rule definition states it. */
+export type RuleCheck = Pick<
+  RuleDefinition,
+  | 'appliesWhen'
+  | 'applicability'
+  | 'expression'
+  | 'humanGate'
+  | 'combiner'
+  | 'mixing'
+  | 'unknownPolicy'
+  | 'invalidationTriggers'
+> & { semantic?: Pick<SemanticRule, 'question' | 'passWhen'> }
 
 export type AgentNames = Readonly<Record<string, string>>
 
@@ -69,6 +87,7 @@ export interface AgentStatus {
     openTasksByRole: Partial<Record<Role, number>>
   }
   card?: { name: string; description: string; url: string }
+  responsibilities: string[]
   transport: 'native' | 'a2a'
   a2aTasks: number
 }
