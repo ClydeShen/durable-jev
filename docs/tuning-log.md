@@ -72,3 +72,6 @@ can make the clause a plan-time check. No change was made.
 Known limitation: the helper's rationale sometimes comes back in Traditional rather than
 Simplified Chinese despite the instruction.
 
+Since 2026-10-23 the console is English throughout and the rationale is asked for in plain
+English, so this limitation no longer applies; the live rationale has not been re-checked since.
+
