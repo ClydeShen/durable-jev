@@ -1,5 +1,5 @@
 import type { OrderOptions, Shipment } from '@durable-jev/contracts'
-import { countOf } from '../labels'
+import { countOf, moneyOf } from '../labels'
 import { Chip, Tags } from './chips'
 import { Field, Fields } from './ui'
 
@@ -77,7 +77,7 @@ export function OrderSummary({ sampleId, sample, shipment, options, onRestore, o
         </Field>
         <Field label="Deliver from">{utcTime(shipment.deliveryWindow.from)} UTC</Field>
         <Field label="Deliver by">{utcTime(shipment.deliveryWindow.to)} UTC</Field>
-        <Field label="Quote">€{shipment.quote.amountCents / 100}</Field>
+        <Field label="Quote">{moneyOf(shipment.quote.amountCents)}</Field>
         <Field label="Route">
           <Route legs={shipment.legs} />
         </Field>
@@ -94,11 +94,6 @@ export function OrderSummary({ sampleId, sample, shipment, options, onRestore, o
           )}
         </Field>
       </Fields>
-      <ol className="order-next">
-        <li>Order coordination receives the order</li>
-        <li>Every agent decides its rules one by one from the first</li>
-        <li>Where a person is needed, a task waits for that role</li>
-      </ol>
       <button type="submit" className="order-send">
         Submit order
       </button>

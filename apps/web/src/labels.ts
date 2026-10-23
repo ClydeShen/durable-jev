@@ -35,7 +35,7 @@ export const checkStatusLabels: Record<CheckStatus, string> = {
   NOT_APPLICABLE: 'Not applicable',
   ERROR: 'Error',
   BLOCKED_DEPENDENCY: 'Blocked',
-  WAITING_HUMAN: 'Needs a person',
+  WAITING_HUMAN: 'Pending action',
   INVALIDATED: 'Invalidated',
 }
 
@@ -43,7 +43,7 @@ export const orderStatusLabels: Record<OrderStatus, string> = {
   SUBMITTED: 'Submitted',
   EVALUATING: 'Evaluating',
   ON_HOLD: 'On hold',
-  AWAITING_HUMAN: 'Needs people',
+  AWAITING_HUMAN: 'Action required',
   READY_TO_DISPATCH: 'Ready to dispatch',
   DISPATCHED: 'Dispatched',
   REJECTED: 'Rejected',
@@ -161,3 +161,13 @@ export const refusalMessages: Record<string, string> = {
 
 /** A count with its noun, singular or plural: "1 item", "2 items". */
 export const countOf = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
+
+const nzd = new Intl.NumberFormat('en-NZ', {
+  style: 'currency',
+  currency: 'NZD',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+
+/** An amount in cents, shown in New Zealand dollars: "$1,850". */
+export const moneyOf = (cents: number) => nzd.format(cents / 100)

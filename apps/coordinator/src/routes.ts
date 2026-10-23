@@ -47,6 +47,7 @@ export interface CoordinatorDependencies {
   rulePack: RulePack
   investigations: InvestigationClient
   agentStatuses(): Promise<AgentStatus[]>
+  agentCardOf(agentId: string): Promise<unknown>
   controlUrl?: string
   timeline(caseId: string): TimelineEntry[]
   now(): string
@@ -267,7 +268,10 @@ function taskRoutes(router: Router, { orchestrator }: CoordinatorDependencies) {
   })
 }
 
-function ruleAndAgentRoutes(router: Router, { rulePack, agentStatuses }: CoordinatorDependencies) {
+function ruleAndAgentRoutes(
+  router: Router,
+  { rulePack, agentStatuses, agentCardOf }: CoordinatorDependencies,
+) {
   router.get('/rules', (_request, response) => {
     response.json({
       ruleSetVersion: rulePack.ruleSet.ruleSetVersion,
@@ -303,6 +307,10 @@ function ruleAndAgentRoutes(router: Router, { rulePack, agentStatuses }: Coordin
 
   router.get('/agents', async (_request, response) => {
     response.json(await agentStatuses())
+  })
+
+  router.get('/agents/:agentId/card', async (request, response) => {
+    response.json(await agentCardOf(request.params.agentId))
   })
 }
 

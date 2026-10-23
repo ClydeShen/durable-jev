@@ -11,6 +11,8 @@ interface LegendEntry {
 export interface Legend {
   /** Shown in the small strip on the graph. */
   entries: LegendEntry[]
+  /** Colours that only appear with a rule selected; shown when the legend opens. */
+  highlights: LegendEntry[]
   /** Shown with the entries when the legend opens: marks and lines that are not a colour. */
   notes: { mark: string; meaning: string }[]
 }
@@ -24,7 +26,7 @@ const statusEntries: LegendEntry[] = [
   },
   {
     colour: 'WAITING_HUMAN',
-    name: 'Needs a person',
+    name: 'Pending action',
     meaning: 'Someone has to confirm, sign or do field work; it waits for that role.',
   },
   {
@@ -42,8 +44,8 @@ const statusEntries: LegendEntry[] = [
 ]
 
 export const ruleLegend: Legend = {
-  entries: [
-    ...statusEntries,
+  entries: statusEntries,
+  highlights: [
     {
       colour: 'upstream',
       name: 'Upstream',
@@ -81,6 +83,7 @@ export const ruleLegend: Legend = {
 
 export const agentLegend: Legend = {
   entries: statusEntries.filter((entry) => entry.colour !== 'BLOCKED_DEPENDENCY'),
+  highlights: [],
   notes: [
     { mark: 'Card border', meaning: "The agent's most pressing status in this order." },
     {

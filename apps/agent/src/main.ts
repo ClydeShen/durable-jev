@@ -6,11 +6,11 @@ import { agentIdSchema } from '@durable-jev/contracts'
 import {
   agentMigrations,
   agentProfiles,
-  caseFileOf,
   createLogisticsRuntime,
   loadCaseCatalog,
   RerouteDesk,
   rerouterModel,
+  scriptedJudgementsOf,
 } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
@@ -31,7 +31,7 @@ const { runtime, rulePack, reference } = createLogisticsRuntime({
   materialsDirectory: materials,
   store,
   judgeFor: (shipment) =>
-    liveJudge ?? new ScriptedJudge(caseFileOf(catalog, shipment.caseId)?.scriptedJudgements ?? []),
+    liveJudge ?? new ScriptedJudge(scriptedJudgementsOf(catalog, shipment.caseId)),
   now: () => new Date().toISOString(),
 })
 

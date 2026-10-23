@@ -1,7 +1,61 @@
 import type { Role } from '@durable-jev/contracts'
+import { useId, useRef, useState } from 'react'
 import type { Actor } from '../api'
 import { demoOperators, roleLabels } from '../labels'
-import { RoleChip } from './chips'
+import { useDismiss } from '../use-dismiss'
+
+const roles = Object.keys(roleLabels) as Role[]
+
+/** The current role and its operator in one chip; clicking it lists the other roles. */
+function RoleMenu({ actor, onChange }: { actor: Actor; onChange(actor: Actor): void }) {
+  const menuId = useId()
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
+  useDismiss(open, root, () => setOpen(false))
+  const choose = (role: Role) => {
+    onChange({ role, id: demoOperators[role] })
+    setOpen(false)
+  }
+  return (
+    <div className="role-menu" ref={root}>
+      <button
+        type="button"
+        className="entity-chip role-current"
+        data-role={actor.role}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-controls={menuId}
+        title="Act in another role"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="entity-dot" aria-hidden="true" />
+        {roleLabels[actor.role]}
+        <strong>{demoOperators[actor.role]}</strong>
+        <span className="entity-action" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+      {open && (
+        <div id={menuId} role="menu" className="role-options">
+          {roles.map((role) => (
+            <button
+              key={role}
+              type="button"
+              role="menuitemradio"
+              aria-checked={role === actor.role}
+              data-role={role}
+              onClick={() => choose(role)}
+            >
+              <span className="entity-dot" aria-hidden="true" />
+              <span>{roleLabels[role]}</span>
+              <span className="muted">{demoOperators[role]}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 interface Props {
   actor: Actor
@@ -14,30 +68,7 @@ export function RoleBar({ actor, onChange, onReset }: Props) {
   return (
     <header className="role-bar">
       <h1>Durable Jev Agent demo</h1>
-      <label>
-        <span className="role-dot" aria-hidden="true" />
-        Current role
-        <select
-          value={actor.role}
-          onChange={(event) => {
-            const role = event.target.value as Role
-            onChange({ role, id: demoOperators[role] })
-          }}
-        >
-          {Object.entries(roleLabels).map(([role, label]) => (
-            <option key={role} value={role}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <span
-        className="operator"
-        title="The person recorded in the audit trail; changes with the role"
-      >
-        <span className="stat-label">Operator</span>
-        <RoleChip forRole={actor.role} />
-      </span>
+      <RoleMenu actor={actor} onChange={onChange} />
       <button type="button" className="secondary" onClick={onReset}>
         Reset demo
       </button>

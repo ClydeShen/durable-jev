@@ -1,5 +1,7 @@
 import type { CaseSummary } from '../api'
-import { OrderStatusBadge, RoleLabel } from './chips'
+import { countOf, roleLabels } from '../labels'
+import { OrderStatusBadge } from './chips'
+import { IconButton } from './ui'
 
 interface Props {
   cases: CaseSummary[]
@@ -14,9 +16,7 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
     <nav className="case-list">
       <div className="case-list-heading">
         <h2>Cases</h2>
-        <button type="button" className="secondary small" onClick={onNewOrder}>
-          + New order
-        </button>
+        <IconButton icon="add" label="New order" onClick={onNewOrder} />
       </div>
       {cases.map((summary) => (
         <button
@@ -25,18 +25,18 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
           className={summary.caseId === selected ? 'case selected' : 'case'}
           onClick={() => onSelect(summary.caseId)}
         >
-          <span className="case-line">
-            <strong>{summary.caseId}</strong>
-            <OrderStatusBadge status={summary.status} />
-          </span>
-          {summary.waitingOn.length > 0 && (
-            <span className="case-waiting">
-              <span className="stat-label">Awaits</span>
-              {summary.waitingOn.map((role) => (
-                <RoleLabel key={role} forRole={role} />
-              ))}
+          <strong className="case-id">{summary.caseId}</strong>
+          <OrderStatusBadge status={summary.status} />
+          <span className="case-roles">
+            <span className="case-roles-count">
+              {summary.waitingOn.length > 0
+                ? `Waiting on ${countOf(summary.waitingOn.length, 'role')}`
+                : 'No open tasks'}
             </span>
-          )}
+            {summary.waitingOn.map((role) => (
+              <span key={role} className="entity-dot" data-role={role} title={roleLabels[role]} />
+            ))}
+          </span>
         </button>
       ))}
     </nav>

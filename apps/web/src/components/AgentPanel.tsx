@@ -16,10 +16,8 @@ export function AgentPanel({ agents, canControl, onOpen, onControl }: Props) {
           <li key={agent.agentId}>
             <button type="button" className="agent-link" onClick={() => onOpen(agent.agentId)}>
               <span className={agent.available ? 'dot online' : 'dot offline'} />
-              <span>
-                <strong>{agent.card?.name ?? agent.agentId}</strong>
-                <small>{agent.available ? agent.card?.description : 'Offline'}</small>
-              </span>
+              <strong>{agent.card?.name ?? agent.agentId}</strong>
+              {!agent.available && <small>Offline</small>}
             </button>
             {canControl && agent.agentId !== 'order-coordination' && (
               <button

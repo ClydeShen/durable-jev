@@ -1,5 +1,5 @@
 import type { Actor, Investigation } from '../api'
-import { checkStatusLabels } from '../labels'
+import { checkStatusLabels, moneyOf } from '../labels'
 import { Badge, Chip, InvestigationBadge, RoleChip, Tag } from './chips'
 import { Field, Fields } from './ui'
 
@@ -16,7 +16,7 @@ function Proposal({ proposal }: { proposal: NonNullable<Investigation['proposal'
         <Field label="Vehicle">{proposal.vehicleId}</Field>
         <Field label="Planned departure">{time(proposal.plannedDeparture)}</Field>
         <Field label="Planned arrival">{time(proposal.plannedArrival)}</Field>
-        <Field label="Extra cost">€{(proposal.extraCostCents / 100).toFixed(2)}</Field>
+        <Field label="Extra cost">{moneyOf(proposal.extraCostCents)}</Field>
         <Field label="Rule pre-checks">
           <span className="chips">
             {proposal.checks.map((check) => (
@@ -56,19 +56,12 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
               <strong>Investigation helper</strong>
               <Tag>Transport planning agent</Tag>
               <InvestigationBadge status={investigation.status} />
-              <span className="muted">
-                Carrier of {investigation.incident.legId} cancelled (revision r
-                {investigation.caseRevision})
-              </span>
             </header>
             <p className="investigation-lead">
-              The carrier of {investigation.incident.legId} cancelled. The helper looks things up
-              and tries spare capacity against the rules by itself, but it can only propose; the
-              order changes only once the transport planner confirms.
+              Carrier of {investigation.incident.legId} cancelled. The helper proposes a
+              replacement; the order changes only when the transport planner confirms.
             </p>
-            {investigation.status === 'RUNNING' && (
-              <p className="muted">Investigating; the steps are in the timeline…</p>
-            )}
+            {investigation.status === 'RUNNING' && <p className="muted">Investigating…</p>}
             {investigation.proposal && <Proposal proposal={investigation.proposal} />}
             {investigation.escalation && (
               <blockquote>
@@ -99,8 +92,7 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
             )}
             {investigation.status === 'PROPOSED' && !canDecide && (
               <p className="muted">
-                Only the <RoleChip forRole="transportPlanner" /> can confirm or reject this
-                proposal.
+                Awaiting <RoleChip forRole="transportPlanner" />
               </p>
             )}
           </article>

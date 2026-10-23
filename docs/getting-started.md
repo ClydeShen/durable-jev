@@ -20,12 +20,12 @@ pnpm start       # build and start every service
 Once the services are up, the end of the log shows "✔ Durable Jev demo is ready" with the address
 <http://localhost:4100>, and the default browser opens (set `OPEN_BROWSER=false` to keep it
 closed). The demo data loads on the first start; "Reset demo" at the top right of the page or
-`pnpm demo:reset` restores it at any time, and "Reset this case" in a case header restores only
+`pnpm demo:reset` restores it at any time, and the reset icon in a case header ("Reset this case") restores only
 that case.
 
 ## Walk through LOG-001: general cargo from order to dispatch
 
-1. Pick **LOG-001** on the left. Its status is "Needs people": it waits for the warehouse operator.
+1. Pick **LOG-001** on the left. Its status is "Action required": it waits for the warehouse operator.
 2. The middle shows the rule graph: boxes are rules, lines are dependencies, colours are statuses.
    Everything passes except R39 (loading) and R40 (release). Click any box to see each item's or
    leg's result, observed value and what blocks it.

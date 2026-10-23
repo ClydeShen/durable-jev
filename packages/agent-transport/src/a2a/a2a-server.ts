@@ -48,9 +48,9 @@ export function agentCard(profile: AgentProfile, baseUrl: string, version: strin
     securityRequirements: [],
     defaultInputModes: ['application/json'],
     defaultOutputModes: ['application/json'],
-    skills: Object.entries(caseSkills).map(([id, description]) => ({
+    skills: Object.entries(caseSkills).map(([id, { name, description }]) => ({
       id,
-      name: id,
+      name,
       description,
       tags: ['logistics'],
       examples: [],
@@ -121,7 +121,7 @@ function terminalTask(
           {
             artifactId: randomUUID(),
             name: request.skill ?? 'result',
-            description: request.skill ? caseSkills[request.skill] : '',
+            description: request.skill ? caseSkills[request.skill].description : '',
             parts: [dataPart(outcome.result)],
             metadata: undefined,
             extensions: [],

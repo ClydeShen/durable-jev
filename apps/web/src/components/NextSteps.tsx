@@ -62,14 +62,14 @@ export function NextSteps({ detail, rules, onShowRule }: Props) {
     ...proposals.map((proposal) => (
       <li key={proposal.investigationId}>
         <RoleChip forRole="transportPlanner" />
-        <span>confirms or rejects the helper's reroute proposal</span>
+        <span>confirms the reroute</span>
       </li>
     )),
     ...(detail.status === 'READY_TO_DISPATCH'
       ? [
           <li key="dispatch">
             <RoleChip forRole="dispatcher" />
-            <span>confirms dispatch (the button above the case)</span>
+            <span>confirms dispatch</span>
           </li>,
         ]
       : []),
@@ -78,7 +78,6 @@ export function NextSteps({ detail, rules, onShowRule }: Props) {
     return (
       <section className="next-steps done" aria-label="Next steps">
         <span className="next-label">✓ Dispatched</span>
-        <span className="muted">This case is complete</span>
       </section>
     )
   }
@@ -90,8 +89,8 @@ export function NextSteps({ detail, rules, onShowRule }: Props) {
       ) : (
         <span className="muted">
           {failed.length > 0
-            ? `Nobody can move it on: ${failed.join(', ')} failed, and the order data must change`
-            : 'No tasks; the agents are evaluating'}
+            ? `Blocked: ${failed.join(', ')} failed; the order must change`
+            : 'Evaluating…'}
         </span>
       )}
     </section>

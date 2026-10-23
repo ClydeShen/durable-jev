@@ -9,6 +9,7 @@ import { AgentCard } from './AgentCard'
 import { AgentOverview } from './AgentOverview'
 import { EventFeed } from './EventFeed'
 import { GraphLegend } from './GraphLegend'
+import { Icon } from './icons'
 import { RuleDetail } from './RuleDetail'
 import { RuleGraph } from './RuleGraph'
 import { Timeline } from './Timeline'
@@ -49,8 +50,9 @@ function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
         </button>
       ))}
       {focusName && (
-        <button type="button" className="secondary" onClick={onClearFocus}>
-          Only {focusName} ✕
+        <button type="button" className="secondary focus-filter" onClick={onClearFocus}>
+          {focusName}
+          <Icon name="close" />
         </button>
       )}
       {legend && <GraphLegend legend={legend} />}

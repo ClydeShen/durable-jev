@@ -1,6 +1,7 @@
 import type { Actor, CaseDetail } from '../api'
 import { countOf } from '../labels'
 import { OrderStatusBadge, RoleChip } from './chips'
+import { IconButton } from './ui'
 
 interface Props {
   detail: CaseDetail
@@ -43,14 +44,7 @@ export function CaseHeader({
               Confirm dispatch
             </button>
           )}
-          <button
-            type="button"
-            className="secondary small case-reset"
-            title="Returns only this case to the moment its order arrived and plays it again from the first rule; other cases stay as they are"
-            onClick={onReset}
-          >
-            ↺ Reset this case
-          </button>
+          <IconButton icon="reset" label="Reset this case" onClick={onReset} />
         </div>
       </div>
       <p className="story">{detail.story}</p>
@@ -82,7 +76,6 @@ export function CaseHeader({
               <button
                 type="button"
                 className="secondary small"
-                title="Simulates a mishap: the transport planning agent starts its investigation helper, which proposes a replacement for the transport planner to confirm"
                 onClick={() => onReportIncident(nextIncident.index)}
               >
                 Incident: {nextIncident.label}

@@ -1,7 +1,6 @@
 import type { CargoItem, Leg, Shipment } from '@durable-jev/contracts'
 import { type ReactNode, useEffect, useState } from 'react'
 import { api, type OrderForm } from '../api'
-import { Tag } from './chips'
 import { CargoFields, Documents, LegFields, OrderBasics } from './OrderFields'
 import { SamplePicker } from './OrderSamples'
 import { OrderSummary } from './OrderSummary'
@@ -77,12 +76,7 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
       <header className="case-header">
         <div className="case-title">
           <h2>New order</h2>
-          <Tag>Placed as the customer</Tag>
         </div>
-        <p className="story">
-          The customer submits an order; once order coordination receives it, every agent evaluates
-          it from the first rule.
-        </p>
       </header>
       {failure && <p className="message">{failure}</p>}
       {form && draft && (
@@ -121,11 +115,7 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
                 }
               />
             </Step>
-            <Step
-              number={5}
-              title="Documents"
-              hint="From the sample; they go with the order and cannot be edited here"
-            >
+            <Step number={5} title="Documents">
               <Documents documents={draft.shipment.documents} />
             </Step>
           </div>

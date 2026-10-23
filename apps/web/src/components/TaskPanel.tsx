@@ -1,7 +1,7 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import { useState } from 'react'
-import type { Actor, RuleInfo, TaskDecision } from '../api'
-import { evidenceLabels, roleLabels } from '../labels'
+import type { RuleInfo, TaskDecision } from '../api'
+import { evidenceLabels } from '../labels'
 import { Chip, Tag } from './chips'
 import { Field, Fields } from './ui'
 
@@ -80,7 +80,6 @@ function TaskCard({ task, ruleTitle, onDecide, onShowRule }: TaskCardProps) {
 }
 
 interface Props {
-  actor: Actor
   /** Every open task for the actor's role, across cases. */
   tasks: HumanTask[]
   rules: RuleInfo[]
@@ -114,7 +113,7 @@ function OtherCases({
 }
 
 export function TaskPanel(props: Props) {
-  const { actor, tasks, rules, caseId, message, onDecide, onShowRule, onSelectCase } = props
+  const { tasks, rules, caseId, message, onDecide, onShowRule, onSelectCase } = props
   const titles = new Map(rules.map((rule) => [rule.ruleId, rule.title]))
   const own = tasks.filter((task) => task.caseId === caseId)
   const others = new Map<string, number>()
@@ -124,7 +123,7 @@ export function TaskPanel(props: Props) {
   return (
     <section className="task-panel">
       <h2>
-        Tasks for {roleLabels[actor.role]} {actor.id}
+        My tasks
         <span className="count">{own.length}</span>
       </h2>
       {message && (
@@ -133,7 +132,7 @@ export function TaskPanel(props: Props) {
         </p>
       )}
       {own.length === 0 ? (
-        <p className="empty">No tasks for you in this case</p>
+        <p className="empty">No tasks in this case</p>
       ) : (
         <ul>
           {own.map((task) => (

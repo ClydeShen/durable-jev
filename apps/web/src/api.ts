@@ -94,6 +94,18 @@ export interface AgentStatus {
   a2aTasks: number
 }
 
+/** The A2A Agent Card an agent publishes at /.well-known/agent-card.json (the parts shown). */
+export interface A2aAgentCard {
+  name: string
+  description: string
+  version: string
+  supportedInterfaces: { url: string; protocolBinding: string; protocolVersion: string }[]
+  capabilities: { streaming?: boolean; pushNotifications?: boolean }
+  defaultInputModes: string[]
+  defaultOutputModes: string[]
+  skills: { id: string; name: string; description: string; tags: string[] }[]
+}
+
 export interface TimelineEntry {
   eventId: string
   agentId: string
@@ -170,6 +182,7 @@ export const api = {
   timeline: (caseId: string) =>
     request<TimelineEntry[]>(`/cases/${encodeURIComponent(caseId)}/timeline`),
   agents: () => request<AgentStatus[]>('/agents'),
+  agentCard: (agentId: string) => request<A2aAgentCard>(`/agents/${agentId}/card`),
   controlService: (name: string, verb: 'crash' | 'start') =>
     request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),
   reset: () => request<{ cases: number }>('/demo/reset', { method: 'POST' }),
