@@ -1,0 +1,3 @@
+`new URL($path, import.meta.url).pathname` as $call where {
+  register_diagnostic(span=$call, message="On Windows .pathname gives /D:/..., which is not a valid path. Use fileURLToPath(new URL(..., import.meta.url)) from node:url.", severity="error")
+}
