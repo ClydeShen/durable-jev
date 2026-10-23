@@ -28,14 +28,14 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
           <strong className="case-id">{summary.caseId}</strong>
           <OrderStatusBadge status={summary.status} />
           <span className="case-roles">
-            {summary.waitingOn.map((role) => (
-              <span key={role} className="entity-dot" data-role={role} title={roleLabels[role]} />
-            ))}
             <span className="case-roles-count">
               {summary.waitingOn.length > 0
                 ? `Waiting on ${countOf(summary.waitingOn.length, 'role')}`
                 : 'No open tasks'}
             </span>
+            {summary.waitingOn.map((role) => (
+              <span key={role} className="entity-dot" data-role={role} title={roleLabels[role]} />
+            ))}
           </span>
         </button>
       ))}

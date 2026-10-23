@@ -550,8 +550,8 @@ h2 {
   color: var(--muted);
 }
 
-.case-roles > .entity-dot + .case-roles-count {
-  margin-left: 4px;
+.case-roles-count {
+  margin-right: 3px;
 }
 
 .agent-panel {
