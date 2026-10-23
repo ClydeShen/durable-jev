@@ -11,6 +11,21 @@ describe('loadRulePack', () => {
     expect(pack.ruleSet.rules.map((rule) => rule.ruleId)).toContain('R40')
   })
 
+  it('finds the policy clause of every rule, with later amendments', () => {
+    const pack = loadRulePack(materials, new Set(['R29']))
+    const missing = pack.ruleSet.rules.filter((rule) => !pack.clauses.has(rule.ruleId))
+    expect(missing.map((rule) => rule.ruleId)).toEqual([])
+    expect(pack.clauses.get('R01')).toEqual({
+      section: 'Part A. Order and cargo basics',
+      paragraphs: [
+        'R01 Order complete. (order) The order names a customer and a delivery window, and has at least one cargo item and at least one leg.',
+      ],
+    })
+    expect(pack.clauses.get('R40')?.paragraphs.at(-1)).toBe(
+      'Appendix G. Destination import requirements: R40 additionally requires R41.',
+    )
+  })
+
   it('refuses to start when a code evaluator is not registered', () => {
     expect(() => loadRulePack(materials, new Set())).toThrow(RulePackError)
   })
