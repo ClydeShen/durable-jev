@@ -183,6 +183,14 @@
 | 2 | 名片 **Running** 一栏点 **Agent Card** 后面的 `…/.well-known/agent-card.json` | 弹出 **A2A Agent Card**：名称、版本、JSON-RPC 端点，以及 5 个 skill | "订单协调先读这张名片，知道它在哪、会什么，再通过 JSON-RPC 调用这些 skill：提交案例、重新评估、查询状态、记录人工决定、列出待办。" |
 | 3 | 展开 **Raw JSON** | 名片原文 | "这就是标准 A2A 协议的原样内容，任何 A2A 客户端都能读。" |
 
+## 问答：规则原本是怎么写的？
+
+| # | 点什么 | 屏幕上会看到 | 你说 |
+|---|---|---|---|
+| 1 | 右上角点 **Policy** | 弹窗显示政策原文 Shipment Release Policy v1，顶部是各部分的目录 | "这就是规则的原始来源：一份写给人看的政策文档，不是代码。" |
+| 2 | 点目录里的 **Appendix H. Customer contract terms** | 跳到客户合同条款，例如 CUST-MEDI-5 Named recipient | "规则编写 agent 从这些条文生成规则；改政策就是改这段文字，再重新生成、回放验证。" |
+| 3 | 关掉弹窗，在规则图里点任一规则 | 规则详情里 **What this rule checks** 引用的就是这段原文 | "每条规则都能追溯回原文。" |
+
 ## 演示中出状况
 
 | 情况 | 怎么办 |

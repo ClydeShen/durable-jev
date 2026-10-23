@@ -26,6 +26,15 @@ describe('loadRulePack', () => {
     )
   })
 
+  it('keeps the policy text in its sections, as written', () => {
+    const { policy } = loadRulePack(materials, new Set(['R29']))
+    expect(policy.title).toBe('Shipment Release Policy v1')
+    expect(policy.preamble).toHaveLength(2)
+    expect(policy.sections[0]?.heading).toBe('Part A. Order and cargo basics')
+    expect(policy.sections.find((section) => section.heading.startsWith('G.NZ'))?.level).toBe(3)
+    expect(policy.sections[0]?.paragraphs[0]).toMatch(/^\*\*R01 Order complete\.\*\*/)
+  })
+
   it('refuses to start when a code evaluator is not registered', () => {
     expect(() => loadRulePack(materials, new Set())).toThrow(RulePackError)
   })
