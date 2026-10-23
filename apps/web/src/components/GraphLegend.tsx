@@ -1,5 +1,6 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import type { Legend } from '../legend-text'
+import { useDismiss } from '../use-dismiss'
 
 /**
  * A small strip of a graph's colours; clicking it opens a panel that says what each colour and
@@ -9,21 +10,7 @@ export function GraphLegend({ legend }: { legend: Legend }) {
   const panelId = useId()
   const [open, setOpen] = useState(false)
   const root = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    const closeOutside = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false)
-    }
-    window.addEventListener('keydown', closeOnEscape)
-    window.addEventListener('pointerdown', closeOutside)
-    return () => {
-      window.removeEventListener('keydown', closeOnEscape)
-      window.removeEventListener('pointerdown', closeOutside)
-    }
-  }, [open])
+  useDismiss(open, root, () => setOpen(false))
   return (
     <div className="graph-legend" ref={root}>
       <button
