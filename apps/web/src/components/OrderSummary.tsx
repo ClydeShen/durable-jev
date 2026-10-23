@@ -77,7 +77,7 @@ export function OrderSummary({ sampleId, sample, shipment, options, onRestore, o
         </Field>
         <Field label="Deliver from">{utcTime(shipment.deliveryWindow.from)} UTC</Field>
         <Field label="Deliver by">{utcTime(shipment.deliveryWindow.to)} UTC</Field>
-        <Field label="Quote">{moneyOf(shipment.quote.amountCents)}</Field>
+        <Field label="Quote">{moneyOf(shipment.quote.amountCents, shipment.quote.currency)}</Field>
         <Field label="Route">
           <Route legs={shipment.legs} />
         </Field>

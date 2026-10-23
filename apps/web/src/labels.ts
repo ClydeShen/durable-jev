@@ -162,12 +162,15 @@ export const refusalMessages: Record<string, string> = {
 /** A count with its noun, singular or plural: "1 item", "2 items". */
 export const countOf = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
 
-const nzd = new Intl.NumberFormat('en-NZ', {
-  style: 'currency',
-  currency: 'NZD',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 2,
-})
-
-/** An amount in cents, shown in New Zealand dollars: "$1,850". */
-export const moneyOf = (cents: number) => nzd.format(cents / 100)
+/**
+ * An amount in hundredths of its currency, written as a New Zealander reads it: "$1,850" for NZD,
+ * "US$1,850" for USD. Policy thresholds, credit and carrier prices are in NZD, the base currency;
+ * a quote is in its customer's invoice currency.
+ */
+export const moneyOf = (cents: number, currency = 'NZD') =>
+  new Intl.NumberFormat('en-NZ', {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(cents / 100)
