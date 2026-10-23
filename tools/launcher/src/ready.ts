@@ -22,11 +22,11 @@ const paint = (code: string, text: string) => (colour ? `\u001b[${code}m${text}\
 export function readyBanner(url: string, modelMode: string): string {
   return [
     '',
-    paint('1;32', '  ✔ Durable Jev 演示已就绪'),
+    paint('1;32', '  ✔ Durable Jev demo is ready'),
     '',
-    `  ➜  打开   ${paint('1;36', url)}`,
-    `     模型   ${modelMode}`,
-    `     停止   Ctrl+C`,
+    `  ➜  Open    ${paint('1;36', url)}`,
+    `     Model   ${modelMode}`,
+    `     Stop    Ctrl+C`,
     '',
     '',
   ].join('\n')
