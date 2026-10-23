@@ -1,6 +1,6 @@
 import type { Actor, Investigation } from '../api'
-import { checkStatusLabels, roleLabels } from '../labels'
-import { Chip, Field, Fields } from './ui'
+import { checkStatusLabels } from '../labels'
+import { Chip, Field, Fields, RoleChip } from './ui'
 
 const statusLabels: Record<Investigation['status'], string> = {
   RUNNING: '调查中',
@@ -87,7 +87,7 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
             {investigation.decidedBy && (
               <Fields>
                 <Field label="决定人">
-                  {investigation.decidedBy.id}（{roleLabels[investigation.decidedBy.role]}）
+                  <RoleChip forRole={investigation.decidedBy.role} />
                 </Field>
               </Fields>
             )}
@@ -106,7 +106,9 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
               </div>
             )}
             {investigation.status === 'PROPOSED' && !canDecide && (
-              <p className="muted">只有运输计划员能确认或否决这条提议。</p>
+              <p className="muted">
+                只有 <RoleChip forRole="transportPlanner" /> 能确认或否决这条提议。
+              </p>
             )}
           </article>
         )

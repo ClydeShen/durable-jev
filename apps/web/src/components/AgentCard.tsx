@@ -2,8 +2,8 @@ import type { Role } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import { agentRelations } from '../agent-relations'
 import type { AgentNames, AgentStatus, RuleInfo } from '../api'
-import { kindLabels, mostSevere, roleLabels } from '../labels'
-import { Chip, Drawer, Field, Fields, Section, StatusBadge, Tags } from './ui'
+import { kindLabels, mostSevere } from '../labels'
+import { Chip, Drawer, Field, Fields, RoleChip, Section, StatusBadge, Tags } from './ui'
 
 /** What makes these agents durable, as the demo shows it. */
 const durableTraits: [string, string][] = [
@@ -25,6 +25,17 @@ const durableTraits: [string, string][] = [
     '运输计划的调查助手跑在 Pi Durable 上，每次工具调用都存检查点，崩溃后从检查点继续。它有调用次数和时间上限，只能提出建议，由人确认。',
   ],
 ]
+
+function RoleChips({ roles, empty }: { roles: readonly Role[]; empty: string }) {
+  if (roles.length === 0) return <span className="muted">{empty}</span>
+  return (
+    <span className="chips">
+      {roles.map((role) => (
+        <RoleChip key={role} forRole={role} />
+      ))}
+    </span>
+  )
+}
 
 function peopleOf(rules: readonly RuleInfo[]): Role[] {
   return [
@@ -70,7 +81,14 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
           ))}
         </ul>
       </Section>
-      <Section title={`它的规则（${owned.length} 条）`}>
+      <Section
+        title={`它的规则（${owned.length} 条）`}
+        action={
+          <button type="button" className="link-action" onClick={onShowRules}>
+            查看规则图 →
+          </button>
+        }
+      >
         <div className="chips">
           {Object.entries(summary?.rulesByKind ?? {}).map(([kind, count]) => (
             <span key={kind} className="tag">
@@ -78,17 +96,11 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
             </span>
           ))}
         </div>
-        <button type="button" className="secondary small spaced" onClick={onShowRules}>
-          查看它的规则图
-        </button>
       </Section>
       <Section title="和谁协作">
         <Fields>
           <Field label="需要的人">
-            <Tags
-              items={peopleOf(owned).map((role) => roleLabels[role])}
-              empty="无，全部自动判断"
-            />
+            <RoleChips roles={peopleOf(owned)} empty="无，全部自动判断" />
           </Field>
           <Field label="用到谁的结论">
             <Tags
@@ -117,12 +129,16 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
               )}
             />
           </Field>
-          <Field label="待办">
-            <Tags
-              items={Object.entries(summary?.openTasksByRole ?? {}).map(
-                ([role, count]) => `${roleLabels[role as Role]} ${count} 件`,
-              )}
-            />
+          <Field label="所有案例的待办">
+            {Object.keys(summary?.openTasksByRole ?? {}).length === 0 ? (
+              <span className="muted">无</span>
+            ) : (
+              <span className="chips">
+                {Object.entries(summary?.openTasksByRole ?? {}).map(([role, count]) => (
+                  <RoleChip key={role} forRole={role as Role} note={`${count} 件`} />
+                ))}
+              </span>
+            )}
           </Field>
         </Fields>
       </Section>

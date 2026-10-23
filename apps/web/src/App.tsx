@@ -1,12 +1,15 @@
+import type { Role } from '@durable-jev/contracts'
 import { useEffect, useState } from 'react'
 import type { Actor } from './api'
 import { useStoredState } from './browser-storage'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseViews } from './components/CaseViews'
 import { InvestigationPanel } from './components/InvestigationPanel'
+import { NextSteps } from './components/NextSteps'
 import { RoleBar } from './components/RoleBar'
 import { Sidebar } from './components/Sidebar'
 import { TaskPanel } from './components/TaskPanel'
+import { RoleSwitch } from './components/ui'
 import { demoOperators } from './labels'
 import type { PlaybackSpeed } from './playback'
 import { useActions } from './use-actions'
@@ -36,66 +39,79 @@ export function App() {
   const caseId = detail.data?.caseId
   const actions = useActions(actor, setMessage, refreshAll)
 
+  const showRule = (inCase: string, ruleId: string) => {
+    setOpenAgent(undefined)
+    setSelectedCase(inCase)
+    setRuleRequest({ ruleIds: [ruleId] })
+  }
+  const roleSwitch = {
+    current: actor.role,
+    switchTo: (role: Role) => setActor({ role, id: demoOperators[role] }),
+  }
+
   return (
-    <div className="app" data-role={actor.role}>
-      <RoleBar actor={actor} onChange={setActor} onReset={actions.reset} />
-      <Sidebar
-        speed={speed}
-        onSpeed={setSpeed}
-        cases={cases.data ?? []}
-        selectedCase={selectedCase}
-        onSelectCase={setSelectedCase}
-        agents={agents.data ?? []}
-        canControl={actor.role === 'technicalEvaluator'}
-        onOpenAgent={setOpenAgent}
-        onControl={actions.controlService}
-      />
-      <main>
-        {detail.data && caseId && (
-          <>
-            <CaseHeader
-              detail={detail.data}
-              actor={actor}
-              onDispatch={() => actions.dispatch(caseId)}
-              onRevise={(index) => actions.revise(caseId, index)}
-              onReportIncident={(index) => actions.reportIncident(caseId, index)}
-            />
-            {detail.data.investigations.length > 0 && (
-              <InvestigationPanel
-                investigations={detail.data.investigations}
+    <RoleSwitch.Provider value={roleSwitch}>
+      <div className="app" data-role={actor.role}>
+        <RoleBar actor={actor} onChange={setActor} onReset={actions.reset} />
+        <Sidebar
+          speed={speed}
+          onSpeed={setSpeed}
+          cases={cases.data ?? []}
+          selectedCase={selectedCase}
+          onSelectCase={setSelectedCase}
+          agents={agents.data ?? []}
+          canControl={actor.role === 'technicalEvaluator'}
+          onOpenAgent={setOpenAgent}
+          onControl={actions.controlService}
+        />
+        <main>
+          {detail.data && caseId && (
+            <>
+              <CaseHeader
+                detail={detail.data}
                 actor={actor}
-                onDecide={actions.decideProposal}
+                onDispatch={() => actions.dispatch(caseId)}
+                onRevise={(index) => actions.revise(caseId, index)}
+                onReportIncident={(index) => actions.reportIncident(caseId, index)}
               />
-            )}
-            <CaseViews
-              caseId={detail.data.caseId}
-              outcomes={detail.data.outcomes}
-              openTasks={detail.data.tasks.filter((task) => task.status === 'OPEN')}
-              agents={agents.data ?? []}
-              agentNames={agentNames}
-              rules={rules}
-              openAgent={openAgent}
-              onOpenAgent={setOpenAgent}
-              speed={speed}
-              ruleRequest={ruleRequest}
-            />
-          </>
-        )}
-      </main>
-      <TaskPanel
-        actor={actor}
-        tasks={tasks.data ?? []}
-        rules={rules}
-        caseId={caseId}
-        message={message}
-        onSelectCase={setSelectedCase}
-        onShowRule={(taskCase, ruleId) => {
-          setOpenAgent(undefined)
-          setSelectedCase(taskCase)
-          setRuleRequest({ ruleIds: [ruleId] })
-        }}
-        onDecide={actions.decide}
-      />
-    </div>
+              <NextSteps
+                detail={detail.data}
+                rules={rules}
+                onShowRule={(ruleId) => showRule(caseId, ruleId)}
+              />
+              {detail.data.investigations.length > 0 && (
+                <InvestigationPanel
+                  investigations={detail.data.investigations}
+                  actor={actor}
+                  onDecide={actions.decideProposal}
+                />
+              )}
+              <CaseViews
+                caseId={detail.data.caseId}
+                outcomes={detail.data.outcomes}
+                openTasks={detail.data.tasks.filter((task) => task.status === 'OPEN')}
+                agents={agents.data ?? []}
+                agentNames={agentNames}
+                rules={rules}
+                openAgent={openAgent}
+                onOpenAgent={setOpenAgent}
+                speed={speed}
+                ruleRequest={ruleRequest}
+              />
+            </>
+          )}
+        </main>
+        <TaskPanel
+          actor={actor}
+          tasks={tasks.data ?? []}
+          rules={rules}
+          caseId={caseId}
+          message={message}
+          onSelectCase={setSelectedCase}
+          onShowRule={showRule}
+          onDecide={actions.decide}
+        />
+      </div>
+    </RoleSwitch.Provider>
   )
 }

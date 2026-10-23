@@ -1,9 +1,9 @@
-import type { CheckScope } from '@durable-jev/contracts'
+import type { CheckScope, HumanTask } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { AgentNames, RuleInfo } from '../api'
 import { changeLabels, kindExplanations, kindLabels, mostSevere, ruleScopeLabels } from '../labels'
 import { ExpressionLine, RuleCheckView } from './RuleCheckView'
-import { Chip, Drawer, Field, Fields, Section, StatusBadge, Tags } from './ui'
+import { Chip, Drawer, Field, Fields, RoleChip, Section, StatusBadge, Tags } from './ui'
 
 const applicabilityLabels: Record<string, string> = {
   destinations: '目的地',
@@ -17,6 +17,28 @@ function scopeLabel(scope: CheckScope): string {
   return '整单'
 }
 
+const sameScope = (a: CheckScope, b: CheckScope) => scopeLabel(a) === scopeLabel(b)
+
+/** Who the result waits for: the open task's role, and its step in an approval chain. */
+function WaitingFor({ tasks }: { tasks: readonly HumanTask[] }) {
+  if (tasks.length === 0) return <span className="muted">任务还没开出</span>
+  return (
+    <span className="chips">
+      {tasks.map((task) => (
+        <RoleChip
+          key={task.humanTaskId}
+          forRole={task.requiredRole}
+          note={
+            task.approvalChain
+              ? `第 ${task.approvalChain.stepIndex + 1}/${task.approvalChain.stepCount} 步`
+              : undefined
+          }
+        />
+      ))}
+    </span>
+  )
+}
+
 function ObservedValue({ value }: { value: unknown }) {
   if (value === undefined) return <span className="muted">无</span>
   if (value === null || typeof value !== 'object') return <>{String(value)}</>
@@ -25,11 +47,15 @@ function ObservedValue({ value }: { value: unknown }) {
 
 function OutcomeCard({
   outcome,
+  openTasks,
   onOpenRule,
 }: {
   outcome: RuleOutcome
+  /** The rule's open human tasks; the ones for this scope are what the result waits for. */
+  openTasks: readonly HumanTask[]
   onOpenRule(ruleId: string): void
 }) {
+  const waiting = outcome.status === 'WAITING_HUMAN'
   return (
     <article className={`outcome-card check-status ${outcome.status}`}>
       <header>
@@ -38,9 +64,13 @@ function OutcomeCard({
         {outcome.reused && <span className="tag">沿用上次结果</span>}
       </header>
       <Fields>
-        {outcome.error ? (
-          <Field label="错误">{outcome.error}</Field>
-        ) : (
+        {waiting && (
+          <Field label="等谁处理">
+            <WaitingFor tasks={openTasks.filter((task) => sameScope(task.scope, outcome.scope))} />
+          </Field>
+        )}
+        {outcome.error && <Field label="错误">{outcome.error}</Field>}
+        {!(waiting || outcome.error) && (
           <Field label="观察值">
             <ObservedValue value={outcome.observedValue} />
           </Field>
@@ -79,7 +109,12 @@ function RuleChips({
   )
 }
 
-function Relations({ rule, rules, agentNames, onOpenRule }: Omit<Props, 'outcomes' | 'onClose'>) {
+function Relations({
+  rule,
+  rules,
+  agentNames,
+  onOpenRule,
+}: Omit<Props, 'outcomes' | 'openTasks' | 'onClose'>) {
   const { definition } = rule
   const dependents = rules.filter((other) => other.dependsOn.includes(rule.ruleId))
   const applicability = Object.entries(definition.applicability ?? {})
@@ -124,11 +159,21 @@ interface Props {
   rules: RuleInfo[]
   agentNames: AgentNames
   outcomes: RuleOutcome[]
+  /** This rule's open human tasks. */
+  openTasks: HumanTask[]
   onOpenRule(ruleId: string): void
   onClose(): void
 }
 
-export function RuleDetail({ rule, rules, agentNames, outcomes, onOpenRule, onClose }: Props) {
+export function RuleDetail({
+  rule,
+  rules,
+  agentNames,
+  outcomes,
+  openTasks,
+  onOpenRule,
+  onClose,
+}: Props) {
   return (
     <Drawer
       onClose={onClose}
@@ -174,6 +219,7 @@ export function RuleDetail({ rule, rules, agentNames, outcomes, onOpenRule, onCl
             <OutcomeCard
               key={JSON.stringify(outcome.scope)}
               outcome={outcome}
+              openTasks={openTasks}
               onOpenRule={onOpenRule}
             />
           ))

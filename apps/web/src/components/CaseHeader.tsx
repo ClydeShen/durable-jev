@@ -1,5 +1,6 @@
 import type { Actor, CaseDetail } from '../api'
-import { orderStatusLabels, roleLabels } from '../labels'
+import { orderStatusLabels } from '../labels'
+import { RoleChip } from './ui'
 
 interface Props {
   detail: CaseDetail
@@ -43,11 +44,7 @@ export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncide
           <span className="stat-value chips">
             {detail.waitingOn.length === 0
               ? '—'
-              : detail.waitingOn.map((role) => (
-                  <span key={role} className="tag">
-                    {roleLabels[role]}
-                  </span>
-                ))}
+              : detail.waitingOn.map((role) => <RoleChip key={role} forRole={role} />)}
           </span>
           <span className="stat-label">正在等</span>
         </div>

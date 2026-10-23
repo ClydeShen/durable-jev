@@ -31,6 +31,8 @@ export interface PlaybackStep {
   status?: CheckStatus
   /** The closing step: where the case stands once everything has played. */
   final?: boolean
+  /** The roles the closing step says the case waits for, so the presenter can switch to them. */
+  roles?: Role[]
 }
 
 function keyOf(ruleId: unknown, scope: unknown): string {
@@ -255,6 +257,7 @@ export function whereItStands(
   return {
     upTo: -1,
     final: true,
+    roles: [...new Set(openTasks.map((task) => task.requiredRole))],
     tone: parts.length > 0 ? 'task' : 'rule',
     ruleIds: [...new Set([...waiting.map((item) => item.ruleId), ...failed])],
     text: parts.length > 0 ? `现在停在：${parts.join('；')}` : '没有待办，也没有不通过的规则',

@@ -1,7 +1,7 @@
-import type { CheckStatus } from '@durable-jev/contracts'
+import type { CheckStatus, Role } from '@durable-jev/contracts'
 import { Panel } from '@xyflow/react'
-import { type ReactNode, useEffect } from 'react'
-import { checkStatusLabels } from '../labels'
+import { createContext, type ReactNode, useContext, useEffect } from 'react'
+import { checkStatusLabels, demoOperators, roleLabels } from '../labels'
 
 /** A labelled value: the label says what the value is, so values never run together in a line. */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -46,10 +46,22 @@ export function Chip({
   )
 }
 
-export function Section({ title, children }: { title: string; children: ReactNode }) {
+export function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string
+  /** A link-like control on the heading line, such as "open the rule graph". */
+  action?: ReactNode
+  children: ReactNode
+}) {
   return (
     <section className="drawer-section">
-      <h4>{title}</h4>
+      <div className="section-heading">
+        <h4>{title}</h4>
+        {action}
+      </div>
       {children}
     </section>
   )
@@ -111,5 +123,47 @@ export function Tags({ items, empty = '无' }: { items: readonly string[]; empty
         </span>
       ))}
     </span>
+  )
+}
+
+/** Switches the console to act as a role; provided by the app, used by every role chip. */
+export const RoleSwitch = createContext<{ current?: Role; switchTo(role: Role): void }>({
+  switchTo: () => undefined,
+})
+
+/**
+ * A role, in its colour, with the person who acts in it. Clicking it switches the console to that
+ * role, so wherever the console says who is needed, the presenter can go straight there.
+ */
+export function RoleChip({ forRole: role, note }: { forRole: Role; note?: string }) {
+  const { current, switchTo } = useContext(RoleSwitch)
+  const label = (
+    <>
+      <span className="role-swatch" aria-hidden="true" />
+      {roleLabels[role]}
+      <span className="role-person">{demoOperators[role]}</span>
+      {note && <span className="muted">{note}</span>}
+    </>
+  )
+  if (role === current) {
+    return (
+      <span className="role-chip current" data-role={role} title="当前角色">
+        {label}
+      </span>
+    )
+  }
+  return (
+    <button
+      type="button"
+      className="role-chip"
+      data-role={role}
+      title={`切换到${roleLabels[role]}`}
+      onClick={() => switchTo(role)}
+    >
+      {label}
+      <span className="role-switch" aria-hidden="true">
+        ⇄
+      </span>
+    </button>
   )
 }

@@ -78,9 +78,16 @@ export const taskStatusLabels: Record<string, string> = {
 }
 
 export function scopeText(scope: unknown): string {
-  const value = scope as CheckScope | undefined
-  if (value?.kind === 'cargoItem') return `货物 ${value.cargoItemId}`
-  if (value?.kind === 'leg') return `运输段 ${value.legId}`
+  // Scopes come as objects in rule events and as "leg:LEG-1" strings in pre-check results.
+  const value =
+    typeof scope === 'string'
+      ? Object.fromEntries([
+          ['kind', scope.split(':')[0]],
+          ['id', scope.split(':')[1]],
+        ])
+      : (scope as (CheckScope & { id?: string }) | undefined)
+  if (value?.kind === 'cargoItem') return `货物 ${value.cargoItemId ?? value.id}`
+  if (value?.kind === 'leg') return `运输段 ${value.legId ?? value.id}`
   return '整单'
 }
 

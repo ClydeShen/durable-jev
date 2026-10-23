@@ -1,10 +1,11 @@
-import type { CheckStatus } from '@durable-jev/contracts'
+import type { CheckStatus, HumanTask, Role } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import {
   Background,
   Controls,
   type Edge,
   Handle,
+  MiniMap,
   type Node,
   type NodeProps,
   Panel,
@@ -15,10 +16,10 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import type { AgentNames, RuleInfo } from '../api'
 import { layoutGraph, nodeSize, type Positions } from '../graph-layout'
-import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
+import { checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
 import type { PlaybackStep } from '../playback'
 import { useSavedLayout } from '../saved-layout'
-import { LayoutReset, StatusBadge } from './ui'
+import { LayoutReset, RoleChip, StatusBadge } from './ui'
 
 type RuleNodeData = {
   rule: RuleInfo
@@ -31,6 +32,8 @@ type RuleNodeData = {
   highlight?: PlaybackStep['tone']
   /** How this rule relates to the selected one: it, one it needs, one that needs it, or neither. */
   relation?: Relation
+  /** The roles whose open tasks this rule waits for. */
+  waitingFor: Role[]
 }
 
 type Relation = 'selected' | 'upstream' | 'downstream' | 'unrelated'
@@ -63,7 +66,17 @@ function edgeClass(source: string, target: string, selected?: string): string | 
 }
 
 function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
-  const { rule, ownerName, status, count, invalidatedBy, boundary, highlight, relation } = data
+  const {
+    rule,
+    ownerName,
+    status,
+    count,
+    invalidatedBy,
+    boundary,
+    highlight,
+    relation,
+    waitingFor,
+  } = data
   const classes = [
     'rule-node',
     'check-status',
@@ -92,7 +105,15 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
         </button>
       </div>
       <div className="rule-node-meta">
-        <span className="tag">{kindLabels[rule.kind]}</span>
+        {waitingFor.length > 0 ? (
+          waitingFor.map((role) => (
+            <span key={role} className="waiting-role" data-role={role}>
+              <span className="role-swatch" aria-hidden="true" />等{roleLabels[role]}
+            </span>
+          ))
+        ) : (
+          <span className="tag">{kindLabels[rule.kind]}</span>
+        )}
         {boundary && <span className="muted">来自 {ownerName}</span>}
         {invalidatedBy && (
           <span className="invalidated" title={`因变更 ${invalidatedBy} 重算`}>
@@ -108,6 +129,28 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
 }
 
 const nodeTypes = { rule: RuleNode }
+
+/** How a rule stands in this case: its most severe status, its scopes, who it waits for. */
+function ruleInCase(
+  ruleId: string,
+  outcomes: readonly RuleOutcome[],
+  openTasks: readonly HumanTask[],
+): Pick<RuleNodeData, 'status' | 'count' | 'invalidatedBy' | 'waitingFor'> {
+  const own = outcomes.filter((outcome) => outcome.ruleId === ruleId)
+  return {
+    status: mostSevere(own.map((outcome) => outcome.status)),
+    count: own.length,
+    invalidatedBy: own.find((outcome) => outcome.invalidatedBy)?.invalidatedBy,
+    waitingFor: [
+      ...new Set(
+        openTasks.filter((task) => task.ruleId === ruleId).map((task) => task.requiredRole),
+      ),
+    ],
+  }
+}
+
+/** The minimap colours each rule by its status, like units on a game map. */
+const minimapClass = (node: Node) => (node.data as RuleNodeData).status ?? 'NONE'
 
 /** Moves the view to some rules: the ones a step touches, or one the presenter asked for. */
 function Follow({ ruleIds }: { ruleIds?: readonly string[] }) {
@@ -133,7 +176,16 @@ function Narration({ playback }: { playback: Playback }) {
       role="status"
       aria-live="polite"
     >
-      <span className="narration-text">{playback.current.text}</span>
+      <span className="narration-text">
+        {playback.current.text}
+        {playback.current.roles && playback.current.roles.length > 0 && (
+          <span className="chips narration-roles">
+            {playback.current.roles.map((role) => (
+              <RoleChip key={role} forRole={role} />
+            ))}
+          </span>
+        )}
+      </span>
       <span className="narration-progress">{progressLabel(playback)}</span>
       {playback.remaining > 0 && (
         <button type="button" className="secondary small" onClick={playback.skip}>
@@ -158,6 +210,8 @@ interface Props {
   playback: Playback
   /** The rule that is open in the detail panel. */
   selectedRule?: string
+  /** The case's open human tasks, to show who a waiting rule waits for. */
+  openTasks: readonly HumanTask[]
   /** A request from outside the graph to show a rule, such as a task's rule. */
   focusRequest?: { ruleIds: string[] }
   /** Opens a rule, or clears the selection with undefined. */
@@ -212,6 +266,7 @@ export function RuleGraph({
   playback,
   selectedRule,
   focusRequest,
+  openTasks,
   onSelect,
 }: Props) {
   const step = playback.current
@@ -234,7 +289,6 @@ export function RuleGraph({
   const nodes = useMemo<Node<RuleNodeData>[]>(
     () =>
       shown.map(({ rule, boundary }) => {
-        const own = outcomes.filter((outcome) => outcome.ruleId === rule.ruleId)
         return {
           id: rule.ruleId,
           type: 'rule',
@@ -247,9 +301,7 @@ export function RuleGraph({
           data: {
             rule,
             ownerName: agentNames[rule.owner] ?? rule.owner,
-            status: mostSevere(own.map((outcome) => outcome.status)),
-            count: own.length,
-            invalidatedBy: own.find((outcome) => outcome.invalidatedBy)?.invalidatedBy,
+            ...ruleInCase(rule.ruleId, outcomes, openTasks),
             boundary,
             highlight: step?.ruleIds.includes(rule.ruleId) ? step.tone : undefined,
             relation: relations.get(rule.ruleId),
@@ -257,7 +309,17 @@ export function RuleGraph({
           selected: rule.ruleId === selectedRule,
         }
       }),
-    [shown, outcomes, positions, layout.moved, agentNames, step, selectedRule, relations],
+    [
+      shown,
+      outcomes,
+      positions,
+      layout.moved,
+      agentNames,
+      step,
+      selectedRule,
+      relations,
+      openTasks,
+    ],
   )
   const edges = useMemo<Edge[]>(
     () =>
@@ -292,6 +354,7 @@ export function RuleGraph({
       >
         <Background />
         <Controls showInteractive={false} />
+        <MiniMap pannable zoomable nodeClassName={minimapClass} ariaLabel="规则图缩略图" />
         <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
         <Follow ruleIds={step?.ruleIds} />
         <Follow ruleIds={focusRequest?.ruleIds} />
