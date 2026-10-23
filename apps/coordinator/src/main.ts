@@ -87,6 +87,7 @@ async function agentStatuses(): Promise<AgentStatus[]> {
     available: true,
     summary: coordinationSummary(),
     card: { ...agentProfiles['order-coordination'], url: `http://localhost:${port}` },
+    responsibilities: agentProfiles['order-coordination'].responsibilities,
     transport,
     a2aTasks: 0,
   }
@@ -98,6 +99,7 @@ async function agentStatuses(): Promise<AgentStatus[]> {
           available: true,
           summary,
           card,
+          responsibilities: agentProfiles[agentId].responsibilities,
           transport,
           a2aTasks: a2aTasks.get(agentId) ?? 0,
         }),
@@ -105,6 +107,7 @@ async function agentStatuses(): Promise<AgentStatus[]> {
           agentId,
           available: false,
           card: { ...agentProfiles[agentId], url },
+          responsibilities: agentProfiles[agentId].responsibilities,
           transport,
           a2aTasks: 0,
         }),
