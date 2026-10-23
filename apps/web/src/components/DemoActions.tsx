@@ -1,54 +1,28 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { CaseDetail } from '../api'
 import { changeLabels } from '../labels'
-import { Tag } from './chips'
-import { Field, Fields, Modal } from './ui'
+import { Modal } from './ui'
 
-type Revision = CaseDetail['revisions'][number]
-type Incident = CaseDetail['incidents'][number]
+type Scene = CaseDetail['incidents'][number]
 
-function ChangeDetails({ revision, nextRevision }: { revision: Revision; nextRevision: number }) {
-  const changed = revision.changes.map((entity) => changeLabels[entity] ?? entity)
+/** A demo action as a scene: what happened, then what the engine does when it is applied. */
+function SceneBody({ scene, children }: { scene: Scene; children?: ReactNode }) {
   return (
     <>
-      <p className="modal-lead">{revision.label}</p>
-      <Fields>
-        <Field label="Data that changes">
-          <span className="chips">
-            {changed.map((entity) => (
-              <Tag key={entity}>{entity}</Tag>
-            ))}
-          </span>
-        </Field>
-        <Field label="New revision">r{nextRevision}</Field>
-      </Fields>
-      <ol className="modal-steps">
-        <li>The order moves to revision r{nextRevision}.</li>
-        <li>
-          Rules that read the {changed.join(' and ')} turn purple (invalidated) and are decided
-          again; every other result is kept.
-        </li>
-        <li>
-          Approvals given on the old data no longer count; open tasks whose inputs did not change
-          carry over.
-        </li>
-      </ol>
-    </>
-  )
-}
-
-function IncidentDetails({ incident }: { incident: Incident }) {
-  return (
-    <>
-      <p className="modal-lead">{incident.label}</p>
-      <ol className="modal-steps">
-        <li>The transport planning agent starts its investigation helper.</li>
-        <li>The helper looks up spare capacity and checks each option against the rules.</li>
-        <li>
-          It proposes the cheapest option that passes. The order does not change until the transport
-          planner confirms.
-        </li>
-      </ol>
+      <p className="modal-lead">{scene.label}</p>
+      <section className="scene">
+        <h4>What happened</h4>
+        <p className="scene-story">{scene.situation}</p>
+      </section>
+      <section className="scene">
+        <h4>When you apply it</h4>
+        <ul className="scene-outcome">
+          {scene.outcome.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      </section>
+      {children}
     </>
   )
 }
@@ -100,7 +74,13 @@ export function DemoActions({ detail, onRevise, onReportIncident }: Props) {
             </>
           }
         >
-          <ChangeDetails revision={revision} nextRevision={detail.caseRevision + 1} />
+          <SceneBody scene={revision}>
+            <p className="scene-note">
+              Data that changes:{' '}
+              {revision.changes.map((entity) => changeLabels[entity] ?? entity).join(', ')} · New
+              revision r{detail.caseRevision + 1}
+            </p>
+          </SceneBody>
         </Modal>
       )}
       {open === 'incident' && incident && (
@@ -118,7 +98,7 @@ export function DemoActions({ detail, onRevise, onReportIncident }: Props) {
             </>
           }
         >
-          <IncidentDetails incident={incident} />
+          <SceneBody scene={incident} />
         </Modal>
       )}
     </div>

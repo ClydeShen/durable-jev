@@ -146,6 +146,12 @@
     {
       "kind": "revise",
       "label": "Customer supplies the correct safety data sheet",
+      "situation": "The compliance team held this order: the safety data sheet describes a different product from the cargo on the order. The customer has now sent the correct sheet. The compliance reviewer still has to sign off, and nobody else, not even a commercial manager, can do it for them.",
+      "outcome": [
+        "The new sheet becomes revision r2 of the order.",
+        "Only the checks that read the documents run again; weights, routes and credit keep their results.",
+        "Once the documents match, the order waits for the compliance reviewer's sign-off."
+      ],
       "patch": {
         "caseRevision": 2,
         "documents": [

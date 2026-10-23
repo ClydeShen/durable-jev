@@ -90,7 +90,7 @@ function summaryOf(view: CaseView, catalog: CaseCatalog) {
 
 function scriptedRevisions(catalog: CaseCatalog, caseId: string) {
   return (caseFileOf(catalog, caseId)?.events ?? []).flatMap((event) =>
-    event.kind === 'revise' ? [{ label: event.label, patch: event.patch }] : [],
+    event.kind === 'revise' ? [event] : [],
   )
 }
 
@@ -102,7 +102,7 @@ function changedEntities(patch: Record<string, unknown>): string[] {
 
 function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
   return (caseFileOf(catalog, caseId)?.events ?? []).flatMap((event) =>
-    event.kind === 'incident' ? [{ label: event.label, incident: event.incident }] : [],
+    event.kind === 'incident' ? [event] : [],
   )
 }
 
@@ -140,12 +140,16 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
       revisions: scriptedRevisions(catalog, shipment.caseId).map((revision, index) => ({
         index,
         label: revision.label,
+        situation: revision.situation,
+        outcome: revision.outcome,
         changes: changedEntities(revision.patch),
         applied: shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
       })),
       incidents: scriptedIncidents(catalog, shipment.caseId).map((incident, index) => ({
         index,
         label: incident.label,
+        situation: incident.situation,
+        outcome: incident.outcome,
       })),
       investigations: await investigations.ofCase(shipment.caseId).catch(() => []),
     })

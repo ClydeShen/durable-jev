@@ -207,6 +207,12 @@
     {
       "kind": "revise",
       "label": "Reroute via Glacier Cold Hub",
+      "situation": "These chilled diagnostic reagents change trucks at Riverside Cross-dock, which has no cold storage, so the second leg would break the cold chain. The first leg on its own is fine, but the whole order is on hold. The planner finds a refrigerated hub, Glacier Cold Hub, on the same corridor.",
+      "outcome": [
+        "The new route becomes revision r2.",
+        "Only the route checks run again; the cargo and customer results are kept.",
+        "With a cold-capable hub, the hold lifts and the order goes on to loading."
+      ],
       "patch": {
         "caseRevision": 2,
         "entityVersions": {

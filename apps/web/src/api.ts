@@ -19,12 +19,19 @@ export interface CaseSummary {
   updatedAt: string
 }
 
+/** A scripted demo action, told as a short scene: what happened, then how the engine responds. */
+interface DemoScene {
+  label: string
+  situation: string
+  outcome: string[]
+}
+
 export interface CaseDetail extends CaseSummary {
   shipment: Shipment
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
-  revisions: { index: number; label: string; changes: string[]; applied: boolean }[]
-  incidents: { index: number; label: string }[]
+  revisions: (DemoScene & { index: number; changes: string[]; applied: boolean })[]
+  incidents: (DemoScene & { index: number })[]
   investigations: Investigation[]
 }
 

@@ -213,6 +213,12 @@
     {
       "kind": "revise",
       "label": "Inspection finds a cracked shell; the cargo moves to a new revision",
+      "situation": "The quality reviewer had already accepted a 60-minute temperature excursion, based on intact packaging. Then, during re-stacking, the shipper lid cracked and the insulation is exposed. The goods are no longer in the state that was approved.",
+      "outcome": [
+        "The damaged cargo becomes revision r2.",
+        "The earlier approval no longer counts, because it was given for the old cargo state.",
+        "The warehouse must repack and retest, and the quality reviewer decides again. The recipient task, which did not depend on the packaging, carries over."
+      ],
       "patch": {
         "caseRevision": 2,
         "entityVersions": {
