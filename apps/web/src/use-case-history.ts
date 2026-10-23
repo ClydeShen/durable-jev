@@ -13,10 +13,12 @@ interface Options {
   outcomes: readonly RuleOutcome[]
   openTasks: readonly HumanTask[]
   speed: PlaybackSpeed
+  /** Plays the case from its first event. */
+  fromStart: boolean
 }
 
 /** A case's timeline, polled, the playback of what is new in it, and its event feed. */
-export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed }: Options) {
+export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed, fromStart }: Options) {
   const loadTimeline = useCallback(
     async () => ({ caseId, entries: await api.timeline(caseId) }),
     [caseId],
@@ -25,7 +27,15 @@ export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed }: Op
   const entries = timeline.data?.caseId === caseId ? timeline.data.entries : undefined
   const titles = useMemo(() => new Map(rules.map((rule) => [rule.ruleId, rule.title])), [rules])
   const finale = useMemo(() => whereItStands(outcomes, openTasks), [outcomes, openTasks])
-  const playback = usePlayback({ caseId, entries, outcomes, speed, titles, finale })
+  const playback = usePlayback({
+    caseId,
+    entries,
+    outcomes,
+    speed,
+    titles,
+    finale,
+    fromStart,
+  })
   const feed = useEventFeed({ caseId, entries, titles, speed, current: playback.current })
   return { entries, titles, playback, feed }
 }

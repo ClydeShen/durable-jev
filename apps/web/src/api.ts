@@ -1,6 +1,7 @@
 import type {
   CheckStatus,
   HumanTask,
+  OrderOptions,
   OrderStatus,
   Role,
   RuleEngineKind,
@@ -100,6 +101,12 @@ export interface TimelineEntry {
   createdAt: string
 }
 
+/** The new-order form: sample orders to start from and the reference choices. */
+export interface OrderForm {
+  samples: { sampleId: string; story: string; shipment: Shipment }[]
+  options: OrderOptions
+}
+
 export interface Actor {
   id: string
   role: Role
@@ -147,6 +154,13 @@ export const api = {
       method: 'POST',
       headers: { 'content-type': 'application/json', ...asActor(actor) },
       body: JSON.stringify({ type }),
+    }),
+  orderForm: () => request<OrderForm>('/order-form'),
+  submitOrder: (sampleId: string, shipment: Shipment) =>
+    request<CaseSummary>('/orders', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ sampleId, shipment }),
     }),
   timeline: (caseId: string) =>
     request<TimelineEntry[]>(`/cases/${encodeURIComponent(caseId)}/timeline`),

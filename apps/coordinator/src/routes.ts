@@ -6,12 +6,14 @@ import type {
   CaseView,
   RulePack,
 } from '@durable-jev/agent-core'
-import { roleSchema } from '@durable-jev/contracts'
+import { type OrderOptions, roleSchema, shipmentSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
   applyRevision,
   type CaseCatalog,
+  caseFileOf,
   dispatchCase,
+  newOrderId,
   orderStatusOf,
   rolesWaitedOn,
 } from '@durable-jev/logistics'
@@ -36,6 +38,7 @@ export interface CoordinatorDependencies {
   coordination: { runtime: CaseRuntime; store: CaseStore }
   orchestrator: CaseOrchestrator
   catalog: CaseCatalog
+  orderOptions: OrderOptions
   rulePack: RulePack
   investigations: InvestigationClient
   agentStatuses(): Promise<AgentStatus[]>
@@ -54,11 +57,18 @@ const decisionSchema = z.discriminatedUnion('type', [
   }),
 ])
 
+function storyOf(catalog: CaseCatalog, caseId: string): string {
+  const caseFile = caseFileOf(catalog, caseId)
+  if (!caseFile) return ''
+  const sampleId = caseFile.shipment.caseId
+  return sampleId === caseId ? caseFile.story : `按样例 ${sampleId} 新下的订单。${caseFile.story}`
+}
+
 function summaryOf(view: CaseView, catalog: CaseCatalog) {
   const { shipment } = view.record
   return {
     caseId: shipment.caseId,
-    story: catalog.get(shipment.caseId)?.story ?? '',
+    story: storyOf(catalog, shipment.caseId),
     status: orderStatusOf(view),
     caseRevision: shipment.caseRevision,
     waitingOn: rolesWaitedOn(view),
@@ -67,13 +77,13 @@ function summaryOf(view: CaseView, catalog: CaseCatalog) {
 }
 
 function scriptedRevisions(catalog: CaseCatalog, caseId: string) {
-  return (catalog.get(caseId)?.events ?? []).flatMap((event) =>
+  return (caseFileOf(catalog, caseId)?.events ?? []).flatMap((event) =>
     event.kind === 'revise' ? [{ label: event.label, patch: event.patch }] : [],
   )
 }
 
 function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
-  return (catalog.get(caseId)?.events ?? []).flatMap((event) =>
+  return (caseFileOf(catalog, caseId)?.events ?? []).flatMap((event) =>
     event.kind === 'incident' ? [{ label: event.label, incident: event.incident }] : [],
   )
 }
@@ -148,6 +158,43 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
     if (!result.ok)
       throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
     response.json(summaryOf(await caseView(caseId), catalog))
+  })
+}
+
+const newOrderSchema = z.object({ sampleId: z.string().min(1), shipment: shipmentSchema })
+
+/**
+ * The order entry point: the form starts from a sample order, and a submitted order becomes a new
+ * case that every agent evaluates from the start.
+ */
+function orderRoutes(router: Router, dependencies: CoordinatorDependencies, caseView: CaseViewOf) {
+  const { coordination, orchestrator, catalog, orderOptions } = dependencies
+
+  router.get('/order-form', (_request, response) => {
+    response.json({
+      samples: [...catalog.values()].map((caseFile) => ({
+        sampleId: caseFile.shipment.caseId,
+        story: caseFile.story,
+        shipment: caseFile.shipment,
+      })),
+      options: orderOptions,
+    })
+  })
+
+  router.post('/orders', async (request, response) => {
+    const { sampleId, shipment } = newOrderSchema.parse(request.body)
+    if (!catalog.has(sampleId)) throw new HttpError(404, `no sample order ${sampleId}`)
+    const caseId = newOrderId(
+      sampleId,
+      coordination.store.cases().map((record) => record.shipment.caseId),
+    )
+    await orchestrator.submit({
+      ...shipment,
+      caseId,
+      correlationId: `corr-${caseId}`,
+      shipmentId: `SHP-${caseId}`,
+    })
+    response.status(201).json(summaryOf(await caseView(caseId), catalog))
   })
 }
 
@@ -266,6 +313,7 @@ export function coordinatorRoutes(dependencies: CoordinatorDependencies): Router
   const router = Router()
   const caseView = caseViews(dependencies)
   caseRoutes(router, dependencies, caseView)
+  orderRoutes(router, dependencies, caseView)
   investigationRoutes(router, dependencies, caseView)
   taskRoutes(router, dependencies)
   ruleAndAgentRoutes(router, dependencies)

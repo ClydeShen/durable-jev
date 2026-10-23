@@ -61,6 +61,8 @@ interface Props {
   openAgent?: string
   onOpenAgent(agentId: string | undefined): void
   speed: PlaybackSpeed
+  /** Plays the case from its first event, as for an order just submitted. */
+  fromStart: boolean
   /** A rule to show, asked for from outside the views (a task's rule). */
   ruleRequest?: { ruleIds: string[] }
 }
@@ -76,12 +78,13 @@ export function CaseViews({
   openAgent,
   onOpenAgent,
   speed,
+  fromStart,
   ruleRequest,
 }: Props) {
   const [view, setView] = useState<CaseViewMode>('overview')
   const [focusAgent, setFocusAgent] = useState<string>()
   const [selectedRule, setSelectedRule] = useState<string>()
-  const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed })
+  const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed, fromStart })
   const { playback } = history
   const playing = playback.current !== undefined
   useEffect(() => {

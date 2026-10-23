@@ -74,7 +74,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   font: inherit;
   padding: 4px 6px;
   border: 1px solid var(--control-border);
@@ -443,6 +444,17 @@ button.agent-link small {
 h2 {
   font-size: 15px;
   margin: 0 0 10px;
+}
+
+.case-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.case-list-heading h2 {
+  margin: 0;
 }
 
 .case {
@@ -1535,5 +1547,340 @@ button.feed-link:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .feed-item {
     animation: feed-out 1ms linear 4400ms forwards;
+  }
+}
+
+/* The order entry point: a customer's order form, filled in from a sample, beside a summary. */
+
+/* The form scrolls on its own, so the summary beside it can stay in view. */
+main:has(> .new-order) {
+  min-height: 0;
+}
+
+.new-order {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  container-type: inline-size;
+}
+
+.order-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 16px;
+  align-items: start;
+  padding: 14px 16px 24px;
+}
+
+.order-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.order-section {
+  margin: 0;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.order-section legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.order-step {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+}
+
+.order-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px 14px;
+  align-items: start;
+}
+
+.order-input {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.order-input input,
+.order-input select,
+.order-input textarea {
+  min-height: 32px;
+  box-sizing: border-box;
+}
+
+.order-input.wide,
+.order-note.wide {
+  grid-column: 1 / -1;
+}
+
+.order-input textarea {
+  resize: vertical;
+}
+
+.order-note {
+  margin: 0;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  border-left: 3px solid var(--waiting);
+  background: var(--bg);
+  border-radius: 0 6px 6px 0;
+}
+
+/* Sample orders as cards: the radio stays visible, the whole card is the click target. */
+.sample-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+
+.sample-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.sample-card:hover {
+  border-color: var(--control-border);
+}
+
+.sample-card:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+  background: var(--surface);
+}
+
+.sample-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sample-card input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.sample-story {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Cargo categories as toggle pills; the mark in front says the state without colour. */
+.order-input.order-choices {
+  display: block;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.order-choices legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.order-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  margin: 0 6px 6px 0;
+  padding: 0 10px;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.order-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.order-toggle:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+}
+
+.order-toggle:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+.order-toggle:has(input:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.order-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.order-range input {
+  width: 6em;
+}
+
+.order-cards,
+.order-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.order-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-leg-route {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.order-card > .chip {
+  align-self: flex-start;
+}
+
+ul.order-documents li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 13px;
+}
+
+/* The summary stays in view while the form scrolls, with the submit button at hand. */
+.order-summary {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.order-summary h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.order-summary .fields {
+  margin: 0;
+}
+
+.order-route {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-route li + li::before {
+  content: "↓ ";
+  color: var(--muted);
+}
+
+.order-changes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-next {
+  margin: 0;
+  padding: 8px 10px 8px 28px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  background: var(--bg);
+  border-radius: 6px;
+}
+
+button.order-send {
+  padding: 10px 18px;
+  font-weight: 600;
+}
+
+/* Narrower than a form column plus the summary: the summary follows the form. */
+@container (max-width: 860px) {
+  .order-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order-summary {
+    position: static;
   }
 }

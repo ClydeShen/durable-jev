@@ -6,6 +6,7 @@ import { agentIdSchema } from '@durable-jev/contracts'
 import {
   agentMigrations,
   agentProfiles,
+  caseFileOf,
   createLogisticsRuntime,
   loadCaseCatalog,
   RerouteDesk,
@@ -30,7 +31,7 @@ const { runtime, rulePack, reference } = createLogisticsRuntime({
   materialsDirectory: materials,
   store,
   judgeFor: (shipment) =>
-    liveJudge ?? new ScriptedJudge(catalog.get(shipment.caseId)?.scriptedJudgements ?? []),
+    liveJudge ?? new ScriptedJudge(caseFileOf(catalog, shipment.caseId)?.scriptedJudgements ?? []),
   now: () => new Date().toISOString(),
 })
 

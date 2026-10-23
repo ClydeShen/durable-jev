@@ -1,4 +1,4 @@
-import type { HumanTask } from '@durable-jev/contracts'
+import type { HumanTask, Shipment } from '@durable-jev/contracts'
 import { type Actor, api, type Investigation, type TaskDecision } from './api'
 
 /**
@@ -21,6 +21,11 @@ export function useActions(
   }
   return {
     reset: () => report(() => api.reset(), '演示数据已重置'),
+    submitOrder: (sampleId: string, shipment: Shipment, onCreated: (caseId: string) => void) =>
+      report(
+        async () => onCreated((await api.submitOrder(sampleId, shipment)).caseId),
+        '订单已提交，各 agent 正在从头评估',
+      ),
     decide: (task: HumanTask, decision: TaskDecision) =>
       report(() => api.decide(task.humanTaskId, decision, actor), `${task.ruleId} 已提交`),
     dispatch: (caseId: string) => report(() => api.dispatch(caseId, actor), '已确认发运'),

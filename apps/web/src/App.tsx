@@ -2,17 +2,17 @@ import type { Role } from '@durable-jev/contracts'
 import { useEffect, useState } from 'react'
 import type { Actor } from './api'
 import { useStoredState } from './browser-storage'
-import { CaseHeader } from './components/CaseHeader'
+import { CaseTop } from './components/CaseTop'
 import { CaseViews } from './components/CaseViews'
 import { ConsoleLinks } from './components/chips'
-import { InvestigationPanel } from './components/InvestigationPanel'
-import { NextSteps } from './components/NextSteps'
+import { NewOrder } from './components/NewOrder'
 import { RoleBar } from './components/RoleBar'
 import { Sidebar } from './components/Sidebar'
 import { TaskPanel } from './components/TaskPanel'
 import { demoOperators } from './labels'
 import type { PlaybackSpeed } from './playback'
 import { useActions } from './use-actions'
+import { useCaseSelection } from './use-case-selection'
 import { useConsoleData } from './use-console-data'
 
 export function App() {
@@ -20,7 +20,8 @@ export function App() {
     id: demoOperators.warehouseOperator,
     role: 'warehouseOperator',
   })
-  const [selectedCase, setSelectedCase] = useState<string>()
+  const selection = useCaseSelection()
+  const { showFirst } = selection
   const [message, setMessage] = useState<string>()
   const [openAgent, setOpenAgent] = useState<string>()
   // A new object per click, so asking for the same rule again still moves the view.
@@ -28,20 +29,20 @@ export function App() {
   const [speed, setSpeed] = useStoredState<PlaybackSpeed>('playback-speed', 'realtime')
 
   const { rules, cases, agents, agentNames, detail, tasks, refreshAll } = useConsoleData(
-    selectedCase,
+    selection.caseId,
     actor.role,
   )
 
   useEffect(() => {
-    if (!selectedCase && cases.data?.[0]) setSelectedCase(cases.data[0].caseId)
-  }, [cases.data, selectedCase])
+    if (!selection.caseId && cases.data?.[0]) showFirst(cases.data[0].caseId)
+  }, [cases.data, selection.caseId, showFirst])
 
   const caseId = detail.data?.caseId
   const actions = useActions(actor, setMessage, refreshAll)
 
   const showRule = (inCase: string, ruleId: string) => {
     setOpenAgent(undefined)
-    setSelectedCase(inCase)
+    selection.show(inCase)
     setRuleRequest({ ruleIds: [ruleId] })
   }
   const links = {
@@ -58,35 +59,33 @@ export function App() {
           speed={speed}
           onSpeed={setSpeed}
           cases={cases.data ?? []}
-          selectedCase={selectedCase}
-          onSelectCase={setSelectedCase}
+          selectedCase={selection.caseId}
+          onSelectCase={selection.show}
+          onNewOrder={selection.openOrderForm}
           agents={agents.data ?? []}
           canControl={actor.role === 'technicalEvaluator'}
           onOpenAgent={setOpenAgent}
           onControl={actions.controlService}
         />
         <main>
-          {detail.data && caseId && (
+          {selection.ordering && (
+            <NewOrder
+              speed={speed}
+              onSubmit={(sampleId, shipment) =>
+                actions.submitOrder(sampleId, shipment, selection.showSubmitted)
+              }
+              onCancel={selection.closeOrderForm}
+            />
+          )}
+          {!selection.ordering && detail.data && caseId && (
             <>
-              <CaseHeader
+              <CaseTop
                 detail={detail.data}
                 actor={actor}
-                onDispatch={() => actions.dispatch(caseId)}
-                onRevise={(index) => actions.revise(caseId, index)}
-                onReportIncident={(index) => actions.reportIncident(caseId, index)}
-              />
-              <NextSteps
-                detail={detail.data}
                 rules={rules}
+                actions={actions}
                 onShowRule={(ruleId) => showRule(caseId, ruleId)}
               />
-              {detail.data.investigations.length > 0 && (
-                <InvestigationPanel
-                  investigations={detail.data.investigations}
-                  actor={actor}
-                  onDecide={actions.decideProposal}
-                />
-              )}
               <CaseViews
                 caseId={detail.data.caseId}
                 outcomes={detail.data.outcomes}
@@ -97,6 +96,7 @@ export function App() {
                 openAgent={openAgent}
                 onOpenAgent={setOpenAgent}
                 speed={speed}
+                fromStart={selection.isFresh(caseId)}
                 ruleRequest={ruleRequest}
               />
             </>
@@ -108,7 +108,7 @@ export function App() {
           rules={rules}
           caseId={caseId}
           message={message}
-          onSelectCase={setSelectedCase}
+          onSelectCase={selection.show}
           onShowRule={showRule}
           onDecide={actions.decide}
         />

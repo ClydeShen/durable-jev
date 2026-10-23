@@ -19,13 +19,13 @@ function condense(steps: readonly PlaybackStep[]): PlaybackStep[] {
     const previous = result.at(-1)
     if (step.tone === 'rule' && previous?.tone === 'rule') {
       previous.ruleIds = [...new Set([...previous.ruleIds, ...step.ruleIds])]
-      previous.text = `${previous.ruleIds.length} 条规则重新判断`
+      previous.text = `${previous.ruleIds.length} 条规则得出结果`
       previous.status = undefined
     } else result.push({ ...step, ruleIds: [...step.ruleIds] })
   }
   return result.map((step) =>
     step.tone === 'rule' && step.ruleIds.length === 1 && step.status
-      ? { ...step, text: `${step.ruleIds[0]} 重新判断：${checkStatusLabels[step.status]}` }
+      ? { ...step, text: `${step.ruleIds[0]} 判断：${checkStatusLabels[step.status]}` }
       : step,
   )
 }

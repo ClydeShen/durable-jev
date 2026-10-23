@@ -5,12 +5,19 @@ interface Props {
   cases: CaseSummary[]
   selected?: string
   onSelect(caseId: string): void
+  /** Opens the order entry point. */
+  onNewOrder(): void
 }
 
-export function CaseList({ cases, selected, onSelect }: Props) {
+export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
   return (
     <nav className="case-list">
-      <h2>案例</h2>
+      <div className="case-list-heading">
+        <h2>案例</h2>
+        <button type="button" className="secondary small" onClick={onNewOrder}>
+          ＋ 新订单
+        </button>
+      </div>
       {cases.map((summary) => (
         <button
           type="button"
