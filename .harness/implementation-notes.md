@@ -8,6 +8,7 @@ should know.
 | 2026-10-19 | Jev has an official TS SDK, `@typesafe-ai/sdk` (earlier wrongly thought missing); the key variable is `TYPESAFE_API_KEY` | T0.5 needs no hand-written client; real calls wait for the key, T0.5 stays in progress |
 | 2026-10-19 | Dependencies chosen at their latest: pi-durable 1.3.0, pi-ai 1.3.0, @a2a-js/sdk 1.3.0 | Pinned after P0 verification |
 | 2026-10-19 | TypeScript 6.0.3 rather than the latest 7.x (native compiler), to avoid compatibility risk with `tsc -b` project references | No functional effect |
+| 2026-10-23 | TypeScript stays at 6.0.3 (latest 6.x) although 7.0.2 builds this repository: dependency-cruiser needs the TypeScript compiler API, which 7.x has not published, and with 7.x the boundaries check cruises no modules | Revisit once dependency-cruiser supports 7.x |
 | 2026-10-19 | HTTP framework moved from Fastify to Express 5: the A2A SDK's server only has an Express adapter, and one framework is simpler | Design updated |
 | 2026-10-19 | The A2A SDK does not deduplicate by messageId; F04 idempotency needs our own mapping | Within T5.1, no extra task |
 | 2026-10-19 | The generative model is NVIDIA (built into pi-ai), only Jev for now; until the NVIDIA key arrives the B1 baseline and the investigation agent use scripted models | T4.2's StructuredOutputJudge and the real-model parts of B1/B2 postponed |
