@@ -90,7 +90,7 @@
 | 2 | 下一步栏里点 **Warehouse operator wen** 角色标签（直接切换角色）；右侧 CUST-MEDI-5 填 **Recipient's name** 和 **Delivery note number**，点 **Complete and submit** | 回放 CUST-MEDI-5 通过 | "诊所要求写明收货人，这是合同里计划看不出来的部分，交给人确认。" |
 | 3 | 切到 **Compliance reviewer**，右侧 R13 点 **Approve** | 字幕最后停在 "R13 waits for the quality reviewer" | "审批链第一步完成，第二步要另一个人。" |
 | 4 | 切到 **Quality reviewer**，R13 点 **Approve** | R13 通过，只剩装车 | "两步由不同的人签，规则里写着 Four eyes。" |
-| 5 | 头部 **Demo actions** 点 **Report an incident**，弹窗念给观众听（主承运商 Polar 取消，会发生什么），点 **Report incident** | 订单和规则都没变；字幕依次显示调查助手每一步：读订单 → 查 LEG-1 的备用运力 → 预检三个方案 → 提交建议 | "现在出意外：承运商取消了。调查助手开始工作，但注意，订单一个字都没变。" |
+| 5 | 头部 **Demo actions** 点 **Report an incident**，弹窗念给观众听（"Primary carrier Polar cancels…"，会发生什么），点 **Report incident** | 订单和规则都没变；字幕依次显示调查助手每一步：读订单 → 查 LEG-1 的备用运力 → 预检三个方案 → 提交建议 | "现在出意外：承运商取消了。调查助手开始工作，但注意，订单一个字都没变。" |
 | 6 | 看案例上方的调查卡片 | 建议改派到 OFF-FROST-0630，额外费用 $800，规则预检全绿；理由里写着另外两个为什么不行 | "它把每个备选方案拿去给规则试算，挑出全部通过里最便宜的那个，理由写得清清楚楚。" |
 | 7 | 切到 **Warehouse operator** | 卡片上没有确认按钮，写着只有运输计划员能确认 | "不是谁都能拍板。" |
 | 8 | 切到 **Transport planner**，点 **Confirm reroute** | 订单生成第 2 版 r2；字幕先说一批结果失效（紫色），再逐条重算 | "人确认了，订单才变。只有用到路线、承运商、报价的规则重算。" |
@@ -110,7 +110,7 @@
 | # | 点什么 | 屏幕上会看到 | 你说 |
 |---|---|---|---|
 | 1 | 选 **LOG-003** | 状态 **On hold**：安全说明和货物描述对不上 | "受控货的文件对不上，直接暂停。" |
-| 2 | 头部 **Demo actions** 点 **Change the order**，弹窗说明改了什么（客户补交正确的安全说明，documents，进入 r2），点 **Apply change** | 回放：一批结果失效后重算，出现合规签核 R13 | "客户补了文件，只重算跟文件有关的规则。" |
+| 2 | 头部 **Demo actions** 点 **Change the order**，弹窗说明改了什么（"Customer supplies the correct safety data sheet"，documents，进入 r2），点 **Apply change** | 回放：一批结果失效后重算，出现合规签核 R13 | "客户补了文件，只重算跟文件有关的规则。" |
 | 3 | 切到 **Commercial manager** | 右侧没有 R13 这张待办 | "商务主管看不到这张任务，签不了。" |
 | 4 | 切到 **Compliance reviewer**，R13 点 **Approve** | R13 通过 | "必须合规审核员签。" |
 
@@ -118,7 +118,7 @@
 
 | # | 点什么 | 屏幕上会看到 | 你说 |
 |---|---|---|---|
-| 1 | 选 **LOG-005**，点 **Change the order**（改派绕行，额外费用 13,000；改 route 和 quote），点 **Apply change** | 出现两个审批：R34 超授信例外、R35 额外费用 | "改派后超出授信，又多了运费，这是两件独立的事。" |
+| 1 | 选 **LOG-005**，点 **Change the order**（"Reroute via a detour, surcharge 13,000"；改 route 和 quote），点 **Apply change** | 出现两个审批：R34 超授信例外、R35 额外费用 | "改派后超出授信，又多了运费，这是两件独立的事。" |
 | 2 | 切到 **Commercial manager**，R35 点 **Approve** | 仍然等 R34 | "只批一个，照样放不了行。" |
 | 3 | R34 点 **Approve**（第 1 步） | R34 进入第 2 步 | "超过二级额度要两名商务主管。" |
 | 4 | 第 2 步再点 **Approve** | 提示同一个人不能批同一审批链的两步 | "同一个人签第二次，系统拒绝。这一步要换另一位主管来签。" |
@@ -136,7 +136,7 @@
 | 1 | 选 **LOG-007**，点 **Rule graph** | 顶部栏：**Specific rules** · **8 apply to this order** · **100 do not apply, not shown** | "规则库有 150 条，其中 108 条只对特定国家、商品或客户生效。这单用得上 8 条，另外 100 条根本不算。" |
 | 2 | 鼠标停在 **Specific rules** 上 | 弹出说明：先按目的地、客户、商品类别挑规则，其余既不评估也不显示 | "商品类别由 Jev 从货物描述判断，拿不准就多选几类，宁多勿漏。" |
 | 3 | 指着状态 **On hold** | 中转站不支持冷链 | "第一段没问题，但中转站不能冷藏，整单不能走。" |
-| 4 | **Demo actions** 点 **Change the order**（改经 Glacier Cold Hub 中转；改 route），点 **Apply change** | 只重算路线相关的规则，暂停解除 | "换一个能冷藏的中转站，只重算受影响的部分，就能继续了。" |
+| 4 | **Demo actions** 点 **Change the order**（"Reroute via Glacier Cold Hub"；改 route），点 **Apply change** | 只重算路线相关的规则，暂停解除 | "换一个能冷藏的中转站，只重算受影响的部分，就能继续了。" |
 
 ---
 
@@ -147,7 +147,7 @@
 | # | 点什么 | 屏幕上会看到 | 你说 |
 |---|---|---|---|
 | 1 | 选 **LOG-008**，切到 **Quality reviewer**，R20 点 **Approve** | 质量处置通过，只剩装车和收货人确认 | "质量审核员按当前包装批了温控偏差。" |
-| 2 | **Demo actions** 点 **Change the order**（复核时发现外壳开裂；改 cargo），点 **Apply change** | 订单进入 r2：R20 作废重开，新增重新包装 R21 | "货物又坏了，刚才的批准是按旧状态做的，自动作废。" |
+| 2 | **Demo actions** 点 **Change the order**（"Inspection finds a cracked shell…"；改 cargo），点 **Apply change** | 订单进入 r2：R20 作废重开，新增重新包装 R21 | "货物又坏了，刚才的批准是按旧状态做的，自动作废。" |
 | 3 | 切到 **Warehouse operator** | 右侧 CUST-MEDI-5 还在，可以照常提交；时间线里写着 "Task carried to new revision" | "收货人这张任务跟货物状态无关，所以直接转到新版本，不用重来。" |
 | 4 | 依次完成 R21（**New packaging ID**、**Photo reference**）、R22（**Retest temperature (0.1 °C)** 填 46，**Photo reference**），再切 **Quality reviewer** 批 R20 | R20 按新版本重新通过 | "重新包装、复测，再按新状态批一次。" |
 
@@ -169,7 +169,7 @@
 
 ## 收尾：怎么扩展、谁来维护（30 秒）
 
-- **加规则 = 写政策文本**：`pnpm author "Appendix G"` 让编写 agent 从政策原文生成规则，自动校验，给出 diff，人审核后合入。
+- **加规则 = 写政策文本**：`pnpm author "Schedule G"` 让编写 agent 从政策原文生成规则，自动校验，给出 diff，人审核后合入。
 - **加 agent = 配置**：目的地合规 agent 是后加的，原有 4 个 agent 一行代码没改。
 - **换通信方式**：`pnpm start:a2a` 后 Agents 视图显示 "Transport: A2A"，业务结果不变。
 
@@ -182,6 +182,14 @@
 | 1 | 左侧 Agents 列表点任一 agent，例如 **Cargo assurance** | 右侧打开 agent 名片 | "每个 agent 都对外发布一张标准的 A2A 名片。" |
 | 2 | 名片 **Running** 一栏点 **Agent Card** 后面的 `…/.well-known/agent-card.json` | 弹出 **A2A Agent Card**：名称、版本、JSON-RPC 端点，以及 5 个 skill | "订单协调先读这张名片，知道它在哪、会什么，再通过 JSON-RPC 调用这些 skill：提交案例、重新评估、查询状态、记录人工决定、列出待办。" |
 | 3 | 展开 **Raw JSON** | 名片原文 | "这就是标准 A2A 协议的原样内容，任何 A2A 客户端都能读。" |
+
+## 问答：规则原本是怎么写的？
+
+| # | 点什么 | 屏幕上会看到 | 你说 |
+|---|---|---|---|
+| 1 | 右上角点 **Policy** | 弹窗显示政策原文 Shipment Release Policy v1，顶部是各部分的目录 | "这就是规则的原始来源：一份写给人看的政策文档，不是代码。" |
+| 2 | 点目录里的 **Schedule H. Customer contract terms** | 跳到客户合同条款，例如 CUST-MEDI-5 Named recipient | "规则编写 agent 从这些条文生成规则；改政策就是改这段文字，再重新生成、回放验证。" |
+| 3 | 关掉弹窗，在规则图里点任一规则 | 规则详情里 **What this rule checks** 引用的就是这段原文 | "每条规则都能追溯回原文。" |
 
 ## 演示中出状况
 

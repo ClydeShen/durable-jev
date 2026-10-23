@@ -85,7 +85,7 @@ screening samples have no missed rule (`pnpm screening`).
 
 **Adding an agent** is configuration. The destination-compliance agent needed:
 
-1. rules whose `owner` is the new agent (here, the Appendix G rules) and one dependency from an
+1. rules whose `owner` is the new agent (here, the Schedule G rules) and one dependency from an
    existing rule (R40 now also requires R41);
 2. a name and description for its Agent Card (`agentProfiles`);
 3. one line in the launcher's service list.
@@ -112,7 +112,7 @@ yet (the console polls snapshots; there is no SSE).
   in a row, and screening has no missed rule; see [tuning-log.md](tuning-log.md). These are
   development-set numbers; there is no blind set yet, and the benchmarks (Jev vs structured
   output, fixed workflow vs helper, native vs A2A, cost per rule) are still to run.
-- Draft materials: the screening samples' expected groups and the appendix recordings need a
+- Draft materials: the screening samples' expected groups and the Schedule G and H recordings need a
   reviewer.
 - Trace propagation across agents and a restart cap for the helper are open (see
   [runtime-controls.md](runtime-controls.md)).

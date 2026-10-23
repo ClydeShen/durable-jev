@@ -279,6 +279,10 @@ function ruleAndAgentRoutes(
   router: Router,
   { rulePack, agentStatuses, agentCardOf }: CoordinatorDependencies,
 ) {
+  router.get('/policy', (_request, response) => {
+    response.json({ version: rulePack.policyVersion, ...rulePack.policy })
+  })
+
   router.get('/rules', (_request, response) => {
     response.json({
       ruleSetVersion: rulePack.ruleSet.ruleSetVersion,

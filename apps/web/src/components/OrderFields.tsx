@@ -335,7 +335,7 @@ export function OrderBasics({
           ))}
         </select>
       </OrderInput>
-      <OrderInput label="Quote (NZ$)">
+      <OrderInput label={`Quote (${shipment.quote.currency})`}>
         <input
           type="number"
           min={0}

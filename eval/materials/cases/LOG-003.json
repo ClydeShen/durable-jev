@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "受控货的安全说明与货物描述冲突。补交正确的安全说明后，合规审核员签核；商务主管批准不能替代合规签核。",
+  "story": "Controlled goods: the safety data sheet conflicts with the cargo description. Once the customer supplies the correct SDS, the compliance reviewer signs off; a commercial manager's approval cannot stand in for compliance sign-off.",
   "shipment": {
     "caseId": "LOG-003",
     "correlationId": "corr-LOG-003",
@@ -49,7 +49,7 @@
     "quote": {
       "amountCents": 310000,
       "extraCostCents": 0,
-      "currency": "EUR"
+      "currency": "NZD"
     },
     "documents": [
       {
@@ -133,7 +133,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "初始：文件与货物不一致，不能放行",
+      "label": "Initial: documents do not match the cargo; cannot release",
       "statuses": {
         "R09@ITEM-1": "PASS",
         "R10@ITEM-1": "FAIL",
@@ -145,7 +145,7 @@
     },
     {
       "kind": "revise",
-      "label": "客户补交正确的安全说明",
+      "label": "Customer supplies the correct safety data sheet",
       "patch": {
         "caseRevision": 2,
         "documents": [
@@ -172,7 +172,7 @@
     },
     {
       "kind": "expect",
-      "label": "文件一致，等待合规签核",
+      "label": "Documents match; awaiting compliance sign-off",
       "statuses": {
         "R10@ITEM-1": "PASS",
         "R13@ITEM-1": "WAITING_HUMAN"
@@ -182,7 +182,7 @@
     },
     {
       "kind": "act",
-      "label": "商务主管不能代替合规签核",
+      "label": "Commercial manager cannot stand in for compliance sign-off",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "carol",
@@ -195,7 +195,7 @@
     },
     {
       "kind": "act",
-      "label": "合规审核员签核",
+      "label": "Compliance reviewer signs off",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "alice",
@@ -207,7 +207,7 @@
     },
     {
       "kind": "expect",
-      "label": "受控分支就绪",
+      "label": "Controlled-goods branch ready",
       "statuses": {
         "R14@ITEM-1": "PASS",
         "R39": "WAITING_HUMAN"
@@ -217,7 +217,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -234,7 +234,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -243,7 +243,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

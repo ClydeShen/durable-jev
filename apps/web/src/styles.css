@@ -2263,3 +2263,74 @@ details.other-cases li > ul > li {
   align-items: center;
   gap: 6px;
 }
+
+/* The policy text: read like a document, rule titles in bold, parameter names in code. */
+article.policy-text {
+  max-width: 72ch;
+  line-height: 1.6;
+}
+
+article.policy-text > h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+article.policy-text h3 {
+  margin: 20px 0 6px;
+  font-size: 15px;
+}
+
+article.policy-text h4 {
+  margin: 14px 0 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+article.policy-text p {
+  margin: 0 0 8px;
+}
+
+article.policy-text code {
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--bg);
+  font-size: 12px;
+}
+
+nav.policy-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 12px 0;
+  padding: 8px 0;
+  border-block: 1px solid var(--border);
+  font-size: 12px;
+}
+
+nav.policy-index > a {
+  color: var(--link);
+}
+
+table.policy-table {
+  width: 100%;
+  margin: 0 0 12px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+dialog.modal article.policy-text table.policy-table th,
+dialog.modal article.policy-text table.policy-table td {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+dialog.modal article.policy-text table.policy-table th {
+  background: var(--bg);
+}
+
+dialog.modal article.policy-text > ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}

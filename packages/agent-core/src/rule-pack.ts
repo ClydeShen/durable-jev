@@ -7,12 +7,19 @@ import {
   validateRuleSet,
 } from '@durable-jev/rule-engine'
 import { z } from 'zod'
-import { type PolicyClause, policyClauses } from './policy-clauses.js'
+import {
+  type PolicyClause,
+  type PolicyDocument,
+  policyClauses,
+  policyDocument,
+} from './policy-clauses.js'
 
 export interface RulePack {
   policyVersion: string
   ruleSet: RuleSet
   parameters: PolicyParameters
+  /** The policy document the rules were authored from. */
+  policy: PolicyDocument
   /** Each rule's defining text in the policy document, by rule id. */
   clauses: ReadonlyMap<string, PolicyClause>
 }
@@ -47,12 +54,14 @@ export function loadRulePack(
     evaluatorRefs: codeEvaluatorRefs,
   })
   if (!validation.ruleSet) throw new RulePackError(validation.issues)
+  const text = policyDocument(
+    readFileSync(join(materialsDirectory, `${policy.policyVersion}.md`), 'utf8'),
+  )
   return {
     policyVersion: policy.policyVersion,
     ruleSet: validation.ruleSet,
     parameters: policy.parameters,
-    clauses: policyClauses(
-      readFileSync(join(materialsDirectory, `${policy.policyVersion}.md`), 'utf8'),
-    ),
+    policy: text,
+    clauses: policyClauses(text),
   }
 }

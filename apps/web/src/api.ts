@@ -94,6 +94,14 @@ export interface AgentStatus {
   a2aTasks: number
 }
 
+/** The policy document the rules were authored from, as written. */
+export interface PolicyText {
+  version: string
+  title: string
+  preamble: string[]
+  sections: { heading: string; level: 2 | 3; paragraphs: string[] }[]
+}
+
 /** The A2A Agent Card an agent publishes at /.well-known/agent-card.json (the parts shown). */
 export interface A2aAgentCard {
   name: string
@@ -182,6 +190,7 @@ export const api = {
   timeline: (caseId: string) =>
     request<TimelineEntry[]>(`/cases/${encodeURIComponent(caseId)}/timeline`),
   agents: () => request<AgentStatus[]>('/agents'),
+  policy: () => request<PolicyText>('/policy'),
   agentCard: (agentId: string) => request<A2aAgentCard>(`/agents/${agentId}/card`),
   controlService: (name: string, verb: 'crash' | 'start') =>
     request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),

@@ -60,7 +60,13 @@ function agent(agentId: RuleDefinition['owner']) {
   const runtime = new CaseRuntime({
     agentId,
     store,
-    rulePack: { policyVersion: 'test', ruleSet, parameters: {}, clauses: new Map() },
+    rulePack: {
+      policyVersion: 'test',
+      ruleSet,
+      parameters: {},
+      policy: { title: '', preamble: [], sections: [] },
+      clauses: new Map(),
+    },
     codeEvaluators: new Map(),
     judgeFor: () => new ScriptedJudge([]),
     factsOf,

@@ -20,8 +20,9 @@ const hashes = Object.fromEntries(
     .sort()
     .map((file) => [
       file,
+      // Line endings are normalised, so a Windows checkout with CRLF hashes the same as CI.
       createHash('sha256')
-        .update(readFileSync(root + file))
+        .update(readFileSync(root + file, 'utf8').replaceAll('\r\n', '\n'))
         .digest('hex'),
     ]),
 )

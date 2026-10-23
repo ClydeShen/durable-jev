@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "温控越界 120 分钟且外包装受损：等待质量处置时可终止并重启服务恢复原任务；仓库重复提交整改事件不会重复记账。",
+  "story": "Temperature excursion of 120 minutes plus damaged outer packaging. While awaiting quality disposition the service can be stopped and restarted and the task resumes; a resubmitted corrective-action event is not booked twice.",
   "shipment": {
     "caseId": "LOG-006",
     "correlationId": "corr-LOG-006",
@@ -52,7 +52,7 @@
     "quote": {
       "amountCents": 260000,
       "extraCostCents": 0,
-      "currency": "EUR"
+      "currency": "NZD"
     },
     "documents": [
       {
@@ -162,7 +162,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "越界超出容许时长，等待质量处置与仓库整改",
+      "label": "Excursion beyond the allowed time; awaiting quality disposition and warehouse corrective action",
       "statuses": {
         "R19@ITEM-1": "FAIL",
         "R20@ITEM-1": "WAITING_HUMAN",
@@ -173,7 +173,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库登记诊所指定收货人与送货单号",
+      "label": "Warehouse records the clinic's named recipient and delivery note number",
       "task": "CUST-MEDI-5",
       "actor": {
         "id": "wen",
@@ -190,7 +190,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库重新包装",
+      "label": "Warehouse repacks",
       "task": "R21@ITEM-1",
       "actor": {
         "id": "wen",
@@ -207,7 +207,7 @@
     },
     {
       "kind": "act",
-      "label": "整改完成事件重发：不重复记账",
+      "label": "Corrective-action event resubmitted: not booked twice",
       "task": "R21@ITEM-1",
       "actor": {
         "id": "wen",
@@ -225,7 +225,7 @@
     },
     {
       "kind": "act",
-      "label": "质量审核员处置：可继续发运",
+      "label": "Quality reviewer disposition: may ship",
       "task": "R20@ITEM-1",
       "actor": {
         "id": "bob",
@@ -237,7 +237,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库复测",
+      "label": "Warehouse retests",
       "task": "R22@ITEM-1",
       "actor": {
         "id": "wen",
@@ -254,7 +254,7 @@
     },
     {
       "kind": "expect",
-      "label": "质量处置与整改链完成",
+      "label": "Quality disposition and corrective chain complete",
       "statuses": {
         "R20@ITEM-1": "PASS",
         "R23@ITEM-1": "PASS"
@@ -264,7 +264,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -281,7 +281,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -290,7 +290,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

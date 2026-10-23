@@ -6,12 +6,7 @@ pre-commit:
       glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,css}"
       run: pnpm exec biome check --error-on-warnings --no-errors-on-unmatched {staged_files}
     - name: gitleaks
-      run: |
-        if command -v gitleaks >/dev/null; then
-          gitleaks git --pre-commit --staged --redact --no-banner
-        else
-          echo "gitleaks is not installed (mise install adds it), so staged secrets are not scanned here; CI still scans."
-        fi
+      run: node scripts/gitleaks-staged.mjs
 
 commit-msg:
   jobs:

@@ -3,6 +3,7 @@ import { useId, useRef, useState } from 'react'
 import type { Actor } from '../api'
 import { demoOperators, roleLabels } from '../labels'
 import { useDismiss } from '../use-dismiss'
+import { PolicyDialog } from './PolicyDialog'
 
 const roles = Object.keys(roleLabels) as Role[]
 
@@ -65,13 +66,18 @@ interface Props {
 
 /** Who is acting: the presenter picks a role, and each role has its own operator. */
 export function RoleBar({ actor, onChange, onReset }: Props) {
+  const [policyOpen, setPolicyOpen] = useState(false)
   return (
     <header className="role-bar">
       <h1>Durable Jev Agent demo</h1>
       <RoleMenu actor={actor} onChange={onChange} />
+      <button type="button" className="secondary" onClick={() => setPolicyOpen(true)}>
+        Policy
+      </button>
       <button type="button" className="secondary" onClick={onReset}>
         Reset demo
       </button>
+      {policyOpen && <PolicyDialog onClose={() => setPolicyOpen(false)} />}
     </header>
   )
 }

@@ -18,12 +18,27 @@ describe('loadRulePack', () => {
     expect(pack.clauses.get('R01')).toEqual({
       section: 'Part A. Order and cargo basics',
       paragraphs: [
-        'R01 Order complete. (order) The order names a customer and a delivery window, and has at least one cargo item and at least one leg.',
+        'R01 Order complete. Applies to: the order. The order must name a customer and a delivery window and must have at least one cargo item and at least one leg.',
       ],
     })
     expect(pack.clauses.get('R40')?.paragraphs.at(-1)).toBe(
-      'Appendix G. Destination import requirements: R40 additionally requires R41.',
+      'Schedule G. Destination import requirements: R40 is extended: release also requires R41.',
     )
+  })
+
+  it('keeps the policy text in its sections, as written', () => {
+    const { policy } = loadRulePack(materials, new Set(['R29']))
+    expect(policy.title).toBe('Shipment Release Policy')
+    expect(policy.preamble[0]).toMatch(/^\| Document No\. \|/)
+    expect(policy.sections.map((section) => section.heading).slice(0, 5)).toEqual([
+      '1. Purpose',
+      '2. Scope',
+      '3. Definitions and conventions',
+      '4. Roles and responsibilities',
+      'Part A. Order and cargo basics',
+    ])
+    expect(policy.sections.find((section) => section.heading.startsWith('G.NZ'))?.level).toBe(3)
+    expect(policy.sections.at(-1)?.heading).toBe('Revision history')
   })
 
   it('refuses to start when a code evaluator is not registered', () => {

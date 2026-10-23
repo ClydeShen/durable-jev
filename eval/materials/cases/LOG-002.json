@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "冷链疫苗到仓检查发现外箱压损。Jev 读检查备注提示包装风险，仓库重新包装并复测后才解除阻塞，再装载发运。",
+  "story": "Cold-chain vaccine arrives with a crushed outer carton. Jev reads the inspection note and flags a packaging risk; the hold lifts only after the warehouse repacks and retests, then the order is loaded and dispatched.",
   "shipment": {
     "caseId": "LOG-002",
     "correlationId": "corr-LOG-002",
@@ -52,7 +52,7 @@
     "quote": {
       "amountCents": 240000,
       "extraCostCents": 0,
-      "currency": "EUR"
+      "currency": "NZD"
     },
     "documents": [
       {
@@ -154,7 +154,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "初始：包装风险，等待仓库整改",
+      "label": "Initial: packaging risk, awaiting warehouse corrective action",
       "statuses": {
         "R18@ITEM-1": "FAIL",
         "R21@ITEM-1": "WAITING_HUMAN",
@@ -166,7 +166,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库登记诊所指定收货人与送货单号",
+      "label": "Warehouse records the clinic's named recipient and delivery note number",
       "task": "CUST-MEDI-5",
       "actor": {
         "id": "wen",
@@ -183,7 +183,7 @@
     },
     {
       "kind": "act",
-      "label": "调度员不能代做整改",
+      "label": "Dispatcher cannot do the corrective action",
       "task": "R21@ITEM-1",
       "actor": {
         "id": "dee",
@@ -201,7 +201,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库重新包装",
+      "label": "Warehouse repacks",
       "task": "R21@ITEM-1",
       "actor": {
         "id": "wen",
@@ -218,7 +218,7 @@
     },
     {
       "kind": "expect",
-      "label": "整改完成只解锁复测，不解锁发运",
+      "label": "Repack done unlocks the retest only, not dispatch",
       "statuses": {
         "R21@ITEM-1": "PASS",
         "R22@ITEM-1": "WAITING_HUMAN",
@@ -229,7 +229,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库复测",
+      "label": "Warehouse retests",
       "task": "R22@ITEM-1",
       "actor": {
         "id": "wen",
@@ -246,7 +246,7 @@
     },
     {
       "kind": "expect",
-      "label": "复测通过，冷链分支就绪",
+      "label": "Retest passes; cold-chain branch ready",
       "statuses": {
         "R23@ITEM-1": "PASS",
         "R39": "WAITING_HUMAN"
@@ -256,7 +256,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -273,7 +273,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -282,7 +282,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

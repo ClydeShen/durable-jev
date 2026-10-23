@@ -3653,7 +3653,7 @@
     },
     {
       "ruleId": "CUST-ACME-4",
-      "version": "1",
+      "version": "2",
       "title": "Acme Office Supplies: invoice currency",
       "owner": "commercial-control",
       "scope": "order",
@@ -3666,7 +3666,7 @@
         "ref": "CUST-ACME-4"
       },
       "expression": {
-        "passWhen": "order.quote.currency = \"EUR\"",
+        "passWhen": "order.quote.currency = \"NZD\"",
         "observe": "order.quote.currency"
       },
       "unknownPolicy": "block",
@@ -3745,7 +3745,7 @@
     },
     {
       "ruleId": "CUST-BRISK-4",
-      "version": "1",
+      "version": "2",
       "title": "Brisk Retail Group: invoice currency",
       "owner": "commercial-control",
       "scope": "order",
@@ -3758,7 +3758,7 @@
         "ref": "CUST-BRISK-4"
       },
       "expression": {
-        "passWhen": "order.quote.currency = \"EUR\"",
+        "passWhen": "order.quote.currency = \"NZD\"",
         "observe": "order.quote.currency"
       },
       "unknownPolicy": "block",
@@ -3837,7 +3837,7 @@
     },
     {
       "ruleId": "CUST-MEDI-4",
-      "version": "1",
+      "version": "2",
       "title": "Southgate Clinics: invoice currency",
       "owner": "commercial-control",
       "scope": "order",
@@ -3850,7 +3850,7 @@
         "ref": "CUST-MEDI-4"
       },
       "expression": {
-        "passWhen": "order.quote.currency = \"EUR\"",
+        "passWhen": "order.quote.currency = \"NZD\"",
         "observe": "order.quote.currency"
       },
       "unknownPolicy": "block",
@@ -4214,7 +4214,7 @@
     },
     {
       "ruleId": "CUST-KAPA-4",
-      "version": "1",
+      "version": "2",
       "title": "Kapa Chemicals: invoice currency",
       "owner": "commercial-control",
       "scope": "order",
@@ -4227,7 +4227,7 @@
         "ref": "CUST-KAPA-4"
       },
       "expression": {
-        "passWhen": "order.quote.currency = \"EUR\"",
+        "passWhen": "order.quote.currency = \"NZD\"",
         "observe": "order.quote.currency"
       },
       "unknownPolicy": "block",
@@ -4433,7 +4433,7 @@
     },
     {
       "ruleId": "CUST-OAK-4",
-      "version": "1",
+      "version": "2",
       "title": "Oakline Furniture: invoice currency",
       "owner": "commercial-control",
       "scope": "order",
@@ -4446,7 +4446,7 @@
         "ref": "CUST-OAK-4"
       },
       "expression": {
-        "passWhen": "order.quote.currency = \"EUR\"",
+        "passWhen": "order.quote.currency = \"NZD\"",
         "observe": "order.quote.currency"
       },
       "unknownPolicy": "block",
