@@ -127,7 +127,11 @@ export function TaskPanel(props: Props) {
         <span className="count">{own.length}</span>
       </h2>
       <p className="hint">{caseId} 中需要你处理的</p>
-      {message && <p className="message">{message}</p>}
+      {message && (
+        <p className="message" role="status">
+          {message}
+        </p>
+      )}
       {own.length === 0 ? (
         <p className="empty">这个案例没有你的待办</p>
       ) : (
