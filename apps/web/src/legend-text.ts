@@ -1,7 +1,7 @@
 import type { CheckStatus } from '@durable-jev/contracts'
 
 /** One line of a graph legend: a colour or mark, its short name, and what it means for the order. */
-export interface LegendEntry {
+interface LegendEntry {
   /** A status colour, or one of the highlight colours. */
   colour: CheckStatus | 'upstream' | 'downstream'
   name: string
