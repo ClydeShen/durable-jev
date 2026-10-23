@@ -16,11 +16,12 @@ import {
   loadCaseCatalog,
 } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
-import { createService } from '@durable-jev/service-kit'
+import { createService, HttpError } from '@durable-jev/service-kit'
 import express from 'express'
 import { watchAgents } from './agent-watch.js'
 import { collectEvents, EventLog } from './event-log.js'
 import { InvestigationClient } from './investigation-client.js'
+import { OrderBook } from './order-book.js'
 import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
@@ -86,6 +87,7 @@ if (!transportUrl) throw new Error('AGENT_ENDPOINTS must include transport-plann
 const coordinationClient = new LocalAgentClient('order-coordination', runtime, store)
 const agents = [coordinationClient, ...remotes.map((remote) => remote.business)]
 const eventLog = EventLog.open(join(dataDirectory, 'observability.sqlite'))
+const orderBook = OrderBook.open(join(dataDirectory, 'orders.sqlite'))
 const orchestrator = new CaseOrchestrator(
   agents,
   rulePack.ruleSet,
@@ -141,7 +143,16 @@ async function agentStatuses(): Promise<AgentStatus[]> {
 async function resetDemo() {
   await orchestrator.reset()
   eventLog.clear()
+  orderBook.clear()
   for (const caseFile of catalog.values()) await orchestrator.submit(caseFile.shipment)
+}
+
+async function resetCase(caseId: string) {
+  const original = orderBook.original(caseId) ?? catalog.get(caseId)?.shipment
+  if (!original) throw new HttpError(404, `${caseId} has no original order to start over from`)
+  await orchestrator.reset(caseId)
+  eventLog.clear(caseId)
+  await orchestrator.submit(original)
 }
 
 async function waitForAgents(deadline = Date.now() + 30_000) {
@@ -175,7 +186,9 @@ service.app.use(
     controlUrl: process.env.CONTROL_URL,
     timeline: (caseId) => eventLog.timeline(caseId),
     now,
+    recordOrder: (shipment) => orderBook.put(shipment),
     resetDemo,
+    resetCase,
   }),
 )
 if (existsSync(webDist)) {

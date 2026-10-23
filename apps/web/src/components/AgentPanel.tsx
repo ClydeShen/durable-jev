@@ -11,7 +11,6 @@ export function AgentPanel({ agents, canControl, onOpen, onControl }: Props) {
   return (
     <section className="agent-panel">
       <h2>Agents</h2>
-      <p className="hint">点击查看每个 agent 负责什么</p>
       <ul>
         {agents.map((agent) => (
           <li key={agent.agentId}>

@@ -25,7 +25,8 @@ export interface AgentClient {
   openTasks(): Promise<HumanTask[]>
   events(): Promise<OutboxEvent[]>
   acknowledgeEvents(eventIds: readonly string[]): Promise<void>
-  reset(): Promise<void>
+  /** Forgets every case, or only the given one. */
+  reset(caseId?: string): Promise<void>
 }
 
 const stateOf = (view: CaseView): AgentCaseState => ({
@@ -71,8 +72,8 @@ export class LocalAgentClient implements AgentClient {
     markPublished(this.store.db, eventIds)
   }
 
-  async reset(): Promise<void> {
-    clearData(this.store.db)
+  async reset(caseId?: string): Promise<void> {
+    clearData(this.store.db, caseId)
   }
 }
 
@@ -166,8 +167,8 @@ export class CaseOrchestrator {
     return (await Promise.all(this.agents.map((agent) => agent.openTasks().catch(() => [])))).flat()
   }
 
-  async reset(): Promise<void> {
-    await Promise.all(this.agents.map((agent) => agent.reset()))
+  async reset(caseId?: string): Promise<void> {
+    await Promise.all(this.agents.map((agent) => agent.reset(caseId)))
   }
 
   private async synchronized(caseId: string): Promise<Reachable[]> {

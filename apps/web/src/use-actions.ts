@@ -15,12 +15,17 @@ export function useActions(
       await work()
       onMessage(success)
     } catch (failure) {
-      onMessage(String(failure))
+      onMessage(failure instanceof Error ? failure.message : String(failure))
     }
     await refresh()
   }
   return {
     reset: () => report(() => api.reset(), '演示数据已重置'),
+    resetCase: (caseId: string, onReset: (caseId: string) => void) =>
+      report(async () => {
+        await api.resetCase(caseId)
+        onReset(caseId)
+      }, `${caseId} 已从头开始`),
     submitOrder: (sampleId: string, shipment: Shipment, onCreated: (caseId: string) => void) =>
       report(
         async () => onCreated((await api.submitOrder(sampleId, shipment)).caseId),

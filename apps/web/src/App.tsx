@@ -70,7 +70,6 @@ export function App() {
         <main>
           {selection.ordering && (
             <NewOrder
-              speed={speed}
               onSubmit={(sampleId, shipment) =>
                 actions.submitOrder(sampleId, shipment, selection.showSubmitted)
               }
@@ -85,6 +84,7 @@ export function App() {
                 rules={rules}
                 actions={actions}
                 onShowRule={(ruleId) => showRule(caseId, ruleId)}
+                onReset={() => actions.resetCase(caseId, selection.showSubmitted)}
               />
               <CaseViews
                 caseId={detail.data.caseId}

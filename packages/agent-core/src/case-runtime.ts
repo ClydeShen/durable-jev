@@ -64,6 +64,10 @@ function changedOutcomes(previous: readonly RuleOutcome[], next: readonly RuleOu
   )
 }
 
+function taskEventName(task: HumanTask, gates: HumanGateSession): string {
+  if (task.status !== 'OPEN') return 'human_task.closed'
+  return gates.wasCarried(task) ? 'human_task.carried_forward' : 'human_task.opened'
+}
 export class CaseRuntime {
   private readonly queues = new Map<string, Promise<unknown>>()
 
@@ -216,7 +220,7 @@ export class CaseRuntime {
           this.options.agentId === undefined || rule.owner === this.options.agentId,
       },
     )
-    gates.withdrawStale(graph.outcomes)
+    gates.reconcile(graph.outcomes)
     const changeLabel = change && `${change.changeId} (${change.entities.join(', ')})`
     const earlierLabels = new Map(
       before.outcomes.map((outcome) => [
@@ -281,8 +285,13 @@ export class CaseRuntime {
       for (const task of gates.changes()) {
         store.record({
           caseId,
-          eventName: task.status === 'OPEN' ? 'human_task.opened' : 'human_task.closed',
-          payload: { humanTaskId: task.humanTaskId, ruleId: task.ruleId, status: task.status },
+          eventName: taskEventName(task, gates),
+          payload: {
+            humanTaskId: task.humanTaskId,
+            ruleId: task.ruleId,
+            status: task.status,
+            caseRevision: task.target.caseRevision,
+          },
         })
       }
       return true

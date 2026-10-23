@@ -6,7 +6,12 @@ import type {
   CaseView,
   RulePack,
 } from '@durable-jev/agent-core'
-import { type OrderOptions, roleSchema, shipmentSchema } from '@durable-jev/contracts'
+import {
+  type OrderOptions,
+  roleSchema,
+  type Shipment,
+  shipmentSchema,
+} from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
   applyRevision,
@@ -45,7 +50,11 @@ export interface CoordinatorDependencies {
   controlUrl?: string
   timeline(caseId: string): TimelineEntry[]
   now(): string
+  /** Keeps an order entered in the console as first submitted. */
+  recordOrder(shipment: Shipment): void
   resetDemo(): Promise<void>
+  /** Starts one case over from its order as first submitted. */
+  resetCase(caseId: string): Promise<void>
 }
 
 const decisionSchema = z.discriminatedUnion('type', [
@@ -145,6 +154,12 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
     response.json(summaryOf(await caseView(shipment.caseId), catalog))
   })
 
+  router.post('/cases/:caseId/reset', async (request, response) => {
+    const { caseId } = (await caseView(request.params.caseId)).record.shipment
+    await dependencies.resetCase(caseId)
+    response.json(summaryOf(await caseView(caseId), catalog))
+  })
+
   router.post('/cases/:caseId/dispatch', async (request, response) => {
     const { caseId } = request.params
     await caseView(caseId)
@@ -155,8 +170,10 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
       actorOf(request),
       dependencies.now,
     )
-    if (!result.ok)
-      throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
+    if (!result.ok) {
+      response.status(result.reason === 'NOT_DISPATCHER' ? 403 : 409).json(result)
+      return
+    }
     response.json(summaryOf(await caseView(caseId), catalog))
   })
 }
@@ -188,12 +205,14 @@ function orderRoutes(router: Router, dependencies: CoordinatorDependencies, case
       sampleId,
       coordination.store.cases().map((record) => record.shipment.caseId),
     )
-    await orchestrator.submit({
+    const order = {
       ...shipment,
       caseId,
       correlationId: `corr-${caseId}`,
       shipmentId: `SHP-${caseId}`,
-    })
+    }
+    dependencies.recordOrder(order)
+    await orchestrator.submit(order)
     response.status(201).json(summaryOf(await caseView(caseId), catalog))
   })
 }

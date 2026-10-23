@@ -148,7 +148,6 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         <Background />
         <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
         <Panel position="top-left" className="graph-hint">
-          点击 agent 查看它负责什么。箭头：一个 agent 的规则用到另一个 agent 的结论。
           <Tag>通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</Tag>
         </Panel>
       </ReactFlow>

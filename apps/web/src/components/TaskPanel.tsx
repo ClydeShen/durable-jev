@@ -127,7 +127,6 @@ export function TaskPanel(props: Props) {
         {roleLabels[actor.role]} {actor.id} 的待办
         <span className="count">{own.length}</span>
       </h2>
-      <p className="hint">{caseId} 中需要你处理的</p>
       {message && (
         <p className="message" role="status">
           {message}

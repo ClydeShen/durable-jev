@@ -17,9 +17,16 @@
   --blocked: #4f6390;
   --unknown: #636a75;
   --error: #9b1c1c;
+  /* Purple means one thing only: a result that a change made invalid, to be decided again. */
   --invalidated: #8e44ad;
   --not-applicable: #6c737f;
+  /* Selecting a rule: what it needs (upstream) and what needs it (downstream). */
   --upstream: #0f766e;
+  --downstream: #be185d;
+  /* One size scale for every control: buttons, inputs and selects line up in a row. */
+  --control-height: 28px;
+  --control-height-small: 24px;
+  --control-font: 13px;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -35,6 +42,9 @@
     --muted: #9aa3b2;
     --link: #8ab4ff;
     --pass-text: #4ade80;
+    --upstream: #2dd4bf;
+    --downstream: #f472b6;
+    --on-highlight: #14171c;
   }
 }
 
@@ -76,7 +86,10 @@ label {
 input,
 select,
 textarea {
+  box-sizing: border-box;
+  min-height: var(--control-height);
   font: inherit;
+  font-size: var(--control-font);
   padding: 4px 6px;
   border: 1px solid var(--control-border);
   border-radius: 6px;
@@ -85,8 +98,12 @@ textarea {
 }
 
 button {
+  box-sizing: border-box;
+  min-height: var(--control-height);
   font: inherit;
-  padding: 6px 12px;
+  font-size: var(--control-font);
+  line-height: 1.2;
+  padding: 4px 12px;
   border: none;
   border-radius: 6px;
   background: var(--accent);
@@ -148,6 +165,7 @@ button.danger {
 .chip,
 .entity-chip,
 .tag {
+  min-height: 0;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -230,29 +248,48 @@ button.entity-chip:hover {
 .tag.upstream,
 .tag.downstream {
   border: none;
-  color: #fff;
+  color: var(--on-highlight, #fff);
   background: var(--upstream);
 }
 
 .tag.downstream {
-  background: var(--invalidated);
+  background: var(--downstream);
 }
 
 /* Agent colours, for agent chips. */
+/* Agent colours are their own, never a status or highlight colour. */
 [data-agent="order-coordination"] {
-  --entity: var(--accent);
+  --entity: #2563c9;
 }
 [data-agent="cargo-assurance"] {
-  --entity: var(--invalidated);
+  --entity: #0e7490;
 }
 [data-agent="transport-planning"] {
-  --entity: var(--upstream);
+  --entity: #4d7c0f;
 }
 [data-agent="commercial-control"] {
   --entity: #b54708;
 }
 [data-agent="destination-compliance"] {
   --entity: #5f6b6d;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-agent="order-coordination"] {
+    --entity: #60a5fa;
+  }
+  [data-agent="cargo-assurance"] {
+    --entity: #22d3ee;
+  }
+  [data-agent="transport-planning"] {
+    --entity: #a3e635;
+  }
+  [data-agent="commercial-control"] {
+    --entity: #fbbf24;
+  }
+  [data-agent="destination-compliance"] {
+    --entity: #94a3b8;
+  }
 }
 
 /* Inside graph nodes and the case list the same labels come in a compact size. */
@@ -512,9 +549,15 @@ main {
   font-size: 18px;
 }
 
-button.primary-action {
+.case-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
-  padding: 8px 18px;
+}
+
+button.primary-action {
+  padding: 4px 14px;
   font-weight: 600;
 }
 
@@ -525,38 +568,46 @@ button.primary-action {
   color: var(--muted);
 }
 
+/* Header facts share two lines: every label on one, every value centred on the next. */
 .case-facts {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: start;
   gap: 8px 24px;
 }
 
-.stat {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
+.stat,
+.demo-actions {
+  display: grid;
+  grid-template-rows: 16px var(--control-height-small);
+  row-gap: 2px;
+  align-items: center;
 }
 
 .stat-value {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 15px;
   font-weight: 600;
 }
 
 .stat-label {
+  grid-row: 1;
   font-size: 11px;
   color: var(--muted);
 }
 
 .demo-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  grid-auto-flow: column;
+  justify-content: start;
+  column-gap: 6px;
   margin-left: auto;
-  padding: 6px 8px;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+}
+
+.demo-actions > button {
+  grid-row: 2;
 }
 
 .rule-graph {
@@ -564,8 +615,12 @@ button.primary-action {
   min-height: 0;
 }
 
+/* Two fixed lines, title then meta, so neither can cover the other in the fixed-size node. */
 .rule-node {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 6px 8px;
   border-radius: 8px;
   border: 2px solid var(--status, var(--border));
@@ -575,6 +630,7 @@ button.primary-action {
 }
 
 .rule-node-title {
+  flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -582,10 +638,25 @@ button.primary-action {
 
 .rule-node-meta {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
+  min-width: 0;
   font-size: 11px;
+  white-space: nowrap;
+}
+
+/* When the line is full, the role label gives way; status and marks keep their size. */
+.rule-node-meta > * {
+  flex-shrink: 0;
+}
+
+.rule-node-meta > .entity-chip,
+.rule-node-meta > .muted {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .check-status.PASS {
@@ -707,9 +778,9 @@ button.agent-link:hover {
   background: var(--bg);
 }
 
-button.agent-link /* 2.5.8: click targets are at least 24 by 24 pixels. */
+/* 2.5.8: click targets are at least 24 by 24 pixels. */
 button.small {
-  min-height: 24px;
+  min-height: var(--control-height-small);
   min-width: 24px;
   padding: 2px 8px;
   font-size: 12px;
@@ -717,8 +788,8 @@ button.small {
 
 .view-tabs {
   display: flex;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 16px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -936,6 +1007,7 @@ label.evidence code {
 
 .segmented button {
   display: flex;
+  align-items: center;
   justify-content: center;
   flex: 1;
   padding: 4px 0;
@@ -1121,7 +1193,7 @@ span.judgement-bar > span {
 }
 
 .rule-node.relation-downstream {
-  box-shadow: 0 0 0 3px var(--invalidated);
+  box-shadow: 0 0 0 3px var(--downstream);
 }
 
 .react-flow__edge.edge-upstream path {
@@ -1130,7 +1202,7 @@ span.judgement-bar > span {
 }
 
 .react-flow__edge.edge-downstream path {
-  stroke: var(--invalidated);
+  stroke: var(--downstream);
   stroke-width: 2.5;
 }
 
@@ -1162,6 +1234,7 @@ span.judgement-bar > span {
 
 /* A rule node opens with an inner button, so it is reachable and usable by keyboard. */
 button.node-open {
+  min-height: 0;
   all: unset;
   cursor: pointer;
   border-radius: 3px;
@@ -1535,6 +1608,7 @@ table.record-table > thead > tr > th {
 }
 
 button.feed-link {
+  min-height: 0;
   all: unset;
   display: flex;
   cursor: pointer;
@@ -1870,7 +1944,6 @@ ul.order-documents li {
 }
 
 button.order-send {
-  padding: 10px 18px;
   font-weight: 600;
 }
 
@@ -1883,4 +1956,103 @@ button.order-send {
   .order-summary {
     position: static;
   }
+}
+
+/* The graph legend: a strip of colours at the end of the view tabs; its details open below it. */
+
+.graph-legend {
+  position: relative;
+  margin-left: auto;
+}
+
+button.legend-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-height: var(--control-height-small);
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  cursor: help;
+}
+
+.legend-title {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-swatch {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--status);
+}
+
+.legend-swatch.upstream {
+  background: var(--upstream);
+}
+
+.legend-swatch.downstream {
+  background: var(--downstream);
+}
+
+.legend-details {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  display: none;
+  width: 340px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.16);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.graph-legend:hover .legend-details,
+.graph-legend:focus-within .legend-details {
+  display: block;
+}
+
+div.legend-details > dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 10px;
+  margin: 0;
+}
+
+div.legend-details > dl > div {
+  display: contents;
+}
+
+div.legend-details > dl dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+div.legend-details > dl dd {
+  margin: 0;
+  color: var(--muted);
+}
+
+div.legend-details > dl dt.legend-mark {
+  font-weight: 500;
 }

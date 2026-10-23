@@ -27,6 +27,7 @@ const roundOf = (taskId: string) => Number(/\/r(\d+)#\d+$/.exec(taskId)?.[1] ?? 
 export class HumanGateSession {
   private readonly tasks = new Map<string, HumanTask>()
   private readonly changed = new Set<string>()
+  private readonly carried = new Set<string>()
   readonly evaluator: LeafEvaluator = (input) => this.evaluate(input)
 
   constructor(
@@ -37,23 +38,41 @@ export class HumanGateSession {
     for (const task of existing) this.tasks.set(task.humanTaskId, task)
   }
 
-  withdrawStale(outcomes: readonly RuleOutcome[]): void {
+  /**
+   * Brings the open tasks in line with the results: a task whose rule inputs changed is cancelled;
+   * one whose inputs did not change moves to the current revision and stays open, since the person
+   * would decide on the same facts.
+   */
+  reconcile(outcomes: readonly RuleOutcome[]): void {
     const current = new Map(
       outcomes.map((outcome) => [
         `${outcome.ruleId}@${scopeKey(outcome.scope)}`,
         outcome.inputFingerprint,
       ]),
     )
+    const { caseRevision, entityVersions } = this.shipment
     for (const task of this.tasks.values()) {
-      const fingerprint = current.get(`${task.ruleId}@${scopeKey(task.scope)}`)
-      if (task.status === 'OPEN' && fingerprint !== task.target.inputFingerprint) {
+      if (task.status !== 'OPEN') continue
+      const inputFingerprint = current.get(`${task.ruleId}@${scopeKey(task.scope)}`)
+      if (inputFingerprint !== task.target.inputFingerprint) {
         this.apply(task, { type: 'cancel' })
+      } else if (task.target.caseRevision !== caseRevision) {
+        this.apply(task, {
+          type: 'carryForward',
+          target: { caseRevision, entityVersions, inputFingerprint },
+        })
+        this.carried.add(task.humanTaskId)
       }
     }
   }
 
   changes(): HumanTask[] {
     return [...this.changed].flatMap((taskId) => this.tasks.get(taskId) ?? [])
+  }
+
+  /** Whether the task moved to the current revision in this evaluation. */
+  wasCarried(task: HumanTask): boolean {
+    return this.carried.has(task.humanTaskId)
   }
 
   private evaluate(input: LeafInput): LeafEvaluation {

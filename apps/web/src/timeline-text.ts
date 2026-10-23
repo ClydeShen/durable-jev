@@ -10,6 +10,7 @@ export const eventLabels: Record<string, string> = {
   'human_task.opened': '开出人工任务',
   'human_task.decided': '人工处理',
   'human_task.closed': '人工任务结束',
+  'human_task.carried_forward': '任务转到新版本',
   'investigation.started': '开始调查',
   'investigation.tool_called': '调查助手查资料',
   'investigation.proposed': '调查助手提议',
@@ -141,6 +142,8 @@ export function summary(entry: TimelineEntry, titles: ReadonlyMap<string, string
       const actor = payload.actor as { id?: string } | undefined
       return `${actor?.id ?? ''} ${taskStatusLabels[String(payload.status)] ?? payload.status} ${rule}`
     }
+    case 'human_task.carried_forward':
+      return `${rule}需要的资料没变，任务转到 r${payload.caseRevision}，仍可处理`
     case 'human_task.opened':
     case 'human_task.closed':
       return `${rule}：${taskStatusLabels[String(payload.status)] ?? payload.status}`

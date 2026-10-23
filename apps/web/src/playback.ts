@@ -99,6 +99,13 @@ function stepFor(
         ruleIds: [ruleId],
         tone: 'task',
       }
+    case 'human_task.carried_forward':
+      return {
+        upTo: index,
+        text: `${ruleId}「${title}」需要的资料没变：人工任务转到 r${payload.caseRevision}，继续等人处理`,
+        ruleIds: [ruleId],
+        tone: 'task',
+      }
     case 'case.dispatched':
       return {
         upTo: index,

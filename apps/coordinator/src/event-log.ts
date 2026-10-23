@@ -84,8 +84,10 @@ export class EventLog {
       }))
   }
 
-  clear() {
-    this.db.exec('DELETE FROM events')
+  /** Forgets every case's events, or only the given case's. */
+  clear(caseId?: string) {
+    if (caseId === undefined) this.db.exec('DELETE FROM events')
+    else this.db.prepare('DELETE FROM events WHERE case_id = ?').run(caseId)
   }
 }
 

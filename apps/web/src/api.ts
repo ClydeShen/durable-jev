@@ -8,6 +8,7 @@ import type {
   Shipment,
 } from '@durable-jev/contracts'
 import type { RuleDefinition, RuleOutcome, SemanticRule } from '@durable-jev/rule-engine'
+import { refusalMessages } from './labels'
 
 export interface CaseSummary {
   caseId: string
@@ -119,7 +120,11 @@ export type TaskDecision =
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, init)
   const body = await response.json()
-  if (!response.ok) throw new Error(body.message ?? body.error ?? response.statusText)
+  if (!response.ok) {
+    throw new Error(
+      refusalMessages[body.reason] ?? body.message ?? body.error ?? response.statusText,
+    )
+  }
   return body as T
 }
 
@@ -168,4 +173,6 @@ export const api = {
   controlService: (name: string, verb: 'crash' | 'start') =>
     request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),
   reset: () => request<{ cases: number }>('/demo/reset', { method: 'POST' }),
+  resetCase: (caseId: string) =>
+    request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/reset`, { method: 'POST' }),
 }

@@ -10,10 +10,11 @@ interface Props {
   rules: readonly RuleInfo[]
   actions: ReturnType<typeof useActions>
   onShowRule(ruleId: string): void
+  onReset(): void
 }
 
 /** The top of a case: its header with the demo actions, the next steps, the investigations. */
-export function CaseTop({ detail, actor, rules, actions, onShowRule }: Props) {
+export function CaseTop({ detail, actor, rules, actions, onShowRule, onReset }: Props) {
   const { caseId } = detail
   return (
     <>
@@ -23,6 +24,7 @@ export function CaseTop({ detail, actor, rules, actions, onShowRule }: Props) {
         onDispatch={() => actions.dispatch(caseId)}
         onRevise={(index) => actions.revise(caseId, index)}
         onReportIncident={(index) => actions.reportIncident(caseId, index)}
+        onReset={onReset}
       />
       <NextSteps detail={detail} rules={rules} onShowRule={onShowRule} />
       {detail.investigations.length > 0 && (

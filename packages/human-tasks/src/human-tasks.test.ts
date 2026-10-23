@@ -136,6 +136,28 @@ describe('decideHumanTask', () => {
       decision: { decidedBy: 'alice' },
     })
   })
+
+  it('carries an open task to a new revision whose inputs for the rule are unchanged', () => {
+    const revised: HumanTaskTarget = { ...target, caseRevision: 2 }
+    const carried = approved(
+      decideHumanTask(task(), { type: 'carryForward', target: revised }, morning),
+    )
+    expect(carried).toMatchObject({ status: 'OPEN', target: revised })
+    expect(
+      decideHumanTask(
+        carried,
+        { type: 'approve', actor: compliance },
+        at('2026-11-01T09:00:00.000Z', { currentTarget: revised }),
+      ),
+    ).toMatchObject({ ok: true })
+  })
+
+  it('refuses to carry a task forward when the inputs changed', () => {
+    const changed: HumanTaskTarget = { ...target, caseRevision: 2, inputFingerprint: 'fp-2' }
+    expect(
+      decideHumanTask(task(), { type: 'carryForward', target: changed }, morning),
+    ).toMatchObject({ ok: false, reason: 'STALE_TARGET' })
+  })
 })
 
 describe('approval chains', () => {

@@ -42,9 +42,10 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
     await client.acknowledgeEvents(z.array(z.string()).parse(request.body.eventIds))
     response.json({ acknowledged: true })
   })
-  router.post('/reset', async (_request, response) => {
-    await client.reset()
-    response.json({ reset: true })
+  router.post('/reset', async (request, response) => {
+    const { caseId } = z.object({ caseId: z.string().min(1).optional() }).parse(request.body ?? {})
+    await client.reset(caseId)
+    response.json({ reset: caseId ?? 'all' })
   })
   return router
 }

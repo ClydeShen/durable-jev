@@ -21,6 +21,8 @@ export type HumanAction =
   | { type: 'expire' }
   | { type: 'cancel' }
   | { type: 'supersede'; by: string }
+  /** The case moved to a new revision without changing the rule's inputs: the task stays valid. */
+  | { type: 'carryForward'; target: HumanTaskTarget }
 
 export interface ActionContext {
   now: string
@@ -108,6 +110,13 @@ function supersede(task: HumanTask, by: string): Decision {
   return { ok: true, task: { ...task, status: 'SUPERSEDED', supersededBy: by } }
 }
 
+function carryForward(task: HumanTask, target: HumanTaskTarget): Decision {
+  if (target.inputFingerprint !== task.target.inputFingerprint) {
+    return refuse('STALE_TARGET', "the rule's inputs changed; the task cannot carry forward")
+  }
+  return { ok: true, task: { ...task, target } }
+}
+
 function expire(task: HumanTask, now: string): Decision {
   if (now < task.expiresAt) return refuse('NOT_EXPIRED', `task expires at ${task.expiresAt}`)
   return { ok: true, task: { ...task, status: 'EXPIRED' } }
@@ -159,7 +168,10 @@ function decideApproval(task: HumanTask, action: Verdict, context: ActionContext
   }
 }
 
-/** Applies a lifecycle action (supersede, cancel, expire) or a person's decision to a task. */
+/**
+ * Applies a lifecycle action (supersede, cancel, expire, carry forward) or a person's decision to
+ * a task.
+ */
 export function decideHumanTask(
   task: HumanTask,
   action: HumanAction,
@@ -169,6 +181,7 @@ export function decideHumanTask(
   if (task.status !== 'OPEN') return refuse('NOT_OPEN', `task is ${task.status}`)
   if (action.type === 'cancel') return { ok: true, task: { ...task, status: 'CANCELLED' } }
   if (action.type === 'expire') return expire(task, context.now)
+  if (action.type === 'carryForward') return carryForward(task, action.target)
   const actorIssue = actorRefusal(task, action.actor, context)
   if (actorIssue) return actorIssue
   return action.type === 'complete'
