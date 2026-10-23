@@ -513,14 +513,16 @@ h2 {
   margin: 0;
 }
 
-/* One line per case, all the same height: its id, a dot per role it waits for, its status. */
+/* Two lines per case, every case the same height: its id and status, then who it waits for. */
 .case {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: 20px 16px;
+  align-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   width: 100%;
-  height: 36px;
+  height: 54px;
   margin-bottom: 6px;
   padding: 0 10px;
   text-align: left;
@@ -540,9 +542,20 @@ h2 {
 }
 
 .case-roles {
+  grid-column: 1 / -1;
   display: flex;
+  align-items: center;
   gap: 3px;
-  justify-self: end;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.case-roles > .entity-dot + .case-roles-count {
+  margin-left: 4px;
+}
+
+.agent-panel {
+  margin-top: 16px;
 }
 
 main {

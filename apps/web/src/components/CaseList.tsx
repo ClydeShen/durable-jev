@@ -1,5 +1,5 @@
 import type { CaseSummary } from '../api'
-import { roleLabels } from '../labels'
+import { countOf, roleLabels } from '../labels'
 import { OrderStatusBadge } from './chips'
 
 interface Props {
@@ -27,16 +27,17 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
           onClick={() => onSelect(summary.caseId)}
         >
           <strong className="case-id">{summary.caseId}</strong>
-          <span
-            className="case-roles"
-            role="img"
-            aria-label={`Waits for ${summary.waitingOn.map((role) => roleLabels[role]).join(', ') || 'nobody'}`}
-          >
+          <OrderStatusBadge status={summary.status} />
+          <span className="case-roles">
             {summary.waitingOn.map((role) => (
               <span key={role} className="entity-dot" data-role={role} title={roleLabels[role]} />
             ))}
+            <span className="case-roles-count">
+              {summary.waitingOn.length > 0
+                ? `Waiting on ${countOf(summary.waitingOn.length, 'role')}`
+                : 'No open tasks'}
+            </span>
           </span>
-          <OrderStatusBadge status={summary.status} />
         </button>
       ))}
     </nav>
