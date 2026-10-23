@@ -7,7 +7,6 @@ import {
   MarkerType,
   type Node,
   type NodeProps,
-  Panel,
   Position,
   ReactFlow,
 } from '@xyflow/react'
@@ -18,7 +17,7 @@ import { layoutGraph, type Positions } from '../graph-layout'
 import { kindLabels, mostSevere } from '../labels'
 import { useSavedLayout } from '../saved-layout'
 import { StatusBadge, Tag } from './chips'
-import { LayoutReset } from './ui'
+import { GraphBar, LayoutReset } from './ui'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -146,10 +145,10 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         fitView
       >
         <Background />
-        <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
-        <Panel position="top-left" className="graph-hint">
+        <GraphBar>
           <Tag>通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</Tag>
-        </Panel>
+          <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
+        </GraphBar>
       </ReactFlow>
     </div>
   )

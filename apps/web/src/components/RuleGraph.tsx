@@ -20,7 +20,7 @@ import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
 import type { PlaybackStep } from '../playback'
 import { useSavedLayout } from '../saved-layout'
 import { RoleChip, RoleLabel, StatusBadge, Tag } from './chips'
-import { LayoutReset } from './ui'
+import { GraphBar, LayoutReset } from './ui'
 
 type RuleNodeData = {
   rule: RuleInfo
@@ -354,17 +354,22 @@ export function RuleGraph({
         <Background />
         <Controls showInteractive={false} />
         <MiniMap pannable zoomable nodeClassName={minimapClass} ariaLabel="规则图缩略图" />
-        <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
         <Follow ruleIds={step?.ruleIds} />
         <Follow ruleIds={focusRequest?.ruleIds} />
         <Narration playback={playback} />
-        {filteredCount > 0 && (
-          <Panel position="top-left" className="graph-hint selection-hint">
-            <span className="stat-label">扩展规则（按目的地、客户、货物筛选）</span>
-            <Tag tone="highlight">本单命中 {selectedCount} 条</Tag>
-            <Tag>筛掉 {filteredCount} 条</Tag>
-          </Panel>
-        )}
+        <GraphBar>
+          {filteredCount > 0 && (
+            <span
+              className="graph-bar-group"
+              title={`目的国进口要求和客户合同条款共 ${selectedCount + filteredCount} 条，各自只对特定的目的国、商品类别或客户生效。系统先按本单的目的国、客户和商品类别挑出适用的，其余不评估，也不显示。`}
+            >
+              <span className="stat-label">专项规则</span>
+              <Tag tone="highlight">本单适用 {selectedCount} 条</Tag>
+              <Tag>与本单无关 {filteredCount} 条，未显示</Tag>
+            </span>
+          )}
+          <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
+        </GraphBar>
       </ReactFlow>
     </div>
   )
