@@ -102,8 +102,7 @@ function OtherCases({
   onSelectCase(caseId: string): void
 }) {
   if (tasks.length === 0) return null
-  const byCase = new Map<string, HumanTask[]>()
-  for (const task of tasks) byCase.set(task.caseId, [...(byCase.get(task.caseId) ?? []), task])
+  const byCase = Map.groupBy(tasks, (task) => task.caseId)
   return (
     <details className="other-cases">
       <summary>{countOf(tasks.length, 'task')} in other cases</summary>
