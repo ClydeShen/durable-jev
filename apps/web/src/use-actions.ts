@@ -20,33 +20,38 @@ export function useActions(
     await refresh()
   }
   return {
-    reset: () => report(() => api.reset(), '演示数据已重置'),
+    reset: () => report(() => api.reset(), 'Demo data reset'),
     resetCase: (caseId: string, onReset: (caseId: string) => void) =>
       report(async () => {
         await api.resetCase(caseId)
         onReset(caseId)
-      }, `${caseId} 已从头开始`),
+      }, `${caseId} starts over`),
     submitOrder: (sampleId: string, shipment: Shipment, onCreated: (caseId: string) => void) =>
       report(
         async () => onCreated((await api.submitOrder(sampleId, shipment)).caseId),
-        '订单已提交，各 agent 正在从头评估',
+        'Order submitted; every agent is evaluating it from the start',
       ),
     decide: (task: HumanTask, decision: TaskDecision) =>
-      report(() => api.decide(task.humanTaskId, decision, actor), `${task.ruleId} 已提交`),
-    dispatch: (caseId: string) => report(() => api.dispatch(caseId, actor), '已确认发运'),
+      report(() => api.decide(task.humanTaskId, decision, actor), `${task.ruleId} submitted`),
+    dispatch: (caseId: string) => report(() => api.dispatch(caseId, actor), 'Dispatch confirmed'),
     revise: (caseId: string, index: number) =>
-      report(() => api.revise(caseId, index), '已应用变更并重新评估'),
+      report(() => api.revise(caseId, index), 'Change applied and evaluated again'),
     reportIncident: (caseId: string, index: number) =>
-      report(() => api.reportIncident(caseId, index), '已通知运输 agent，调查助手开始调查'),
+      report(
+        () => api.reportIncident(caseId, index),
+        'Transport agent notified; its investigation helper is investigating',
+      ),
     decideProposal: (investigation: Investigation, type: 'confirm' | 'reject') =>
       report(
         () => api.decideProposal(investigation.investigationId, type, actor),
-        type === 'confirm' ? '已确认改派，相关 agent 正在重新评估' : '已否决改派提议',
+        type === 'confirm'
+          ? 'Reroute confirmed; the affected agents are evaluating again'
+          : 'Reroute proposal rejected',
       ),
     controlService: (agentId: string, verb: 'crash' | 'start') =>
       report(
         () => api.controlService(agentId, verb),
-        verb === 'crash' ? `${agentId} 已终止` : `${agentId} 正在重启`,
+        verb === 'crash' ? `${agentId} stopped` : `${agentId} restarting`,
       ),
   }
 }

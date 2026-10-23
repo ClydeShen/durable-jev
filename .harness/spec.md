@@ -1,66 +1,111 @@
-# Spec：对齐后的范围
+# Spec: the agreed scope
 
-基线是 `prd.md`（v0.3）。本文件记录与用户对齐后的决定，冲突时以本文件为准。
+The baseline is `prd.md` (v0.3). This file records the decisions agreed with the user; it wins on
+any conflict.
 
-## 1. 交付方式
+## 1. Delivery
 
-- 分阶段交付，先快速成型：尽早有一条端到端可演示的纵切面，再逐步加深。
-- 小 commit；只写轻量 unit test，不要求 coverage。
-- 代码自解释：有意义的命名，避免注释。
-- 一键编译、一键启动；简单操作即可演示和验证 PRD 的关键内容。
-- 不依赖 key 也能完整演示：模型调用支持 `scripted` 回放模式；用户自行获取 key 后切到 `live`。
-- 开发阶段一律 `scripted`，不调用真实 Jev / NVIDIA（2026-10-21 用户要求）。只有显式 `MODEL_MODE=live` 才允许真实调用，`JevJudge` / `StructuredOutputJudge` 未注入测试传输时在非 live 模式下直接拒绝构造。全部跑通后再切 live 调优：调的是问题措辞、标签描述、概率阈值和编写 agent 的提示，不训练或微调模型（PRD 1.2 非目标）。
+- Deliver in phases and take shape fast: an end-to-end slice that can be demonstrated early, then
+  deepen step by step.
+- Small commits; light unit tests only, no coverage target.
+- Self-explanatory code: meaningful names, few comments.
+- One command to build, one to start; the PRD's key points can be shown and checked with simple
+  actions.
+- A full demo without any key: model calls support a `scripted` replay mode; the user switches to
+  `live` once they have keys.
+- Development is always `scripted` and never calls the real Jev / NVIDIA (the user's request of
+  2026-10-21). Only an explicit `MODEL_MODE=live` allows real calls; without an injected test
+  transport, `JevJudge` / `StructuredOutputJudge` refuse to be built outside live mode. Once
+  everything runs, switch to live to tune: question wording, label descriptions, probability
+  thresholds and the authoring agent's prompt; no training or fine-tuning (a PRD 1.2 non-goal).
+- Everything in the code base is English; only `docs/demo-guide.md`, the presenter's script, is
+  Chinese (the user's request of 2026-10-23).
 
-## 2. 目录职责
+## 2. Folders
 
-- `.harness/`：agent 实施用的 source of truth，agent 自治。
-- `docs/`：给用户看的文档（启动说明、演示指南、runtime-controls、M0 结论、最终报告）。
-- `eval/`：测试物料、标准答案、故障场景、benchmark runner。
+- `.harness/`: the source of truth for implementation, managed by the agent.
+- `docs/`: documents for the user (getting started, demo guide, runtime controls, M0 findings, final
+  report).
+- `eval/`: test materials, answer keys, fault scenarios, benchmark runner.
 
-## 3. Runtime harness 是一条设计主线
+## 3. The runtime harness is a design thread
 
-目的：评审问"agent 运行时如何保证安全和受控"时，能指出 runtime harness 以及每个控制点的落点和证据。
+Purpose: when a reviewer asks "how does the agent runtime stay safe and under control", point at
+the runtime harness and at where each control sits and what proves it.
 
-- 控制都在模型之外，由确定性代码执行；模型只提出下一步，没有权限。
-- `packages/agent-harness` 把控制点作为接口的一等公民，不绑死 Pi Durable。
-- `docs/runtime-controls.md` 列出每个控制点：手段、落点、来源（Pi 提供 / 本项目实现）、PRD 对应、证据（测试或故障实验）。
-- 不夸大 Pi 的能力：P0 未验证的能力不写成"Pi 提供"。
+- Every control lives outside the model and is enforced by deterministic code; the model only
+  proposes a next step and has no authority.
+- `packages/agent-harness` makes the controls first-class in its interface, not tied to Pi Durable.
+- `docs/runtime-controls.md` lists each control: the means, where it sits, its source (Pi or this
+  project), the PRD item, and the evidence (a test or fault experiment).
+- Do not overstate Pi: capabilities not verified in P0 are not written as "provided by Pi".
 
-## 4. 范围裁剪（第一轮）
+## 4. Scope cuts (first round)
 
-先不做，后续视情况追加：
+Not now, added later if needed:
 
-- B5（与其他 durable 框架比较）。
-- B6 的 100 条规则性能分层。
-- Console 的"实验比较"页（benchmark 结果先以报告文件输出）。
-- 全量 90 + 18 样本。第一轮只做 LOG-001 ~ LOG-008 和每个场景家族少量开发样本。
+- B5 (comparison with other durable frameworks).
+- B6's performance tiers at 100 rules.
+- The console's "experiment comparison" page (benchmark results go to report files first).
+- The full 90 + 18 samples. The first round covers LOG-001 to LOG-008 and a few development samples
+  per scenario family.
 
-## 5. 标注
+## 5. Labelling
 
-标准答案由 agent 出候选，用户审定后才算数。未审定的标注在文件中标记 `reviewStatus: draft`，基于它的结果不得作为结论证据。
+The agent proposes answer keys; they count only after the user reviews them. Unreviewed labels are
+marked `reviewStatus: draft` in their file, and results based on them are not evidence for any
+conclusion.
 
-## 6. 外部依赖与凭据
+## 6. External dependencies and credentials
 
-用户负责获取 Jev 和生成式模型的 key。未提供 key 时，相关 spike 只验证接口形状，并在 `docs/m0-findings.md` 如实记录。
+The user obtains the keys for Jev and the generative model. Without a key, the related spike only
+checks the interface shape and records that honestly in `docs/m0-findings.md`.
 
-## 7. 模型选择（2026-10-19）
+## 7. Model choice (2026-10-19)
 
-- 现阶段只接 Jev（`TYPESAFE_API_KEY`，模型 `jev-1.14.0`）。
-- 生成式模型选定 NVIDIA（pi-ai 内置 provider，`NVIDIA_API_KEY`）。候选：B1 结构化输出用 `nvidia/nemotron-3.5-lightning-30b-a3b`，调查 Agent 用 `nvidia/nemotron-3.5-super-vl-120b-a12b`。key 已于 2026-10-21 到位；`MODEL_MODE=scripted` 时仍用脚本化模型（pi-ai faux provider）。
-- 除 Jev 与 NVIDIA 外不引入其他 LLM。
+- Only Jev for now (`TYPESAFE_API_KEY`, model `jev-1.14.0`).
+- The generative model is NVIDIA (built into pi-ai, `NVIDIA_API_KEY`). Candidates:
+  `nvidia/nemotron-3.5-lightning-30b-a3b` for B1 structured output and
+  `nvidia/nemotron-3.5-super-vl-120b-a12b` for the investigation agent. The keys arrived on
+  2026-10-21; with `MODEL_MODE=scripted` the scripted models (pi-ai faux provider) are still used.
+- No other LLM besides Jev and NVIDIA.
 
-## 8. 核心概念：Durable Jev Agent（2026-10-21）
+## 8. Core concept: the Durable Jev Agent (2026-10-21)
 
-POC 的出发点：规则数量上来（如进出口监管上万条、跨国物流上千种场景）、结构化与非结构化规则交织、带状态和人工环节时，传统"代码 + rule engine + decision table"需要大团队多年开发。目标是证明：小团队用少数几个 Durable Jev Agent 就能做出同样结果，成本低一个数量级。原则是尽可能让 agent 做，手写代码只剩框架。业务场景不变（物流），只是演示与报告围绕这个方向组织。
+The POC's starting point: when rules grow in number (tens of thousands in import and export
+regulation, thousands of scenarios in cross-border logistics), structured and unstructured rules
+interleave, and there is state and human work, the traditional "code + rule engine + decision
+tables" takes a large team years. The aim is to show that a small team with a few Durable Jev
+Agents reaches the same result at an order of magnitude lower cost. The principle: let agents do as
+much as possible, leaving only the framework as hand-written code. The business scenario stays
+logistics; the demo and the report are organised around this direction.
 
-- 一个业务模块 = 一个 Durable Jev Agent：规则图（声明式配置：依赖、适用条件、状态、失效） + 叶子求值器 + 人工门槛 + Pi Durable 持久化，对外是 A2A agent。
-- 规则由编写 agent（生成式模型）从政策原文生成：规则图、结构化规则表达式、非结构化规则的 Jev 问题；人工审核后生效。政策变更 = 改原文 → 重新生成 → 回放标注案例。
-- 运行时分工：非结构化规则（描述、备注、文件、客户说明）由 Jev 回答；结构化规则（重量、时间、金额、矩阵）确定性执行编写 agent 生成的表达式，做代码最擅长的事。
-- 依据：2026-10-21 探针中，把结构化规则直接写成 Jev Noul 问题，12 个案例里 4 个稳定判错，且全部是错误放行（超载、超授信、温度超标、违规混装）。
-- 人工任务由各模块持有；Coordinator 只聚合各模块状态并执行最终放行事务。
-- 调查助手（生成式模型 + Pi Durable，agent 内部的可选部件）只在规则给不出结论、需要找证据或替代方案时启用。"agent" 一词只指 Durable Jev Agent。
-- agent 清单：订单协调、货物合规、运输计划、商务，外加扩展演示用的目的地合规 agent。agent 之间有派单汇总、点对点请求、变更通知三种协作。
-- Console 有 Overview：zoom out 到 agent 级，一眼看出每个 agent 的基础信息与相互关系；同一图形表达 zoom in 到 agent 内部规则流程。
-- 面向技术 CEO 的 `docs/agent-architecture.md`：agent 清单与职责、协作模式、扩展步骤、维护与运维、已知限制。
-- 要验证的问题（面向 CEO 的指标）：手写代码占比；Jev 运行时承担与编写 agent 生成的规则占比；一次政策变更的耗时；单条规则的实现成本；盲测零错误放行。40 条规则的结论只外推为单位成本，并写明外推前提。
-
+- One business module = one Durable Jev Agent: a rule graph (declarative configuration:
+  dependencies, applicability, state, invalidation) + leaf evaluators + human gates + Pi Durable
+  persistence, exposed as an A2A agent.
+- The rule-authoring agent (a generative model) writes the rules from the policy text: the rule
+  graph, the expressions of structured rules, Jev's questions for unstructured rules; they take
+  effect after human review. A policy change = edit the text → generate again → replay the labelled
+  cases.
+- At run time: Jev answers the unstructured rules (descriptions, notes, documents, customer
+  instructions); structured rules (weights, times, amounts, matrices) deterministically run the
+  expressions the authoring agent generated, doing what code does best.
+- Grounds: in the probe of 2026-10-21, writing structured rules directly as Jev Noul questions got
+  4 of 12 cases consistently wrong, all of them wrong releases (overload, over credit, temperature
+  excursion, forbidden mixing).
+- Each module owns its human tasks; the coordinator only aggregates the modules' states and runs
+  the final release transaction.
+- The investigation helper (a generative model + Pi Durable, an optional part inside an agent) is
+  used only when the rules cannot reach a result and evidence or an alternative must be found.
+  "Agent" means a Durable Jev Agent only.
+- The agents: order coordination, cargo assurance, transport planning, commercial control, plus the
+  destination compliance agent for the extension demo. They collaborate in three ways: dispatch and
+  aggregation, peer requests, change notifications.
+- The console has an overview: zoomed out to agent level, it shows each agent's basics and their
+  relations at a glance; the same graph form zooms in to an agent's own rule flow.
+- `docs/agent-architecture.md`, for a technical CEO: the agents and their responsibilities,
+  collaboration patterns, how to extend, maintenance and operations, known limits.
+- Questions to answer (measures for the CEO): the share of hand-written code; the share of rules
+  Jev carries at run time and the share the authoring agent generated; the time one policy change
+  takes; the cost of implementing one rule; zero wrong releases in a blind test. The 40-rule
+  results are extrapolated only as a unit cost, with the extrapolation's assumptions stated.

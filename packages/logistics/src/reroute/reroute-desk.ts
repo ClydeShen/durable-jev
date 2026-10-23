@@ -22,7 +22,7 @@ const instructions = [
   'Read the case, list the offers for the incident leg, and pre-check candidates with check_plan.',
   'Only propose an offer whose checks all pass; prefer the cheapest such offer.',
   'If no offer passes, escalate to the planner. Explain your choice in the rationale,',
-  'written for the planner in Simplified Chinese (简体中文, never Traditional characters),',
+  'written for the planner in plain English,',
   'naming the rules each rejected offer failed.',
   'Call submit_investigation_result exactly once, then give a one-sentence summary.',
   'You cannot approve, apply or dispatch anything; a human planner decides on your proposal.',

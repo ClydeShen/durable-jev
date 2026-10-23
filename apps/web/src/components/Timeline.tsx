@@ -28,7 +28,7 @@ export function Timeline({ entries, agentNames, titles }: Props) {
           checked={showRuleChanges}
           onChange={(event) => setShowRuleChanges(event.target.checked)}
         />
-        显示每条规则的状态变化
+        Show every rule's status change
       </label>
       <table>
         <tbody>
@@ -45,7 +45,7 @@ export function Timeline({ entries, agentNames, titles }: Props) {
                       type="button"
                       className="node-open"
                       aria-expanded={expanded}
-                      aria-label={`${eventLabels[entry.eventName] ?? entry.eventName}：${summary(entry, titles)}，${expanded ? '收起' : '展开'}详情`}
+                      aria-label={`${eventLabels[entry.eventName] ?? entry.eventName}: ${summary(entry, titles)}, ${expanded ? 'hide' : 'show'} details`}
                       onClick={(event) => {
                         event.stopPropagation()
                         toggle(entry.eventId)
@@ -55,7 +55,7 @@ export function Timeline({ entries, agentNames, titles }: Props) {
                     </button>
                   </td>
                   <td className="time">
-                    {new Date(entry.createdAt).toLocaleTimeString('zh-CN', { hour12: false })}
+                    {new Date(entry.createdAt).toLocaleTimeString('en-GB', { hour12: false })}
                   </td>
                   <td>
                     <AgentChip

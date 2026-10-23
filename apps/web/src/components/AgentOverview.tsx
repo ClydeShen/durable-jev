@@ -7,7 +7,6 @@ import {
   MarkerType,
   type Node,
   type NodeProps,
-  Panel,
   Position,
   ReactFlow,
 } from '@xyflow/react'
@@ -18,7 +17,7 @@ import { layoutGraph, type Positions } from '../graph-layout'
 import { kindLabels, mostSevere } from '../labels'
 import { useSavedLayout } from '../saved-layout'
 import { StatusBadge, Tag } from './chips'
-import { LayoutReset } from './ui'
+import { GraphBar, LayoutReset } from './ui'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -39,7 +38,7 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
         <button
           type="button"
           className="node-open"
-          aria-label={`${agent.card?.name ?? agent.agentId}，打开名片`}
+          aria-label={`${agent.card?.name ?? agent.agentId}, open its card`}
         >
           <strong>{agent.card?.name ?? agent.agentId}</strong>
         </button>
@@ -57,17 +56,17 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
           </span>
           <span className="agent-node-stats">
             <span>
-              待办 <strong>{openTasks}</strong>
+              Open tasks <strong>{openTasks}</strong>
             </span>
             {agent.transport === 'a2a' && agent.agentId !== 'order-coordination' && (
               <span>
-                A2A 任务 <strong>{agent.a2aTasks}</strong>
+                A2A tasks <strong>{agent.a2aTasks}</strong>
               </span>
             )}
           </span>
         </footer>
       ) : (
-        <p className="muted">离线</p>
+        <p className="muted">Offline</p>
       )}
       <Handle type="source" position={Position.Right} />
     </div>
@@ -128,7 +127,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         id: `${relation.from}->${relation.to}`,
         source: relation.from,
         target: relation.to,
-        label: `${relation.dependencies.length} 条依赖`,
+        label: String(relation.dependencies.length),
         markerEnd: { type: MarkerType.ArrowClosed },
       })),
     [relations],
@@ -146,10 +145,10 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         fitView
       >
         <Background />
-        <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
-        <Panel position="top-left" className="graph-hint">
-          <Tag>通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</Tag>
-        </Panel>
+        <GraphBar>
+          <Tag>Transport: {agents[0]?.transport === 'a2a' ? 'A2A' : 'native HTTP'}</Tag>
+          <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
+        </GraphBar>
       </ReactFlow>
     </div>
   )

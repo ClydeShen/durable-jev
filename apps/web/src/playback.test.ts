@@ -48,8 +48,8 @@ describe('playbackSteps', () => {
       ['rule', ['R39'], 3],
       ['rule', ['R40'], 4],
     ])
-    expect(steps[0]?.text).toBe('仓库操作员 wen 完成了 R39「Loaded」的任务')
-    expect(steps[2]?.text).toBe('R40「Release allowed」（整单）判断：通过')
+    expect(steps[0]?.text).toBe('Warehouse operator wen completed the task of R39 "Loaded"')
+    expect(steps[2]?.text).toBe('R40 "Release allowed" (whole order): Passed')
   })
 
   it('plays the invalidations of one change as one step and a new revision once', () => {

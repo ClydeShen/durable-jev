@@ -21,7 +21,7 @@ export function EventFeed({ items, besideDrawer, onShowRule }: Props) {
     <ol
       className={besideDrawer ? 'event-feed beside-drawer' : 'event-feed'}
       aria-live="polite"
-      aria-label="事件通知"
+      aria-label="Event notifications"
     >
       {items.map(({ key, step }) => {
         const ruleId = step.ruleIds.length === 1 ? step.ruleIds[0] : undefined

@@ -13,7 +13,7 @@ function failedRules(check: CheckResult): string {
   return check.checks
     .filter((rule) => rule.status !== 'PASS' && rule.status !== 'NOT_APPLICABLE')
     .map((rule) => rule.ruleId)
-    .join('、')
+    .join(', ')
 }
 
 /**
@@ -28,14 +28,14 @@ export function scriptedRerouter(results: readonly ObservedResult[]): ScriptedSt
     return { call: 'search_capacity_offers', args: { legId: caseResult.incident.legId } }
   }
   if (resultOf(results, 'submit_investigation_result')) {
-    return { answer: '调查结果已提交，等待计划员确认。' }
+    return { answer: 'Investigation submitted; waiting for the planner to confirm.' }
   }
   const checked = results
     .filter((result) => result.tool === 'check_plan')
     .map((result) => result.result as CheckResult)
   const rejected = checked
     .filter((check) => !check.passes)
-    .map((check) => `${check.offerId} 未通过 ${failedRules(check)}`)
+    .map((check) => `${check.offerId} fails ${failedRules(check)}`)
   const passing = checked.find((check) => check.passes)
   if (passing) {
     return {
@@ -43,7 +43,10 @@ export function scriptedRerouter(results: readonly ObservedResult[]): ScriptedSt
       args: {
         decision: 'propose',
         offerId: passing.offerId,
-        rationale: [...rejected, `${passing.offerId} 是最便宜且预检全部通过的方案`].join('；'),
+        rationale: [
+          ...rejected,
+          `${passing.offerId} is the cheapest offer that passes every pre-check`,
+        ].join('; '),
       },
     }
   }
@@ -51,7 +54,10 @@ export function scriptedRerouter(results: readonly ObservedResult[]): ScriptedSt
   if (next) return { call: 'check_plan', args: { offerId: next.offerId } }
   return {
     call: 'submit_investigation_result',
-    args: { decision: 'escalate', rationale: ['没有通过预检的备选运力', ...rejected].join('；') },
+    args: {
+      decision: 'escalate',
+      rationale: ['No spare capacity passes the pre-checks', ...rejected].join('; '),
+    },
   }
 }
 

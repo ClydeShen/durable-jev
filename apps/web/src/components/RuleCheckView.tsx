@@ -7,19 +7,19 @@ import { Field, Fields } from './ui'
 type Expression = NonNullable<RuleCheck['combiner']>
 type Parameters = Record<string, string | number | boolean>
 
-const collectionLabels = { cargoItem: '货物', leg: '运输段' }
+const collectionLabels = { cargoItem: 'item', leg: 'leg' }
 
 /** Shows a parameter's value in the unit its name declares. */
 function parameterValue(name: string, value: string | number | boolean): string {
   if (typeof value !== 'number') return String(value)
-  if (name.endsWith('Cents')) return `€${(value / 100).toLocaleString('zh-CN')}`
-  if (name.endsWith('Minutes')) return `${value} 分钟`
-  if (name.endsWith('Hours')) return `${value} 小时`
+  if (name.endsWith('Cents')) return `€${(value / 100).toLocaleString('en-GB')}`
+  if (name.endsWith('Minutes')) return `${value} minutes`
+  if (name.endsWith('Hours')) return `${value} hours`
   return String(value)
 }
 
 function threshold(value: number | string, parameters: Parameters): string {
-  return typeof value === 'number' ? String(value) : `${parameters[value] ?? '?'}（${value}）`
+  return typeof value === 'number' ? String(value) : `${parameters[value] ?? '?'} (${value})`
 }
 
 interface ExpressionProps {
@@ -29,7 +29,7 @@ interface ExpressionProps {
 
 export function ExpressionLine({ expression, onOpenRule }: ExpressionProps): ReactNode {
   const rule = (ruleId: string) => (
-    <Chip onClick={() => onOpenRule(ruleId)} title="查看这条规则">
+    <Chip onClick={() => onOpenRule(ruleId)} title="Open this rule">
       {ruleId}
     </Chip>
   )
@@ -47,33 +47,33 @@ export function ExpressionLine({ expression, onOpenRule }: ExpressionProps): Rea
   )
   switch (expression.op) {
     case 'ref':
-      return <>{rule(expression.ruleId)} 通过</>
+      return <>{rule(expression.ruleId)} passes</>
     case 'feel':
       return <code>{expression.expression}</code>
     case 'observed':
       return (
         <>
-          {rule(expression.ruleId)} 的结果
+          the result of {rule(expression.ruleId)}
           {'equals' in expression
-            ? ` 等于 ${String(expression.equals)}`
-            : ` 包含 ${String(expression.includes)}`}
+            ? ` equals ${String(expression.equals)}`
+            : ` includes ${String(expression.includes)}`}
         </>
       )
     case 'and':
-      return children('以下全部满足：', expression.of)
+      return children('All of these hold:', expression.of)
     case 'or':
-      return children('以下至少一项满足：', expression.of)
+      return children('At least one of these holds:', expression.of)
     case 'not':
-      return children('以下不成立：', [expression.of])
+      return children('This does not hold:', [expression.of])
     case 'ifThen':
-      return children('如果第一项成立，则第二项也须成立：', [
+      return children('If the first holds, the second must hold too:', [
         expression.condition,
         expression.consequence,
       ])
     case 'allOf':
-      return children(`每个${collectionLabels[expression.scope]}都满足：`, [expression.of])
+      return children(`Every ${collectionLabels[expression.scope]} meets:`, [expression.of])
     case 'anyOf':
-      return children(`至少一个${collectionLabels[expression.scope]}满足：`, [expression.of])
+      return children(`At least one ${collectionLabels[expression.scope]} meets:`, [expression.of])
   }
 }
 
@@ -86,13 +86,14 @@ function SemanticCheck({
 }) {
   const { question, passWhen } = semantic
   let verdict: string
-  if ('choiceIn' in passWhen) verdict = `回答是 ${passWhen.choiceIn.join(' 或 ')} 时通过`
+  if ('choiceIn' in passWhen)
+    verdict = `Passes when the answer is ${passWhen.choiceIn.join(' or ')}`
   else if ('probabilityAtLeast' in passWhen)
-    verdict = `Jev 判断"成立"的把握 ≥ ${threshold(passWhen.probabilityAtLeast, parameters)} 时通过`
+    verdict = `Passes when Jev's confidence that it holds is at least ${threshold(passWhen.probabilityAtLeast, parameters)}`
   else if ('probabilityAtMost' in passWhen)
-    verdict = `Jev 判断"成立"的把握 ≤ ${threshold(passWhen.probabilityAtMost, parameters)} 时通过`
+    verdict = `Passes when Jev's confidence that it holds is at most ${threshold(passWhen.probabilityAtMost, parameters)}`
   else
-    verdict = `把握 ≥ ${threshold(passWhen.selectChoicesAtLeast, parameters)} 的类别都选中；这条规则总是通过，它的结论用来挑选适用的扩展规则`
+    verdict = `Every group with confidence of at least ${threshold(passWhen.selectChoicesAtLeast, parameters)} is selected; this rule always passes, and its result picks the specific rules that apply`
   return (
     <>
       <blockquote className="question">{question.text}</blockquote>
@@ -123,11 +124,11 @@ function HumanCheck({
         {gate.steps.map((step) => (
           <li key={step.requiredRole}>
             {roleLabels[step.requiredRole]}
-            {gate.taskType === 'APPROVAL' ? '批准' : '完成操作'}
+            {gate.taskType === 'APPROVAL' ? ' approves' : ' completes the operation'}
             {step.appliesWhen && (
               <span className="muted">
                 {' '}
-                （仅当 <ExpressionLine expression={step.appliesWhen} onOpenRule={onOpenRule} />）
+                (only when <ExpressionLine expression={step.appliesWhen} onOpenRule={onOpenRule} />)
               </span>
             )}
           </li>
@@ -135,17 +136,19 @@ function HumanCheck({
       </ol>
       <Fields>
         {gate.steps.length > 1 && (
-          <Field label="顺序">{gate.mode === 'sequential' ? '依次进行' : '同时进行'}</Field>
+          <Field label="Order">
+            {gate.mode === 'sequential' ? 'One after another' : 'At the same time'}
+          </Field>
         )}
-        {gate.distinctActors && <Field label="四眼原则">每一步必须由不同的人完成</Field>}
+        {gate.distinctActors && <Field label="Four eyes">Each step by a different person</Field>}
         {gate.evidenceRequirements.length > 0 && (
-          <Field label="需要填写">
+          <Field label="Evidence">
             <Tags
               items={gate.evidenceRequirements.map((field) => evidenceLabels[field] ?? field)}
             />
           </Field>
         )}
-        <Field label="有效期">{gate.expiresAfterHours} 小时内未处理即过期</Field>
+        <Field label="Expires">After {gate.expiresAfterHours} hours without action</Field>
       </Fields>
     </>
   )
@@ -162,7 +165,7 @@ export function RuleCheckView({ check, parameters, onOpenRule }: Props) {
   return (
     <>
       {check.expression && (
-        <Field label="通过条件（FEEL 公式）">
+        <Field label="Passes when (FEEL formula)">
           <code className="formula">{check.expression.passWhen}</code>
         </Field>
       )}
@@ -171,7 +174,9 @@ export function RuleCheckView({ check, parameters, onOpenRule }: Props) {
       {check.combiner && <ExpressionLine expression={check.combiner} onOpenRule={onOpenRule} />}
       {check.mixing && (
         <p>
-          把整单所有货物的类别组合，与政策里的混装表比对：禁止的组合不通过，需要资质的组合检查每个运输段的承运商资质。
+          Compares the mix of every item's categories in the order with the policy's mixing table: a
+          forbidden mix fails, and a mix that needs a qualification checks each leg's carrier for
+          it.
         </p>
       )}
       {Object.keys(parameters).length > 0 && (

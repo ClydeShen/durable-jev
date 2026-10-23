@@ -1,103 +1,104 @@
 # Roadmap
 
-状态：`[ ]` 未开始，`[~]` 进行中，`[x]` 完成，`[-]` 取消（原因记入 implementation-notes）。
+Status: `[ ]` not started, `[~]` in progress, `[x]` done, `[-]` cancelled (reason in
+implementation-notes).
 
-每个阶段结束时都有可演示的东西。P2 结束即有端到端纵切面。
+Every phase ends with something to demonstrate. The end of P2 gives an end-to-end slice.
 
-## P0 骨架与技术预检（PRD M0）
+## P0 Skeleton and technical spikes (PRD M0)
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T0.1 | monorepo 骨架：pnpm workspace、tsconfig base、Biome、Vitest、`.gitignore`、`.env.example` | `pnpm install && pnpm build && pnpm test` 在空包上通过 | |
-| [x] | T0.2 | 根脚本 `bootstrap/start/test` 占位，`README.md` 指向 `docs/getting-started.md` | 命令可执行 | T0.1 |
-| [x] | T0.3 | spike pi-durable：只读工具 + 写工具，杀进程后恢复；观察 replay policy、callers、requestId、restartLimit | 脚本可复现，结论写入 m0-findings | T0.1 |
-| [x] | T0.4 | spike A2A：Agent Card、发送任务、查询任务、input-required | 两进程间往返成功 | T0.1 |
-| [x] | T0.5 | spike Jev：确定 TS 客户端或 HTTP 接口；Choice 与 Noul 各一次 | 有 key 时真实调用；无 key 时记录接口形状 | T0.1 |
-| [x] | T0.6 | spike trace：两个 Express 之间 traceparent 传播 | 下游日志带上游 traceId | T0.1 |
-| [x] | T0.8 | spike：Pi Durable 承载一个模块级流程（确定性规则求值 + 等待人工 + 杀进程恢复），不经过 LLM 决定下一步 | 可行或明确不可行，结论写入 m0-findings 并回写 design | T0.3 |
-| [x] | T0.7 | `docs/m0-findings.md` + 锁定版本 + 回写 design | 每个依赖：版本、可行性、限制、对设计的影响 | T0.3–T0.6 |
+| [x] | T0.1 | Monorepo skeleton: pnpm workspace, tsconfig base, Biome, Vitest, `.gitignore`, `.env.example` | `pnpm install && pnpm build && pnpm test` pass on empty packages | |
+| [x] | T0.2 | Root scripts `bootstrap/start/test` as placeholders; `README.md` points to `docs/getting-started.md` | The commands run | T0.1 |
+| [x] | T0.3 | Spike pi-durable: a read-only tool and a write tool, recovery after killing the process; observe the replay policy, callers, requestId, restartLimit | The script reproduces it; findings in m0-findings | T0.1 |
+| [x] | T0.4 | Spike A2A: Agent Card, sending a task, querying a task, input-required | A round trip between two processes works | T0.1 |
+| [x] | T0.5 | Spike Jev: settle the TS client or HTTP interface; one Choice and one Noul | Real calls with a key; the interface shape recorded without one | T0.1 |
+| [x] | T0.6 | Spike trace: traceparent propagation between two Express services | The downstream log carries the upstream traceId | T0.1 |
+| [x] | T0.8 | Spike: Pi Durable carries a module-level flow (deterministic rule evaluation + waiting for a person + recovery after a kill) without an LLM choosing the next step | Feasible or clearly not, with findings in m0-findings and the design updated | T0.3 |
+| [x] | T0.7 | `docs/m0-findings.md` + pinned versions + design updated | Per dependency: version, feasibility, limits, effect on the design | T0.3–T0.6 |
 
-## P1 确定性核心
+## P1 Deterministic core
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T1.1 | `contracts`：ids、状态枚举、shipment、check、humanTask | 类型与 Zod schema 可导出 | T0.1 |
-| [x] | T1.2 | `rule-engine` 表达式与组合器（design 5.3） | 组合语义测试：UNKNOWN 不经 OR/NOT 变 PASS，空集合为 UNKNOWN | T1.1 |
-| [x] | T1.3 | 配置校验：缺引用、类型、环、缺参数、混装矩阵矛盾；规则适用范围字段（目的地/货物类别/客户） | 对应 F16 测试 | T1.2 |
-| [x] | T1.4 | 图求值：作用域展开（cargoItem/leg）、blockedBy、appliesWhen | 多货件一件失败整单不过（F17） | T1.2 |
-| [x] | T1.5 | 指纹与失效传播、增量重算 | 改车辆只失效预期集合 | T1.4 |
-| [x] | T1.6 | `store`：SQLite 连接、迁移、幂等操作表、outbox | 同一 operationId 重复执行只写一条 | T0.1 |
-| [x] | T1.7 | 人工任务状态机（模块共用包）：批准/拒绝/完成/过期/取消/替代，角色校验，版本绑定；2–3 角色审批链（顺序/并行、四眼原则、条件步骤） | 未授权、过期、旧版本不能生效（F11、F12）；链中任一拒绝即 FAIL，同一人不能签两步 | T1.1 |
+| [x] | T1.1 | `contracts`: ids, status enums, shipment, check, humanTask | Types and Zod schemas are exported | T0.1 |
+| [x] | T1.2 | `rule-engine` expressions and combinators (design 5.3) | Combinator tests: UNKNOWN never becomes PASS through OR/NOT, an empty set is UNKNOWN | T1.1 |
+| [x] | T1.3 | Validation: missing references, types, cycles, missing parameters, contradictions in the mixing matrix; applicability fields (destination, cargo category, customer) | F16 tests | T1.2 |
+| [x] | T1.4 | Graph evaluation: scope expansion (cargoItem/leg), blockedBy, appliesWhen | One failing item stops the whole order (F17) | T1.2 |
+| [x] | T1.5 | Fingerprints, invalidation propagation, incremental evaluation | Changing the vehicle invalidates only the expected set | T1.4 |
+| [x] | T1.6 | `store`: SQLite connection, migrations, idempotent operations table, outbox | The same operationId run twice writes once | T0.1 |
+| [x] | T1.7 | Human task state machine (a package shared by the modules): approve/reject/complete/expire/cancel/supersede, role checks, revision binding; approval chains of 2–3 roles (sequential/parallel, four eyes, conditional steps) | Unauthorised, expired and old-revision decisions have no effect (F11, F12); any rejection in a chain is FAIL, one person cannot sign two steps | T1.1 |
 
-## P2 纵切面：LOG-001 端到端
+## P2 Slice: LOG-001 end to end
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T2.1 | `eval/materials`：policy 参数、LOG-001 所需规则子集的 rules.json | 通过配置校验 | T1.3 |
-| [x] | T2.2 | mock-data 种子：承运商、车辆、客户授信、LOG-001 订单 | `demo:reset` 可载入 | T1.6 |
-| [x] | T2.3 | `coordinator`：提交、求值、查询 checks、人工任务、放行事务（纵切面先单进程；人工任务在 T3.2 下放到模块） | API 跑通 LOG-001 | T1.4–T1.7, T2.1 |
-| [x] | T2.4 | `service-kit` + `tools/launcher`：`pnpm start`、`pnpm demo:reset` | 一条命令起全部进程 | T2.3 |
-| [x] | T2.5 | `web` 最小版：案例列表、规则图（共用图组件，design 9.1 内部视图；状态、blockedBy）、按角色处理人工任务、调度确认 | 浏览器内完成 LOG-001 发运 | T2.3 |
-| [x] | T2.6 | `docs/getting-started.md` | 新环境照做可演示 | T2.4, T2.5 |
+| [x] | T2.1 | `eval/materials`: policy parameters, rules.json with the rules LOG-001 needs | Passes validation | T1.3 |
+| [x] | T2.2 | Mock data seed: carriers, vehicles, customer credit, the LOG-001 order | `demo:reset` loads it | T1.6 |
+| [x] | T2.3 | `coordinator`: submit, evaluate, query checks, human tasks, release transaction (one process for the slice; human tasks move into the modules in T3.2) | The API runs LOG-001 | T1.4–T1.7, T2.1 |
+| [x] | T2.4 | `service-kit` + `tools/launcher`: `pnpm start`, `pnpm demo:reset` | One command starts every process | T2.3 |
+| [x] | T2.5 | Minimal `web`: case list, rule graph (shared graph component, design 9.1 inner view; status, blockedBy), human tasks by role, dispatch confirmation | LOG-001 is dispatched in the browser | T2.3 |
+| [x] | T2.6 | `docs/getting-started.md` | A new environment can demo by following it | T2.4, T2.5 |
 
-## P3 完整规则与业务服务
+## P3 Full rules and business services
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T3.0 | 规则编写 agent：`policy-v1.md` → 规则图配置、结构化表达式、Jev 问题；输出待人工审核的 diff | 由政策原文生成 LOG-001 规则子集并与 T2.1 手写版一致 | T1.3, T4.2 |
-| [~] | T3.1 | 用编写 agent 补全 R09–R28、R33–R36 与决策表（混装矩阵、中转能力），人工审核 | 全部 40 条通过配置校验；记录生成与审核耗时、人工修改量 | T2.1, T3.0 |
-| [x] | T3.2 | 拆出货物合规、运输计划、商务三个 Durable Jev Agent（design 2），各自持有规则图与人工任务，原生 HTTP 任务接口，`GET /agent/summary` | 各自 SQLite，launcher 启动 | T2.4 |
-| [~] | T3.2a | agent 间点对点协作（随 T4.6 调查助手与 T5.1 A2A 一起做）：运输 → 商务（R35 额外费用审批）、运输 → 货物（R28 候选计划复核）、换承运商通知货物 agent 使 R13 审批链失效 | LOG-004 中三种往来均出现（运输→商务、运输→货物经 r2 传播出现；计划员确认在运输 agent） | T3.2 |
-| [x] | T3.3 | Coordinator 并行调度分支；等待人工时无依赖分支继续 | 合规等待期间商务分支完成 | T3.2 |
-| [x] | T3.4 | 变更：改车辆/路线/报价触发失效，UI 显示"哪次变更导致失效" | LOG-004 失效集符合预期 | T1.5, T3.3 |
-| [x] | T3.5 | LOG-002–008 案例、事件脚本、draft 标注 | 文件齐全，标 `reviewStatus: draft` | T3.1 |
-| [x] | T3.7 | 扩展包：`policy-v1.md` 附录（客户合同条款、目的地进口要求，仿 MPI IHS 结构），编写 agent 生成 100–200 条扩展规则（`CUST-*`、`DEST-*`），挂到 R27 与新增 R41（汇入 R37）；LOG-001–008 补目的地与客户；20–30 份筛选样本（draft） | 扩展规则通过配置校验；每单命中少数几条（Appendix G/H：108 条扩展规则 + R41/R42/R43，经编写工具校验与应用；录制为草稿，T7.0 用真实模型重录） | T3.0, T3.1 |
-| [x] | T3.8 | 适用规则筛选：Jev 分类订单（货物类别、目的地要求组）+ 索引取规则；不确定时多选或转人工 | 筛选样本零漏选；UI 显示"已筛掉 N 条"（R42 Jev 多选分类 + `RuleIndex` 按目的地/客户/货物组索引；`pnpm screening` 26 份样本零漏选（脚本化答案，live 待 T7.0）） | T3.7, T4.2 |
-| [x] | T3.6 | 回放 runner（固定 workflow 基线），按阶段断言 | 8 个演示订单阶段断言通过 | T3.5 |
+| [x] | T3.0 | Rule-authoring agent: `policy-v1.md` → rule graph configuration, structured expressions, Jev questions; outputs a diff for human review | It generates LOG-001's rules from the policy text, matching the hand-written T2.1 version | T1.3, T4.2 |
+| [~] | T3.1 | Complete R09–R28, R33–R36 and the decision tables (mixing matrix, hub capability) with the authoring agent, reviewed by a person | All 40 rules pass validation; generation and review time and the amount of human editing recorded | T2.1, T3.0 |
+| [x] | T3.2 | Split out three Durable Jev Agents, cargo assurance, transport planning and commercial control (design 2), each owning its rule graph and human tasks, with a native HTTP task interface and `GET /agent/summary` | Each has its own SQLite; the launcher starts them | T2.4 |
+| [~] | T3.2a | Peer collaboration between agents (with the T4.6 helper and T5.1 A2A): transport → commercial (R35 extra cost approval), transport → cargo (R28 candidate plan re-check), a carrier change telling cargo to invalidate the R13 approval chain | All three exchanges appear in LOG-004 (transport → commercial and transport → cargo appear through r2's propagation; the planner confirms in the transport agent) | T3.2 |
+| [x] | T3.3 | The coordinator schedules branches in parallel; branches without a dependency go on while one waits for a person | The commercial branch finishes while compliance waits | T3.2 |
+| [x] | T3.4 | Changes: a new vehicle, route or quote triggers invalidation, and the UI shows which change invalidated a result | LOG-004's invalidated set is as expected | T1.5, T3.3 |
+| [x] | T3.5 | LOG-002–008 cases, event scripts, draft labels | The files are complete and marked `reviewStatus: draft` | T3.1 |
+| [x] | T3.7 | Extension pack: `policy-v1.md` appendices (customer contract terms, destination import requirements modelled on the MPI IHS structure); the authoring agent generates 100–200 extension rules (`CUST-*`, `DEST-*`) under R27 and a new R41 (feeding R37); destinations and customers added to LOG-001–008; 20–30 screening samples (draft) | Extension rules pass validation; each order selects a few (appendices G/H: 108 extension rules + R41/R42/R43, validated and applied by the authoring tool; recorded as drafts, re-recorded with the real model in T7.0) | T3.0, T3.1 |
+| [x] | T3.8 | Selecting applicable rules: Jev classifies the order (cargo category, destination requirement group) + an index fetches the rules; when unsure, select several or hand to a person | No missed rule on the screening samples; the UI shows "N not shown" (R42 multi-select classification by Jev + `RuleIndex` by destination, customer and commodity group; `pnpm screening` misses nothing on 26 samples (scripted answers; live in T7.0)) | T3.7, T4.2 |
+| [x] | T3.6 | Replay runner (fixed-workflow baseline), asserting each stage | Stage assertions pass for all 8 demo orders | T3.5 |
 
-## P4 模型适配与 runtime harness
+## P4 Model adapters and the runtime harness
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T4.1 | `model-providers`：SemanticJudge 接口 + ScriptedJudge | 回放稳定 | T1.1 |
-| [x] | T4.2 | JevJudge、StructuredOutputJudge（live 模式） | 有 key 时同一问题两种 provider 均可答 | T0.5, T4.1 |
-| [x] | T4.3 | 接入语义规则 R03、R10、R18、R27；observedValue 与 gateStatus 分开 | LOG-002、LOG-003 语义节点正确 | T4.1, T3.1 |
-| [x] | T4.4 | `agent-harness`：接口、ToolRegistry、RunBudgetGuard、ContextAssembler | 预算与白名单测试（实现：`DurableInvestigator` 只注册只读/幂等提交工具、工具调用预算 hook、`assembleInput` 资料隔离） | T1.6 |
-| [x] | T4.5 | InMemoryAgentRuntime + 脚本化模型 | 一次调查跑完（脚本化模型直接跑在 Pi Durable 内存存储上，不另做 InMemory 运行时） | T4.4 |
-| [x] | T4.6 | 运输计划 agent 的调查助手：查候选、提议改派、提交结果 | LOG-004 改派建议，计划员确认后重算（LOG-004：三个备选运力经规则预检，计划员确认后成为 r2） | T4.5, T3.4 |
-| [x] | T4.7 | PiDurableAgentRuntime；按 T0.8 结论扩展到模块级流程 | 同一调查、同一模块等待人工时杀进程后恢复（同进程重开存储的恢复测试；杀进程恢复放进故障 runner） | T0.8, T4.5 |
-| [x] | T4.8 | `docs/runtime-controls.md`：每个控制点链接证据 | 每行有测试或故障场景 | T4.4–T4.7 |
+| [x] | T4.1 | `model-providers`: the SemanticJudge interface + ScriptedJudge | Replay is stable | T1.1 |
+| [x] | T4.2 | JevJudge, StructuredOutputJudge (live mode) | With keys, both providers answer the same question | T0.5, T4.1 |
+| [x] | T4.3 | Semantic rules R03, R10, R18, R27; observedValue kept apart from gateStatus | The semantic nodes of LOG-002 and LOG-003 are right | T4.1, T3.1 |
+| [x] | T4.4 | `agent-harness`: interface, ToolRegistry, RunBudgetGuard, ContextAssembler | Budget and allow-list tests (implemented as: `DurableInvestigator` registers only read-only and idempotent-submit tools, a tool-call budget hook, `assembleInput` isolating the data) | T1.6 |
+| [x] | T4.5 | InMemoryAgentRuntime + a scripted model | One investigation runs through (the scripted model runs directly on Pi Durable's in-memory store; no separate in-memory runtime) | T4.4 |
+| [x] | T4.6 | The transport planning agent's investigation helper: find candidates, propose a reroute, submit the result | A reroute proposal for LOG-004, evaluated again after the planner confirms (three spare offers pre-checked against the rules; confirmed, it becomes r2) | T4.5, T3.4 |
+| [x] | T4.7 | PiDurableAgentRuntime; extended to module-level flows as T0.8 found | The same investigation, and the same module waiting for a person, recover after a kill (a recovery test reopening the store in one process; killing processes is in the fault runner) | T0.8, T4.5 |
+| [x] | T4.8 | `docs/runtime-controls.md`: each control linked to its evidence | Every row has a test or fault scenario | T4.4–T4.7 |
 
-## P5 A2A、持久化与故障
+## P5 A2A, persistence and faults
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T5.1 | `a2a-adapter`：Agent Card、业务任务 ↔ A2A Task 映射表、终态后新建关联任务 | 能力发现与任务查询（`agent-transport/src/a2a`：Agent Card 列出 5 个业务 skill，每次调用一个 A2A Task；同一 requestKey 重试返回首个任务结果；事件拉取与重置留在原生运维接口） | T0.4, T3.2 |
-| [x] | T5.2 | Coordinator 可切换 native / A2A 调用 | 切换后业务代码无改动（H4）（`pnpm start:a2a`；LOG-001/LOG-004 浏览器 e2e 两种模式结果一致） | T5.1 |
-| [x] | T5.2a | 目的地合规 agent：用 agent 模板新增第 5 个 agent，经 Agent Card 被发现，R40 加一个依赖 | 已有 4 个 agent 零代码改动；作为扩展演示脚本（规则数据 + launcher 一行配置；agent 集合由规则 owner 推出；Overview 显示第 5 个 agent） | T3.7, T5.1 |
-| [x] | T5.3 | 故障 runner：F01–F10 | `pnpm faults` 出报告（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T4.7, T5.2 |
-| [x] | T5.4 | F11–F18 | 同上（F11–F18 同一 runner，全部通过） | T5.3 |
-| [~] | T5.5 | Web 演示控制：杀/重启服务、注入超时、重复提交 | LOG-006 可在浏览器演示（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
+| [x] | T5.1 | `a2a-adapter`: Agent Card, business task ↔ A2A Task map, a new linked task after a terminal state | Capability discovery and task queries (`agent-transport/src/a2a`: the Agent Card lists 5 business skills, one A2A Task per call; a retry with the same requestKey returns the first task's result; event pull and reset stay on the native operations interface) | T0.4, T3.2 |
+| [x] | T5.2 | The coordinator switches between native and A2A calls | No business code changes on a switch (H4) (`pnpm start:a2a`; browser e2e of LOG-001 and LOG-004 give the same results in both modes) | T5.1 |
+| [x] | T5.2a | Destination compliance agent: a fifth agent from the agent template, discovered through its Agent Card, with one more dependency on R40 | No code change in the other four agents; scripted as the extension demo (rule data + one launcher setting; the agent set follows from the rule owners; the overview shows the fifth agent) | T3.7, T5.1 |
+| [x] | T5.3 | Fault runner: F01–F10 | `pnpm faults` writes a report (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T4.7, T5.2 |
+| [x] | T5.4 | F11–F18 | As above (F11–F18 in the same runner, all pass) | T5.3 |
+| [~] | T5.5 | Demo controls in the web: kill and restart services, inject timeouts, repeat submissions | LOG-006 can be shown in the browser (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T5.3 |
 
-## P6 可观测性与 Console
+## P6 Observability and the console
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T6.1 | 事件 schema、各服务 outbox、收集器 | 事件汇入观察库 | T1.6 |
-| [ ] | T6.2 | trace 传播、重启后新 trace 用 span link 关联 | 同案例新旧 trace 可串起 | T0.6, T6.1 |
-| [~] | T6.3 | Console：案例列表、时间线、调用树、判断详情、恢复详情 | 从规则节点跳到 Jev span / A2A Task / 人工证据 | T6.2 |
-| [~] | T6.3a | Overview：agent 级图（design 9.1），节点卡片基础信息，A2A 关系与实时叠加；单击进入 agent 内部规则图 | 一屏看清 5 个 agent 状态；选中案例后显示其 A2A 往来 | T6.3, T5.2a |
-| [ ] | T6.4 | SSE + 快照游标补齐 | 断线刷新不丢事件 | T6.3 |
+| [x] | T6.1 | Event schema, each service's outbox, the collector | Events reach the observation store | T1.6 |
+| [ ] | T6.2 | Trace propagation; a new trace after restart linked with a span link | Old and new traces of one case can be joined | T0.6, T6.1 |
+| [~] | T6.3 | Console: case list, timeline, call tree, judgement details, recovery details | From a rule node to its Jev span / A2A Task / human evidence | T6.2 |
+| [~] | T6.3a | Overview: agent-level graph (design 9.1), node cards with basics, A2A relations with a live overlay; a click opens the agent's own rule graph | The 5 agents' states on one screen; with a case selected, its A2A exchanges | T6.3, T5.2a |
+| [ ] | T6.4 | SSE + snapshot cursor catch-up | A dropped connection and a refresh lose no events | T6.3 |
 
-## P7 Benchmark 与结论
+## P7 Benchmarks and conclusions
 
-| 状态 | ID | 任务 | 完成标准 | 依赖 |
+| Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T7.0 | 切换 live 调优：全链路 scripted 跑通后，用开发集调 Jev 问题措辞、标签描述、阈值与编写 agent 提示；记录调优前后指标，盲测集不参与调优 | 调优记录；盲测前冻结问题与阈值版本（3 轮完成，见 `docs/tuning-log.md`；CUST-MEDI-5 改为人工步骤，live 回放 8/8、筛选零漏选；盲测集未建） | T3.6, T4.3, T3.8 |
-| [ ] | T7.1 | B1 Jev vs 结构化输出 | 报告 macro-F1、成本、p95 | T4.2 |
-| [ ] | T7.2 | B2 固定 workflow vs 调查助手 | 完成率、无效调用率 | T3.6, T4.6 |
-| [x] | T7.3 | B3 in-memory vs Pi Durable | 恢复成功率、重复副作用（`pnpm faults`：F01–F03 在子进程里真实退出（137）后用同一文件恢复；F06 不适用（控制台按快照轮询）） | T5.3 |
-| [ ] | T7.4 | B4 native vs A2A | 开销与替换测试 | T5.2 |
-| [ ] | T7.6 | B7 Durable Jev Agent 成本：手写代码占比、Jev/编写 agent 承担的规则占比、现场政策变更耗时、单条规则实现成本、筛选正确率与漏选率、扩展规则中 Jev 占比；附规则分界图 | CEO 版指标表；错误放行单列且为 0 | T3.1, T4.3 |
-| [x] | T7.7 | `docs/agent-architecture.md`（技术 CEO 视角） | 每节链接到实现与证据（先以 scripted 证据写成，live 指标出来后补） | T5.2a, T6.3a |
-| [~] | T7.5 | `docs/demo-guide.md`、`docs/report.md`：H1–H5 与 Durable Jev Agent 结论、组件建议 | 每条假设有证据（`docs/demo-guide.md` 已写；`docs/report.md` 待 benchmark） | T7.1–T7.4, T7.6 |
+| [x] | T7.0 | Switch to live tuning: once the whole chain runs scripted, tune Jev's question wording, label descriptions, thresholds and the authoring agent's prompt on the development set; record measures before and after; the blind set takes no part | A tuning record; questions and threshold versions frozen before the blind test (3 rounds, see `docs/tuning-log.md`; CUST-MEDI-5 became a human step, live replay 8/8, screening misses nothing; the blind set is not built) | T3.6, T4.3, T3.8 |
+| [ ] | T7.1 | B1 Jev vs structured output | Report macro-F1, cost, p95 | T4.2 |
+| [ ] | T7.2 | B2 fixed workflow vs investigation helper | Completion rate, invalid call rate | T3.6, T4.6 |
+| [x] | T7.3 | B3 in-memory vs Pi Durable | Recovery success rate, repeated side effects (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T5.3 |
+| [ ] | T7.4 | B4 native vs A2A | Overhead and swap test | T5.2 |
+| [ ] | T7.6 | B7 Durable Jev Agent cost: share of hand-written code, share of rules carried by Jev and the authoring agent, time of a live policy change, cost per rule, selection accuracy and miss rate, Jev's share of the extension rules; with a map of the rule boundaries | A measures table for the CEO; wrong releases listed separately and at 0 | T3.1, T4.3 |
+| [x] | T7.7 | `docs/agent-architecture.md` (for a technical CEO) | Each section links to implementation and evidence (written on scripted evidence first; live measures added when available) | T5.2a, T6.3a |
+| [~] | T7.5 | `docs/demo-guide.md`, `docs/report.md`: H1–H5 and the Durable Jev Agent conclusions, component recommendations | Every hypothesis has evidence (`docs/demo-guide.md` written; `docs/report.md` waits for the benchmarks) | T7.1–T7.4, T7.6 |

@@ -1,24 +1,25 @@
 # Implementation notes
 
-只记录计划变动和与 spec / design / roadmap 不符、需要用户知道的 high level 信息。
+Only plan changes and high-level points that differ from spec, design or roadmap and that the user
+should know.
 
-| 日期 | 事项 | 影响 |
+| Date | Point | Effect |
 |---|---|---|
-| 2026-10-19 | Jev 有官方 TS SDK `@typesafe-ai/sdk`（之前误判为没有），key 变量为 `TYPESAFE_API_KEY` | T0.5 无需自写客户端；真实调用待 key，T0.5 暂标进行中 |
-| 2026-10-19 | 选定依赖当前最新：pi-durable 1.3.0、pi-ai 1.3.0、@a2a-js/sdk 1.3.0 | P0 验证后锁定 |
-| 2026-10-19 | TypeScript 选 6.0.3 而非最新 7.x（原生编译器），避免 `tsc -b` project references 兼容风险 | 无功能影响 |
-| 2026-10-19 | HTTP 框架由 Fastify 改为 Express 5：A2A SDK 服务端只有 Express 适配器，统一框架更简单 | design 已更新 |
-| 2026-10-19 | A2A SDK 不按 messageId 去重，F04 幂等需本项目自行实现映射 | 在 T5.1 范围内，无额外任务 |
-| 2026-10-19 | 生成式模型改为 NVIDIA（pi-ai 内置 provider），现阶段只接 Jev；NVIDIA key 到位前 B1 对照组与调查 Agent 用脚本化模型 | T4.2 的 StructuredOutputJudge 与 B1/B2 真实模型部分顺延 |
-| 2026-10-21 | Jev 与 NVIDIA key 到位，T0.5 真实调用通过；T4.1/T4.2 先于 P1–P3 完成 | 语义问题/答案类型暂放在 `model-providers`，T1.1 不再重复定义 |
-| 2026-10-21 | NVIDIA Nemotron 在 pi-ai 中不支持 strict JSON schema；StructuredOutputJudge 用强制 tool call + 本地 schema 校验，非法输出直接报错 | B1 需统计结构化输出的格式失败率 |
-| 2026-10-21 | pi-ai 目录中 NVIDIA 模型价格为 0（非 provider 实报），Jev 实际也返回 `output_tokens` | B1 成本按 token 数另行计价，不直接用 catalog cost |
-| 2026-10-21 | 评估把 Protégé/本体加入技术栈（本体+Jev vs 代码+Jev）：不做。限定 Node、不加 Java 后无成熟 OWL DL 推理，剩下的 RDF 规则/SHACL 与 JSON 决策表等价；规则规模小，收益不抵成本 | 无。保留其中有用的部分：类别与 Jev 标签单一来源（T3.1/T4.3），兼容矩阵矛盾检测（T1.3） |
-| 2026-10-21 | 明确核心概念 Durable Jev Agent（spec 8）：模块 = Jev + Pi Durable + 规则图 + 人工门槛，A2A 协作；结构化规则仍用代码。人工任务从 Coordinator 下放到模块 | 改 design 6、roadmap T1.7/T2.3/T3.2/T4.7；新增 T0.8 spike 与 T7.6（B7） |
-| 2026-10-21 | 方向澄清：尽可能让 agent 做，目标是"小团队 + Durable Jev Agent 替代大团队多年开发的规则引擎"。新增规则编写 agent（T3.0），T3.1 改为生成 + 审核；B7 改为面向 CEO 的成本指标。业务场景与已完成部分不变 | roadmap T3.0/T3.1/T7.6 |
-| 2026-10-21 | 人工审批支持 2–3 个角色的审批链（顺序/并行、四眼原则、条件追加步骤） | contracts humanTask 增加 `approvalChain`；design 5.2/5.5；T1.7 范围扩大；T2.1/T3.1 政策中为 R13、R20、R34 等设计审批链 |
-| 2026-10-21 | 加入扩展包（agent 生成 100–200 条附录规则）与适用规则筛选；规则 ID 放宽为 `R\d{2}` 或 `CUST-*`/`DEST-*` 形式；新增 R41 目的地进口要求聚合 | roadmap T1.3/T3.7/T3.8/T7.6 |
-| 2026-10-21 | agent 清单定为订单协调/货物合规/运输计划/商务 + 目的地合规（扩展演示）；"agent" 只指 Durable Jev Agent，LLM 循环称调查助手；加点对点协作；Console 增加 agent 级 Overview，与规则级视图共用图组件 | design 2/6/9.1；roadmap T2.5/T3.2/T3.2a/T5.2a/T6.3a/T7.7 |
-| 2026-10-21 | 开发阶段关闭真实模型调用：只有 `MODEL_MODE=live` 才调用 Jev/NVIDIA，真实判断器在非 live 下拒绝构造；新增 T7.0 live 调优（不微调模型） | spec 1；roadmap T7.0；spike 改为看 MODEL_MODE |
-| 2026-10-22 | 开发期全程 scripted，编写 agent 无法真实生成：40 条规则先人工编写作为"人工审核基线"（R28 是候选计划检查模板，不进放行图，共 39 个节点）；编写 agent 流水线用脚本化模型开发，T7.0 live 时由真实模型从政策原文生成并与基线比对 | T3.1 暂标进行中；B7 的编写质量证据来自该比对 |
-| 2026-10-22 | 跨 agent 依赖经协调者轮次传播（hub）实现；真正的点对点请求来自调查助手提议改派（运输 → 商务审批费用、运输 → 货物复核候选计划），T3.2a 随 T4.6 / T5.1 一起做 | roadmap T3.2a 依赖调整 |
+| 2026-10-19 | Jev has an official TS SDK, `@typesafe-ai/sdk` (earlier wrongly thought missing); the key variable is `TYPESAFE_API_KEY` | T0.5 needs no hand-written client; real calls wait for the key, T0.5 stays in progress |
+| 2026-10-19 | Dependencies chosen at their latest: pi-durable 1.3.0, pi-ai 1.3.0, @a2a-js/sdk 1.3.0 | Pinned after P0 verification |
+| 2026-10-19 | TypeScript 6.0.3 rather than the latest 7.x (native compiler), to avoid compatibility risk with `tsc -b` project references | No functional effect |
+| 2026-10-19 | HTTP framework moved from Fastify to Express 5: the A2A SDK's server only has an Express adapter, and one framework is simpler | Design updated |
+| 2026-10-19 | The A2A SDK does not deduplicate by messageId; F04 idempotency needs our own mapping | Within T5.1, no extra task |
+| 2026-10-19 | The generative model is NVIDIA (built into pi-ai), only Jev for now; until the NVIDIA key arrives the B1 baseline and the investigation agent use scripted models | T4.2's StructuredOutputJudge and the real-model parts of B1/B2 postponed |
+| 2026-10-21 | Jev and NVIDIA keys arrived, T0.5 real calls pass; T4.1/T4.2 done before P1–P3 | Semantic question and answer types live in `model-providers` for now; T1.1 does not define them again |
+| 2026-10-21 | NVIDIA Nemotron does not support strict JSON schema in pi-ai; StructuredOutputJudge forces a tool call and validates the schema locally, failing on invalid output | B1 must count structured-output format failures |
+| 2026-10-21 | NVIDIA model prices in the pi-ai catalogue are 0 (not reported by the provider), and Jev also returns `output_tokens` | B1 prices by token counts separately rather than the catalogue cost |
+| 2026-10-21 | Considered adding Protégé / an ontology (ontology + Jev vs code + Jev): not doing it. Within Node and without Java there is no mature OWL DL reasoner, and what remains (RDF rules, SHACL) is equivalent to JSON decision tables; at this rule scale the gain does not cover the cost | None. Kept the useful parts: one source for categories and Jev labels (T3.1/T4.3), contradiction checks on the compatibility matrix (T1.3) |
+| 2026-10-21 | Core concept fixed as the Durable Jev Agent (spec 8): a module = Jev + Pi Durable + rule graph + human gates, collaborating over A2A; structured rules stay code. Human tasks move from the coordinator into the modules | Changed design 6 and roadmap T1.7/T2.3/T3.2/T4.7; added the T0.8 spike and T7.6 (B7) |
+| 2026-10-21 | Direction clarified: let agents do as much as possible, aiming at "a small team plus Durable Jev Agents replacing a rule engine a large team built over years". Added a rule-authoring agent (T3.0); T3.1 becomes generation plus review; B7 becomes a cost measure for the CEO. Business scenarios and finished work unchanged | Roadmap T3.0/T3.1/T7.6 |
+| 2026-10-21 | Human approval supports chains of 2–3 roles (sequential or parallel, four eyes, conditional extra steps) | contracts humanTask gains `approvalChain`; design 5.2/5.5; T1.7 widened; T2.1/T3.1 policy designs chains for R13, R20, R34 and others |
+| 2026-10-21 | Added the extension pack (100–200 appendix rules written by the agent) and selection of applicable rules; rule ids widened to `R\d{2}` or `CUST-*` / `DEST-*`; added R41, which aggregates destination import requirements | Roadmap T1.3/T3.7/T3.8/T7.6 |
+| 2026-10-21 | Agents fixed as order coordination, cargo assurance, transport planning, commercial control, plus destination compliance (the extension demo); "agent" means a Durable Jev Agent only, and the LLM loop is the investigation helper; added peer collaboration; the console gets an agent-level overview sharing the graph component with the rule view | Design 2/6/9.1; roadmap T2.5/T3.2/T3.2a/T5.2a/T6.3a/T7.7 |
+| 2026-10-21 | Real model calls off during development: Jev and NVIDIA are called only with `MODEL_MODE=live`, and the real judges refuse to be built otherwise; added T7.0 live tuning (no fine-tuning) | Spec 1; roadmap T7.0; spikes follow MODEL_MODE |
+| 2026-10-22 | Development stays scripted throughout, so the authoring agent cannot really generate: 40 rules were written by hand first as the "human-reviewed baseline" (R28 is a candidate-plan check template outside the release graph, so 39 nodes); the authoring pipeline is developed with a scripted model, and in T7.0 live the real model generates from the policy text and is compared with the baseline | T3.1 stays in progress; B7's authoring-quality evidence comes from that comparison |
+| 2026-10-22 | Cross-agent dependencies propagate through the coordinator's rounds (a hub); true peer-to-peer requests come from the helper's reroute proposals (transport → commercial approves the cost, transport → cargo re-checks the candidate plan); T3.2a goes with T4.6 / T5.1 | Roadmap T3.2a dependencies adjusted |

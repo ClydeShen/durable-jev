@@ -1,35 +1,36 @@
 # durable-jev
 
-持久化业务 Agent POC：运输订单放行与异常处置工作台。
+A proof of concept for durable business agents: a console for releasing transport orders and
+handling exceptions.
 
 ```bash
-pnpm bootstrap   # 安装依赖并编译
-pnpm start       # 启动全部服务，浏览器打开 http://localhost:4100
+pnpm bootstrap   # install dependencies and build
+pnpm start       # start every service; the browser opens http://localhost:4100
 ```
 
-默认 `MODEL_MODE=scripted`，无需任何 key 即可完整演示。
+`MODEL_MODE=scripted` is the default, so the whole demo runs without any key.
 
-## 文档
+## Documents
 
-| 想做什么 | 读这篇 |
+| To | Read |
 |---|---|
-| 跑起来、走一遍 LOG-001、查命令 | [getting-started.md](docs/getting-started.md) |
-| 做一场约 20 分钟的演示 | [demo-guide.md](docs/demo-guide.md) |
-| 理解 agent 如何组织、能否承载大规模规则 | [agent-architecture.md](docs/agent-architecture.md) |
-| 了解调查助手的预算、超时与人工把关 | [runtime-controls.md](docs/runtime-controls.md) |
-| 看真实模型的调优过程与结果 | [tuning-log.md](docs/tuning-log.md) |
-| 看包之间的真实依赖关系（自动生成） | [architecture-graph.md](docs/architecture-graph.md) |
-| 了解工程约定与每条约定由哪个工具强制 | [engineering.md](docs/engineering.md) |
-| 回顾 M0 技术预检结论 | [m0-findings.md](docs/m0-findings.md) |
+| Run it, walk through LOG-001, look up a command | [getting-started.md](docs/getting-started.md) |
+| Give a demo of about 20 minutes (in Chinese, for the presenter) | [demo-guide.md](docs/demo-guide.md) |
+| Understand how the agents are organised and whether they carry a large rule estate | [agent-architecture.md](docs/agent-architecture.md) |
+| See the investigation helper's budgets, timeouts and human checkpoints | [runtime-controls.md](docs/runtime-controls.md) |
+| Follow the tuning of the real models and its results | [tuning-log.md](docs/tuning-log.md) |
+| See the real dependencies between packages (generated) | [architecture-graph.md](docs/architecture-graph.md) |
+| Learn the engineering conventions and which tool enforces each | [engineering.md](docs/engineering.md) |
+| Review the M0 technical spike findings | [m0-findings.md](docs/m0-findings.md) |
 
-## 目录
+## Folders
 
-| 目录 | 内容 |
+| Folder | Contents |
 |---|---|
-| `apps/` | `coordinator`（订单协调 agent 与 API）、`agent`（各业务 agent 进程）、`web`（Console） |
-| `packages/` | 可复用的核心：`contracts`、`rule-engine`、`agent-core`、`agent-harness`、`agent-transport`、`logistics` 等 |
-| `eval/` | 演示物料、回放、筛选与故障场景 |
-| `tools/`、`scripts/` | 开发辅助脚本 |
-| `spikes/` | M0 预检的可复现实验 |
+| `apps/` | `coordinator` (order coordination agent and API), `agent` (the business agent processes), `web` (the console) |
+| `packages/` | The reusable core: `contracts`, `rule-engine`, `agent-core`, `agent-harness`, `agent-transport`, `logistics` and more |
+| `eval/` | Demo materials, replay, screening and fault scenarios |
+| `tools/`, `scripts/` | Development helpers |
+| `spikes/` | Reproducible experiments from the M0 spikes |
 
-提交前运行 `pnpm check`；同样的检查在 CI 中运行。
+Run `pnpm check` before committing; CI runs the same checks.

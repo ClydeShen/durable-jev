@@ -70,7 +70,9 @@ function storyOf(catalog: CaseCatalog, caseId: string): string {
   const caseFile = caseFileOf(catalog, caseId)
   if (!caseFile) return ''
   const sampleId = caseFile.shipment.caseId
-  return sampleId === caseId ? caseFile.story : `按样例 ${sampleId} 新下的订单。${caseFile.story}`
+  return sampleId === caseId
+    ? caseFile.story
+    : `A new order based on ${sampleId}. ${caseFile.story}`
 }
 
 function summaryOf(view: CaseView, catalog: CaseCatalog) {

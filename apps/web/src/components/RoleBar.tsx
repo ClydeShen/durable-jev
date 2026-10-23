@@ -13,10 +13,10 @@ interface Props {
 export function RoleBar({ actor, onChange, onReset }: Props) {
   return (
     <header className="role-bar">
-      <h1>Durable Jev Agent 演示</h1>
+      <h1>Durable Jev Agent demo</h1>
       <label>
         <span className="role-dot" aria-hidden="true" />
-        当前角色
+        Current role
         <select
           value={actor.role}
           onChange={(event) => {
@@ -31,12 +31,15 @@ export function RoleBar({ actor, onChange, onReset }: Props) {
           ))}
         </select>
       </label>
-      <span className="operator" title="审计记录里的操作人，随角色切换">
-        <span className="stat-label">操作人</span>
+      <span
+        className="operator"
+        title="The person recorded in the audit trail; changes with the role"
+      >
+        <span className="stat-label">Operator</span>
         <RoleChip forRole={actor.role} />
       </span>
       <button type="button" className="secondary" onClick={onReset}>
-        重置演示
+        Reset demo
       </button>
     </header>
   )

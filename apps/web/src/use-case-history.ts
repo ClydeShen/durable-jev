@@ -13,18 +13,20 @@ interface Options {
   outcomes: readonly RuleOutcome[]
   openTasks: readonly HumanTask[]
   speed: PlaybackSpeed
-  /** Plays the case from its first event. */
-  fromStart: boolean
+  /** Set when the case was just submitted or reset: this run plays from its first event. */
+  replayRun?: string
 }
 
 /** A case's timeline, polled, the playback of what is new in it, and its event feed. */
-export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed, fromStart }: Options) {
+export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed, replayRun }: Options) {
+  // A timeline fetched before a reset belongs to the earlier run and is not played.
+  const run = replayRun ?? caseId
   const loadTimeline = useCallback(
-    async () => ({ caseId, entries: await api.timeline(caseId) }),
-    [caseId],
+    async () => ({ run, entries: await api.timeline(caseId) }),
+    [caseId, run],
   )
   const timeline = usePolling(loadTimeline)
-  const entries = timeline.data?.caseId === caseId ? timeline.data.entries : undefined
+  const entries = timeline.data?.run === run ? timeline.data.entries : undefined
   const titles = useMemo(() => new Map(rules.map((rule) => [rule.ruleId, rule.title])), [rules])
   const finale = useMemo(() => whereItStands(outcomes, openTasks), [outcomes, openTasks])
   const playback = usePlayback({
@@ -34,7 +36,7 @@ export function useCaseHistory({ caseId, rules, outcomes, openTasks, speed, from
     speed,
     titles,
     finale,
-    fromStart,
+    replayRun,
   })
   const feed = useEventFeed({ caseId, entries, titles, speed, current: playback.current })
   return { entries, titles, playback, feed }

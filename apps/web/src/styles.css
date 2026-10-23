@@ -2,6 +2,9 @@
   /* Colours meet WCAG 2.2 AA: white text on every status colour is at least 4.5:1. */
   --bg: #f6f7f9;
   --surface: #ffffff;
+  /* The working area under the case header: graphs and the timeline sit a shade deeper. */
+  --canvas: #e9ecf1;
+  --canvas-shade: rgb(15 23 42 / 0.1);
   --border: #d9dde3;
   /* Borders that identify a control, such as an input, need 3:1. */
   --control-border: #8a919c;
@@ -36,6 +39,8 @@
   :root {
     --bg: #14171c;
     --surface: #1d2129;
+    --canvas: #0f1216;
+    --canvas-shade: rgb(0 0 0 / 0.45);
     --border: #2f3541;
     --control-border: #6b7380;
     --text: #e6e9ee;
@@ -112,7 +117,7 @@ button {
 }
 
 button.secondary {
-  background: transparent;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -531,6 +536,7 @@ main {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--surface);
 }
 
 .case-header {
@@ -613,6 +619,9 @@ button.primary-action {
 .rule-graph {
   flex: 1;
   min-height: 0;
+  background: var(--canvas);
+  /* Slightly sunken, so the graph reads as the working surface under the header. */
+  box-shadow: inset 0 2px 8px var(--canvas-shade);
 }
 
 /* Two fixed lines, title then meta, so neither can cover the other in the fixed-size node. */
@@ -788,6 +797,7 @@ button.small {
 
 .view-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 6px 16px;
   border-bottom: 1px solid var(--border);
@@ -797,6 +807,7 @@ button.small {
   flex: 1;
   overflow: auto;
   padding: 8px 16px;
+  background: var(--canvas);
 }
 
 .timeline-filter {
@@ -829,9 +840,30 @@ button.small {
   opacity: 0.75;
 }
 
-.graph-hint {
+/* What applies to the whole graph, in one bar at its top; hidden when there is nothing to say. */
+.graph-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
   font-size: 12px;
-  color: var(--muted);
+}
+
+.graph-bar:empty {
+  display: none;
+}
+
+.graph-bar-group {
+  display: inline-flex;
+  white-space: nowrap;
+  align-items: center;
+  gap: 6px;
+  cursor: help;
 }
 
 .investigations {
@@ -1147,12 +1179,6 @@ label.evidence code {
   gap: 6px;
 }
 
-.selection-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .judgement {
   display: grid;
   gap: 2px;
@@ -1332,7 +1358,6 @@ button.node-open:focus-visible {
 }
 
 .app .task-panel {
-  border-top: 3px solid var(--role);
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
@@ -1540,6 +1565,14 @@ table.record-table > thead > tr > th {
 
 /* Event feed: game-style notifications that stack top-down, fly in and fade out. */
 
+.view-area {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .event-feed {
   position: absolute;
   top: 12px;
@@ -1636,6 +1669,11 @@ main:has(> .new-order) {
   min-height: 0;
   overflow-y: auto;
   container-type: inline-size;
+  background: var(--canvas);
+}
+
+.new-order > .case-header {
+  background: var(--surface);
 }
 
 .order-layout {

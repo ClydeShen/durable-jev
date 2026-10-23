@@ -96,7 +96,7 @@ export function App() {
                 openAgent={openAgent}
                 onOpenAgent={setOpenAgent}
                 speed={speed}
-                fromStart={selection.isFresh(caseId)}
+                replayRun={selection.replayRunOf(caseId)}
                 ruleRequest={ruleRequest}
               />
             </>

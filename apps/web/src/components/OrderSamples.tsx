@@ -13,7 +13,7 @@ function SampleTags({ sample }: { sample: Sample }) {
       {categories.map((category) => (
         <Tag key={category}>{cargoCategoryLabels[category]}</Tag>
       ))}
-      {legs.length > 1 && <Tag>{legs.length} 段运输</Tag>}
+      {legs.length > 1 && <Tag>{legs.length} legs</Tag>}
     </span>
   )
 }

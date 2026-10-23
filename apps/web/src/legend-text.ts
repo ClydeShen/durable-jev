@@ -16,49 +16,76 @@ export interface Legend {
 }
 
 const statusEntries: LegendEntry[] = [
-  { colour: 'PASS', name: '通过', meaning: '检查过了，没有问题。' },
-  { colour: 'FAIL', name: '不通过', meaning: '发现问题，订单不能往下走，要改资料。' },
+  { colour: 'PASS', name: 'Passed', meaning: 'Checked, no problem.' },
+  {
+    colour: 'FAIL',
+    name: 'Failed',
+    meaning: 'A problem was found; the order cannot go on until its data changes.',
+  },
   {
     colour: 'WAITING_HUMAN',
-    name: '等人处理',
-    meaning: '需要有人确认、签字或到现场操作，等对应的角色处理。',
+    name: 'Needs a person',
+    meaning: 'Someone has to confirm, sign or do field work; it waits for that role.',
   },
   {
     colour: 'BLOCKED_DEPENDENCY',
-    name: '等前面的规则',
-    meaning: '它要用的结论还没出来，前面的规则有结果后才判断。',
+    name: 'Waits for earlier rules',
+    meaning: 'A result it needs is not there yet; it is decided once the earlier rules are.',
   },
   {
     colour: 'INVALIDATED',
-    name: '失效重算',
-    meaning: '订单资料变了，旧结论作废，正按新资料重新判断。',
+    name: 'Invalidated',
+    meaning:
+      'The order changed; the old result no longer counts and is decided again on the new data.',
   },
-  { colour: 'UNKNOWN', name: '未知', meaning: '资料不够，暂时判断不了。' },
+  { colour: 'UNKNOWN', name: 'Unknown', meaning: 'Not enough data to decide yet.' },
 ]
 
 export const ruleLegend: Legend = {
   entries: [
     ...statusEntries,
-    { colour: 'upstream', name: '上游', meaning: '点选一条规则时：它要先等的规则。' },
-    { colour: 'downstream', name: '下游', meaning: '点选一条规则时：用它结论的规则。' },
+    {
+      colour: 'upstream',
+      name: 'Upstream',
+      meaning: 'With a rule selected: the rules it waits for.',
+    },
+    {
+      colour: 'downstream',
+      name: 'Downstream',
+      meaning: 'With a rule selected: the rules that use its result.',
+    },
   ],
   notes: [
     {
       mark: '↻ r2',
       meaning:
-        '订单资料改到第 2 版后，这条规则重新判断过。改版后没有这个标记的规则，沿用了上次的结论。',
+        'Decided again after the order changed to revision 2. After a change, a rule without this mark kept its earlier result.',
     },
-    { mark: '等 + 角色', meaning: '这条规则正在等这个角色处理。' },
-    { mark: '灰色方块', meaning: '这一单用不上这条规则（不适用），或者还没轮到它。' },
-    { mark: '虚线方块', meaning: '只看一个 agent 时，它要用到的别的 agent 的规则。' },
-    { mark: '流动的连线', meaning: '回放或点选时，结论正沿着这条线传给下一条规则。' },
+    { mark: 'Waits for + role', meaning: 'The rule waits for someone in this role.' },
+    {
+      mark: 'Grey box',
+      meaning: 'The rule does not apply to this order, or its turn has not come.',
+    },
+    { mark: 'Dashed box', meaning: "Showing one agent: another agent's rule it depends on." },
+    {
+      mark: 'Specific rules',
+      meaning:
+        'Import requirements and customer contract terms, which apply only to certain destinations, commodity groups or customers; the graph shows the ones that apply to this order.',
+    },
+    {
+      mark: 'Moving line',
+      meaning: 'During playback or selection: a result passing along to the next rule.',
+    },
   ],
 }
 
 export const agentLegend: Legend = {
   entries: statusEntries.filter((entry) => entry.colour !== 'BLOCKED_DEPENDENCY'),
   notes: [
-    { mark: '卡片边框', meaning: '这个 agent 在本单中最需要关注的状态。' },
-    { mark: '箭头', meaning: '一个 agent 的规则用到另一个 agent 的结论，旁边的数字是用到几条。' },
+    { mark: 'Card border', meaning: "The agent's most pressing status in this order." },
+    {
+      mark: 'Arrow',
+      meaning: "One agent's rules use another agent's results; the number says how many.",
+    },
   ],
 }
