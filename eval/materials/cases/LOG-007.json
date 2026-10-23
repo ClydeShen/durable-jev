@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "两段运输，中转站不支持冷链：第一段本身没问题也不能整单发运；改经支持冷藏的中转站后重算通过。",
+  "story": "Two legs; the transshipment hub is not cold-chain capable. Leg 1 is fine on its own, but the whole order cannot ship; rerouting via a refrigerated hub passes on re-evaluation.",
   "shipment": {
     "caseId": "LOG-007",
     "correlationId": "corr-LOG-007",
@@ -172,7 +172,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "中转站不支持冷链，整单不能放行",
+      "label": "Hub not cold-chain capable; the whole order cannot be released",
       "statuses": {
         "R24@LEG-1": "PASS",
         "R24@LEG-2": "PASS",
@@ -189,7 +189,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库登记诊所指定收货人与送货单号",
+      "label": "Warehouse records the clinic's named recipient and delivery note number",
       "task": "CUST-MEDI-5",
       "actor": {
         "id": "wen",
@@ -206,7 +206,7 @@
     },
     {
       "kind": "revise",
-      "label": "改经 Glacier Cold Hub 中转",
+      "label": "Reroute via Glacier Cold Hub",
       "patch": {
         "caseRevision": 2,
         "entityVersions": {
@@ -238,7 +238,7 @@
     },
     {
       "kind": "expect",
-      "label": "重算通过，等待装载",
+      "label": "Re-evaluation passes; awaiting loading",
       "statuses": {
         "R26@LEG-1": "PASS",
         "R30": "PASS",
@@ -249,7 +249,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -266,7 +266,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -275,7 +275,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

@@ -106,7 +106,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "所有适用规则通过，等待仓库装载",
+      "label": "All applicable rules pass; awaiting warehouse loading",
       "orderStatus": "AWAITING_HUMAN",
       "statuses": {
         "R40": "WAITING_HUMAN",
@@ -118,7 +118,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "装载前调度员不能放行",
+      "label": "Dispatcher cannot release before loading",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -127,7 +127,7 @@
     },
     {
       "kind": "act",
-      "label": "缺少封条号被拒绝",
+      "label": "Missing seal number is refused",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -144,7 +144,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -161,7 +161,7 @@
     },
     {
       "kind": "expect",
-      "label": "可发运",
+      "label": "Ready to dispatch",
       "orderStatus": "READY_TO_DISPATCH",
       "statuses": {
         "R40": "PASS"
@@ -170,7 +170,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -179,7 +179,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "orderStatus": "DISPATCHED"
     }
   ]

@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "质量审核员基于旧包装批准了温控偏差，随后货物再次受损需整改：旧批准不能复用，新版本复测和处置完成后才继续。",
+  "story": "The quality reviewer approved a temperature deviation based on the old packaging; the cargo is then damaged again and needs corrective action. The earlier approval cannot be reused; the new revision needs a retest and a new disposition before it proceeds.",
   "shipment": {
     "caseId": "LOG-008",
     "correlationId": "corr-LOG-008",
@@ -162,7 +162,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "越界 60 分钟，等待质量处置",
+      "label": "Excursion of 60 minutes; awaiting quality disposition",
       "statuses": {
         "R18@ITEM-1": "PASS",
         "R19@ITEM-1": "FAIL",
@@ -173,7 +173,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库登记诊所指定收货人与送货单号",
+      "label": "Warehouse records the clinic's named recipient and delivery note number",
       "task": "CUST-MEDI-5",
       "actor": {
         "id": "wen",
@@ -190,7 +190,7 @@
     },
     {
       "kind": "act",
-      "label": "质量审核员基于当前包装批准",
+      "label": "Quality reviewer approves based on the current packaging",
       "task": "R20@ITEM-1",
       "actor": {
         "id": "bob",
@@ -202,7 +202,7 @@
     },
     {
       "kind": "expect",
-      "label": "处置完成，等待装载",
+      "label": "Disposition done; awaiting loading",
       "statuses": {
         "R20@ITEM-1": "PASS",
         "R39": "WAITING_HUMAN"
@@ -212,7 +212,7 @@
     },
     {
       "kind": "revise",
-      "label": "复核时发现外壳开裂，货物进入新版本",
+      "label": "Inspection finds a cracked shell; the cargo moves to a new revision",
       "patch": {
         "caseRevision": 2,
         "entityVersions": {
@@ -267,7 +267,7 @@
     },
     {
       "kind": "expect",
-      "label": "旧批准失效，需要整改与重新处置",
+      "label": "Earlier approval invalidated; corrective action and new disposition needed",
       "statuses": {
         "R18@ITEM-1": "FAIL",
         "R20@ITEM-1": "WAITING_HUMAN",
@@ -279,7 +279,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库重新包装",
+      "label": "Warehouse repacks",
       "task": "R21@ITEM-1",
       "actor": {
         "id": "wen",
@@ -296,7 +296,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库复测",
+      "label": "Warehouse retests",
       "task": "R22@ITEM-1",
       "actor": {
         "id": "wen",
@@ -313,7 +313,7 @@
     },
     {
       "kind": "act",
-      "label": "质量审核员基于新版本重新处置",
+      "label": "Quality reviewer gives a new disposition on the new revision",
       "task": "R20@ITEM-1",
       "actor": {
         "id": "bob",
@@ -325,7 +325,7 @@
     },
     {
       "kind": "expect",
-      "label": "新版本门槛完成",
+      "label": "New revision's gates complete",
       "statuses": {
         "R20@ITEM-1": "PASS",
         "R23@ITEM-1": "PASS"
@@ -335,7 +335,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -352,7 +352,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -361,7 +361,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "改派后超授信并增加费用：授信例外（超二级额度需两名商务主管）与额外费用是两个独立审批，只通过一个仍不得放行。",
+  "story": "After a reroute the order exceeds the credit limit and adds a surcharge. The credit exception (two commercial managers above tier 2) and the surcharge are separate approvals; one alone does not release the order.",
   "shipment": {
     "caseId": "LOG-005",
     "correlationId": "corr-LOG-005",
@@ -82,7 +82,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "初始：授信内，等待装载",
+      "label": "Initial: within credit; awaiting loading",
       "statuses": {
         "R32": "PASS",
         "R33": "NOT_APPLICABLE",
@@ -94,7 +94,7 @@
     },
     {
       "kind": "revise",
-      "label": "改派绕行，额外费用 13,000",
+      "label": "Reroute via a detour, surcharge 13,000",
       "patch": {
         "caseRevision": 2,
         "entityVersions": {
@@ -122,7 +122,7 @@
     },
     {
       "kind": "expect",
-      "label": "超授信：授信例外与额外费用两个审批",
+      "label": "Over credit: two approvals, credit exception and surcharge",
       "statuses": {
         "R32": "FAIL",
         "R33": "PASS",
@@ -134,7 +134,7 @@
     },
     {
       "kind": "act",
-      "label": "商务主管批准额外费用",
+      "label": "Commercial manager approves the surcharge",
       "task": "R35",
       "actor": {
         "id": "carol",
@@ -146,7 +146,7 @@
     },
     {
       "kind": "expect",
-      "label": "只通过额外费用仍不能放行",
+      "label": "Surcharge approval alone cannot release",
       "statuses": {
         "R35": "PASS",
         "R36": "WAITING_HUMAN"
@@ -156,7 +156,7 @@
     },
     {
       "kind": "act",
-      "label": "商务主管 carol 批准授信例外第一步",
+      "label": "Commercial manager carol approves step 1 of the credit exception",
       "task": "R34",
       "actor": {
         "id": "carol",
@@ -168,7 +168,7 @@
     },
     {
       "kind": "act",
-      "label": "同一人不能批第二步",
+      "label": "The same person cannot approve step 2",
       "task": "R34",
       "actor": {
         "id": "carol",
@@ -181,7 +181,7 @@
     },
     {
       "kind": "act",
-      "label": "另一名商务主管 dave 批准第二步",
+      "label": "Another commercial manager, dave, approves step 2",
       "task": "R34",
       "actor": {
         "id": "dave",
@@ -193,7 +193,7 @@
     },
     {
       "kind": "expect",
-      "label": "商务分支就绪",
+      "label": "Commercial branch ready",
       "statuses": {
         "R34": "PASS",
         "R36": "PASS"
@@ -203,7 +203,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -220,7 +220,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -229,7 +229,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }

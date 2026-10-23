@@ -1,6 +1,6 @@
 {
   "reviewStatus": "draft",
-  "story": "冷链受控货，主承运商取消。运输 agent 的调查助手找出备用承运商，计划员确认改派后，温控、合规签核、预订和额外费用审批失效重做，客户基础状态不重跑。",
+  "story": "Cold-chain controlled goods; the primary carrier cancels. The transport agent's investigation helper finds an alternate carrier. Once the planner confirms the reroute, temperature control, compliance sign-off, booking and surcharge approval are invalidated and redone; customer master checks are not rerun.",
   "shipment": {
     "caseId": "LOG-004",
     "correlationId": "corr-LOG-004",
@@ -180,7 +180,7 @@
   "events": [
     {
       "kind": "expect",
-      "label": "初始：合规签核两步，先合规员",
+      "label": "Initial: two-step compliance sign-off, compliance reviewer first",
       "statuses": {
         "R12": "PASS",
         "R13@ITEM-1": "WAITING_HUMAN",
@@ -192,7 +192,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库登记诊所指定收货人与送货单号",
+      "label": "Warehouse records the clinic's named recipient and delivery note number",
       "task": "CUST-MEDI-5",
       "actor": {
         "id": "wen",
@@ -209,7 +209,7 @@
     },
     {
       "kind": "act",
-      "label": "合规审核员签核",
+      "label": "Compliance reviewer signs off",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "alice",
@@ -221,7 +221,7 @@
     },
     {
       "kind": "act",
-      "label": "质量审核员签核（冷链追加）",
+      "label": "Quality reviewer signs off (added for cold chain)",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "bob",
@@ -233,7 +233,7 @@
     },
     {
       "kind": "expect",
-      "label": "签核完成，等待装载",
+      "label": "Sign-off complete; awaiting loading",
       "statuses": {
         "R13@ITEM-1": "PASS",
         "R39": "WAITING_HUMAN"
@@ -243,7 +243,7 @@
     },
     {
       "kind": "incident",
-      "label": "主承运商 Polar 取消，运输 agent 启动调查助手",
+      "label": "Primary carrier Polar cancels; transport agent starts its investigation helper",
       "incident": {
         "type": "carrierCancelled",
         "legId": "LEG-1"
@@ -251,7 +251,7 @@
     },
     {
       "kind": "expect",
-      "label": "调查助手预检三个备选运力，提出 Frostline 06:30 班次",
+      "label": "Helper pre-checks three alternate capacity offers and proposes the Frostline 06:30 departure",
       "statuses": {},
       "investigation": {
         "status": "PROPOSED",
@@ -261,7 +261,7 @@
     },
     {
       "kind": "decideProposal",
-      "label": "仓库操作员不能确认改派",
+      "label": "Warehouse operator cannot confirm the reroute",
       "actor": {
         "id": "wen",
         "role": "warehouseOperator"
@@ -271,7 +271,7 @@
     },
     {
       "kind": "decideProposal",
-      "label": "计划员确认改派，产生额外费用",
+      "label": "Planner confirms the reroute; a surcharge arises",
       "actor": {
         "id": "pat",
         "role": "transportPlanner"
@@ -280,7 +280,7 @@
     },
     {
       "kind": "expect",
-      "label": "改派后：签核与预订重做，额外费用需审批，客户状态复用",
+      "label": "After the reroute: sign-off and booking redone, surcharge needs approval, customer status reused",
       "statuses": {
         "R13@ITEM-1": "WAITING_HUMAN",
         "R35": "WAITING_HUMAN",
@@ -294,7 +294,7 @@
     },
     {
       "kind": "act",
-      "label": "商务主管批准额外费用",
+      "label": "Commercial manager approves the surcharge",
       "task": "R35",
       "actor": {
         "id": "carol",
@@ -306,7 +306,7 @@
     },
     {
       "kind": "expect",
-      "label": "失效原因可追溯到这次改派",
+      "label": "Invalidations trace back to this reroute",
       "statuses": {},
       "invalidatedBy": {
         "R13@ITEM-1": "r2 (route, carrier, quote)",
@@ -315,7 +315,7 @@
     },
     {
       "kind": "act",
-      "label": "合规审核员重新签核",
+      "label": "Compliance reviewer signs off again",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "alice",
@@ -327,7 +327,7 @@
     },
     {
       "kind": "act",
-      "label": "质量审核员重新签核",
+      "label": "Quality reviewer signs off again",
       "task": "R13@ITEM-1",
       "actor": {
         "id": "bob",
@@ -339,7 +339,7 @@
     },
     {
       "kind": "expect",
-      "label": "重新签核完成",
+      "label": "Re-sign-off complete",
       "statuses": {
         "R13@ITEM-1": "PASS",
         "R35": "PASS",
@@ -350,7 +350,7 @@
     },
     {
       "kind": "act",
-      "label": "仓库装载并提交扫码与封条",
+      "label": "Warehouse loads and submits load scan and seal",
       "task": "R39",
       "actor": {
         "id": "wen",
@@ -367,7 +367,7 @@
     },
     {
       "kind": "dispatch",
-      "label": "调度员确认发运",
+      "label": "Dispatcher confirms dispatch",
       "actor": {
         "id": "dee",
         "role": "dispatcher"
@@ -376,7 +376,7 @@
     },
     {
       "kind": "expect",
-      "label": "已发运",
+      "label": "Dispatched",
       "statuses": {},
       "orderStatus": "DISPATCHED"
     }
