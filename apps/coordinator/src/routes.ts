@@ -26,6 +26,8 @@ export type AgentStatus = {
   available: boolean
   summary?: AgentSummary
   card?: { name: string; description: string; url: string }
+  /** What the agent does, for its card in the console. */
+  responsibilities: string[]
   transport: 'native' | 'a2a'
   a2aTasks: number
 }
@@ -201,17 +203,33 @@ function ruleAndAgentRoutes(router: Router, { rulePack, agentStatuses }: Coordin
   router.get('/rules', (_request, response) => {
     response.json({
       ruleSetVersion: rulePack.ruleSet.ruleSetVersion,
-      rules: rulePack.ruleSet.rules.map(
-        ({ ruleId, title, owner, scope, dependsOn, evaluator, applicability }) => ({
-          ruleId,
-          title,
-          owner,
-          scope,
-          dependsOn,
-          kind: evaluator.kind,
-          extension: applicability !== undefined,
-        }),
-      ),
+      rules: rulePack.ruleSet.rules.map((rule) => ({
+        ruleId: rule.ruleId,
+        title: rule.title,
+        owner: rule.owner,
+        scope: rule.scope,
+        dependsOn: rule.dependsOn,
+        kind: rule.evaluator.kind,
+        extension: rule.applicability !== undefined,
+        clause: rulePack.clauses.get(rule.ruleId),
+        definition: {
+          appliesWhen: rule.appliesWhen,
+          applicability: rule.applicability,
+          expression: rule.expression,
+          semantic: rule.semantic && {
+            question: rule.semantic.question,
+            passWhen: rule.semantic.passWhen,
+          },
+          humanGate: rule.humanGate,
+          combiner: rule.combiner,
+          mixing: rule.mixing,
+          unknownPolicy: rule.unknownPolicy,
+          invalidationTriggers: rule.invalidationTriggers,
+        },
+        parameters: Object.fromEntries(
+          rule.parameters.map((name) => [name, rulePack.parameters[name]]),
+        ),
+      })),
     })
   })
 

@@ -18,12 +18,21 @@ export function CaseList({ cases, selected, onSelect }: Props) {
           className={summary.caseId === selected ? 'case selected' : 'case'}
           onClick={() => onSelect(summary.caseId)}
         >
-          <strong>{summary.caseId}</strong>
-          <span className={`order-status ${summary.status}`}>
-            {orderStatusLabels[summary.status]}
+          <span className="case-line">
+            <strong>{summary.caseId}</strong>
+            <span className={`order-status ${summary.status}`}>
+              {orderStatusLabels[summary.status]}
+            </span>
           </span>
           {summary.waitingOn.length > 0 && (
-            <small>等待：{summary.waitingOn.map((role) => roleLabels[role]).join('、')}</small>
+            <span className="case-waiting">
+              <span className="stat-label">等</span>
+              {summary.waitingOn.map((role) => (
+                <span key={role} className="tag">
+                  {roleLabels[role]}
+                </span>
+              ))}
+            </span>
           )}
         </button>
       ))}

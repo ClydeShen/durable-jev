@@ -1,18 +1,25 @@
 :root {
+  /* Colours meet WCAG 2.2 AA: white text on every status colour is at least 4.5:1. */
   --bg: #f6f7f9;
   --surface: #ffffff;
   --border: #d9dde3;
+  /* Borders that identify a control, such as an input, need 3:1. */
+  --control-border: #8a919c;
   --text: #1d2330;
   --muted: #5d6675;
-  --accent: #2f6fde;
-  --pass: #1f9d55;
-  --fail: #d64545;
-  --waiting: #d98a00;
-  --blocked: #6a7fa8;
-  --unknown: #8a8f98;
+  --accent: #2563c9;
+  --link: #2563c9;
+  --pass: #18794a;
+  /* Green used as text rather than as a background. */
+  --pass-text: #18794a;
+  --fail: #c02d2d;
+  --waiting: #9a5800;
+  --blocked: #4f6390;
+  --unknown: #636a75;
   --error: #9b1c1c;
   --invalidated: #8e44ad;
-  --not-applicable: #b8bec8;
+  --not-applicable: #6c737f;
+  --upstream: #0f766e;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -23,8 +30,11 @@
     --bg: #14171c;
     --surface: #1d2129;
     --border: #2f3541;
+    --control-border: #6b7380;
     --text: #e6e9ee;
     --muted: #9aa3b2;
+    --link: #8ab4ff;
+    --pass-text: #4ade80;
   }
 }
 
@@ -67,7 +77,7 @@ input,
 select {
   font: inherit;
   padding: 4px 6px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   background: var(--surface);
   color: var(--text);
@@ -90,6 +100,244 @@ button.secondary {
 }
 
 button.danger {
+  background: var(--fail);
+}
+
+/* Shared building blocks: a labelled field, badges, chips, the detail drawer. */
+
+.muted {
+  color: var(--muted);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 14px;
+  align-items: baseline;
+  margin: 8px 0;
+}
+
+.field {
+  display: contents;
+}
+
+.field-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.field-value {
+  font-size: 13px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.status-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--status, var(--unknown));
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-block;
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+button.chip.link {
+  min-height: 24px;
+  min-width: 24px;
+  cursor: pointer;
+  color: var(--link);
+}
+
+button.chip.link:hover {
+  border-color: var(--accent);
+}
+
+.chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--muted);
+  border: 1px dashed var(--border);
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100%);
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgb(0 0 0 / 0.12);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.drawer-heading h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.drawer-body {
+  overflow-y: auto;
+  padding: 4px 16px 16px;
+}
+
+.drawer-section h4 {
+  margin: 16px 0 8px;
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+blockquote {
+  margin: 6px 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--bg);
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.source {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+code,
+pre.data {
+  font:
+    12px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+}
+
+code.formula,
+pre.data {
+  display: block;
+  margin: 0;
+  padding: 6px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+ul.expression {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+ul.expression li,
+ul.options li,
+ol.gate-steps li {
+  margin: 3px 0;
+  font-size: 13px;
+}
+
+ul.options,
+ol.gate-steps {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+
+.outcome-card {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--status, var(--border));
+  border-radius: 6px;
+}
+
+.outcome-card header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  margin-top: 5px;
+  flex: none;
+}
+
+button.agent-link strong {
+  display: block;
+  font-size: 13px;
+}
+
+button.agent-link small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.hint {
+  margin: -6px 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.online {
+  background: var(--pass);
+}
+
+.dot.offline {
   background: var(--fail);
 }
 
@@ -126,10 +374,21 @@ h2 {
 
 .case.selected {
   border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 
-.case small {
-  color: var(--muted);
+.case-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.case-waiting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
 }
 
 main {
@@ -140,20 +399,66 @@ main {
 }
 
 .case-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
   padding: 12px 16px;
   border-bottom: 1px solid var(--border);
 }
 
-.case-header p {
-  margin: 4px 0;
+.case-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.case-header small {
+.case-title h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+button.primary-action {
+  margin-left: auto;
+  padding: 8px 18px;
+  font-weight: 600;
+}
+
+.story {
+  margin: 6px 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--muted);
+}
+
+.case-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 24px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.demo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 6px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
 }
 
 .rule-graph {
@@ -201,14 +506,15 @@ main {
 
 .rule-node-meta {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
   margin-top: 6px;
-  color: var(--muted);
+  font-size: 11px;
 }
 
-.rule-node-meta span:last-child {
-  color: var(--status, var(--muted));
-  font-weight: 600;
+.rule-node-meta .status-badge {
+  margin-left: auto;
+  font-size: 11px;
 }
 
 .check-status.PASS {
@@ -234,36 +540,6 @@ main {
 }
 .check-status.NOT_APPLICABLE {
   --status: var(--not-applicable);
-}
-
-td.check-status {
-  color: var(--status);
-  font-weight: 600;
-}
-
-.rule-detail {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: min(560px, calc(100% - 24px));
-  max-height: 50%;
-  overflow: auto;
-  padding: 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 6px 24px rgb(0 0 0 / 0.15);
-}
-
-.rule-detail header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.rule-detail h3 {
-  margin: 0;
-  font-size: 15px;
 }
 
 table {
@@ -296,7 +572,6 @@ td {
   background: var(--bg);
 }
 
-.task small,
 .empty {
   color: var(--muted);
 }
@@ -330,43 +605,41 @@ td {
   font-weight: 600;
 }
 
-.case-header > div:first-child {
-  flex: 1;
-}
-
 .agent-panel ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.agent-panel li {
+.agent-panel ul > li {
   display: flex;
   align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+button.agent-link {
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
-  padding: 4px 0;
-  font-size: 13px;
+  flex: 1;
+  min-width: 0;
+  padding: 6px 8px;
+  text-align: left;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid transparent;
 }
 
-.agent-panel li button {
-  margin-left: auto;
+button.agent-link:hover {
+  border-color: var(--border);
+  background: var(--bg);
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.dot.online {
-  background: var(--pass);
-}
-
-.dot.offline {
-  background: var(--fail);
-}
-
+button.agent-link /* 2.5.8: click targets are at least 24 by 24 pixels. */
 button.small {
+  min-height: 24px;
+  min-width: 24px;
   padding: 2px 8px;
   font-size: 12px;
 }
@@ -398,19 +671,19 @@ button.small {
 }
 
 .agent-chip.order-coordination {
-  background: #2f6fde;
+  background: var(--accent);
 }
 .agent-chip.cargo-assurance {
   background: #8e44ad;
 }
 .agent-chip.transport-planning {
-  background: #16a085;
+  background: var(--upstream);
 }
 .agent-chip.commercial-control {
-  background: #d35400;
+  background: #b54708;
 }
 .agent-chip.destination-compliance {
-  background: #7f8c8d;
+  background: #5f6b6d;
 }
 
 .agent-node {
@@ -432,16 +705,6 @@ button.small {
 
 .agent-node p {
   margin: 6px 0 0;
-}
-
-.agent-node .agent-meta {
-  color: var(--muted);
-}
-
-.agent-case-status {
-  margin-left: auto;
-  color: var(--status, var(--muted));
-  font-weight: 600;
 }
 
 .rule-node.boundary {
@@ -475,7 +738,6 @@ button.small {
 }
 
 .investigation-status {
-  margin-left: 8px;
   font-size: 12px;
   padding: 1px 8px;
   border-radius: 10px;
@@ -484,32 +746,599 @@ button.small {
 
 .investigation-status.PROPOSED {
   background: #f5d58a;
+  color: #1d2330;
 }
 
 .investigation-status.CONFIRMED {
   background: #b7e4c7;
-}
-
-.investigation .checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 12px;
-  align-items: center;
-}
-
-.investigation .check {
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: #e6f4ea;
-}
-
-.investigation .check.FAIL {
-  background: #fde2e1;
+  color: #1d2330;
 }
 
 .investigation .actions {
   display: flex;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* Agent card */
+
+.lead {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+ul.responsibilities {
+  margin: 0;
+  padding-left: 18px;
+}
+
+ul.responsibilities li {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+button.spaced {
+  margin-top: 10px;
+}
+
+details.explainer {
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+details.explainer summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+details.explainer dl {
+  margin: 8px 0 0;
+}
+
+details.explainer dt {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+details.explainer dd {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* Task cards, investigation card, agent nodes */
+
+.task-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.count {
+  font-size: 12px;
+  padding: 0 7px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.task-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.task-header .tag {
+  margin-left: auto;
+}
+
+.task-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.task .fields {
+  margin: 0;
+}
+
+label.evidence span {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text);
+}
+
+label.evidence code {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.investigation header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.quote-label {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.check-pill {
+  font:
+    11px ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: #fff;
+  background: var(--status, var(--unknown));
+}
+
+.agent-node footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.agent-node header .status-badge {
+  margin-left: auto;
+}
+
+.agent-node-stats {
+  display: flex;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.agent-node .agent-node-stats strong {
+  color: var(--text);
+}
+
+/* Playback: speed control, the rule being played, the caption. */
+
+.playback-control {
+  margin-bottom: 16px;
+}
+
+.segmented {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segmented button {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  padding: 4px 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--border);
+}
+
+.segmented button.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--glow);
+  }
+  70% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+.rule-node.playing {
+  --glow: var(--status, var(--accent));
+  transform: scale(1.08);
+  transition: transform 200ms ease;
+  animation: pulse 900ms ease-out infinite;
+  z-index: 1;
+}
+
+.rule-node.playing.task {
+  --glow: var(--waiting);
+  outline: 2px dashed var(--waiting);
+  outline-offset: 3px;
+}
+
+.rule-node.playing.invalidated {
+  --glow: var(--invalidated);
+}
+
+.react-flow__edge.edge-active path {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.narration {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(760px, 90%);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.15);
+  font-size: 14px;
+}
+
+.narration.task {
+  border-left-color: var(--waiting);
+}
+
+.narration.invalidated {
+  border-left-color: var(--invalidated);
+}
+
+.narration-text {
+  flex: 1;
+}
+
+.narration-progress {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Timeline: one compact line per event; click a line to read the event's data. */
+
+.timeline table {
+  font-size: 13px;
+}
+
+.timeline td {
+  padding: 3px 6px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.timeline tr.event {
+  cursor: pointer;
+}
+
+.timeline tr.event:hover,
+.timeline tr.event.open {
+  background: var(--bg);
+}
+
+.timeline td.toggle {
+  width: 10px;
+  padding-right: 0;
+  color: var(--muted);
+}
+
+.timeline td.time {
+  width: 60px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline td.event-label {
+  width: 96px;
+  font-weight: 600;
+}
+
+.timeline td.event-summary {
+  white-space: normal;
+}
+
+.timeline tr.event-detail > td {
+  padding: 2px 6px 8px 24px;
+  background: var(--bg);
+  white-space: normal;
+}
+
+div.event-fields > dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 1px 12px;
+  margin: 0;
+  font-size: 12px;
+}
+
+div.event-fields > dl > dt {
+  color: var(--muted);
+}
+
+div.event-fields > dl > dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.event-fields dd .event-fields {
+  padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+
+.event-fields blockquote {
+  margin: 0;
+  padding: 2px 8px;
+}
+
+.technical {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+p.technical > span {
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+p.technical > span > code {
+  font-size: 11px;
+}
+
+.operator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.selection-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag.pass {
+  color: var(--pass-text);
+  border-color: var(--pass-text);
+  border-style: solid;
+}
+
+.judgement {
+  display: grid;
+  gap: 2px;
+}
+
+.judgement-row {
+  display: grid;
+  grid-template-columns: 110px 120px auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.judgement-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+span.judgement-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.react-flow__node.selected .rule-node {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+/* Selecting a rule: it, the rules it needs (upstream), the rules that need it (downstream). */
+
+.rule-node.relation-unrelated {
+  opacity: 0.25;
+}
+
+.rule-node.relation-upstream {
+  box-shadow: 0 0 0 3px var(--upstream);
+}
+
+.rule-node.relation-downstream {
+  box-shadow: 0 0 0 3px var(--invalidated);
+}
+
+.relation-tag {
+  margin-right: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  color: #fff;
+}
+
+.relation-tag.upstream {
+  background: var(--upstream);
+}
+
+.relation-tag.downstream {
+  background: var(--invalidated);
+}
+
+.react-flow__edge.edge-upstream path {
+  stroke: var(--upstream);
+  stroke-width: 2.5;
+}
+
+.react-flow__edge.edge-downstream path {
+  stroke: var(--invalidated);
+  stroke-width: 2.5;
+}
+
+.react-flow__edge.edge-dim {
+  opacity: 0.12;
+}
+
+.rule-graph.beside-drawer {
+  margin-right: min(520px, 100%);
+}
+
+.other-cases {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+/* Accessibility (WCAG 2.2 AA) */
+
+/* 2.4.7: keyboard focus is always visible. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* A rule node opens with an inner button, so it is reachable and usable by keyboard. */
+button.node-open {
+  all: unset;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.timeline td.toggle button.node-open {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+button.node-open:focus-visible {
+  outline: 2px solid var(--link);
+}
+
+/* 2.3.3: no pulsing or flowing when the system asks for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .rule-node.playing {
+    animation: none;
+    transform: none;
+  }
+
+  .react-flow__edge.animated path {
+    animation: none;
+  }
+}
+
+/* 1.4.3: the graph library's credit link meets text contrast too. */
+.react-flow__attribution {
+  background: var(--surface);
+}
+
+.react-flow__attribution a {
+  color: var(--muted);
+}
+
+/*
+ * Role colour: each role has a hue, used only at the edges (the top bar, the task panel), so a
+ * change of role is visible at a glance while buttons and status colours stay the same. Every
+ * hue reaches 3:1 against the surface in both themes.
+ */
+.app {
+  --role: var(--muted);
+}
+
+.app[data-role="warehouseOperator"] {
+  --role: #0284c7;
+}
+.app[data-role="dispatcher"] {
+  --role: #c2410c;
+}
+.app[data-role="complianceReviewer"] {
+  --role: #4f46e5;
+}
+.app[data-role="qualityReviewer"] {
+  --role: #c026d3;
+}
+.app[data-role="commercialManager"] {
+  --role: #a16207;
+}
+.app[data-role="transportPlanner"] {
+  --role: #0d9488;
+}
+.app[data-role="technicalEvaluator"] {
+  --role: #475569;
+}
+
+@media (prefers-color-scheme: dark) {
+  .app[data-role="complianceReviewer"] {
+    --role: #6366f1;
+  }
+  .app[data-role="commercialManager"] {
+    --role: #ca8a04;
+  }
+  .app[data-role="technicalEvaluator"] {
+    --role: #94a3b8;
+  }
+}
+
+.app .role-bar {
+  border-bottom: 3px solid var(--role);
+  background: color-mix(in srgb, var(--role) 7%, var(--surface));
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
+}
+
+.role-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--role);
+}
+
+.app .operator {
+  border-color: var(--role);
+}
+
+.app .task-panel {
+  border-top: 3px solid var(--role);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
+    var(--surface) 160px
+  );
+}
+
+.app .task-panel .task {
+  border-left: 3px solid var(--role);
+}
+
+.investigation-lead {
+  margin: 6px 0;
+  font-size: 13px;
+  color: var(--muted);
 }

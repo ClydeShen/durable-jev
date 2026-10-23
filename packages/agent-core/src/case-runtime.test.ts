@@ -78,6 +78,7 @@ function runtime(now = () => '2026-11-02T08:00:00.000Z') {
         policyVersion: 'test',
         ruleSet: { ruleSetVersion: 't', rules, mixingMatrix: [] },
         parameters: {},
+        clauses: new Map(),
       },
       judgeFor: () => new ScriptedJudge([]),
       codeEvaluators: new Map(),

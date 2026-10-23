@@ -1,5 +1,6 @@
 import type { Actor, Investigation } from '../api'
-import { checkStatusLabels } from '../labels'
+import { checkStatusLabels, roleLabels } from '../labels'
+import { Chip, Field, Fields } from './ui'
 
 const statusLabels: Record<Investigation['status'], string> = {
   RUNNING: '调查中',
@@ -10,7 +11,41 @@ const statusLabels: Record<Investigation['status'], string> = {
   STALE: '已过期',
 }
 
-const time = (timestamp: string) => timestamp.slice(11, 16)
+const time = (timestamp: string) => `${timestamp.slice(5, 10)} ${timestamp.slice(11, 16)} UTC`
+
+function Proposal({ proposal }: { proposal: NonNullable<Investigation['proposal']> }) {
+  return (
+    <>
+      <Fields>
+        <Field label="改派到">
+          <Chip>{proposal.offerId}</Chip>
+        </Field>
+        <Field label="承运商">{proposal.carrierId}</Field>
+        <Field label="车辆">{proposal.vehicleId}</Field>
+        <Field label="计划出发">{time(proposal.plannedDeparture)}</Field>
+        <Field label="计划到达">{time(proposal.plannedArrival)}</Field>
+        <Field label="额外费用">€{(proposal.extraCostCents / 100).toFixed(2)}</Field>
+        <Field label="规则预检">
+          <span className="chips">
+            {proposal.checks.map((check) => (
+              <span
+                key={`${check.ruleId}@${check.scope}`}
+                className={`check-pill check-status ${check.status}`}
+                title={`${check.title}：${checkStatusLabels[check.status]}`}
+              >
+                {check.ruleId}
+              </span>
+            ))}
+          </span>
+        </Field>
+      </Fields>
+      <blockquote>
+        <span className="quote-label">调查助手的理由</span>
+        {proposal.rationale}
+      </blockquote>
+    </>
+  )
+}
 
 interface Props {
   investigations: Investigation[]
@@ -22,44 +57,39 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
   return (
     <section className="investigations">
       {investigations.map((investigation) => {
-        const { proposal } = investigation
         const canDecide = investigation.status === 'PROPOSED' && actor.role === 'transportPlanner'
         return (
           <article key={investigation.investigationId} className="investigation">
             <header>
-              <strong>运输 agent 调查助手</strong> · {investigation.incident.legId} 承运商取消 · r
-              {investigation.caseRevision}
+              <strong>调查助手</strong>
+              <span className="tag">运输计划 agent</span>
               <span className={`investigation-status ${investigation.status}`}>
                 {statusLabels[investigation.status]}
               </span>
+              <span className="muted">
+                {investigation.incident.legId} 的承运商取消（资料版本 r{investigation.caseRevision}
+                ）
+              </span>
             </header>
-            {proposal && (
-              <>
-                <p>
-                  提议改派 {proposal.carrierId} / {proposal.vehicleId}，
-                  {time(proposal.plannedDeparture)} 出发 · {time(proposal.plannedArrival)}{' '}
-                  到达（UTC），额外费用 €{(proposal.extraCostCents / 100).toFixed(2)}
-                </p>
-                <p className="rationale">{proposal.rationale}</p>
-                <div className="checks">
-                  规则预检：
-                  {proposal.checks.map((check) => (
-                    <span
-                      key={`${check.ruleId}@${check.scope}`}
-                      className={`check ${check.status}`}
-                    >
-                      {check.ruleId} {checkStatusLabels[check.status]}
-                    </span>
-                  ))}
-                </div>
-              </>
+            <p className="investigation-lead">
+              {investigation.incident.legId}{' '}
+              的承运商取消了。调查助手自己查资料、用规则试算备选方案，只能提建议；
+              运输计划员确认之后订单才会改。
+            </p>
+            {investigation.status === 'RUNNING' && <p className="muted">调查中，步骤见时间线…</p>}
+            {investigation.proposal && <Proposal proposal={investigation.proposal} />}
+            {investigation.escalation && (
+              <blockquote>
+                <span className="quote-label">转人工的原因</span>
+                {investigation.escalation}
+              </blockquote>
             )}
-            {investigation.escalation && <p className="rationale">{investigation.escalation}</p>}
             {investigation.decidedBy && (
-              <small>
-                {investigation.decidedBy.id}（{investigation.decidedBy.role}）
-                {statusLabels[investigation.status]}
-              </small>
+              <Fields>
+                <Field label="决定人">
+                  {investigation.decidedBy.id}（{roleLabels[investigation.decidedBy.role]}）
+                </Field>
+              </Fields>
             )}
             {canDecide && (
               <div className="actions">
@@ -74,6 +104,9 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
                   否决
                 </button>
               </div>
+            )}
+            {investigation.status === 'PROPOSED' && !canDecide && (
+              <p className="muted">只有运输计划员能确认或否决这条提议。</p>
             )}
           </article>
         )

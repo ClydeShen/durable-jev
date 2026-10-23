@@ -15,7 +15,9 @@ import { useEffect, useMemo, useState } from 'react'
 import { agentRelations } from '../agent-relations'
 import type { AgentStatus, RuleInfo } from '../api'
 import { layoutGraph, type Positions } from '../graph-layout'
-import { checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
+import { kindLabels, mostSevere } from '../labels'
+import { useSavedLayout } from '../saved-layout'
+import { LayoutReset, StatusBadge } from './ui'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -24,35 +26,47 @@ type AgentNodeData = { agent: AgentStatus; caseStatus?: CheckStatus }
 function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
   const { agent, caseStatus } = data
   const summary = agent.summary
+  const openTasks = Object.values(summary?.openTasksByRole ?? {}).reduce(
+    (sum, count) => sum + count,
+    0,
+  )
   return (
     <div className={`agent-node check-status ${caseStatus ?? 'NONE'}`} style={agentNodeSize}>
       <Handle type="target" position={Position.Left} />
       <header>
         <span className={agent.available ? 'dot online' : 'dot offline'} />
-        <strong>{agent.card?.name ?? agent.agentId}</strong>
-        {caseStatus && <span className="agent-case-status">{checkStatusLabels[caseStatus]}</span>}
+        <button
+          type="button"
+          className="node-open"
+          aria-label={`${agent.card?.name ?? agent.agentId}，打开名片`}
+        >
+          <strong>{agent.card?.name ?? agent.agentId}</strong>
+        </button>
+        <StatusBadge status={caseStatus} />
       </header>
       <p>{agent.card?.description}</p>
       {summary ? (
-        <>
-          <p className="agent-meta">
-            规则：
-            {Object.entries(summary.rulesByKind)
-              .map(([kind, count]) => `${kindLabels[kind as keyof typeof kindLabels]} ${count}`)
-              .join(' · ')}
-          </p>
-          <p className="agent-meta">
-            案例 {summary.cases} · 待办{' '}
-            {Object.entries(summary.openTasksByRole)
-              .map(([role, count]) => `${roleLabels[role as keyof typeof roleLabels]} ${count}`)
-              .join('、') || '无'}
-          </p>
-          {agent.transport === 'a2a' && agent.agentId !== 'order-coordination' && (
-            <p className="agent-meta">A2A 任务 {agent.a2aTasks}</p>
-          )}
-        </>
+        <footer>
+          <span className="chips">
+            {Object.entries(summary.rulesByKind).map(([kind, count]) => (
+              <span key={kind} className="tag">
+                {kindLabels[kind as keyof typeof kindLabels]} {count}
+              </span>
+            ))}
+          </span>
+          <span className="agent-node-stats">
+            <span>
+              待办 <strong>{openTasks}</strong>
+            </span>
+            {agent.transport === 'a2a' && agent.agentId !== 'order-coordination' && (
+              <span>
+                A2A 任务 <strong>{agent.a2aTasks}</strong>
+              </span>
+            )}
+          </span>
+        </footer>
       ) : (
-        <p className="agent-meta">离线</p>
+        <p className="muted">离线</p>
       )}
       <Handle type="source" position={Position.Right} />
     </div>
@@ -71,6 +85,7 @@ interface Props {
 export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
   const relations = useMemo(() => agentRelations(rules), [rules])
   const [positions, setPositions] = useState<Positions>({})
+  const layout = useSavedLayout('agents')
   const agentIds = agents.map((agent) => agent.agentId).join()
   useEffect(() => {
     const ids = agentIds.split(',')
@@ -90,7 +105,9 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
       agents.map((agent) => ({
         id: agent.agentId,
         type: 'agent',
-        position: positions[agent.agentId] ?? { x: 0, y: 0 },
+        measured: agentNodeSize,
+        focusable: false,
+        position: layout.moved[agent.agentId] ?? positions[agent.agentId] ?? { x: 0, y: 0 },
         data: {
           agent,
           caseStatus: outcomes
@@ -102,7 +119,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
             : undefined,
         },
       })),
-    [agents, positions, outcomes, owners],
+    [agents, positions, layout.moved, outcomes, owners],
   )
   const edges = useMemo<Edge[]>(
     () =>
@@ -123,14 +140,15 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         edges={edges}
         nodeTypes={nodeTypes}
         onNodeClick={(_event, node) => onOpenAgent(node.id)}
+        onNodesChange={layout.onNodesChange}
         zoomOnDoubleClick={false}
-        nodesDraggable={false}
         fitView
       >
         <Background />
+        <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
         <Panel position="top-left" className="graph-hint">
-          点击 agent 查看其内部规则；连线是跨 agent 的规则依赖 · 通信：
-          {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}
+          点击 agent 查看它负责什么。箭头：一个 agent 的规则用到另一个 agent 的结论。
+          <span className="tag">通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</span>
         </Panel>
       </ReactFlow>
     </div>

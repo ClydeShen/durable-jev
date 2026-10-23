@@ -3,18 +3,25 @@ import type { AgentStatus } from '../api'
 interface Props {
   agents: AgentStatus[]
   canControl: boolean
+  onOpen(agentId: string): void
   onControl(agentId: string, verb: 'crash' | 'start'): void
 }
 
-export function AgentPanel({ agents, canControl, onControl }: Props) {
+export function AgentPanel({ agents, canControl, onOpen, onControl }: Props) {
   return (
     <section className="agent-panel">
       <h2>Agents</h2>
+      <p className="hint">点击查看每个 agent 负责什么</p>
       <ul>
         {agents.map((agent) => (
           <li key={agent.agentId}>
-            <span className={agent.available ? 'dot online' : 'dot offline'} />
-            {agent.card?.name ?? agent.agentId}
+            <button type="button" className="agent-link" onClick={() => onOpen(agent.agentId)}>
+              <span className={agent.available ? 'dot online' : 'dot offline'} />
+              <span>
+                <strong>{agent.card?.name ?? agent.agentId}</strong>
+                <small>{agent.available ? agent.card?.description : '离线'}</small>
+              </span>
+            </button>
             {canControl && agent.agentId !== 'order-coordination' && (
               <button
                 type="button"

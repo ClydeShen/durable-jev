@@ -145,7 +145,12 @@ export class CaseRuntime {
         store.record({
           caseId: task.caseId,
           eventName: 'human_task.decided',
-          payload: { humanTaskId, ruleId: task.ruleId, status: decision.task.status },
+          payload: {
+            humanTaskId,
+            ruleId: task.ruleId,
+            status: decision.task.status,
+            actor: 'actor' in action ? action.actor : undefined,
+          },
         })
       })
       await this.evaluateNow(task.caseId)
