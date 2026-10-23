@@ -368,11 +368,10 @@ export function RuleGraph({
             >
               <span className="stat-label">Specific rules</span>
               <Tag tone="highlight">{selectedCount} apply to this order</Tag>
-              <Tag>{filteredCount} do not apply, not shown</Tag>
             </span>
           )}
-          <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
         </GraphBar>
+        <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
       </ReactFlow>
     </div>
   )

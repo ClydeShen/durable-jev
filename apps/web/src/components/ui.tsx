@@ -75,12 +75,29 @@ export function GraphBar({ children }: { children: ReactNode }) {
   )
 }
 
-/** Offers to undo the presenter's dragging; dragged positions are kept in this browser. */
+/** Offers to undo the presenter's dragging, at the graph's top right; positions stay in this browser. */
 export function LayoutReset({ moved, onReset }: { moved: boolean; onReset(): void }) {
   if (!moved) return null
   return (
-    <button type="button" className="secondary small" onClick={onReset}>
-      Restore automatic layout
-    </button>
+    <Panel position="top-right">
+      <button
+        type="button"
+        className="secondary icon-button"
+        aria-label="Restore automatic layout"
+        title="Restore automatic layout"
+        onClick={onReset}
+      >
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+          <path
+            d="M3 8a5 5 0 1 0 1.5-3.6M3 2.5v2.5h2.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
+    </Panel>
   )
 }

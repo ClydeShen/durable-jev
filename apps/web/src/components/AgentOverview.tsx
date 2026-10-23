@@ -147,8 +147,8 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         <Background />
         <GraphBar>
           <Tag>Transport: {agents[0]?.transport === 'a2a' ? 'A2A' : 'native HTTP'}</Tag>
-          <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
         </GraphBar>
+        <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />
       </ReactFlow>
     </div>
   )
