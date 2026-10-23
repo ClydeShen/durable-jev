@@ -103,7 +103,6 @@ export function App() {
           )}
         </main>
         <TaskPanel
-          actor={actor}
           tasks={tasks.data ?? []}
           rules={rules}
           caseId={caseId}

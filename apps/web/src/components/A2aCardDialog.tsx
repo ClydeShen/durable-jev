@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { type A2aAgentCard, api } from '../api'
 import { Chip, Tag } from './chips'
-import { Field, Fields, Section } from './ui'
+import { Field, Fields, IconButton, Section } from './ui'
 
 const yesNo = (value?: boolean) => (value ? 'Yes' : 'No')
 
@@ -85,9 +85,7 @@ export function A2aCardDialog({
           <h3>A2A Agent Card</h3>
           <Chip>{cardUrl}</Chip>
         </div>
-        <button type="button" className="secondary small" onClick={() => dialog.current?.close()}>
-          Close
-        </button>
+        <IconButton icon="close" label="Close" onClick={() => dialog.current?.close()} />
       </header>
       <div className="drawer-body">
         {error && <p className="message error">{error}</p>}

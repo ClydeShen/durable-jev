@@ -20,7 +20,7 @@ pnpm start       # build and start every service
 Once the services are up, the end of the log shows "✔ Durable Jev demo is ready" with the address
 <http://localhost:4100>, and the default browser opens (set `OPEN_BROWSER=false` to keep it
 closed). The demo data loads on the first start; "Reset demo" at the top right of the page or
-`pnpm demo:reset` restores it at any time, and "Reset this case" in a case header restores only
+`pnpm demo:reset` restores it at any time, and the reset icon in a case header ("Reset this case") restores only
 that case.
 
 ## Walk through LOG-001: general cargo from order to dispatch

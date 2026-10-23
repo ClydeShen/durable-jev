@@ -1,6 +1,7 @@
 import type { CaseSummary } from '../api'
 import { countOf, roleLabels } from '../labels'
 import { OrderStatusBadge } from './chips'
+import { IconButton } from './ui'
 
 interface Props {
   cases: CaseSummary[]
@@ -15,9 +16,7 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
     <nav className="case-list">
       <div className="case-list-heading">
         <h2>Cases</h2>
-        <button type="button" className="secondary small" onClick={onNewOrder}>
-          + New order
-        </button>
+        <IconButton icon="add" label="New order" onClick={onNewOrder} />
       </div>
       {cases.map((summary) => (
         <button

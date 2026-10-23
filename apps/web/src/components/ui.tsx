@@ -1,5 +1,29 @@
 import { Panel } from '@xyflow/react'
 import { type ReactNode, useEffect } from 'react'
+import { Icon, type IconName } from './icons'
+
+/** A square button showing only a common icon; its name is its tooltip and accessible name. */
+export function IconButton({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: IconName
+  label: string
+  onClick(): void
+}) {
+  return (
+    <button
+      type="button"
+      className="secondary icon-button"
+      aria-label={label}
+      title={label}
+      onClick={onClick}
+    >
+      <Icon name={icon} />
+    </button>
+  )
+}
 
 /** A labelled value: the label says what the value is, so values never run together in a line. */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -57,9 +81,7 @@ export function Drawer({
     <aside className="drawer" aria-label="Details">
       <header className="drawer-header">
         <div className="drawer-heading">{heading}</div>
-        <button type="button" className="secondary small" onClick={onClose}>
-          Close
-        </button>
+        <IconButton icon="close" label="Close" onClick={onClose} />
       </header>
       <div className="drawer-body">{children}</div>
     </aside>
@@ -80,24 +102,7 @@ export function LayoutReset({ moved, onReset }: { moved: boolean; onReset(): voi
   if (!moved) return null
   return (
     <Panel position="top-right">
-      <button
-        type="button"
-        className="secondary icon-button"
-        aria-label="Restore automatic layout"
-        title="Restore automatic layout"
-        onClick={onReset}
-      >
-        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-          <path
-            d="M3 8a5 5 0 1 0 1.5-3.6M3 2.5v2.5h2.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
+      <IconButton icon="reset" label="Restore automatic layout" onClick={onReset} />
     </Panel>
   )
 }

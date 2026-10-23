@@ -20,7 +20,7 @@ import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
 import type { PlaybackStep } from '../playback'
 import { useSavedLayout } from '../saved-layout'
 import { RoleChip, RoleLabel, StatusBadge, Tag } from './chips'
-import { GraphBar, LayoutReset } from './ui'
+import { GraphBar, IconButton, LayoutReset } from './ui'
 
 type RuleNodeData = {
   rule: RuleInfo
@@ -190,9 +190,7 @@ function Narration({ playback }: { playback: Playback }) {
       </span>
       <span className="narration-progress">{progressLabel(playback)}</span>
       {playback.remaining > 0 && (
-        <button type="button" className="secondary small" onClick={playback.skip}>
-          Skip to the end
-        </button>
+        <IconButton icon="skip" label="Skip to the end" onClick={playback.skip} />
       )}
     </Panel>
   )
@@ -364,7 +362,7 @@ export function RuleGraph({
           {filteredCount > 0 && (
             <span
               className="graph-bar-group"
-              title={`${selectedCount + filteredCount} import requirements and customer contract terms, each applying only to certain destinations, commodity groups or customers. The ones that fit this order's destination, customer and commodity groups are picked first; the rest are neither evaluated nor shown.`}
+              title={`Of ${selectedCount + filteredCount} destination and customer-specific rules`}
             >
               <span className="stat-label">Specific rules</span>
               <Tag tone="highlight">{selectedCount} apply to this order</Tag>

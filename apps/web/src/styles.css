@@ -2207,3 +2207,10 @@ details.a2a-raw > pre {
   background: var(--bg);
   font-size: 12px;
 }
+
+/* A filter chip in the view tabs: the focused agent, with an icon to clear it. */
+button.focus-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}

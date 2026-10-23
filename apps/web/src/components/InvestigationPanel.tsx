@@ -56,19 +56,12 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
               <strong>Investigation helper</strong>
               <Tag>Transport planning agent</Tag>
               <InvestigationBadge status={investigation.status} />
-              <span className="muted">
-                Carrier of {investigation.incident.legId} cancelled (revision r
-                {investigation.caseRevision})
-              </span>
             </header>
             <p className="investigation-lead">
-              The carrier of {investigation.incident.legId} cancelled. The helper looks things up
-              and tries spare capacity against the rules by itself, but it can only propose; the
-              order changes only once the transport planner confirms.
+              Carrier of {investigation.incident.legId} cancelled. The helper proposes a
+              replacement; the order changes only when the transport planner confirms.
             </p>
-            {investigation.status === 'RUNNING' && (
-              <p className="muted">Investigating; the steps are in the timeline…</p>
-            )}
+            {investigation.status === 'RUNNING' && <p className="muted">Investigating…</p>}
             {investigation.proposal && <Proposal proposal={investigation.proposal} />}
             {investigation.escalation && (
               <blockquote>
@@ -99,8 +92,7 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
             )}
             {investigation.status === 'PROPOSED' && !canDecide && (
               <p className="muted">
-                Only the <RoleChip forRole="transportPlanner" /> can confirm or reject this
-                proposal.
+                Awaiting <RoleChip forRole="transportPlanner" />
               </p>
             )}
           </article>

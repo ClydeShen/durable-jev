@@ -115,11 +115,7 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
                 }
               />
             </Step>
-            <Step
-              number={5}
-              title="Documents"
-              hint="From the sample; they go with the order and cannot be edited here"
-            >
+            <Step number={5} title="Documents">
               <Documents documents={draft.shipment.documents} />
             </Step>
           </div>
