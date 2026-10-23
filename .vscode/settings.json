@@ -1,0 +1,7 @@
+{
+  "github.copilot.chat.commitMessageGeneration.instructions": [
+    {
+      "text": "Generate exactly one Conventional Commit header in the form type(scope): subject. Keep it at 100 characters or fewer. Allowed types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test, tune. Allowed scopes: agent-core, agent-harness, agent-transport, contracts, human-tasks, logistics, model-providers, rule-engine, service-kit, store, agent, coordinator, web, launcher, rule-authoring, eval, rules, harness, faults, lint, types, deps, ci. Do not use a skills scope. For agent skills under .agents or .claude, use chore(deps): add <skill-name> skill. Output only the header."
+    }
+  ]
+}
