@@ -1,14 +1,12 @@
 import type { CargoItem, Leg, Shipment } from '@durable-jev/contracts'
 import { type ReactNode, useEffect, useState } from 'react'
 import { api, type OrderForm } from '../api'
-import type { PlaybackSpeed } from '../playback'
 import { Tag } from './chips'
 import { CargoFields, Documents, LegFields, OrderBasics } from './OrderFields'
 import { SamplePicker } from './OrderSamples'
 import { OrderSummary } from './OrderSummary'
 
 interface Props {
-  speed: PlaybackSpeed
   onSubmit(sampleId: string, shipment: Shipment): void
   onCancel(): void
 }
@@ -57,7 +55,7 @@ function Step({
  * The order entry point, as the customer would submit it. The form starts filled in from a
  * sample order; submitting creates a new case that every agent evaluates from the first rule.
  */
-export function NewOrder({ speed, onSubmit, onCancel }: Props) {
+export function NewOrder({ onSubmit, onCancel }: Props) {
   const [form, setForm] = useState<OrderForm>()
   const [failure, setFailure] = useState<string>()
   const [draft, setDraft] = useState<Draft>()
@@ -82,8 +80,7 @@ export function NewOrder({ speed, onSubmit, onCancel }: Props) {
           <Tag>以客户身份下单</Tag>
         </div>
         <p className="story">
-          客户在下单入口提交订单，订单协调 agent 收到后，各 agent
-          从第一条规则开始评估。表单已按样例填好，可以直接提交，也可以先改几项再提交。
+          客户在下单入口提交订单，订单协调 agent 收到后，各 agent 从第一条规则开始评估。
         </p>
       </header>
       {failure && <p className="message">{failure}</p>}
@@ -96,7 +93,7 @@ export function NewOrder({ speed, onSubmit, onCancel }: Props) {
           }}
         >
           <div className="order-steps">
-            <Step number={1} title="选一个样例" hint="选中后下面的表单按这个样例重新填好">
+            <Step number={1} title="选一个样例">
               <SamplePicker
                 samples={form.samples}
                 selected={draft.sample.sampleId}
@@ -132,7 +129,6 @@ export function NewOrder({ speed, onSubmit, onCancel }: Props) {
             sample={draft.sample.shipment}
             shipment={draft.shipment}
             options={form.options}
-            speed={speed}
             onRestore={() => setDraft(startFrom(draft.sample))}
             onCancel={onCancel}
           />

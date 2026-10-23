@@ -68,15 +68,12 @@ export function Drawer({
 
 /** Offers to undo the presenter's dragging; dragged positions are kept in this browser. */
 export function LayoutReset({ count, onReset }: { count: number; onReset(): void }) {
+  if (count === 0) return null
   return (
     <Panel position="top-right" className="graph-hint">
-      {count > 0 ? (
-        <button type="button" className="secondary small" onClick={onReset}>
-          恢复自动排版（已拖动 {count} 个）
-        </button>
-      ) : (
-        '可拖动方块调整位置，浏览器会记住'
-      )}
+      <button type="button" className="secondary small" onClick={onReset}>
+        恢复自动排版（已拖动 {count} 个）
+      </button>
     </Panel>
   )
 }

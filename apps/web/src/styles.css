@@ -20,6 +20,10 @@
   --invalidated: #8e44ad;
   --not-applicable: #6c737f;
   --upstream: #0f766e;
+  /* One size scale for every control: buttons, inputs and selects line up in a row. */
+  --control-height: 28px;
+  --control-height-small: 24px;
+  --control-font: 13px;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -76,7 +80,10 @@ label {
 input,
 select,
 textarea {
+  box-sizing: border-box;
+  min-height: var(--control-height);
   font: inherit;
+  font-size: var(--control-font);
   padding: 4px 6px;
   border: 1px solid var(--control-border);
   border-radius: 6px;
@@ -85,8 +92,12 @@ textarea {
 }
 
 button {
+  box-sizing: border-box;
+  min-height: var(--control-height);
   font: inherit;
-  padding: 6px 12px;
+  font-size: var(--control-font);
+  line-height: 1.2;
+  padding: 4px 12px;
   border: none;
   border-radius: 6px;
   background: var(--accent);
@@ -148,6 +159,7 @@ button.danger {
 .chip,
 .entity-chip,
 .tag {
+  min-height: 0;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -520,7 +532,7 @@ main {
 }
 
 button.primary-action {
-  padding: 8px 18px;
+  padding: 4px 14px;
   font-weight: 600;
 }
 
@@ -531,38 +543,46 @@ button.primary-action {
   color: var(--muted);
 }
 
+/* Header facts share two lines: every label on one, every value centred on the next. */
 .case-facts {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: start;
   gap: 8px 24px;
 }
 
-.stat {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: 2px;
+.stat,
+.demo-actions {
+  display: grid;
+  grid-template-rows: 16px var(--control-height-small);
+  row-gap: 2px;
+  align-items: center;
 }
 
 .stat-value {
+  grid-row: 2;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 15px;
   font-weight: 600;
 }
 
 .stat-label {
+  grid-row: 1;
   font-size: 11px;
   color: var(--muted);
 }
 
 .demo-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  grid-auto-flow: column;
+  justify-content: start;
+  column-gap: 6px;
   margin-left: auto;
-  padding: 6px 8px;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
+}
+
+.demo-actions > button {
+  grid-row: 2;
 }
 
 .rule-graph {
@@ -713,9 +733,9 @@ button.agent-link:hover {
   background: var(--bg);
 }
 
-button.agent-link /* 2.5.8: click targets are at least 24 by 24 pixels. */
+/* 2.5.8: click targets are at least 24 by 24 pixels. */
 button.small {
-  min-height: 24px;
+  min-height: var(--control-height-small);
   min-width: 24px;
   padding: 2px 8px;
   font-size: 12px;
@@ -723,8 +743,8 @@ button.small {
 
 .view-tabs {
   display: flex;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 6px 16px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -942,6 +962,7 @@ label.evidence code {
 
 .segmented button {
   display: flex;
+  align-items: center;
   justify-content: center;
   flex: 1;
   padding: 4px 0;
@@ -1168,6 +1189,7 @@ span.judgement-bar > span {
 
 /* A rule node opens with an inner button, so it is reachable and usable by keyboard. */
 button.node-open {
+  min-height: 0;
   all: unset;
   cursor: pointer;
   border-radius: 3px;
@@ -1541,6 +1563,7 @@ table.record-table > thead > tr > th {
 }
 
 button.feed-link {
+  min-height: 0;
   all: unset;
   display: flex;
   cursor: pointer;
@@ -1876,7 +1899,6 @@ ul.order-documents li {
 }
 
 button.order-send {
-  padding: 10px 18px;
   font-weight: 600;
 }
 

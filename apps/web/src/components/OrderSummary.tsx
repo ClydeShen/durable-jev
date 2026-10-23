@@ -1,5 +1,4 @@
 import type { OrderOptions, Shipment } from '@durable-jev/contracts'
-import type { PlaybackSpeed } from '../playback'
 import { Chip, Tags } from './chips'
 import { Field, Fields } from './ui'
 
@@ -51,7 +50,6 @@ interface Props {
   sample: Shipment
   shipment: Shipment
   options: OrderOptions
-  speed: PlaybackSpeed
   onRestore(): void
   onCancel(): void
 }
@@ -60,15 +58,7 @@ interface Props {
  * The order as it will be submitted, beside the form and always in view, with the submit button:
  * what the customer orders, what was changed from the sample, and what happens next.
  */
-export function OrderSummary({
-  sampleId,
-  sample,
-  shipment,
-  options,
-  speed,
-  onRestore,
-  onCancel,
-}: Props) {
+export function OrderSummary({ sampleId, sample, shipment, options, onRestore, onCancel }: Props) {
   const customer = options.customers.find((item) => item.customerId === shipment.customerId)
   const weight = shipment.cargoItems.reduce((total, item) => total + item.weightGrams, 0) / 1000
   const changed = changedSections(sample, shipment)
@@ -114,11 +104,6 @@ export function OrderSummary({
       <button type="button" className="secondary" onClick={onCancel}>
         取消
       </button>
-      {speed === 'realtime' && (
-        <p className="order-hint">
-          动画速度是实时，提交后直接显示结果。想看规则逐条亮起，先在左侧选慢、中或快。
-        </p>
-      )}
     </aside>
   )
 }

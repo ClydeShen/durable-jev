@@ -70,7 +70,6 @@ export function App() {
         <main>
           {selection.ordering && (
             <NewOrder
-              speed={speed}
               onSubmit={(sampleId, shipment) =>
                 actions.submitOrder(sampleId, shipment, selection.showSubmitted)
               }
