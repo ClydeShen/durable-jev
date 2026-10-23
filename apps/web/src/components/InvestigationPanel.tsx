@@ -1,5 +1,5 @@
 import type { Actor, Investigation } from '../api'
-import { checkStatusLabels } from '../labels'
+import { checkStatusLabels, moneyOf } from '../labels'
 import { Badge, Chip, InvestigationBadge, RoleChip, Tag } from './chips'
 import { Field, Fields } from './ui'
 
@@ -16,7 +16,7 @@ function Proposal({ proposal }: { proposal: NonNullable<Investigation['proposal'
         <Field label="Vehicle">{proposal.vehicleId}</Field>
         <Field label="Planned departure">{time(proposal.plannedDeparture)}</Field>
         <Field label="Planned arrival">{time(proposal.plannedArrival)}</Field>
-        <Field label="Extra cost">€{(proposal.extraCostCents / 100).toFixed(2)}</Field>
+        <Field label="Extra cost">{moneyOf(proposal.extraCostCents)}</Field>
         <Field label="Rule pre-checks">
           <span className="chips">
             {proposal.checks.map((check) => (

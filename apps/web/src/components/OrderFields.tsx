@@ -335,7 +335,7 @@ export function OrderBasics({
           ))}
         </select>
       </OrderInput>
-      <OrderInput label="Quote (€)">
+      <OrderInput label="Quote (NZ$)">
         <input
           type="number"
           min={0}

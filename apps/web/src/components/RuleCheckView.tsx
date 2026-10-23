@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import type { RuleCheck } from '../api'
-import { evidenceLabels, roleLabels } from '../labels'
+import { evidenceLabels, moneyOf, roleLabels } from '../labels'
 import { Chip, Tags } from './chips'
 import { Field, Fields } from './ui'
 
@@ -12,7 +12,7 @@ const collectionLabels = { cargoItem: 'item', leg: 'leg' }
 /** Shows a parameter's value in the unit its name declares. */
 function parameterValue(name: string, value: string | number | boolean): string {
   if (typeof value !== 'number') return String(value)
-  if (name.endsWith('Cents')) return `€${(value / 100).toLocaleString('en-GB')}`
+  if (name.endsWith('Cents')) return moneyOf(value)
   if (name.endsWith('Minutes')) return `${value} minutes`
   if (name.endsWith('Hours')) return `${value} hours`
   return String(value)

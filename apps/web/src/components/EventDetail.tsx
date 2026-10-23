@@ -1,7 +1,7 @@
 import type { CheckStatus, Role } from '@durable-jev/contracts'
 import { Fragment, type ReactNode, useState } from 'react'
 import type { TimelineEntry } from '../api'
-import { checkStatusLabels, roleLabels } from '../labels'
+import { checkStatusLabels, moneyOf, roleLabels } from '../labels'
 import {
   fieldLabels,
   jevAnswer,
@@ -75,7 +75,7 @@ const namedValues: Record<string, (value: unknown) => ReactNode> = {
   scope: scopeText,
   role: (value) => (isRole(value) ? <RoleChip forRole={value} /> : String(value)),
   durationMs: (value) => `${String(value)} ms`,
-  extraCostCents: (value) => `€${Number(value) / 100}`,
+  extraCostCents: (value) => moneyOf(Number(value)),
   judgement: (value) => <Judgement judgement={value} />,
   at: (value) => readableTime(value),
   plannedDeparture: (value) => readableTime(value),
