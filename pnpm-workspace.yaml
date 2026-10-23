@@ -10,6 +10,7 @@ allowBuilds:
   "@google/genai": false
   lefthook: false
   protobufjs: false
+  better-sqlite3: true
 # Exact versions in package.json, the Node version in engines enforced, and one shell for scripts on
 # every platform.
 saveExact: true
