@@ -173,4 +173,6 @@ export const api = {
   controlService: (name: string, verb: 'crash' | 'start') =>
     request<unknown>(`/demo/services/${name}/${verb}`, { method: 'POST' }),
   reset: () => request<{ cases: number }>('/demo/reset', { method: 'POST' }),
+  resetCase: (caseId: string) =>
+    request<CaseSummary>(`/cases/${encodeURIComponent(caseId)}/reset`, { method: 'POST' }),
 }

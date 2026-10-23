@@ -92,8 +92,8 @@ export class A2aAgentClient implements AgentClient {
     return this.operations.acknowledgeEvents(eventIds)
   }
 
-  reset(): Promise<void> {
-    return this.operations.reset()
+  reset(caseId?: string): Promise<void> {
+    return this.operations.reset(caseId)
   }
 
   private async discovered(): Promise<Client> {

@@ -76,14 +76,38 @@ export function openStore(path: string, serviceMigrations: readonly Migration[] 
   return db
 }
 
-export function clearData(db: Db): void {
-  const tables = db
+const dataTables = (db: Db) =>
+  db
     .prepare<[], { name: string }>(
       "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT IN ('schema_migrations', 'sqlite_sequence')",
     )
     .all()
+    .map(({ name }) => name)
+
+/** Forgets everything the service stored, or only one case when a case id is given. */
+export function clearData(db: Db, caseId?: string): void {
+  const tables = dataTables(db)
   db.transaction(() => {
     db.pragma('defer_foreign_keys = ON')
-    for (const { name } of tables) db.exec(`DELETE FROM "${name}"`)
+    for (const name of tables) {
+      if (caseId === undefined) db.exec(`DELETE FROM "${name}"`)
+      else clearCaseRows(db, name, caseId)
+    }
   })()
+}
+
+/** A case's rows carry its id; its operations are named `<caseId>:...`. */
+function clearCaseRows(db: Db, table: string, caseId: string) {
+  if (table === 'operations') {
+    const prefix = `${caseId}:`
+    db.prepare('DELETE FROM operations WHERE substr(operation_id, 1, ?) = ?').run(
+      prefix.length,
+      prefix,
+    )
+    return
+  }
+  const columns = db.prepare<[], { name: string }>(`PRAGMA table_info("${table}")`).all()
+  if (columns.some((column) => column.name === 'case_id')) {
+    db.prepare(`DELETE FROM "${table}" WHERE case_id = ?`).run(caseId)
+  }
 }

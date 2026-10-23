@@ -85,6 +85,7 @@ export function App() {
                 rules={rules}
                 actions={actions}
                 onShowRule={(ruleId) => showRule(caseId, ruleId)}
+                onReset={() => actions.resetCase(caseId, selection.showSubmitted)}
               />
               <CaseViews
                 caseId={detail.data.caseId}

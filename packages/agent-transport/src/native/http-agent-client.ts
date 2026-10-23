@@ -70,8 +70,8 @@ export class HttpAgentClient implements AgentClient {
     await this.call('/events/ack', { method: 'POST', body: { eventIds } })
   }
 
-  async reset(): Promise<void> {
-    await this.call('/reset', { method: 'POST' })
+  async reset(caseId?: string): Promise<void> {
+    await this.call('/reset', { method: 'POST', body: { caseId } })
   }
 
   summary(): Promise<AgentSummary> {

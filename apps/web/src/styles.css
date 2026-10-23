@@ -512,8 +512,14 @@ main {
   font-size: 18px;
 }
 
-button.primary-action {
+.case-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+}
+
+button.primary-action {
   padding: 8px 18px;
   font-weight: 600;
 }

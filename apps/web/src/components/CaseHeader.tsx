@@ -7,6 +7,7 @@ interface Props {
   onDispatch(): void
   onRevise(index: number): void
   onReportIncident(index: number): void
+  onReset(): void
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -18,7 +19,14 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncident }: Props) {
+export function CaseHeader({
+  detail,
+  actor,
+  onDispatch,
+  onRevise,
+  onReportIncident,
+  onReset,
+}: Props) {
   const canDispatch = actor.role === 'dispatcher' && detail.status === 'READY_TO_DISPATCH'
   const open = detail.status !== 'DISPATCHED'
   const nextRevision = detail.revisions.find((revision) => !revision.applied)
@@ -28,11 +36,21 @@ export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncide
       <div className="case-title">
         <h2>{detail.caseId}</h2>
         <OrderStatusBadge status={detail.status} />
-        {canDispatch && (
-          <button type="button" className="primary-action" onClick={onDispatch}>
-            确认发运
+        <div className="case-title-actions">
+          {canDispatch && (
+            <button type="button" className="primary-action" onClick={onDispatch}>
+              确认发运
+            </button>
+          )}
+          <button
+            type="button"
+            className="secondary small case-reset"
+            title="只把这个案例恢复到刚收到订单时的样子，并从第一条规则重新回放；其他案例不受影响"
+            onClick={onReset}
+          >
+            ↺ 重置本案例
           </button>
-        )}
+        </div>
       </div>
       <p className="story">{detail.story}</p>
       <div className="case-facts">
