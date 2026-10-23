@@ -169,7 +169,7 @@
 
 ## 收尾：怎么扩展、谁来维护（30 秒）
 
-- **加规则 = 写政策文本**：`pnpm author "Appendix G"` 让编写 agent 从政策原文生成规则，自动校验，给出 diff，人审核后合入。
+- **加规则 = 写政策文本**：`pnpm author "Schedule G"` 让编写 agent 从政策原文生成规则，自动校验，给出 diff，人审核后合入。
 - **加 agent = 配置**：目的地合规 agent 是后加的，原有 4 个 agent 一行代码没改。
 - **换通信方式**：`pnpm start:a2a` 后 Agents 视图显示 "Transport: A2A"，业务结果不变。
 
@@ -188,7 +188,7 @@
 | # | 点什么 | 屏幕上会看到 | 你说 |
 |---|---|---|---|
 | 1 | 右上角点 **Policy** | 弹窗显示政策原文 Shipment Release Policy v1，顶部是各部分的目录 | "这就是规则的原始来源：一份写给人看的政策文档，不是代码。" |
-| 2 | 点目录里的 **Appendix H. Customer contract terms** | 跳到客户合同条款，例如 CUST-MEDI-5 Named recipient | "规则编写 agent 从这些条文生成规则；改政策就是改这段文字，再重新生成、回放验证。" |
+| 2 | 点目录里的 **Schedule H. Customer contract terms** | 跳到客户合同条款，例如 CUST-MEDI-5 Named recipient | "规则编写 agent 从这些条文生成规则；改政策就是改这段文字，再重新生成、回放验证。" |
 | 3 | 关掉弹窗，在规则图里点任一规则 | 规则详情里 **What this rule checks** 引用的就是这段原文 | "每条规则都能追溯回原文。" |
 
 ## 演示中出状况

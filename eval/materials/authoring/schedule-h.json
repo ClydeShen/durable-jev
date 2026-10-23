@@ -1,5 +1,5 @@
 {
-  "section": "Appendix H. Customer contract terms",
+  "section": "Schedule H. Customer contract terms",
   "note": "Draft stand-in for the authoring model, prepared while live models are off. Re-record with MODEL_MODE=live before tuning (T7.0).",
   "attempts": [
     {
@@ -75,7 +75,7 @@
         },
         {
           "ruleId": "CUST-ACME-4",
-          "version": "1",
+          "version": "2",
           "title": "Acme Office Supplies: invoice currency",
           "owner": "commercial-control",
           "scope": "order",
@@ -92,7 +92,7 @@
           "parameters": [],
           "invalidationTriggers": ["quote"],
           "expression": {
-            "passWhen": "order.quote.currency = \"EUR\"",
+            "passWhen": "order.quote.currency = \"NZD\"",
             "observe": "order.quote.currency"
           }
         },
@@ -167,7 +167,7 @@
         },
         {
           "ruleId": "CUST-BRISK-4",
-          "version": "1",
+          "version": "2",
           "title": "Brisk Retail Group: invoice currency",
           "owner": "commercial-control",
           "scope": "order",
@@ -184,7 +184,7 @@
           "parameters": [],
           "invalidationTriggers": ["quote"],
           "expression": {
-            "passWhen": "order.quote.currency = \"EUR\"",
+            "passWhen": "order.quote.currency = \"NZD\"",
             "observe": "order.quote.currency"
           }
         },
@@ -259,7 +259,7 @@
         },
         {
           "ruleId": "CUST-MEDI-4",
-          "version": "1",
+          "version": "2",
           "title": "Southgate Clinics: invoice currency",
           "owner": "commercial-control",
           "scope": "order",
@@ -276,7 +276,7 @@
           "parameters": [],
           "invalidationTriggers": ["quote"],
           "expression": {
-            "passWhen": "order.quote.currency = \"EUR\"",
+            "passWhen": "order.quote.currency = \"NZD\"",
             "observe": "order.quote.currency"
           }
         },
@@ -640,7 +640,7 @@
         },
         {
           "ruleId": "CUST-KAPA-4",
-          "version": "1",
+          "version": "2",
           "title": "Kapa Chemicals: invoice currency",
           "owner": "commercial-control",
           "scope": "order",
@@ -657,7 +657,7 @@
           "parameters": [],
           "invalidationTriggers": ["quote"],
           "expression": {
-            "passWhen": "order.quote.currency = \"EUR\"",
+            "passWhen": "order.quote.currency = \"NZD\"",
             "observe": "order.quote.currency"
           }
         },
@@ -859,7 +859,7 @@
         },
         {
           "ruleId": "CUST-OAK-4",
-          "version": "1",
+          "version": "2",
           "title": "Oakline Furniture: invoice currency",
           "owner": "commercial-control",
           "scope": "order",
@@ -876,7 +876,7 @@
           "parameters": [],
           "invalidationTriggers": ["quote"],
           "expression": {
-            "passWhen": "order.quote.currency = \"EUR\"",
+            "passWhen": "order.quote.currency = \"NZD\"",
             "observe": "order.quote.currency"
           }
         },

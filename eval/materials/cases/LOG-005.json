@@ -48,7 +48,7 @@
     "quote": {
       "amountCents": 900000,
       "extraCostCents": 0,
-      "currency": "EUR"
+      "currency": "NZD"
     },
     "documents": [],
     "warehouseRecords": []
@@ -116,7 +116,7 @@
         "quote": {
           "amountCents": 900000,
           "extraCostCents": 1300000,
-          "currency": "EUR"
+          "currency": "NZD"
         }
       }
     },

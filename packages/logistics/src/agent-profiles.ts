@@ -47,7 +47,7 @@ export const agentProfiles: Record<AgentId, AgentProfile> = {
     responsibilities: [
       'Checks customer status and credit; over the limit, a commercial manager approves',
       'Checks the quote; extra cost above the threshold goes to a commercial manager',
-      'Checks each customer contract term (policy appendix H)',
+      'Checks each customer contract term (policy schedule H)',
     ],
   },
   'destination-compliance': {
@@ -55,7 +55,7 @@ export const agentProfiles: Record<AgentId, AgentProfile> = {
     description: 'Destination import requirements (extension)',
     responsibilities: [
       'Jev decides which commodity groups each item belongs to; when unsure it picks several rather than miss one',
-      'Selects the import requirements that apply to this order by destination and commodity group (policy appendix G); the rest are filtered out',
+      'Selects the import requirements that apply to this order by destination and commodity group (policy schedule G); the rest are filtered out',
       "Added as the extension: adding this agent changed no other agent's code",
     ],
   },
