@@ -36,3 +36,21 @@ jobs:
       - name: Commit messages of this pull request
         if: github.event_name == 'pull_request'
         run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }}
+
+  # The demo has to start on Windows too: build, then run the tests, the replay and the fault
+  # scenarios, which start and kill real processes.
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 20
+    env:
+      MODEL_MODE: scripted
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v5
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: node scripts/materials-lock.mjs --check
+      - run: pnpm test
+      - run: pnpm replay
+      - run: pnpm faults

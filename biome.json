@@ -119,5 +119,6 @@
         }
       }
     }
-  ]
+  ],
+  "plugins": ["./lint/no-url-pathname.grit"]
 }

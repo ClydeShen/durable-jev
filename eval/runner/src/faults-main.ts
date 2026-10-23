@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { scenarios } from './faults/scenarios.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const reportDirectory = join(repositoryRoot, 'var/reports')
 const only = new Set(process.argv.slice(2))
 

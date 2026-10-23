@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import type { AddressInfo } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { AgentClient } from '@durable-jev/agent-core'
 import { A2aAgentClient, a2aRoutes, agentCard } from '@durable-jev/agent-transport'
 import { applyRevision } from '@durable-jev/logistics'
@@ -24,7 +25,7 @@ const verdict = (ok: boolean, evidence: string) => ({
   evidence,
 })
 
-const childPath = new URL('./crash-child.js', import.meta.url).pathname
+const childPath = fileURLToPath(new URL('./crash-child.js', import.meta.url))
 
 /** Runs the start phase until it exits with 137, then the resume phase on the same files. */
 function crashAndResume<T>(scenario: string): { exitCode: number; resumed: T } {

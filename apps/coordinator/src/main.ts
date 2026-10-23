@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import {
   agentSummary,
   CaseOrchestrator,
@@ -17,7 +18,7 @@ import { collectEvents, EventLog } from './event-log.js'
 import { InvestigationClient } from './investigation-client.js'
 import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
 const dataDirectory = process.env.DATA_DIR ?? join(repositoryRoot, 'var/data')
 const webDist = process.env.WEB_DIST ?? join(repositoryRoot, 'apps/web/dist')

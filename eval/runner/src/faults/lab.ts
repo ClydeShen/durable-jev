@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import type { CaseView } from '@durable-jev/agent-core'
 import type { HumanTask, Role, Shipment } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
@@ -15,7 +16,7 @@ import {
 } from '@durable-jev/logistics'
 import { ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 
-const repositoryRoot = new URL('../../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../../', import.meta.url))
 export const materials = join(repositoryRoot, 'eval/materials')
 const catalog = loadCaseCatalog(join(materials, 'cases'))
 

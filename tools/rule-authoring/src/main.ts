@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadRulePack } from '@durable-jev/agent-core'
 import { createModels, type JsonValue } from '@earendil-works/pi-ai'
 import {
@@ -13,7 +14,7 @@ import { type AuthoringModel, authorRules } from './author-rules.js'
 import { policySections } from './policy-sections.js'
 import { diffRules } from './rule-diff.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = join(repositoryRoot, 'eval/materials')
 const proposalsDirectory = join(repositoryRoot, 'var/authoring')
 const codeEvaluatorRefs = new Set(['R29'])

@@ -3,8 +3,9 @@
 // since the lock was written, so such a change needs a deliberate `pnpm materials:lock`.
 import { createHash } from 'node:crypto'
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 const lockFile = 'eval/materials.lock.json'
 const protectedPaths = ['.harness/prd.md', 'eval/materials']
 

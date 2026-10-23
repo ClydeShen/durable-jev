@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { BACKGROUND_CONTEXT } from '@earendil-works/chord/context'
 import { Type } from '@earendil-works/pi-ai'
 import { createModels } from '@earendil-works/pi-ai/models'
@@ -18,7 +19,7 @@ import {
 } from '@earendil-works/pi-durable'
 import { openNodeSqliteStorage } from '@earendil-works/pi-durable/storage/sqlite/node'
 
-const workDirectory = new URL('../var/', import.meta.url).pathname
+const workDirectory = fileURLToPath(new URL('../var/', import.meta.url))
 const storagePath = `${workDirectory}harness.sqlite`
 const businessLedgerPath = `${workDirectory}business-ledger.json`
 const context = BACKGROUND_CONTEXT

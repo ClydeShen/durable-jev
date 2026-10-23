@@ -103,6 +103,12 @@ describe('DurableInvestigator after a restart', () => {
     expect(outcome).toEqual({ status: 'finished', answer: 'done' })
     expect(executed).toEqual(['step 1', 'step 2', 'step 2'])
     await second.close()
-    rmSync(directory, { recursive: true, force: true })
+    try {
+      rmSync(directory, { recursive: true, force: true })
+    } catch (error) {
+      // The abandoned harness keeps the SQLite file open, as a real crash would not; Windows
+      // refuses to delete an open file, so the temporary folder is left for the OS to clear.
+      if ((error as NodeJS.ErrnoException).code !== 'EPERM') throw error
+    }
   })
 })

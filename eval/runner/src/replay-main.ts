@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadCaseCatalog } from '@durable-jev/logistics'
 import { JevJudge } from '@durable-jev/model-providers'
 import { replayCase } from './replay.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = join(repositoryRoot, 'eval/materials')
 const reportDirectory = join(repositoryRoot, 'var/reports')
 

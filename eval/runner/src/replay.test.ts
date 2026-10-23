@@ -1,9 +1,10 @@
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadCaseCatalog } from '@durable-jev/logistics'
 import { describe, expect, it } from 'vitest'
 import { replayCase } from './replay.js'
 
-const materials = new URL('../../materials/', import.meta.url).pathname
+const materials = fileURLToPath(new URL('../../materials/', import.meta.url))
 
 describe('demo case replays', () => {
   for (const caseFile of loadCaseCatalog(join(materials, 'cases')).values()) {

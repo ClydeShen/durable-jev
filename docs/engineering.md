@@ -9,7 +9,7 @@ has exactly one owning tool, and each check runs at the earliest stage where it 
 |---|---|---|
 | Editor | Biome (format and lint as you type), `.editorconfig` | instant |
 | Commit ([lefthook.yml](../lefthook.yml), installed by `pnpm install`) | Biome on the staged files; gitleaks on the staged changes (skipped with a notice when gitleaks is not installed); commitlint on the message | about 1 s |
-| CI ([.github/workflows/check.yml](../.github/workflows/check.yml)) and `pnpm check` | everything below, plus the scripted replay, the fault scenarios, `pnpm security` and gitleaks over the whole history | about a minute |
+| CI ([.github/workflows/check.yml](../.github/workflows/check.yml)) and `pnpm check` | everything below, plus the scripted replay, the fault scenarios, `pnpm security` and gitleaks over the whole history; a second job builds on Windows and runs the tests, the replay and the fault scenarios there | a few minutes |
 
 `pnpm check` runs, in order:
 
@@ -76,7 +76,8 @@ make a check pass. Three layers, each catching what the previous one cannot:
 | Strict types everywhere, tests and the web app included | Types are the first reviewer | `pnpm typecheck`: `strict`, `noUncheckedIndexedAccess`, `noImplicitOverride`, `noImplicitReturns`, `noFallthroughCasesInSwitch` ([tsconfig.base.json](../tsconfig.base.json)) |
 | Copy-paste stays below 1% of the code | Duplicates drift apart; shared logic gets one owner | jscpd, `threshold: 1` ([.jscpd.json](../.jscpd.json)) |
 | Workspace manifests are consistent: one version per dependency, sorted dependencies, no empty sections | Version drift between packages causes subtle bugs | sherif |
-| Formatting: 2 spaces, single quotes, no semicolons, 100 columns, LF | No formatting debates or diffs | Biome formatter, [.editorconfig](../.editorconfig) |
+| Formatting: 2 spaces, single quotes, no semicolons, 100 columns, LF | No formatting debates or diffs | Biome formatter, [.editorconfig](../.editorconfig), [.gitattributes](../.gitattributes) (LF on checkout on every OS) |
+| Works on Windows: file paths from `import.meta.url` go through `fileURLToPath`, and package scripts use no Unix-only shell syntax | `.pathname` gives `/D:/...` on Windows; `VAR=x cmd` does not run in cmd | Biome plugin [lint/no-url-pathname.grit](../lint/no-url-pathname.grit); `shell-emulator=true` in [.npmrc](../.npmrc); the Windows CI job |
 | PRD, policy, rules and test materials change only with the owner's approval | Agents must not reshape the source material to pass a check | the three layers under Protected files |
 | Each project's build info stays in its `dist/` | Deleting `dist/` must force a rebuild | `tsBuildInfoFile` in each `tsconfig.json` |
 

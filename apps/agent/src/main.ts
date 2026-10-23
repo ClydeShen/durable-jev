@@ -1,4 +1,5 @@
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { agentSummary, CaseStore, LocalAgentClient } from '@durable-jev/agent-core'
 import { a2aRoutes, agentCard, agentRouter } from '@durable-jev/agent-transport'
 import { agentIdSchema } from '@durable-jev/contracts'
@@ -14,7 +15,7 @@ import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-
 import { createService } from '@durable-jev/service-kit'
 import { investigationRoutes } from './investigation-routes.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const agentId = agentIdSchema.parse(process.env.AGENT_ID)
 const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
 const dataDirectory = process.env.DATA_DIR ?? join(repositoryRoot, 'var/data')
