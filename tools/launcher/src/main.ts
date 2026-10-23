@@ -1,13 +1,23 @@
 import { controlServer } from './control-server.js'
+import { openBrowser, readyBanner, waitUntilReady } from './ready.js'
 import { consoleUrl, controlPort, services } from './services.js'
 import { Supervisor } from './supervisor.js'
 
 const supervisor = new Supervisor(services)
 supervisor.startAll()
 controlServer(supervisor).listen(controlPort, 'localhost')
-process.stdout.write(
-  `[launcher] demo at ${consoleUrl} (MODEL_MODE=${process.env.MODEL_MODE ?? 'scripted'}), control on localhost:${controlPort}\n`,
-)
+const modelMode = process.env.MODEL_MODE ?? 'scripted'
+process.stdout.write(`[launcher] starting the demo (MODEL_MODE=${modelMode}) …\n`)
+void waitUntilReady(consoleUrl).then((ready) => {
+  if (!ready) {
+    process.stdout.write(
+      `[launcher] the console did not answer at ${consoleUrl}; see the log above\n`,
+    )
+    return
+  }
+  process.stdout.write(readyBanner(consoleUrl, modelMode))
+  openBrowser(consoleUrl)
+})
 
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.on(signal, () => {

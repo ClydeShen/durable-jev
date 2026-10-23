@@ -14,7 +14,7 @@ pnpm bootstrap   # 安装依赖并编译
 pnpm start       # 编译并启动全部服务
 ```
 
-浏览器打开 <http://localhost:4100>。演示数据在首次启动时自动载入；随时用页面右上角"重置演示"或 `pnpm demo:reset` 恢复初始状态。
+服务就绪后，日志末尾会出现醒目的"✔ Durable Jev 演示已就绪"和地址 <http://localhost:4100>，并自动打开默认浏览器（不想自动打开就设 `OPEN_BROWSER=false`）。演示数据在首次启动时自动载入；随时用页面右上角"重置演示"或 `pnpm demo:reset` 恢复初始状态。
 
 ## 演示 LOG-001：普通货从提交到发运
 
