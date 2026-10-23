@@ -8,6 +8,7 @@ export {
   humanTaskSchema,
 } from './human-task.js'
 export { type RuleId, ruleIdSchema, utcTimestampSchema } from './ids.js'
+export type { OrderOptions } from './order-entry.js'
 export {
   type CargoCategory,
   type CargoItem,

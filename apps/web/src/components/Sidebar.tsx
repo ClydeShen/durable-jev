@@ -10,6 +10,7 @@ interface Props {
   cases: CaseSummary[]
   selectedCase?: string
   onSelectCase(caseId: string): void
+  onNewOrder(): void
   agents: AgentStatus[]
   canControl: boolean
   onOpenAgent(agentId: string): void
@@ -21,7 +22,12 @@ export function Sidebar(props: Props) {
   return (
     <aside className="sidebar">
       <PlaybackControl speed={props.speed} onChange={props.onSpeed} />
-      <CaseList cases={props.cases} selected={props.selectedCase} onSelect={props.onSelectCase} />
+      <CaseList
+        cases={props.cases}
+        selected={props.selectedCase}
+        onSelect={props.onSelectCase}
+        onNewOrder={props.onNewOrder}
+      />
       <AgentPanel
         agents={props.agents}
         canControl={props.canControl}

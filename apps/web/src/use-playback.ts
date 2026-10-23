@@ -18,24 +18,37 @@ interface Options {
   titles: ReadonlyMap<string, string>
   /** Where the case stands, shown once the last step has played. */
   finale: PlaybackStep
+  /** Plays the case from its first event, as for an order just submitted. */
+  fromStart: boolean
 }
 
 /**
  * Plays what happens to a case step by step. Events that were already there when the case
- * opened are not replayed; new ones play at the chosen speed, or at once in real time.
+ * opened are not replayed, unless it plays from the start; new ones play at the chosen speed, or
+ * at once in real time.
  */
-export function usePlayback({ caseId, entries, outcomes, speed, titles, finale }: Options) {
+export function usePlayback({
+  caseId,
+  entries,
+  outcomes,
+  speed,
+  titles,
+  finale,
+  fromStart,
+}: Options) {
   const [shown, setShown] = useState<{ caseId: string; upTo: number }>()
   const [current, setCurrent] = useState<PlaybackStep>()
   const last = (entries?.length ?? 0) - 1
-  const upTo = shown?.caseId === caseId ? Math.min(shown.upTo, last) : last
+  const replay = fromStart && speed !== 'realtime'
+  const opened = replay ? -1 : last
+  const upTo = shown?.caseId === caseId ? Math.min(shown.upTo, last) : opened
 
   useEffect(() => {
     if (entries && (shown?.caseId !== caseId || speed === 'realtime')) {
-      setShown({ caseId, upTo: entries.length - 1 })
+      setShown({ caseId, upTo: replay ? -1 : entries.length - 1 })
       setCurrent(undefined)
     }
-  }, [caseId, entries, shown?.caseId, speed])
+  }, [caseId, entries, shown?.caseId, speed, replay])
 
   const steps = useMemo(
     () => (entries && shown?.caseId === caseId ? playbackSteps(entries, upTo, titles) : []),
@@ -66,7 +79,8 @@ export function usePlayback({ caseId, entries, outcomes, speed, titles, finale }
   }, [nextUpTo, current, speed, caseId])
 
   return {
-    outcomes: entries ? outcomesAt(entries, upTo, outcomes) : [...outcomes],
+    // Before the timeline loads, a case played from the start shows nothing decided yet.
+    outcomes: (entries && outcomesAt(entries, upTo, outcomes)) ?? (replay ? [] : [...outcomes]),
     current,
     remaining: steps.length,
     /** Shows the end state now. */

@@ -1,4 +1,11 @@
-import type { CheckStatus, OrderStatus, Role, RuleEngineKind } from '@durable-jev/contracts'
+import type {
+  CargoCategory,
+  CheckStatus,
+  OrderStatus,
+  Role,
+  RuleEngineKind,
+  Shipment,
+} from '@durable-jev/contracts'
 
 export const roleLabels: Record<Role, string> = {
   transportPlanner: '运输计划员',
@@ -100,4 +107,33 @@ export const evidenceLabels: Record<string, string> = {
   newPackagingId: '新包装编号',
   photoRef: '照片编号',
   retestDeciCelsius: '复测温度（0.1 °C）',
+}
+
+export const cargoCategoryLabels: Record<CargoCategory, string> = {
+  general: '普通货物',
+  coldChain: '冷链',
+  controlled: '管制品',
+}
+
+export const handoverLabels: Record<Shipment['handover'], string> = {
+  dock: '装卸平台',
+  curbside: '路边交接',
+  customerSite: '客户现场',
+}
+
+/** Kinds of document an order carries, as the customer names them. */
+export const documentKindLabels: Record<string, string> = {
+  transportInstructions: '运输说明',
+  packingList: '装箱单',
+  safetyDataSheet: '安全数据表',
+  inspectionChecklist: '检查清单',
+  temperatureLog: '温度记录',
+  customerRestrictions: '客户限制说明',
+  controlledDeclaration: '管制品申报',
+  importPermit: '进口许可',
+  productRegistration: '产品注册',
+  healthCertificate: '卫生证书',
+  certificateOfOrigin: '原产地证书',
+  batteryTestSummary: '电池测试摘要',
+  commercialInvoice: '商业发票',
 }

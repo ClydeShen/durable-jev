@@ -79,7 +79,7 @@ function stepFor(
       const status = payload.status as CheckStatus
       return {
         upTo: index,
-        text: `${ruleId}「${title}」（${scopeText(payload.scope)}）重新判断：${checkStatusLabels[status]}`,
+        text: `${ruleId}「${title}」（${scopeText(payload.scope)}）判断：${checkStatusLabels[status]}`,
         ruleIds: [ruleId],
         tone: 'rule',
         status,
@@ -139,6 +139,13 @@ function stepFor(
   }
 }
 
+/** A revision handed to the agents; the first one is the order arriving. */
+function submittedText(caseRevision: number): string {
+  return caseRevision === 1
+    ? '订单协调 agent 收到新订单，各 agent 从第一条规则开始逐条判断'
+    : `订单资料版本 r${caseRevision} 交给各 agent 评估`
+}
+
 /**
  * The steps to show for the timeline entries after `from`. Invalidations caused by one change
  * play as one step; the order receiving a new revision plays once, not once per agent.
@@ -171,7 +178,7 @@ export function playbackSteps(
       if (entry.agentId === 'order-coordination') {
         steps.push({
           upTo: index,
-          text: `订单资料版本 r${entry.payload.caseRevision} 交给各 agent 评估`,
+          text: submittedText(Number(entry.payload.caseRevision)),
           ruleIds: [],
           tone: 'info',
         })

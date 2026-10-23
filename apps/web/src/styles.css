@@ -74,7 +74,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   font: inherit;
   padding: 4px 6px;
   border: 1px solid var(--control-border);
@@ -443,6 +444,17 @@ button.agent-link small {
 h2 {
   font-size: 15px;
   margin: 0 0 10px;
+}
+
+.case-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.case-list-heading h2 {
+  margin: 0;
 }
 
 .case {
@@ -1536,4 +1548,142 @@ button.feed-link:focus-visible {
   .feed-item {
     animation: feed-out 1ms linear 4400ms forwards;
   }
+}
+
+/* The order entry point: a customer's order form, filled in from a sample. */
+
+.new-order {
+  overflow-y: auto;
+}
+
+.order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 16px 24px;
+}
+
+.order-section {
+  margin: 0;
+  padding: 10px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.order-section legend {
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px 14px;
+  align-items: start;
+}
+
+.order-input {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  color: var(--text);
+}
+
+.order-input.wide,
+.order-note.wide {
+  grid-column: 1 / -1;
+}
+
+.order-input textarea {
+  resize: vertical;
+}
+
+.order-choices {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.order-choices legend {
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.order-choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 12px;
+  font-size: 13px;
+}
+
+.order-range {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.order-range input {
+  width: 6em;
+}
+
+.order-note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.order-cards,
+.order-documents {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.order-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.order-card .order-grid {
+  width: 100%;
+}
+
+ul.order-documents li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 13px;
+}
+
+.order-submit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-submit button[type="submit"] {
+  padding: 8px 18px;
+  font-weight: 600;
+}
+
+.order-submit .muted {
+  font-size: 13px;
 }

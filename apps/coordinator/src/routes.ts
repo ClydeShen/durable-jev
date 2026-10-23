@@ -6,7 +6,7 @@ import type {
   CaseView,
   RulePack,
 } from '@durable-jev/agent-core'
-import { roleSchema, shipmentSchema } from '@durable-jev/contracts'
+import { type OrderOptions, roleSchema, shipmentSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
   applyRevision,
@@ -34,14 +34,6 @@ export type AgentStatus = {
   a2aTasks: number
 }
 
-/** The choices the new-order form offers, taken from the reference data. */
-export interface OrderOptions {
-  customers: { customerId: string; name: string; restrictions: string }[]
-  carriers: { carrierId: string; name: string }[]
-  vehicles: { vehicleId: string; carrierId: string; temperatureControlled: boolean }[]
-  locations: string[]
-}
-
 export interface CoordinatorDependencies {
   coordination: { runtime: CaseRuntime; store: CaseStore }
   orchestrator: CaseOrchestrator
@@ -65,11 +57,18 @@ const decisionSchema = z.discriminatedUnion('type', [
   }),
 ])
 
+function storyOf(catalog: CaseCatalog, caseId: string): string {
+  const caseFile = caseFileOf(catalog, caseId)
+  if (!caseFile) return ''
+  const sampleId = caseFile.shipment.caseId
+  return sampleId === caseId ? caseFile.story : `按样例 ${sampleId} 新下的订单。${caseFile.story}`
+}
+
 function summaryOf(view: CaseView, catalog: CaseCatalog) {
   const { shipment } = view.record
   return {
     caseId: shipment.caseId,
-    story: caseFileOf(catalog, shipment.caseId)?.story ?? '',
+    story: storyOf(catalog, shipment.caseId),
     status: orderStatusOf(view),
     caseRevision: shipment.caseRevision,
     waitingOn: rolesWaitedOn(view),

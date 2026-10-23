@@ -8,7 +8,7 @@ import {
   LocalAgentClient,
 } from '@durable-jev/agent-core'
 import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-jev/agent-transport'
-import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
+import { type AgentId, agentIdSchema, type OrderOptions } from '@durable-jev/contracts'
 import {
   agentProfiles,
   caseFileOf,
@@ -21,7 +21,7 @@ import express from 'express'
 import { watchAgents } from './agent-watch.js'
 import { collectEvents, EventLog } from './event-log.js'
 import { InvestigationClient } from './investigation-client.js'
-import { type AgentStatus, coordinatorRoutes, type OrderOptions } from './routes.js'
+import { type AgentStatus, coordinatorRoutes } from './routes.js'
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
