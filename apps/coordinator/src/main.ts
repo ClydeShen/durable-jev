@@ -11,9 +11,9 @@ import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-
 import { type AgentId, agentIdSchema, type OrderOptions } from '@durable-jev/contracts'
 import {
   agentProfiles,
-  caseFileOf,
   createLogisticsRuntime,
   loadCaseCatalog,
+  scriptedJudgementsOf,
 } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService, HttpError } from '@durable-jev/service-kit'
@@ -50,7 +50,7 @@ const { runtime, rulePack, reference } = createLogisticsRuntime({
   materialsDirectory: materials,
   store,
   judgeFor: (shipment) =>
-    liveJudge ?? new ScriptedJudge(caseFileOf(catalog, shipment.caseId)?.scriptedJudgements ?? []),
+    liveJudge ?? new ScriptedJudge(scriptedJudgementsOf(catalog, shipment.caseId)),
   now,
 })
 const orderOptions: OrderOptions = {
@@ -140,7 +140,21 @@ async function agentStatuses(): Promise<AgentStatus[]> {
   return [local, ...others]
 }
 
+const controlUrl = process.env.CONTROL_URL
+
+/** A reset needs every agent: under the launcher, start the ones the presenter stopped. */
+async function startStoppedAgents() {
+  const stopped = (await agentStatuses()).filter((status) => !status.available)
+  if (stopped.length === 0) return
+  if (controlUrl) {
+    for (const { agentId } of stopped)
+      await fetch(`${controlUrl}/services/${agentId}/start`, { method: 'POST' })
+  }
+  await waitForAgents()
+}
+
 async function resetDemo() {
+  await startStoppedAgents()
   await orchestrator.reset()
   eventLog.clear()
   orderBook.clear()
@@ -150,6 +164,7 @@ async function resetDemo() {
 async function resetCase(caseId: string) {
   const original = orderBook.original(caseId) ?? catalog.get(caseId)?.shipment
   if (!original) throw new HttpError(404, `${caseId} has no original order to start over from`)
+  await startStoppedAgents()
   await orchestrator.reset(caseId)
   eventLog.clear(caseId)
   await orchestrator.submit(original)
@@ -183,7 +198,7 @@ service.app.use(
     rulePack,
     investigations: new InvestigationClient(transportUrl),
     agentStatuses,
-    controlUrl: process.env.CONTROL_URL,
+    controlUrl,
     timeline: (caseId) => eventLog.timeline(caseId),
     now,
     recordOrder: (shipment) => orderBook.put(shipment),
