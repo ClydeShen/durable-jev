@@ -5,7 +5,7 @@
 | Item | Choice |
 |---|---|
 | Runtime | Node 26, TypeScript strict, ESM |
-| Package management | pnpm workspace, `save-exact=true`, lockfile committed, no Turborepo/Nx |
+| Package management | pnpm workspace, `saveExact: true`, lockfile committed, no Turborepo/Nx |
 | Build | `tsc -b` (project references); Vite for the web |
 | HTTP | Express 5 (the A2A SDK only offers an Express adapter) |
 | Contracts and validation | Zod |

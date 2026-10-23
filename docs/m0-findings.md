@@ -168,8 +168,8 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
 | Dependency | Version |
 |---|---|
-| Node | 22.22.0 |
-| pnpm | 10.28.0 |
+| Node | 26.12.1 |
+| pnpm | 12.15.0 |
 | TypeScript | 6.0.3 |
 | `@earendil-works/pi-durable` / `pi-ai` / `chord` | 1.4.0 |
 | `@a2a-js/sdk` | 1.3.0 |
@@ -178,7 +178,7 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 | `@opentelemetry/sdk-trace` / `core` / `context-async-hooks` | 3.0.0 |
 | Express | 5.3.0 |
 
-Every dependency is written to `package.json` at an exact version (`save-exact=true` in `.npmrc`),
+Every dependency is written to `package.json` at an exact version (`saveExact: true` in `pnpm-workspace.yaml`),
 and the lockfile is committed.
 
 ## Summary
