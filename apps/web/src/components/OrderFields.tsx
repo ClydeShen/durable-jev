@@ -1,14 +1,14 @@
 import type { CargoCategory, CargoItem, Leg, OrderOptions, Shipment } from '@durable-jev/contracts'
 import type { ReactNode } from 'react'
-import { cargoCategoryLabels, documentKindLabels } from '../labels'
+import { cargoCategoryLabels, documentKindLabels, handoverLabels } from '../labels'
 import { Chip } from './chips'
 
 /** Timestamps are UTC; the form edits them as UTC wall-clock time. */
-export const toTimeInput = (timestamp: string) => timestamp.slice(0, 16)
-export const fromTimeInput = (value: string) => `${value}:00Z`
+const toTimeInput = (timestamp: string) => timestamp.slice(0, 16)
+const fromTimeInput = (value: string) => `${value}:00Z`
 
 /** One labelled input of the order form. */
-export function OrderInput({
+function OrderInput({
   label,
   wide,
   children,
@@ -42,7 +42,7 @@ function Categories({
       {categories.map((category) => {
         const checked = selected.includes(category)
         return (
-          <label key={category} className="order-choice">
+          <label key={category} className="order-toggle">
             <input
               type="checkbox"
               checked={checked}
@@ -56,6 +56,7 @@ function Categories({
                 )
               }
             />
+            <span aria-hidden="true">{checked ? '✓' : '+'}</span>
             {cargoCategoryLabels[category]}
           </label>
         )
@@ -187,7 +188,14 @@ function LegCard({
   )
   return (
     <li className="order-card">
-      <Chip>{leg.legId}</Chip>
+      <span className="order-card-head">
+        <Chip>{leg.legId}</Chip>
+        <span className="order-leg-route">
+          {leg.origin}
+          <span aria-hidden="true">→</span>
+          {leg.destination}
+        </span>
+      </span>
       <div className="order-grid">
         <OrderInput label="起点">{place('origin')}</OrderInput>
         <OrderInput label="终点">{place('destination')}</OrderInput>
@@ -277,5 +285,100 @@ export function Documents({ documents }: { documents: Shipment['documents'] }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+/** Who orders, where it goes, how it is handed over, when, and at what price. */
+export function OrderBasics({
+  shipment,
+  options,
+  onChange,
+}: {
+  shipment: Shipment
+  options: OrderOptions
+  onChange(patch: Partial<Shipment>): void
+}) {
+  const customer = options.customers.find((item) => item.customerId === shipment.customerId)
+  const deliveryWindow = shipment.deliveryWindow
+  return (
+    <div className="order-grid">
+      <OrderInput label="客户">
+        <select
+          value={shipment.customerId}
+          onChange={(event) => onChange({ customerId: event.target.value })}
+        >
+          {options.customers.map((item) => (
+            <option key={item.customerId} value={item.customerId}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+      </OrderInput>
+      <OrderInput label="目的国">
+        <input
+          required
+          pattern="[A-Z]{2}"
+          maxLength={2}
+          value={shipment.destinationCountry}
+          onChange={(event) => onChange({ destinationCountry: event.target.value.toUpperCase() })}
+        />
+      </OrderInput>
+      <OrderInput label="交接方式">
+        <select
+          value={shipment.handover}
+          onChange={(event) => onChange({ handover: event.target.value as Shipment['handover'] })}
+        >
+          {Object.entries(handoverLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </OrderInput>
+      <OrderInput label="报价（€）">
+        <input
+          type="number"
+          min={0}
+          step={0.01}
+          required
+          value={shipment.quote.amountCents / 100}
+          onChange={(event) =>
+            onChange({
+              quote: {
+                ...shipment.quote,
+                amountCents: Math.round(Number(event.target.value) * 100),
+              },
+            })
+          }
+        />
+      </OrderInput>
+      <OrderInput label="最早送达（UTC）">
+        <input
+          type="datetime-local"
+          required
+          value={toTimeInput(deliveryWindow.from)}
+          onChange={(event) =>
+            onChange({
+              deliveryWindow: { ...deliveryWindow, from: fromTimeInput(event.target.value) },
+            })
+          }
+        />
+      </OrderInput>
+      <OrderInput label="最晚送达（UTC）">
+        <input
+          type="datetime-local"
+          required
+          value={toTimeInput(deliveryWindow.to)}
+          onChange={(event) =>
+            onChange({
+              deliveryWindow: { ...deliveryWindow, to: fromTimeInput(event.target.value) },
+            })
+          }
+        />
+      </OrderInput>
+      {customer?.restrictions && (
+        <p className="order-note wide">客户的送货限制：{customer.restrictions}</p>
+      )}
+    </div>
   )
 }
