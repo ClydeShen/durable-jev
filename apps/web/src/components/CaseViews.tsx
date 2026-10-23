@@ -9,7 +9,6 @@ import { AgentCard } from './AgentCard'
 import { AgentOverview } from './AgentOverview'
 import { EventFeed } from './EventFeed'
 import { GraphLegend } from './GraphLegend'
-import { Icon } from './icons'
 import { RuleDetail } from './RuleDetail'
 import { RuleGraph } from './RuleGraph'
 import { Timeline } from './Timeline'
@@ -25,9 +24,11 @@ const viewModes: [CaseViewMode, string][] = [
 interface ViewTabsProps {
   view: CaseViewMode
   onView(view: CaseViewMode): void
-  /** The agent the rule graph is narrowed to, if any. */
+  /** The agent last picked to narrow the rule graph to; its toggle stays until another is picked. */
   focusName?: string
-  onClearFocus(): void
+  /** Whether the rule graph is narrowed to that agent now. */
+  focusOn: boolean
+  onToggleFocus(): void
 }
 
 const legends: Partial<Record<CaseViewMode, Legend>> = {
@@ -35,7 +36,7 @@ const legends: Partial<Record<CaseViewMode, Legend>> = {
   graph: ruleLegend,
 }
 
-function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
+function ViewTabs({ view, onView, focusName, focusOn, onToggleFocus }: ViewTabsProps) {
   const legend = legends[view]
   return (
     <nav className="view-tabs">
@@ -50,9 +51,15 @@ function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
         </button>
       ))}
       {focusName && (
-        <button type="button" className="secondary focus-filter" onClick={onClearFocus}>
-          {focusName}
-          <Icon name="close" />
+        <button
+          type="button"
+          className="secondary focus-filter"
+          aria-pressed={focusOn}
+          title={focusOn ? 'Show every rule' : `Show only the rules of ${focusName}`}
+          onClick={onToggleFocus}
+        >
+          <span className="focus-switch" aria-hidden="true" />
+          Only {focusName}
         </button>
       )}
       {legend && <GraphLegend legend={legend} />}
@@ -152,6 +159,7 @@ export function CaseViews({
 }: Props) {
   const [view, setView] = useState<CaseViewMode>('overview')
   const [focusAgent, setFocusAgent] = useState<string>()
+  const [focusOn, setFocusOn] = useState(false)
   const [selectedRule, setSelectedRule] = useState<string>()
   const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed, replayRun })
   const { playback } = history
@@ -162,7 +170,7 @@ export function CaseViews({
   useEffect(() => {
     const ruleId = ruleRequest?.ruleIds[0]
     if (!ruleId) return
-    setFocusAgent(undefined)
+    setFocusOn(false)
     setView('graph')
     setSelectedRule(ruleId)
   }, [ruleRequest])
@@ -180,7 +188,8 @@ export function CaseViews({
         focusName={
           view === 'graph' && focusAgent ? (agentNames[focusAgent] ?? focusAgent) : undefined
         }
-        onClearFocus={() => setFocusAgent(undefined)}
+        focusOn={focusOn}
+        onToggleFocus={() => setFocusOn(!focusOn)}
       />
       {/* Notifications sit over the graph or timeline, never over the case header's controls. */}
       <div className="view-area">
@@ -193,7 +202,7 @@ export function CaseViews({
           selectedRule={selectedRule}
           openTasks={openTasks}
           ruleRequest={ruleRequest}
-          focusAgent={focusAgent}
+          focusAgent={focusOn ? focusAgent : undefined}
           onSelectRule={openRule}
           onOpenAgent={(agentId) => {
             setSelectedRule(undefined)
@@ -228,6 +237,7 @@ export function CaseViews({
           outcomes={outcomes}
           onShowRules={() => {
             setFocusAgent(agentShown.agentId)
+            setFocusOn(true)
             setView('graph')
             onOpenAgent(undefined)
           }}
