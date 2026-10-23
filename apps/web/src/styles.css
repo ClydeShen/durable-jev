@@ -2,6 +2,8 @@
   /* Colours meet WCAG 2.2 AA: white text on every status colour is at least 4.5:1. */
   --bg: #f6f7f9;
   --surface: #ffffff;
+  /* The working area under the case header: graphs and the timeline sit a shade deeper. */
+  --canvas: #e9ecf1;
   --border: #d9dde3;
   /* Borders that identify a control, such as an input, need 3:1. */
   --control-border: #8a919c;
@@ -36,6 +38,7 @@
   :root {
     --bg: #14171c;
     --surface: #1d2129;
+    --canvas: #0f1216;
     --border: #2f3541;
     --control-border: #6b7380;
     --text: #e6e9ee;
@@ -531,6 +534,7 @@ main {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  background: var(--surface);
 }
 
 .case-header {
@@ -613,6 +617,7 @@ button.primary-action {
 .rule-graph {
   flex: 1;
   min-height: 0;
+  background: var(--canvas);
 }
 
 /* Two fixed lines, title then meta, so neither can cover the other in the fixed-size node. */
@@ -797,6 +802,7 @@ button.small {
   flex: 1;
   overflow: auto;
   padding: 8px 16px;
+  background: var(--canvas);
 }
 
 .timeline-filter {
@@ -1635,6 +1641,11 @@ main:has(> .new-order) {
   min-height: 0;
   overflow-y: auto;
   container-type: inline-size;
+  background: var(--canvas);
+}
+
+.new-order > .case-header {
+  background: var(--surface);
 }
 
 .order-layout {
