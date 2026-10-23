@@ -1,6 +1,5 @@
 import type { Actor, CaseDetail } from '../api'
-import { orderStatusLabels } from '../labels'
-import { RoleChip } from './ui'
+import { OrderStatusBadge, RoleChip } from './chips'
 
 interface Props {
   detail: CaseDetail
@@ -28,7 +27,7 @@ export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncide
     <section className="case-header">
       <div className="case-title">
         <h2>{detail.caseId}</h2>
-        <span className={`order-status ${detail.status}`}>{orderStatusLabels[detail.status]}</span>
+        <OrderStatusBadge status={detail.status} />
         {canDispatch && (
           <button type="button" className="primary-action" onClick={onDispatch}>
             确认发运

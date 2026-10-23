@@ -9,7 +9,7 @@ import {
   taskStatusLabels,
   technicalFields,
 } from '../timeline-text'
-import { Chip, RoleChip, StatusBadge } from './ui'
+import { Chip, RoleChip, StatusBadge } from './chips'
 
 const isStatus = (value: unknown): value is CheckStatus =>
   typeof value === 'string' && value in checkStatusLabels

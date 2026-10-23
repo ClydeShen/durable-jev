@@ -4,12 +4,12 @@ import type { Actor } from './api'
 import { useStoredState } from './browser-storage'
 import { CaseHeader } from './components/CaseHeader'
 import { CaseViews } from './components/CaseViews'
+import { ConsoleLinks } from './components/chips'
 import { InvestigationPanel } from './components/InvestigationPanel'
 import { NextSteps } from './components/NextSteps'
 import { RoleBar } from './components/RoleBar'
 import { Sidebar } from './components/Sidebar'
 import { TaskPanel } from './components/TaskPanel'
-import { RoleSwitch } from './components/ui'
 import { demoOperators } from './labels'
 import type { PlaybackSpeed } from './playback'
 import { useActions } from './use-actions'
@@ -44,13 +44,14 @@ export function App() {
     setSelectedCase(inCase)
     setRuleRequest({ ruleIds: [ruleId] })
   }
-  const roleSwitch = {
-    current: actor.role,
-    switchTo: (role: Role) => setActor({ role, id: demoOperators[role] }),
+  const links = {
+    currentRole: actor.role,
+    switchRole: (role: Role) => setActor({ role, id: demoOperators[role] }),
+    openAgent: setOpenAgent,
   }
 
   return (
-    <RoleSwitch.Provider value={roleSwitch}>
+    <ConsoleLinks.Provider value={links}>
       <div className="app" data-role={actor.role}>
         <RoleBar actor={actor} onChange={setActor} onReset={actions.reset} />
         <Sidebar
@@ -112,6 +113,6 @@ export function App() {
           onDecide={actions.decide}
         />
       </div>
-    </RoleSwitch.Provider>
+    </ConsoleLinks.Provider>
   )
 }

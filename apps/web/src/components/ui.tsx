@@ -1,7 +1,5 @@
-import type { CheckStatus, Role } from '@durable-jev/contracts'
 import { Panel } from '@xyflow/react'
-import { createContext, type ReactNode, useContext, useEffect } from 'react'
-import { checkStatusLabels, demoOperators, roleLabels } from '../labels'
+import { type ReactNode, useEffect } from 'react'
 
 /** A labelled value: the label says what the value is, so values never run together in a line. */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -15,35 +13,6 @@ export function Field({ label, children }: { label: string; children: ReactNode 
 
 export function Fields({ children }: { children: ReactNode }) {
   return <div className="fields">{children}</div>
-}
-
-export function StatusBadge({ status }: { status?: CheckStatus }) {
-  return (
-    <span className={`status-badge check-status ${status ?? 'NONE'}`}>
-      {status ? checkStatusLabels[status] : '未评估'}
-    </span>
-  )
-}
-
-/** An identifier such as a rule id; clickable when it leads somewhere. */
-export function Chip({
-  children,
-  title,
-  onClick,
-}: {
-  children: ReactNode
-  title?: string
-  onClick?(): void
-}) {
-  return onClick ? (
-    <button type="button" className="chip link" title={title} onClick={onClick}>
-      {children}
-    </button>
-  ) : (
-    <span className="chip" title={title}>
-      {children}
-    </span>
-  )
 }
 
 export function Section({
@@ -109,61 +78,5 @@ export function LayoutReset({ count, onReset }: { count: number; onReset(): void
         '可拖动方块调整位置，浏览器会记住'
       )}
     </Panel>
-  )
-}
-
-/** A list of short items, one tag each, instead of a run of text joined by separators. */
-export function Tags({ items, empty = '无' }: { items: readonly string[]; empty?: string }) {
-  if (items.length === 0) return <span className="muted">{empty}</span>
-  return (
-    <span className="chips">
-      {items.map((item) => (
-        <span key={item} className="tag">
-          {item}
-        </span>
-      ))}
-    </span>
-  )
-}
-
-/** Switches the console to act as a role; provided by the app, used by every role chip. */
-export const RoleSwitch = createContext<{ current?: Role; switchTo(role: Role): void }>({
-  switchTo: () => undefined,
-})
-
-/**
- * A role, in its colour, with the person who acts in it. Clicking it switches the console to that
- * role, so wherever the console says who is needed, the presenter can go straight there.
- */
-export function RoleChip({ forRole: role, note }: { forRole: Role; note?: string }) {
-  const { current, switchTo } = useContext(RoleSwitch)
-  const label = (
-    <>
-      <span className="role-swatch" aria-hidden="true" />
-      {roleLabels[role]}
-      <span className="role-person">{demoOperators[role]}</span>
-      {note && <span className="muted">{note}</span>}
-    </>
-  )
-  if (role === current) {
-    return (
-      <span className="role-chip current" data-role={role} title="当前角色">
-        {label}
-      </span>
-    )
-  }
-  return (
-    <button
-      type="button"
-      className="role-chip"
-      data-role={role}
-      title={`切换到${roleLabels[role]}`}
-      onClick={() => switchTo(role)}
-    >
-      {label}
-      <span className="role-switch" aria-hidden="true">
-        ⇄
-      </span>
-    </button>
   )
 }

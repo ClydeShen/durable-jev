@@ -1,6 +1,7 @@
 import { Fragment, useState } from 'react'
 import type { AgentNames, TimelineEntry } from '../api'
 import { eventLabels, summary } from '../timeline-text'
+import { AgentChip } from './chips'
 import { EventDetail } from './EventDetail'
 
 interface Props {
@@ -57,9 +58,10 @@ export function Timeline({ entries, agentNames, titles }: Props) {
                     {new Date(entry.createdAt).toLocaleTimeString('zh-CN', { hour12: false })}
                   </td>
                   <td>
-                    <span className={`agent-chip ${entry.agentId}`}>
-                      {agentNames[entry.agentId] ?? entry.agentId}
-                    </span>
+                    <AgentChip
+                      agentId={entry.agentId}
+                      name={agentNames[entry.agentId] ?? entry.agentId}
+                    />
                   </td>
                   <td className="event-label" title={entry.eventName}>
                     {eventLabels[entry.eventName] ?? entry.eventName}

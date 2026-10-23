@@ -133,57 +133,143 @@ button.danger {
   overflow-wrap: anywhere;
 }
 
-.status-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 1px 8px;
-  border-radius: 10px;
-  color: #fff;
-  background: var(--status, var(--unknown));
-  white-space: nowrap;
-}
-
-.chip {
-  display: inline-block;
-  font:
-    12px ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Consolas,
-    monospace;
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  white-space: nowrap;
-}
-
-button.chip.link {
-  min-height: 24px;
-  min-width: 24px;
-  cursor: pointer;
-  color: var(--link);
-}
-
-button.chip.link:hover {
-  border-color: var(--accent);
-}
-
 .chips {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
+/*
+ * Small labels, four kinds (see components/chips.tsx). They share one height, font size and
+ * baseline, so badges, chips and tags line up in rows and in field grids alike.
+ */
+.badge,
+.chip,
+.entity-chip,
 .tag {
-  font-size: 11px;
-  padding: 1px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Badge: a status, filled in its colour. */
+.badge {
+  border-radius: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--status, var(--unknown));
+}
+
+/* Chip: an identifier, monospaced with square corners. */
+.chip {
   border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+button.chip.link {
+  cursor: pointer;
+  color: var(--link);
+}
+
+button.chip.link:hover {
+  border-color: var(--link);
+}
+
+/* Entity chip: a person or an agent, round, in its colour. */
+.entity-chip {
+  border-radius: 12px;
+  border: 1px solid var(--entity, var(--role, var(--border)));
+  background: color-mix(in srgb, var(--entity, var(--role, var(--surface))) 10%, var(--surface));
+  color: var(--text);
+}
+
+button.entity-chip {
+  cursor: pointer;
+}
+
+button.entity-chip:hover {
+  background: color-mix(in srgb, var(--entity, var(--role)) 22%, var(--surface));
+}
+
+.entity-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--entity, var(--role, var(--muted)));
+}
+
+.entity-action {
+  color: var(--muted);
+}
+
+/* Tag: a category or count, neutral with square corners. */
+.tag {
+  border-radius: 4px;
+  border: 1px solid var(--border);
   background: var(--bg);
   color: var(--muted);
-  border: 1px dashed var(--border);
+}
+
+.tag.highlight {
+  border-color: var(--pass-text);
+  color: var(--pass-text);
+}
+
+.tag.upstream,
+.tag.downstream {
+  border: none;
+  color: #fff;
+  background: var(--upstream);
+}
+
+.tag.downstream {
+  background: var(--invalidated);
+}
+
+/* Agent colours, for agent chips. */
+[data-agent="order-coordination"] {
+  --entity: var(--accent);
+}
+[data-agent="cargo-assurance"] {
+  --entity: var(--invalidated);
+}
+[data-agent="transport-planning"] {
+  --entity: var(--upstream);
+}
+[data-agent="commercial-control"] {
+  --entity: #b54708;
+}
+[data-agent="destination-compliance"] {
+  --entity: #5f6b6d;
+}
+
+/* Inside graph nodes and the case list the same labels come in a compact size. */
+.rule-node .badge,
+.rule-node .tag,
+.rule-node .entity-chip,
+.agent-node .badge,
+.agent-node .tag,
+.case .badge,
+.case .entity-chip {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.rule-node-meta .badge,
+.agent-node header .badge {
+  margin-left: auto;
 }
 
 .drawer {
@@ -466,28 +552,6 @@ button.primary-action {
   min-height: 0;
 }
 
-.order-status {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--unknown);
-  color: #fff;
-}
-
-.order-status.READY_TO_DISPATCH,
-.order-status.DISPATCHED {
-  background: var(--pass);
-}
-
-.order-status.AWAITING_HUMAN {
-  background: var(--waiting);
-}
-
-.order-status.TECHNICAL_FAILURE,
-.order-status.REJECTED {
-  background: var(--fail);
-}
-
 .rule-node {
   box-sizing: border-box;
   padding: 6px 8px;
@@ -509,11 +573,6 @@ button.primary-action {
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 11px;
-}
-
-.rule-node-meta .status-badge {
-  margin-left: auto;
   font-size: 11px;
 }
 
@@ -661,31 +720,6 @@ button.small {
   margin-bottom: 8px;
 }
 
-.agent-chip {
-  font-size: 12px;
-  padding: 1px 6px;
-  border-radius: 8px;
-  color: #fff;
-  background: var(--unknown);
-  white-space: nowrap;
-}
-
-.agent-chip.order-coordination {
-  background: var(--accent);
-}
-.agent-chip.cargo-assurance {
-  background: #8e44ad;
-}
-.agent-chip.transport-planning {
-  background: var(--upstream);
-}
-.agent-chip.commercial-control {
-  background: #b54708;
-}
-.agent-chip.destination-compliance {
-  background: #5f6b6d;
-}
-
 .agent-node {
   box-sizing: border-box;
   padding: 10px 12px;
@@ -735,23 +769,6 @@ button.small {
 .investigation .rationale {
   color: var(--muted);
   font-size: 13px;
-}
-
-.investigation-status {
-  font-size: 12px;
-  padding: 1px 8px;
-  border-radius: 10px;
-  background: var(--border);
-}
-
-.investigation-status.PROPOSED {
-  background: #f5d58a;
-  color: #1d2330;
-}
-
-.investigation-status.CONFIRMED {
-  background: #b7e4c7;
-  color: #1d2330;
 }
 
 .investigation .actions {
@@ -875,28 +892,11 @@ label.evidence code {
   color: var(--muted);
 }
 
-.check-pill {
-  font:
-    11px ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Consolas,
-    monospace;
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: #fff;
-  background: var(--status, var(--unknown));
-}
-
 .agent-node footer {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 8px;
-}
-
-.agent-node header .status-badge {
-  margin-left: auto;
 }
 
 .agent-node-stats {
@@ -1061,23 +1061,12 @@ label.evidence code {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
-  border-radius: 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  font-size: 13px;
 }
 
 .selection-hint {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.tag.pass {
-  color: var(--pass-text);
-  border-color: var(--pass-text);
-  border-style: solid;
 }
 
 .judgement {
@@ -1121,22 +1110,6 @@ span.judgement-bar > span {
 
 .rule-node.relation-downstream {
   box-shadow: 0 0 0 3px var(--invalidated);
-}
-
-.relation-tag {
-  margin-right: 4px;
-  padding: 0 4px;
-  border-radius: 3px;
-  font-size: 10px;
-  color: #fff;
-}
-
-.relation-tag.upstream {
-  background: var(--upstream);
-}
-
-.relation-tag.downstream {
-  background: var(--invalidated);
 }
 
 .react-flow__edge.edge-upstream path {
@@ -1273,10 +1246,6 @@ button.node-open:focus-visible {
   background: var(--role);
 }
 
-.app .operator {
-  border-color: var(--role);
-}
-
 .app .task-panel {
   border-top: 3px solid var(--role);
   background: linear-gradient(
@@ -1298,47 +1267,6 @@ button.node-open:focus-visible {
 
 /* Role chips: a role in its colour; clicking switches to it. */
 
-.role-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-height: 24px;
-  padding: 1px 8px 1px 6px;
-  border-radius: 12px;
-  border: 1px solid var(--role);
-  background: color-mix(in srgb, var(--role) 10%, var(--surface));
-  color: var(--text);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-button.role-chip {
-  cursor: pointer;
-}
-
-button.role-chip:hover {
-  background: color-mix(in srgb, var(--role) 22%, var(--surface));
-}
-
-.role-chip.current {
-  border-style: dashed;
-}
-
-.role-swatch {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--role);
-}
-
-.role-person {
-  font-weight: 600;
-}
-
-.role-switch {
-  color: var(--muted);
-}
-
 .section-heading {
   display: flex;
   align-items: baseline;
@@ -1357,17 +1285,6 @@ button.link-action {
 
 button.link-action:hover {
   text-decoration: underline;
-}
-
-.waiting-role {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 0 5px;
-  border-radius: 8px;
-  border: 1px solid var(--role);
-  font-size: 11px;
-  white-space: nowrap;
 }
 
 .narration-roles {

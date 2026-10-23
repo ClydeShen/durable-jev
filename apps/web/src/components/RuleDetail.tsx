@@ -2,8 +2,9 @@ import type { CheckScope, HumanTask } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { AgentNames, RuleInfo } from '../api'
 import { changeLabels, kindExplanations, kindLabels, mostSevere, ruleScopeLabels } from '../labels'
+import { Chip, RoleChip, StatusBadge, Tag, Tags } from './chips'
 import { ExpressionLine, RuleCheckView } from './RuleCheckView'
-import { Chip, Drawer, Field, Fields, RoleChip, Section, StatusBadge, Tags } from './ui'
+import { Drawer, Field, Fields, Section } from './ui'
 
 const applicabilityLabels: Record<string, string> = {
   destinations: '目的地',
@@ -61,7 +62,7 @@ function OutcomeCard({
       <header>
         <strong>{scopeLabel(outcome.scope)}</strong>
         <StatusBadge status={outcome.status} />
-        {outcome.reused && <span className="tag">沿用上次结果</span>}
+        {outcome.reused && <Tag>沿用上次结果</Tag>}
       </header>
       <Fields>
         {waiting && (
@@ -194,7 +195,7 @@ export function RuleDetail({
               </blockquote>
             ))}
             <p className="source">
-              出自政策 <span className="tag">{rule.clause.section}</span>
+              出自政策 <Tag>{rule.clause.section}</Tag>
             </p>
           </>
         ) : (

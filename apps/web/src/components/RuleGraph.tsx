@@ -16,10 +16,11 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import type { AgentNames, RuleInfo } from '../api'
 import { layoutGraph, nodeSize, type Positions } from '../graph-layout'
-import { checkStatusLabels, kindLabels, mostSevere, roleLabels } from '../labels'
+import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
 import type { PlaybackStep } from '../playback'
 import { useSavedLayout } from '../saved-layout'
-import { LayoutReset, RoleChip, StatusBadge } from './ui'
+import { RoleChip, RoleLabel, StatusBadge, Tag } from './chips'
+import { LayoutReset } from './ui'
 
 type RuleNodeData = {
   rule: RuleInfo
@@ -94,7 +95,9 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <div className="rule-node-title">
         {relation && relationLabels[relation] && (
-          <span className={`relation-tag ${relation}`}>{relationLabels[relation]}</span>
+          <Tag tone={relation === 'upstream' ? 'upstream' : 'downstream'}>
+            {relationLabels[relation]}
+          </Tag>
         )}
         <button
           type="button"
@@ -106,13 +109,9 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
       </div>
       <div className="rule-node-meta">
         {waitingFor.length > 0 ? (
-          waitingFor.map((role) => (
-            <span key={role} className="waiting-role" data-role={role}>
-              <span className="role-swatch" aria-hidden="true" />等{roleLabels[role]}
-            </span>
-          ))
+          waitingFor.map((role) => <RoleLabel key={role} forRole={role} prefix="等" />)
         ) : (
-          <span className="tag">{kindLabels[rule.kind]}</span>
+          <Tag>{kindLabels[rule.kind]}</Tag>
         )}
         {boundary && <span className="muted">来自 {ownerName}</span>}
         {invalidatedBy && (
@@ -362,8 +361,8 @@ export function RuleGraph({
         {filteredCount > 0 && (
           <Panel position="top-left" className="graph-hint selection-hint">
             <span className="stat-label">扩展规则（按目的地、客户、货物筛选）</span>
-            <span className="tag pass">本单命中 {selectedCount} 条</span>
-            <span className="tag">筛掉 {filteredCount} 条</span>
+            <Tag tone="highlight">本单命中 {selectedCount} 条</Tag>
+            <Tag>筛掉 {filteredCount} 条</Tag>
           </Panel>
         )}
       </ReactFlow>

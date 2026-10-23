@@ -1,6 +1,6 @@
 import type { HumanTask } from '@durable-jev/contracts'
 import type { CaseDetail, RuleInfo } from '../api'
-import { Chip, RoleChip } from './ui'
+import { Chip, RoleChip } from './chips'
 
 interface Props {
   detail: CaseDetail

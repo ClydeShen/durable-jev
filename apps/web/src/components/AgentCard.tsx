@@ -3,7 +3,8 @@ import type { RuleOutcome } from '@durable-jev/rule-engine'
 import { agentRelations } from '../agent-relations'
 import type { AgentNames, AgentStatus, RuleInfo } from '../api'
 import { kindLabels, mostSevere } from '../labels'
-import { Chip, Drawer, Field, Fields, RoleChip, Section, StatusBadge, Tags } from './ui'
+import { Chip, RoleChip, StatusBadge, Tag, Tags } from './chips'
+import { Drawer, Field, Fields, Section } from './ui'
 
 /** What makes these agents durable, as the demo shows it. */
 const durableTraits: [string, string][] = [
@@ -69,7 +70,7 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
         <>
           <span className={agent.available ? 'dot online' : 'dot offline'} />
           <h3>{agent.card?.name ?? agent.agentId}</h3>
-          <span className="tag">Durable Jev Agent</span>
+          <Tag>Durable Jev Agent</Tag>
         </>
       }
     >
@@ -91,9 +92,9 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
       >
         <div className="chips">
           {Object.entries(summary?.rulesByKind ?? {}).map(([kind, count]) => (
-            <span key={kind} className="tag">
+            <Tag key={kind}>
               {kindLabels[kind as keyof typeof kindLabels]} {count}
-            </span>
+            </Tag>
           ))}
         </div>
       </Section>
