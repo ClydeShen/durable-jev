@@ -2,6 +2,7 @@ import type { CheckScope, CheckStatus, HumanTask, Role } from '@durable-jev/cont
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { TimelineEntry } from './api'
 import { checkStatusLabels, roleLabels } from './labels'
+import { toolCallText } from './timeline-text'
 
 export type PlaybackSpeed = 'realtime' | 'fast' | 'medium' | 'slow'
 
@@ -104,18 +105,30 @@ function stepFor(
         tone: 'info',
       }
     case 'investigation.started':
-      return { upTo: index, text: '运输计划的调查助手开始找替代运力', ruleIds: [], tone: 'info' }
+      return {
+        upTo: index,
+        text: `${(payload.incident as { legId?: string } | undefined)?.legId ?? ''} 的承运商取消：运输计划 agent 启动调查助手找替代运力`,
+        ruleIds: [],
+        tone: 'info',
+      }
+    case 'investigation.tool_called':
+      return {
+        upTo: index,
+        text: toolCallText(payload.tool, payload.args, payload.blocked),
+        ruleIds: [],
+        tone: 'info',
+      }
     case 'investigation.proposed':
       return {
         upTo: index,
-        text: '调查助手提出改派建议，等运输计划员确认',
+        text: '调查助手提出改派建议（见上方调查卡片），等运输计划员确认；确认之前订单不变',
         ruleIds: [],
         tone: 'info',
       }
     case 'investigation.confirmed':
       return {
         upTo: index,
-        text: '运输计划员确认改派，订单生成新的资料版本',
+        text: '运输计划员确认改派：订单生成新的资料版本，用到路线、承运商、报价的规则要重新判断',
         ruleIds: [],
         tone: 'info',
       }

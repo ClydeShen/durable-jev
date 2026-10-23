@@ -67,6 +67,7 @@ export function CaseHeader({ detail, actor, onDispatch, onRevise, onReportIncide
               <button
                 type="button"
                 className="secondary small"
+                title="模拟一个意外：运输计划 agent 会启动调查助手找替代方案，提议交给运输计划员确认"
                 onClick={() => onReportIncident(nextIncident.index)}
               >
                 发生事件：{nextIncident.label}

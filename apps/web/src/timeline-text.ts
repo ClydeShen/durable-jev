@@ -97,6 +97,26 @@ export function jevAnswer(judgement: unknown): string {
   return '已回答'
 }
 
+/** What the investigation helper did with one tool call, in words. */
+export function toolCallText(tool: unknown, args: unknown, blocked?: unknown): string {
+  const input = (args ?? {}) as { legId?: string; offerId?: string; decision?: string }
+  if (blocked) return `调查助手想调用 ${String(tool)}，被拦截：${String(blocked)}`
+  switch (tool) {
+    case 'get_case':
+      return '调查助手读取订单资料'
+    case 'search_capacity_offers':
+      return `调查助手查找 ${input.legId ?? ''} 的备用运力`
+    case 'check_plan':
+      return `调查助手用规则预检方案 ${input.offerId ?? ''}（只是试算，不改订单）`
+    case 'submit_investigation_result':
+      return input.decision === 'escalate'
+        ? '调查助手提交结论：找不到合格方案，转人工'
+        : `调查助手提交结论：建议改派到 ${input.offerId ?? ''}`
+    default:
+      return `调查助手调用 ${String(tool)}`
+  }
+}
+
 /** One line a person understands at a glance. */
 export function summary(entry: TimelineEntry, titles: ReadonlyMap<string, string>): string {
   const payload = entry.payload
@@ -117,8 +137,10 @@ export function summary(entry: TimelineEntry, titles: ReadonlyMap<string, string
     case 'human_task.opened':
     case 'human_task.closed':
       return `${rule}：${taskStatusLabels[String(payload.status)] ?? payload.status}`
+    case 'investigation.started':
+      return `${(payload.incident as { legId?: string } | undefined)?.legId ?? ''} 的承运商取消，开始找替代运力`
     case 'investigation.tool_called':
-      return payload.blocked ? `${payload.tool}（被拦截）` : String(payload.tool)
+      return toolCallText(payload.tool, payload.args, payload.blocked)
     case 'investigation.proposed':
       return `建议改派到 ${(payload.proposal as { offerId?: string } | undefined)?.offerId ?? ''}`
     case 'investigation.escalated':

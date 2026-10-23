@@ -71,6 +71,12 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
                 ）
               </span>
             </header>
+            <p className="investigation-lead">
+              {investigation.incident.legId}{' '}
+              的承运商取消了。调查助手自己查资料、用规则试算备选方案，只能提建议；
+              运输计划员确认之后订单才会改。
+            </p>
+            {investigation.status === 'RUNNING' && <p className="muted">调查中，步骤见时间线…</p>}
             {investigation.proposal && <Proposal proposal={investigation.proposal} />}
             {investigation.escalation && (
               <blockquote>

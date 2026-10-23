@@ -1336,3 +1336,9 @@ button.node-open:focus-visible {
 .app .task-panel .task {
   border-left: 3px solid var(--role);
 }
+
+.investigation-lead {
+  margin: 6px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
