@@ -28,7 +28,7 @@ best: one rule in 150 is code (R29, booking transport capacity).
 
 Each agent is the same program (`apps/agent`) started with a different `AGENT_ID`; it executes only
 the rules it owns and receives the other agents' results ([orchestration.ts](../packages/agent-core/src/orchestration.ts)).
-The console's **Agent 总览** shows these five as one graph; clicking an agent opens its own rules
+The console's **Agents** view shows these five as one graph; clicking an agent opens its own rules
 with the rules it depends on in other agents drawn as dashed boundary nodes.
 
 ## Inside one agent
@@ -60,7 +60,7 @@ with the rules it depends on in other agents drawn as dashed boundary nodes.
   Agents that are down are skipped and caught up when they return.
 - **The contract between agents is the rule graph and the business result**, nothing else: no
   shared database, no calls into each other's code. 9 rules depend on rules of another agent (22 dependencies in all); the
-  overview draws these as edges (for example commercial → order coordination "4 条依赖").
+  overview draws these as edges (for example commercial → order coordination labelled "4").
 - **Peer collaboration in LOG-004:** transport's helper finds a replacement carrier → the planner
   confirms → the new revision invalidates cargo's compliance sign-off (two roles sign again) and
   triggers commercial's extra-cost approval, while customer checks are reused.

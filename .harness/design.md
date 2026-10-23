@@ -1,90 +1,99 @@
 # Design
 
-## 1. 技术栈
+## 1. Tech stack
 
-| 项 | 选择 |
+| Item | Choice |
 |---|---|
-| 运行时 | Node 22，TypeScript strict，ESM |
-| 包管理 | pnpm workspace，`save-exact=true`，提交 lockfile，不用 Turborepo/Nx |
-| 构建 | `tsc -b`（project references）；web 用 Vite |
-| HTTP | Express 5（A2A SDK 只提供 Express 适配器） |
-| 契约/校验 | Zod |
-| 存储 | better-sqlite3，每个服务一个 SQLite 文件，位于 `var/data/` |
-| 测试 | Vitest |
-| 日志 | pino，JSON |
-| Lint/格式 | Biome |
-| 追踪 | `@opentelemetry/api` + W3C traceparent，SDK 在 P0 确认 |
-| 前端 | Vite + React，单页包含工作台、`/console`、演示控制 |
-| 外部依赖 | `@earendil-works/pi-durable` 1.3.0、`@a2a-js/sdk` 1.3.0、`@typesafe-ai/sdk` 0.7.0（模型 `jev-1.14.0`）、OpenTelemetry API 1.9.1；详见 `docs/m0-findings.md` |
+| Runtime | Node 26, TypeScript strict, ESM |
+| Package management | pnpm workspace, `save-exact=true`, lockfile committed, no Turborepo/Nx |
+| Build | `tsc -b` (project references); Vite for the web |
+| HTTP | Express 5 (the A2A SDK only offers an Express adapter) |
+| Contracts and validation | Zod |
+| Storage | better-sqlite3, one SQLite file per service under `var/data/` |
+| Tests | Vitest |
+| Logs | pino, JSON |
+| Lint and format | Biome |
+| Tracing | `@opentelemetry/api` + W3C traceparent, SDK settled in P0 |
+| Front end | Vite + React, one page holding the console and the demo controls |
+| External dependencies | `@earendil-works/pi-durable` 1.3.0, `@a2a-js/sdk` 1.3.0, `@typesafe-ai/sdk` 0.7.0 (model `jev-1.14.0`), OpenTelemetry API 1.9.1; see `docs/m0-findings.md` |
 
-## 2. 目录
+## 2. Folders
 
 ```
 apps/
-  coordinator/            订单协调 agent（R01、R02、R08、R37–R40、调度员确认）+ 编排器 + 网关（API、静态页面）
-  agent/                  通用 Durable Jev Agent 服务，按 AGENT_ID 启动为：
-                            cargo-assurance     R03、R04、R09–R15、R17–R23；合规/质量/仓库人工任务
-                            transport-planning  R05–R07、R16、R24–R26、R29、R30；调查助手、计划员确认
-                            commercial-control  R27、R31–R36 + CUST-* 扩展规则；商务审批
-                            destination-compliance（扩展演示）R41 + DEST-* 扩展规则
-  web/                    工作台 + Console + 演示控制
+  coordinator/            Order coordination agent (R01, R02, R08, R37–R40, dispatcher confirmation) + orchestrator + gateway (API, static pages)
+  agent/                  The generic Durable Jev Agent service, started by AGENT_ID as:
+                            cargo-assurance     R03, R04, R09–R15, R17–R23; compliance, quality and warehouse tasks
+                            transport-planning  R05–R07, R16, R24–R26, R29, R30; investigation helper, planner confirmation
+                            commercial-control  R27, R31–R36 + CUST-* extension rules; commercial approvals
+                            destination-compliance (extension demo) R41 + DEST-* extension rules
+  web/                    Console and demo controls
 packages/
-  contracts/              Zod 契约：ids、shipment、check、humanTask、agents
-  rule-engine/            纯函数：配置校验、组合器、求值、失效计算、扩展规则筛选索引
-  store/                  SQLite 连接、迁移、幂等操作表、outbox（事件由协调者汇入观察库）
-  model-providers/        SemanticJudge 接口：jev、structured-output、scripted
-  agent-core/             Durable Jev Agent 运行时：规则包、案例求值、人工门槛、AgentClient 与 CaseOrchestrator
-  agent-transport/        AgentClient 的两种传输：native/（HTTP 客户端与 agent 路由）、a2a/（Agent Card、业务任务 ↔ A2A Task）
-  human-tasks/            人工任务状态机与审批链
-  logistics/              参考数据、案例文件、事实构建、物流 agent 装配、放行事务、改派调查（reroute/）
-  agent-harness/          调查助手运行时：Pi Durable 上的 DurableInvestigator 与控制点（工具预算、资料隔离）
-  service-kit/            服务启动样板：Express、pino 日志、健康检查、演示角色头、错误处理
+  contracts/              Zod contracts: ids, shipment, check, humanTask, agents, order options
+  rule-engine/            Pure functions: validation, combinators, evaluation, invalidation, the extension rule index
+  store/                  SQLite connection, migrations, idempotent operations, outbox (the coordinator collects events into the observation store)
+  model-providers/        The SemanticJudge interface: jev, structured-output, scripted
+  agent-core/             Durable Jev Agent runtime: rule pack, case evaluation, human gates, AgentClient and CaseOrchestrator
+  agent-transport/        Two transports for AgentClient: native/ (HTTP client and agent routes), a2a/ (Agent Card, business task ↔ A2A Task)
+  human-tasks/            Human task state machine and approval chains
+  logistics/              Reference data, case files, fact building, logistics agent assembly, release transaction, reroute investigation (reroute/)
+  agent-harness/          Investigation helper runtime: DurableInvestigator on Pi Durable and its controls (tool budget, data isolation)
+  service-kit/            Service boilerplate: Express, pino logs, health checks, demo role headers, error handling
 tools/
-  launcher/               一键启动、按名称杀/重启进程（演示控制端调用）
-  rule-authoring/         规则编写 agent：政策文本 → 校验过的规则提案与 diff
-spikes/                   P0 一次性验证，不被正式代码依赖
+  launcher/               One-command start; kill and restart processes by name (used by the demo controls)
+  rule-authoring/         Rule-authoring agent: policy text → validated rule proposals and a diff
+spikes/                   One-off P0 checks, not depended on by the product code
 eval/
-  materials/              policy-v1.md、rules.json、cases/、mock-data/、screening/、authoring/（编写录制）
-  blind/                  盲测标准答案，仅 runner 读取（待建）
-  runner/                 回放（replay-main）、筛选（screening-main）、故障场景（faults-main）
-docs/                     用户文档
-var/                      运行时数据与日志，gitignore
+  materials/              policy-v1.md, rules.json, cases/, mock-data/, screening/, authoring/ (authoring recordings)
+  blind/                  Blind-test answer keys, read only by the runner (to be built)
+  runner/                 Replay (replay-main), screening (screening-main), fault scenarios (faults-main)
+docs/                     User documents
+var/                      Runtime data and logs, gitignored
 ```
 
-依赖方向：`apps → packages`；`rule-engine` 和 `contracts` 不依赖任何 IO 包；`agent-harness` 不依赖具体业务。
+Dependencies point inward: `apps → packages`; `rule-engine` and `contracts` depend on no IO package;
+`agent-harness` depends on no specific business.
 
-## 3. 工程约定
+## 3. Engineering conventions
 
-每条约定由 `pnpm check` 里的工具强制，规则、理由与对应工具见 [docs/engineering.md](../docs/engineering.md)。业务层面的补充：
+Each convention is enforced by a tool in `pnpm check`; rules, reasons and tools are in
+[docs/engineering.md](../docs/engineering.md). Business-level additions:
 
-- 命名表达业务含义（`evaluateRuleGraph`、`invalidateDependentsOf`），不用缩写；注释只写"为什么"与约束。
-- 测试轻量：每个包挑关键语义写少量 Vitest，不追求覆盖率。
-- 所有时间 UTC，金额整数分，重量克，温度 0.1°C 整数。
+- Names say what they mean in the business (`evaluateRuleGraph`, `invalidateDependentsOf`), no
+  abbreviations; comments say only why and what constrains.
+- Light tests: a few Vitest cases on the key semantics of each package, no coverage target.
+- Every time is UTC, money in integer cents, weight in grams, temperature in integer tenths of a
+  degree Celsius.
+- Everything in the code base is English; only `docs/demo-guide.md` is Chinese.
 
-## 4. 一键体验
+## 4. One-command experience
 
-| 命令 | 作用 |
+| Command | What it does |
 |---|---|
-| `pnpm bootstrap` | install + build 全部 |
-| `pnpm start` / `pnpm start:a2a` | launcher 启动 5 个 agent 服务 + web（后者经 A2A 通信），打印访问地址 |
-| `pnpm demo:reset` | 清库并载入 LOG-001 ~ LOG-008 |
-| `pnpm check` | lint、全量类型检查（含测试与 web）、knip、unit test |
-| `pnpm replay` / `pnpm screening` / `pnpm faults` | 回放、筛选、故障场景，报告到 `var/reports/` |
-| `pnpm bench` | 跑 benchmark（待建） |
+| `pnpm bootstrap` | install + build everything |
+| `pnpm start` / `pnpm start:a2a` | The launcher starts the 5 agent services + web (the latter over A2A), announces the address and opens the browser |
+| `pnpm demo:reset` | Clear the stores and load LOG-001 to LOG-008 |
+| `pnpm check` | Lint, full type check (tests and web included), knip, unit tests |
+| `pnpm replay` / `pnpm screening` / `pnpm faults` | Replay, screening, fault scenarios; reports in `var/reports/` |
+| `pnpm bench` | Run the benchmarks (to be built) |
 
-`.env.example` 提供 `MODEL_MODE=scripted|live`、`TYPESAFE_API_KEY`、`NVIDIA_API_KEY`。默认 `scripted`，无 key 可完整演示。
+`.env.example` offers `MODEL_MODE=scripted|live`, `TYPESAFE_API_KEY`, `NVIDIA_API_KEY`. The
+default is `scripted`, so the demo runs fully without keys.
 
-Web 中的演示控制（仅本地演示模式开启）：选择案例、扮演角色、执行人工审批/现场动作、修改订单触发失效、杀死/重启服务、注入超时、重复提交。
+Demo controls in the web (local demo mode only): pick a case, act as a role, approve or do field
+work, place a new order, change an order to trigger invalidation, reset one case, kill and restart
+services.
 
-## 5. 规则引擎语义
+## 5. Rule engine semantics
 
-### 5.1 状态
+### 5.1 Statuses
 
 `PASS | FAIL | UNKNOWN | NOT_APPLICABLE | ERROR | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`
 
-每个 check 同时保存 `observedValue`（事实，如"存在越界"）和 `gateStatus`（门槛结论），二者不混用。
+Each check keeps both its `observedValue` (a fact, such as "an excursion exists") and its
+`gateStatus` (the gate's conclusion); the two are never mixed.
 
-### 5.2 规则定义
+### 5.2 Rule definition
 
 ```ts
 type RuleDefinition = {
@@ -99,80 +108,155 @@ type RuleDefinition = {
   inputPaths: string[]
   humanGate?: {
     taskType: 'APPROVAL' | 'OPERATION'
-    steps: { requiredRole: Role; appliesWhen?: Expression }[]   // 1–3 个角色
+    steps: { requiredRole: Role; appliesWhen?: Expression }[]   // 1–3 roles
     mode: 'sequential' | 'parallel'
-    distinctActors: boolean                                      // 四眼原则：同一人不能签两步
+    distinctActors: boolean                                      // four eyes: one person cannot sign two steps
   }
   invalidationTriggers: string[]
 }
 ```
 
-叶子求值方式：
+Leaf evaluation:
 
-| kind | 配置 | 由谁执行 | 谁来写 |
+| kind | Configuration | Run by | Written by |
 |---|---|---|---|
-| `expression` | `expression.passWhen`（FEEL，true/false/null → PASS/FAIL/UNKNOWN），可选 `observe` | rule-engine 内置 | 编写 agent 生成，人工审核 |
-| `semantic` | `semantic`：问题（choice / noul）、`state`（FEEL 取值）、`passWhen`（choiceIn / probabilityAtLeast / probabilityAtMost） | agent 层用 SemanticJudge（Jev） | 编写 agent 生成 |
-| `humanGate` | `humanGate`：步骤、模式、四眼、`evidenceRequirements`、`expiresAfterHours` | agent 层用人工任务状态机 | 编写 agent 生成 |
-| `combinator` | `combiner` 表达式树 | rule-engine 内置 | 编写 agent 生成 |
-| `code` / `decisionTable` | `evaluator.ref` 指向注册的函数 | agent 层注册的手写代码 | 人；计入"手写代码"指标 |
+| `expression` | `expression.passWhen` (FEEL; true/false/null → PASS/FAIL/UNKNOWN), optional `observe` | Built into rule-engine | The authoring agent, reviewed by a person |
+| `semantic` | `semantic`: the question (choice / noul), `state` (FEEL values), `passWhen` (choiceIn / probabilityAtLeast / probabilityAtMost / selectChoicesAtLeast) | The agent layer, with a SemanticJudge (Jev) | The authoring agent |
+| `humanGate` | `humanGate`: steps, mode, four eyes, `evidenceRequirements`, `expiresAfterHours` | The agent layer, with the human task state machine | The authoring agent |
+| `combinator` | A `combiner` expression tree | Built into rule-engine | The authoring agent |
+| `code` / `decisionTable` | `evaluator.ref` names a registered function | Hand-written code registered in the agent layer | A person; counts towards "hand-written code" |
 
-FEEL 上下文：`order`、`cargoItems`、`legs`、当前成员 `item` 或 `leg`、`params`（政策参数）。不用 FEEL 过滤语法 `list[条件]`（feelin 8.2 在这些情形下返回空列表，配合 `every` 会空真通过），一律写成 `every i in list satisfies (not(适用) or 条件)`。条件树里可用 `feel` 叶子写数值或事实条件；`allOf`/`anyOf` 可在任何作用域使用，只要不嵌套在同一作用域内（如运输段规则读"任一货件是受控货"）。`decisionTable` 目前是混装矩阵：`mixing.categories` / `mixing.qualifications` 两个 FEEL 取值，按规则包中的 `mixingMatrix` 判定，观察值列出违规组合。表达式里的 `params.X` 必须在规则的 `parameters` 中声明，且存在于政策参数；FEEL 语法在启动校验时检查。
+FEEL context: `order`, `cargoItems`, `legs`, the current member `item` or `leg`, `params` (policy
+parameters). The FEEL filter syntax `list[condition]` is not used (feelin 8.2 returns an empty
+list in these cases, which makes `every` vacuously true); write
+`every i in list satisfies (not(applies) or condition)` instead. Condition trees can use a `feel`
+leaf for a numeric or factual condition; `allOf`/`anyOf` work in any scope as long as they are not
+nested within the same scope (a leg rule may read "any item is controlled"). `decisionTable` is
+currently the mixing matrix: two FEEL values `mixing.categories` / `mixing.qualifications` decided
+by the rule pack's `mixingMatrix`, with the offending mixes as the observed value. Any `params.X`
+in an expression must be declared in the rule's `parameters` and exist among the policy
+parameters; FEEL syntax is checked at start-up validation.
 
-`Expression` 为 `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)` 的 JSON 树，以 `op` 区分；`ifThen` 用 `condition`/`consequence` 字段（避免 `then` 被当作 thenable）。另有两个叶子：`fact(path, equals|includes)` 读输入事实（`order.` 前缀读订单级，否则读当前作用域成员），`observed(ruleId, equals|includes)` 读上游规则的 observedValue（如 R04 判定的分支）；值缺失为 UNKNOWN。
+`Expression` is a JSON tree of `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)`
+told apart by `op`; `ifThen` uses `condition` / `consequence` fields (so `then` is not taken for a
+thenable). There are two more leaves: `fact(path, equals|includes)` reads an input fact (an
+`order.` prefix reads the order, otherwise the current scope member), and
+`observed(ruleId, equals|includes)` reads an upstream rule's observedValue (such as the branch R04
+chose); a missing value is UNKNOWN.
 
-### 5.3 组合语义
+### 5.3 Combinator semantics
 
-把非终态统一称为 pending：`UNKNOWN | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`。
+Non-terminal statuses are called pending: `UNKNOWN | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`.
 
-| 组合器 | 规则 |
+| Combinator | Rule |
 |---|---|
-| `and` | 有 FAIL → FAIL；否则有 ERROR → ERROR；否则有 pending → 最先出现的 pending；否则全 PASS → PASS。NOT_APPLICABLE 子项忽略；忽略后为空 → NOT_APPLICABLE |
-| `or` | 有 PASS → PASS；否则有 pending/ERROR → 该状态；全 FAIL → FAIL |
-| `not` | PASS ↔ FAIL，其余原样（UNKNOWN 不能变成 PASS） |
-| `ifThen(c, t)` | c 为 FAIL/NOT_APPLICABLE → NOT_APPLICABLE；c 为 PASS → t；c 为 pending → BLOCKED_DEPENDENCY |
-| `allOf(scope, e)` | 集合为空 → UNKNOWN（不默认合格）；否则对成员 `and` |
-| `anyOf(scope, e)` | 集合为空 → UNKNOWN；否则对成员 `or` |
+| `and` | Any FAIL → FAIL; else any ERROR → ERROR; else any pending → the first pending; else all PASS → PASS. NOT_APPLICABLE children are ignored; empty after that → NOT_APPLICABLE |
+| `or` | Any PASS → PASS; else any pending/ERROR → that status; all FAIL → FAIL |
+| `not` | PASS ↔ FAIL, everything else unchanged (UNKNOWN cannot become PASS) |
+| `ifThen(c, t)` | c is FAIL/NOT_APPLICABLE → NOT_APPLICABLE; c is PASS → t; c is pending → BLOCKED_DEPENDENCY |
+| `allOf(scope, e)` | An empty set → UNKNOWN (never passes by default); otherwise `and` over the members |
+| `anyOf(scope, e)` | An empty set → UNKNOWN; otherwise `or` over the members |
 
-依赖未完成时规则本身为 BLOCKED_DEPENDENCY，并记录 `blockedBy`。
+A rule whose dependencies are not done is itself BLOCKED_DEPENDENCY and records `blockedBy`.
 
-图求值（`evaluateRuleGraph`）按拓扑序、按作用域成员逐实例求值：
+Graph evaluation (`evaluateRuleGraph`) runs in topological order, one instance per scope member:
 
-1. `appliesWhen`：FAIL/NOT_APPLICABLE → 本规则 NOT_APPLICABLE；pending → BLOCKED_DEPENDENCY；ERROR → ERROR。
-2. 组合规则直接求 `combiner`，不做依赖门控（组合语义自己处理 pending）。
-3. 叶子规则：`dependsOn` 中除 `appliesWhen` 已引用者外，每个依赖必须为 PASS 或 NOT_APPLICABLE，否则 BLOCKED_DEPENDENCY 且 `blockedBy` 列出这些依赖；订单级规则依赖货件/运输段级规则时按 ALL 聚合（空集合为 UNKNOWN）。像 R33"仅 R32 失败时"这类规则，把 R32 写进 `appliesWhen`，就不会被 R32 的 FAIL 门控。
-4. 求值器抛错 → ERROR；缺求值器 → ERROR；返回 UNKNOWN 且 `unknownPolicy = escalateToHuman` → 记入 `escalations`，由人工任务模块（T1.7）创建任务。
+1. `appliesWhen`: FAIL/NOT_APPLICABLE → the rule is NOT_APPLICABLE; pending →
+   BLOCKED_DEPENDENCY; ERROR → ERROR.
+2. A combined rule evaluates its `combiner` directly, without dependency gating (the combinator
+   semantics handle pending).
+3. A leaf rule: every dependency in `dependsOn`, apart from those `appliesWhen` already references,
+   must be PASS or NOT_APPLICABLE, otherwise BLOCKED_DEPENDENCY with those dependencies in
+   `blockedBy`; an order-level rule that depends on item or leg rules aggregates them with ALL (an
+   empty set is UNKNOWN). A rule like R33 ("only when R32 fails") puts R32 into `appliesWhen`, so
+   R32's FAIL does not gate it.
+4. An evaluator that throws → ERROR; a missing evaluator → ERROR; UNKNOWN with
+   `unknownPolicy = escalateToHuman` → recorded in `escalations`, and the human task module (T1.7)
+   creates a task.
 
-### 5.4 配置校验
+### 5.4 Validation
 
-启动时校验：引用存在、表达式类型、无环（拓扑排序）、参数存在于 `mock-policy-parameters`。失败则服务拒绝发起放行。
+At start-up: references exist, expression types, no cycles (topological sort), parameters exist in
+the policy parameters. On failure the service refuses to start a release.
 
-### 5.5 失效与增量重算
+### 5.5 Invalidation and incremental evaluation
 
-- 每个 check 记录 `inputFingerprint = hash(inputPaths 的值 + 实体版本 + 上游结果 id)`。
-- 实体变更 → 由 `invalidationTriggers` 找到直接受影响规则 → 沿依赖图向下游传递 → 标记 INVALIDATED → 只重算这部分。
-- 人工任务绑定 `targetVersion` 与 `inputFingerprint`；指纹变化即失效，并创建 `supersededBy` 关联的新任务。
-- 多角色审批链：每一步是一个独立的 APPROVAL 人工任务（单一角色，带 `approvalChain` 的 chainId/stepIndex/stepCount/mode）。顺序模式下前一步批准后才创建下一步；并行模式下同时创建。全部批准 → 门槛 PASS；任一拒绝 → FAIL 并取消其余步骤；任一过期 → 该链失效，需重新发起；失效时整条链被新链替代。`distinctActors` 时同一人不能批准同链两步，同角色两步即"双人复核"。步骤可带 `appliesWhen`（如受控货追加合规审核员、超二级额度追加第二名商务主管）。在 Pi Durable 中，一条链是父任务依次等待的子任务。实现在 `packages/human-tasks`：`decideHumanTask` 校验角色、过期、目标版本（指纹）、证据字段、步骤顺序与四眼原则后才落定；`chainOutcome` / `stepsToOpen` / `gateStatusOf` 计算链状态、该开哪几步、门槛状态。链过期或被取消/替代时门槛为 UNKNOWN，由所属 agent 重新发起新链。
-- 晚到结果的指纹与当前不符时只归档。
-- 实现：订单改版时由 CaseRuntime 比较新旧事实的实体版本得出变更（如 `r2 (route, carrier, quote)`），`invalidateDependentsOf` 求出受影响规则，写 `result.invalidated` 事件，重算出的结果带 `invalidatedBy` 供 UI 显示"哪次变更导致失效"；文档版本取文档与仓库记录内容的短哈希，只在内容变化时变化；`evaluateRuleGraph(..., { previous })` 重算时，code / decisionTable / semantic 规则指纹不变即复用（不重复调用 Jev），humanGate 与组合规则每次重新求值。实体版本是订单级的，改一个运输段会让同一触发下所有运输段重算：保守，不会误复用。
+- Each check records `inputFingerprint = hash(values of inputPaths + entity versions + upstream
+  result ids)`.
+- An entity change → `invalidationTriggers` find the directly affected rules → propagated
+  downstream along the dependency graph → marked INVALIDATED → only these are evaluated again.
+- A human task is bound to its target revision and `inputFingerprint`. When the fingerprint
+  changes the task is cancelled and a new one, linked by `supersededBy`, is opened; when only the
+  revision moves on and the rule's inputs did not change, the open task is carried to the new
+  revision (`carryForward`) and stays valid.
+- Multi-role approval chains: each step is its own APPROVAL task (one role, with the
+  `approvalChain` chainId/stepIndex/stepCount/mode). In sequential mode the next step opens once
+  the previous one is approved; in parallel mode they open together. All approved → the gate
+  PASSes; any rejection → FAIL and the other steps are cancelled; any expiry → the chain lapses
+  and is started again; on invalidation the whole chain is replaced by a new one. With
+  `distinctActors` one person cannot approve two steps of a chain, and two steps of the same role
+  make a "two-person review". Steps may carry `appliesWhen` (a compliance reviewer added for
+  controlled goods, a second commercial manager above the second credit tier). In Pi Durable a
+  chain is a parent task waiting on its subtasks in turn. Implemented in `packages/human-tasks`:
+  `decideHumanTask` checks role, expiry, target revision (fingerprint), evidence fields, step order
+  and four eyes before anything is final; `chainOutcome` / `stepsToOpen` / `gateStatusOf` compute
+  the chain's state, which steps to open and the gate status. When a chain expires or is cancelled
+  or replaced, the gate is UNKNOWN and the owning agent starts a new chain.
+- A late result whose fingerprint no longer matches is only archived.
+- Implementation: when an order is revised, CaseRuntime compares the entity versions of the old and
+  new facts to find the change (such as `r2 (route, carrier, quote)`), `invalidateDependentsOf`
+  finds the affected rules, a `result.invalidated` event is written, and re-evaluated results carry
+  `invalidatedBy` so the UI can show which change invalidated them; a document's version is a short
+  hash of the document and warehouse record contents and changes only when the content does;
+  `evaluateRuleGraph(..., { previous })` reuses code / decisionTable / semantic results whose
+  fingerprint is unchanged (Jev is not called again), while human gates and combined rules are
+  evaluated every time. Entity versions are order-level, so changing one leg evaluates every leg
+  under the same trigger again: conservative, never a wrong reuse.
 
-## 6. 服务与流程
+## 6. Services and flow
 
-- 术语："agent" 只指 Durable Jev Agent（对外 A2A 身份 + 内部 Jev + Pi Durable + 规则包）。会自己选工具的 LLM 循环称"调查助手"，是 agent 内部的可选部件。
-- 协作模式（均走 A2A）：派单与汇总（订单协调 agent ↔ 各 agent，每个"订单版本 × 能力"一个 A2A Task）；点对点请求（运输 → 商务：改派额外费用审批 R35；运输 → 货物：候选计划的冷链/受控复核 R28/R16/R26）；变更通知与失效（换承运商 → 货物 agent 的 R13 审批链失效重发）；人工/补材料统一为 `input-required`。agent 之间不共享数据库、不调用对方内部代码，约定只有 Agent Card 与 `contracts` 中的业务结果契约。
-- 扩展：新 agent 用同一模板（service-kit + 规则包 + Agent Card）起服务，订单协调 agent 经 Agent Card 发现，R40 增加一个依赖；已有 agent 不改代码。拆分依据是业务责任、审批人、发布节奏、数据归属，不是规则数量。
-- 每个业务模块是一个 Durable Jev Agent（spec 8）：持有本模块规则图、叶子求值、人工任务与等待状态，通过 Pi Durable 在等待人工和进程重启后恢复。
-- 模块流程实现为 Pi Durable durable task（不经 LLM）：分阶段检查点，人工审批为子任务 + 决定文档，详见 `docs/m0-findings.md` T0.8。
-- 叶子求值器：结构化规则 `evaluator.kind = code | decisionTable`，非结构化规则 `semantic`（Jev）。同一规则可以配两种实现做对照（B7）。
-- Coordinator 拥有订单版本和整单聚合层（R08、R37–R40），通过 A2A / native 接口获取各模块结果；依赖调度是确定性状态机。
-- 跨 agent 传播：每个 agent 加载完整规则包、只执行自己拥有的规则，他方规则结果由编排器提供（未上报视为 UNKNOWN）。`CaseOrchestrator` 每轮把其他 agent 的最新结果交给每个 agent 并行重算，直到所有结果的状态与指纹不再变化（规则图无环，轮数不超过依赖深度，上限 12）。人工决定按任务 id 中的规则路由到所属 agent，再触发传播。编排器只依赖 `AgentClient` 接口：进程内实现供回放 runner，HTTP 实现供运行时，A2A 实现在 P5 加入。
-- 业务服务暴露原生 HTTP 任务接口；`agent-transport` 的 a2a/ 在其上包一层 A2A server（B4 对照）。
-- 人工任务由所属模块持有（状态机复用 `packages` 中的实现）；跨模块等待通过 A2A `input-required` 表达。Web 汇总各模块任务队列。角色身份由请求头 `x-demo-role` 模拟，服务端校验权限。
-- 放行：调度员确认时在同一 SQLite 事务内重读当前版本、重新求值 R40，通过才写 DISPATCHED。
+- Terms: "agent" means only a Durable Jev Agent (an A2A identity outside + Jev + Pi Durable + a rule
+  pack inside). An LLM loop that chooses its own tools is the "investigation helper", an optional
+  part inside an agent.
+- Collaboration (all over A2A): dispatch and aggregation (order coordination ↔ each agent, one A2A
+  Task per "order revision × capability"); peer requests (transport → commercial: extra cost
+  approval R35 for a reroute; transport → cargo: cold-chain and controlled re-check of a candidate
+  plan R28/R16/R26); change notification and invalidation (a carrier change → the cargo agent's R13
+  approval chain is invalidated and reissued); people and missing data are always
+  `input-required`. Agents share no database and call none of each other's internal code; their
+  only contract is the Agent Card and the business result contracts in `contracts`.
+- Extension: a new agent starts from the same template (service-kit + rule pack + Agent Card), the
+  order coordination agent discovers it through its Agent Card, and R40 gains one dependency;
+  existing agents change no code. Agents are split by business responsibility, approvers, release
+  cadence and data ownership, not by rule count.
+- Each business module is a Durable Jev Agent (spec 8): it owns its rule graph, leaf evaluation,
+  human tasks and waiting state, and recovers through Pi Durable after waiting for a person or a
+  process restart.
+- A module flow is a Pi Durable durable task (no LLM): checkpointed stages, human approval as a
+  subtask plus a decision document; see `docs/m0-findings.md` T0.8.
+- Leaf evaluators: structured rules have `evaluator.kind = code | decisionTable`, unstructured
+  rules `semantic` (Jev). One rule can have both for comparison (B7).
+- The coordinator owns the order revisions and the order-level aggregation (R08, R37–R40), and gets
+  the modules' results over A2A or the native interface; dependency scheduling is a deterministic
+  state machine.
+- Propagation across agents: every agent loads the whole rule pack and runs only the rules it owns;
+  other agents' results come from the orchestrator (unreported means UNKNOWN). Each round
+  `CaseOrchestrator` hands every agent the others' latest results to evaluate in parallel, until no
+  status or fingerprint changes (the graph has no cycles, so the rounds stay within its depth; the
+  limit is 12). A human decision is routed by the rule in its task id to the owning agent, which
+  then triggers propagation. The orchestrator depends only on the `AgentClient` interface: an
+  in-process implementation for the replay runner, an HTTP one at run time, and an A2A one from P5.
+- Business services expose a native HTTP task interface; `agent-transport`'s a2a/ wraps an A2A
+  server around it (the B4 comparison).
+- Human tasks are owned by their module (reusing the state machine in `packages`); waiting across
+  modules is A2A `input-required`. The web gathers the modules' task queues. Role identity is
+  simulated by the `x-demo-role` header, and the server checks permissions.
+- Release: when the dispatcher confirms, the current revision is read again and R40 evaluated
+  again in one SQLite transaction; only a pass writes DISPATCHED.
 
 ## 7. Runtime harness
 
-### 7.1 接口
+### 7.1 Interface
 
 ```ts
 interface AgentRuntime {
@@ -194,25 +278,25 @@ type ToolDefinition = {
 }
 ```
 
-实现：`InMemoryAgentRuntime`（B3 的 A 组）、`PiDurableAgentRuntime`（B 组）。
+Implementations: `InMemoryAgentRuntime` (B3 group A), `PiDurableAgentRuntime` (group B).
 
-### 7.2 控制点
+### 7.2 Controls
 
-| 控制 | 落点 |
+| Control | Where |
 |---|---|
-| 工具白名单与调用方限制 | `ToolRegistry`，按服务注册；审批、现场动作、应用计划、发运不注册给 agent |
-| 预算 | `RunBudgetGuard`：工具调用 10、模型重试 3、自动补资料 2 轮、30s 目标、60s 硬停 |
-| 写操作幂等 | `ToolContext.operationIdFor(logicalActionId)` 由服务端生成；业务库唯一约束 |
-| 崩溃后不重放副作用 | `replayPolicy=verifyByOperationId`：恢复时先查 `get_operation_status` |
-| 输入通道隔离 | `ContextAssembler`：政策/系统指令与资料文本分区，资料只作为数据 |
-| 输出无权限 | agent 只能 `submit_investigation_result`；结论由规则引擎和人工门槛决定 |
-| 版本绑定 | 结果携带 `caseRevision` 与指纹，提交时校验 |
-| 循环/反复崩溃 | 预算守卫 + 重启上限，超限转人工 |
-| 可追溯 | 每个 run、tool、model 调用发出 `observability` 事件 |
+| Tool allow-list and caller limits | `ToolRegistry`, per service; approvals, field actions, applying a plan and dispatch are never registered with the agent |
+| Budgets | `RunBudgetGuard`: 10 tool calls, 3 model retries, 2 rounds of automatic data requests, 30 s target, 60 s hard stop |
+| Idempotent writes | `ToolContext.operationIdFor(logicalActionId)` generated on the server; unique constraints in the business store |
+| No replayed side effects after a crash | `replayPolicy=verifyByOperationId`: on recovery check `get_operation_status` first |
+| Isolated input channels | `ContextAssembler`: policy and system instructions kept apart from document text, which is data only |
+| Output has no authority | The agent can only `submit_investigation_result`; the rule engine and human gates decide |
+| Revision binding | Results carry `caseRevision` and a fingerprint, checked on submit |
+| Loops and repeated crashes | Budget guard + restart limit; beyond it, hand to a person |
+| Traceability | Every run, tool and model call emits an `observability` event |
 
-每一行在 `docs/runtime-controls.md` 对应一个证据测试或故障场景。
+Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
 
-## 8. 模型适配
+## 8. Model adapters
 
 ```ts
 interface SemanticJudge {
@@ -220,23 +304,34 @@ interface SemanticJudge {
 }
 ```
 
-实现：`JevJudge`（官方 SDK，`jev-1.14.0`）、`StructuredOutputJudge`（pi-ai NVIDIA `nemotron-3.5-lightning-30b-a3b`，强制调用 `submit_answer` 工具并按 schema 校验）、`ScriptedJudge`（按 questionId + 输入哈希回放，无精确匹配时用该问题的默认条目）。三者都关闭 SDK 自带重试，由 harness 统一重试。`SemanticAnswer` 保留 provider 原始字段和业务映射结果。
+Implementations: `JevJudge` (official SDK, `jev-1.14.0`), `StructuredOutputJudge` (pi-ai NVIDIA
+`nemotron-3.5-lightning-30b-a3b`, forced to call the `submit_answer` tool and validated against the
+schema), `ScriptedJudge` (replays by questionId + input hash, falling back to the question's
+default entry). All three turn off their SDK's own retries; the harness retries. A
+`SemanticAnswer` keeps the provider's raw fields and the business mapping.
 
-## 9. 可观测性
+## 9. Observability
 
-### 9.1 两级图视图（Console）
+### 9.1 Two-level graph views (console)
 
-同一个图组件（`@xyflow/react` 12.12.0 + `elkjs` 0.12.0 自动分层布局）用于两个层级，交互一致：点节点看摘要，双击 zoom in，面包屑返回。
+One graph component (`@xyflow/react` 12 + `elkjs` 0.12 layered layout) serves both levels with
+the same interactions: click a node for its summary or card, open an agent's own rules, return.
 
-| 层级 | 节点 | 连线 | 节点卡片（不展开内部细节） |
+| Level | Nodes | Edges | Node card (no inner detail) |
 |---|---|---|---|
-| Overview（agent 级） | 每个 Durable Jev Agent | A2A 协作关系：静态来自 Agent Card 声明的依赖，实时叠加 A2A Task 数与等待状态 | 名称、负责的业务流程、健康（运行/重启中/离线）、规则包版本与规则数（代码 / Jev 占比）、固定的模型版本、进行中案例数、待处理人工任务数（按角色）、最近错误、Agent Card 链接 |
-| Agent 内部（规则级） | 规则、人工门槛（含审批链）、调查助手、指向其他 agent 的边界节点（如"→ 商务 agent R35"） | `dependsOn` | 规则 ID 与名称、求值方式（代码 / Jev / 人工）、所选案例下的状态与 blockedBy |
-| 节点详情 | — | — | 规则结果、Jev 原始答案与业务映射、审批链进度、证据（即 T6.3 判断详情） |
+| Overview (agents) | Each Durable Jev Agent | Collaboration: the dependencies between their rules, with live A2A task counts | Name, the business it owns, health (running / restarting / offline), rule pack version and rule counts (code / Jev share), pinned model version, cases in progress, open human tasks by role, Agent Card link |
+| Inside an agent (rules) | Rules, human gates (approval chains included), boundary nodes for other agents' rules | `dependsOn` | Rule id and title, how it is evaluated (code / Jev / human), status in the selected case and blockedBy |
+| Node details | — | — | Rule results, Jev's raw answer and mapping, approval chain progress, evidence (the T6.3 judgement details) |
 
-- 选中某个案例时，两级视图都按该案例着色：Overview 显示这单在各 agent 的状态与 A2A 往来，内部视图显示规则状态。未选案例时，Overview 显示架构与汇总指标。
-- 数据来源：Agent Card（静态）、各 agent 的 `GET /agent/summary`（service-kit 提供，`contracts` 定义 `AgentSummary`）、规则包配置（内部图）、观察库（A2A Task、事件）。
+- With a case selected, both levels are coloured by that case: the overview shows its state in each
+  agent, the inner view the rule statuses. Without a case, the overview shows the architecture and
+  totals.
+- Data: Agent Cards (static), each agent's `GET /agent/summary` (from service-kit, with
+  `AgentSummary` in `contracts`), the rule pack (inner graph), the observation store (A2A tasks,
+  events).
 
-- 事件写各服务 outbox 表，`observability` 收集器汇入 `var/data/observability.sqlite`；Console 通过查询 API + SSE 读取。
-- 标识约定按 PRD 15.2；跨服务通过 HTTP `traceparent` 传播。
-- 业务正确性不依赖观察库。
+- Events go to each service's outbox table; the coordinator's collector gathers them into
+  `var/data/observability.sqlite`; the console reads them through the query API by polling
+  snapshots.
+- Identifiers follow PRD 15.2; `traceparent` propagates over HTTP between services.
+- Business correctness does not depend on the observation store.

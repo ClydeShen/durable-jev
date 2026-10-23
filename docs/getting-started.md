@@ -1,67 +1,81 @@
 # Getting started
 
-## 环境
+## Requirements
 
-- Node 26（26.11 或更新的 26.x，与 `mise.toml` 和 CI 一致；其他大版本 `pnpm install` 会直接拒绝）。用 nvm 的话：`nvm install 26.11.1` 后 `nvm use 26.11.1`
+- Node 26 (26.11 or a later 26.x, as in `mise.toml` and CI; `pnpm install` refuses any other major
+  version). With nvm: `nvm install 26.11.1`, then `nvm use 26.11.1`
 - pnpm 10+
-- 可选：装了 [mise](https://mise.jdx.dev) 的话，在仓库根目录执行 `mise install`，得到与 CI 相同版本的 Node 与 gitleaks（见 `mise.toml`）
-- 无需任何 key：默认 `MODEL_MODE=scripted`，Jev 判断按案例文件里录好的答案回放
+- Optional: with [mise](https://mise.jdx.dev) installed, run `mise install` at the repository root
+  to get the same Node and gitleaks versions as CI (see `mise.toml`)
+- No key needed: `MODEL_MODE=scripted` is the default, and Jev's judgements replay the answers
+  recorded in the case files
 
-## 一键启动
+## Start everything
 
 ```bash
-pnpm bootstrap   # 安装依赖并编译
-pnpm start       # 编译并启动全部服务
+pnpm bootstrap   # install dependencies and build
+pnpm start       # build and start every service
 ```
 
-服务就绪后，日志末尾会出现醒目的"✔ Durable Jev 演示已就绪"和地址 <http://localhost:4100>，并自动打开默认浏览器（不想自动打开就设 `OPEN_BROWSER=false`）。演示数据在首次启动时自动载入；随时用页面右上角"重置演示"或 `pnpm demo:reset` 恢复初始状态。
+Once the services are up, the end of the log shows "✔ Durable Jev demo is ready" with the address
+<http://localhost:4100>, and the default browser opens (set `OPEN_BROWSER=false` to keep it
+closed). The demo data loads on the first start; "Reset demo" at the top right of the page or
+`pnpm demo:reset` restores it at any time, and "Reset this case" in a case header restores only
+that case.
 
-## 演示 LOG-001：普通货从提交到发运
+## Walk through LOG-001: general cargo from order to dispatch
 
-1. 左侧选择 **LOG-001**。状态为"等待人工"，等待仓库操作员。
-2. 中间是规则图：节点是规则，连线是依赖，颜色是状态。除 R39（装载）与 R40（放行）外全部通过。点任意节点看每个货件 / 运输段的结果、观察值和阻塞原因。
-3. 右上角角色选 **仓库操作员**，右侧待办里填写 `loadScanId` 与 `sealNumber`，点"完成并提交证据"。漏填任一项会被拒绝。
-4. 角色切到 **调度员**，案例变为"可发运"，点"确认发运"。系统在同一事务里重新核对 R40 与资料版本，通过才标记"已发运"。
+1. Pick **LOG-001** on the left. Its status is "Needs people": it waits for the warehouse operator.
+2. The middle shows the rule graph: boxes are rules, lines are dependencies, colours are statuses.
+   Everything passes except R39 (loading) and R40 (release). Click any box to see each item's or
+   leg's result, observed value and what blocks it.
+3. Choose **Warehouse operator** as the current role at the top right, fill in the load scan ID and
+   seal number in the task on the right, and click "Complete and submit". Leaving either out is
+   refused.
+4. Switch to **Dispatcher**: the case becomes "Ready to dispatch"; click "Confirm dispatch". In one
+   transaction the system checks R40 and the revision again, and only then marks it "Dispatched".
 
-可以顺便试：用错误角色办理任务、发运前点确认（会提示被谁阻塞）、重复发运。
+Worth trying too: acting on a task in the wrong role, confirming dispatch too early (it says what
+blocks it), dispatching twice.
 
-## 命令
+## Commands
 
-| 命令 | 作用 |
+| Command | What it does |
 |---|---|
-| `pnpm bootstrap` | 安装依赖并编译 |
-| `pnpm start` | 编译并启动全部服务，读取 `.env`（若存在） |
-| `pnpm start:a2a` | 同上，但订单协调 agent 经 A2A（Agent Card + JSON-RPC）调用其他 agent |
-| `pnpm demo:reset` | 重新载入演示案例（服务需在运行） |
-| `pnpm replay` | 回放 8 个演示案例，按阶段断言 |
-| `pnpm faults` | 故障场景 F01–F18（F01–F03 真实杀进程后恢复），报告写入 `var/reports/faults.md` |
-| `pnpm screening` | 用适用规则筛选样本检查分类与筛选是否漏选（`MODEL_MODE=live` 时用真实 Jev） |
-| `pnpm check` | 提交前全量检查：lint（警告即失败）、workspace 一致性、类型检查（含测试与 web）、架构边界、knip、重复代码、单元测试；每条规则见 [engineering.md](engineering.md) |
-| `pnpm materials:lock` | 受保护文件（PRD、政策、规则、测试物料）的改动经你确认后，重新记录哈希；只由人执行 |
-| `pnpm architecture` | 由真实导入关系重新生成 [architecture-graph.md](architecture-graph.md) |
-| `pnpm security` | 检查依赖的已知漏洞（需联网） |
-| `pnpm spikes` | M0 技术预检 spike，结论见 [m0-findings.md](m0-findings.md) |
+| `pnpm bootstrap` | Install dependencies and build |
+| `pnpm start` | Build and start every service, reading `.env` if present |
+| `pnpm start:a2a` | The same, but order coordination calls the other agents over A2A (Agent Card + JSON-RPC) |
+| `pnpm demo:reset` | Load the demo cases again (with the services running) |
+| `pnpm replay` | Replay the 8 demo cases, asserting each stage |
+| `pnpm faults` | Fault scenarios F01–F18 (F01–F03 kill real processes and recover); the report goes to `var/reports/faults.md` |
+| `pnpm screening` | Check classification and rule selection against the screening samples for missed rules (real Jev with `MODEL_MODE=live`) |
+| `pnpm check` | Everything before a commit: lint (warnings fail), workspace consistency, type checks (tests and web included), architecture boundaries, knip, duplication, unit tests; each rule is in [engineering.md](engineering.md) |
+| `pnpm materials:lock` | Record new hashes once you approve a change to a protected file (PRD, policy, rules, test materials); run by a person only |
+| `pnpm architecture` | Regenerate [architecture-graph.md](architecture-graph.md) from the real imports |
+| `pnpm security` | Check dependencies for known vulnerabilities (needs the network) |
+| `pnpm spikes` | The M0 technical spikes; findings in [m0-findings.md](m0-findings.md) |
 
-## 模型模式
+## Model modes
 
-| `MODEL_MODE` | 行为 |
+| `MODEL_MODE` | Behaviour |
 |---|---|
-| `scripted`（默认） | 不调用任何真实模型；Jev 判断回放 `eval/materials/cases/*.json` 中的 `scriptedJudgements` |
-| `live` | 调用真实 Jev（`TYPESAFE_API_KEY`）。只有显式设为 `live` 才会产生真实调用 |
+| `scripted` (default) | No real model is called; Jev's judgements replay `scriptedJudgements` from `eval/materials/cases/*.json` |
+| `live` | Calls the real Jev (`TYPESAFE_API_KEY`). Real calls happen only when this is set to `live` explicitly |
 
-复制 `.env.example` 为 `.env` 修改即可，`pnpm start` 会读取。`pnpm models:live-check` 用两种真实模型各答一次示例问题。
+Copy `.env.example` to `.env` and edit it; `pnpm start` reads it. `pnpm models:live-check` has each
+of the two real models answer a sample question once.
 
-## 目录
+## Folders
 
-| 路径 | 内容 |
+| Path | Contents |
 |---|---|
-| `apps/coordinator` | 订单协调服务：API、放行事务、静态页面 |
-| `apps/web` | 工作台页面 |
-| `packages/agent-core` | Durable Jev Agent 运行时：规则包加载、案例求值、人工门槛 |
-| `packages/rule-engine` | 规则图求值、FEEL 表达式、组合语义、配置校验、指纹与失效 |
-| `packages/human-tasks` | 人工任务状态机与审批链 |
-| `packages/model-providers` | Jev、结构化输出、脚本化判断 |
-| `packages/logistics` | 参考数据、案例文件、订单到规则事实的转换 |
-| `packages/store` | SQLite、迁移、幂等操作、outbox |
-| `eval/materials` | 政策原文、政策参数、规则包、mock 数据、案例 |
-| `var/data` | 运行时数据库（不提交） |
+| `apps/coordinator` | Order coordination service: API, release transaction, static pages |
+| `apps/web` | The console |
+| `packages/agent-core` | Durable Jev Agent runtime: rule pack loading, case evaluation, human gates |
+| `packages/rule-engine` | Rule graph evaluation, FEEL expressions, combinators, validation, fingerprints and invalidation |
+| `packages/human-tasks` | Human task state machine and approval chains |
+| `packages/model-providers` | Jev, structured output, scripted judgements |
+| `packages/logistics` | Reference data, case files, turning an order into rule facts |
+| `packages/store` | SQLite, migrations, idempotent operations, outbox |
+| `eval/materials` | Policy text, policy parameters, rule pack, mock data, cases |
+| `var/data` | Runtime databases (not committed) |
