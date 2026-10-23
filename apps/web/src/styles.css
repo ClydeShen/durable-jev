@@ -590,8 +590,13 @@ button.primary-action {
   min-height: 0;
 }
 
+/* Two fixed lines, title then meta, so neither can cover the other in the fixed-size node. */
 .rule-node {
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
   padding: 6px 8px;
   border-radius: 8px;
   border: 2px solid var(--status, var(--border));
@@ -601,6 +606,7 @@ button.primary-action {
 }
 
 .rule-node-title {
+  flex-shrink: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -608,10 +614,25 @@ button.primary-action {
 
 .rule-node-meta {
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
+  min-width: 0;
   font-size: 11px;
+  white-space: nowrap;
+}
+
+/* When the line is full, the role label gives way; status and marks keep their size. */
+.rule-node-meta > * {
+  flex-shrink: 0;
+}
+
+.rule-node-meta > .entity-chip,
+.rule-node-meta > .muted {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .check-status.PASS {
