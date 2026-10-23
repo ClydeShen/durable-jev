@@ -137,3 +137,21 @@ export const documentKindLabels: Record<string, string> = {
   batteryTestSummary: '电池测试摘要',
   commercialInvoice: '商业发票',
 }
+
+/** Why an action was refused, said so the presenter knows what to do next. */
+export const refusalMessages: Record<string, string> = {
+  STALE_TARGET: '这个案例的资料已经变了，这张任务随之作废。待办已刷新，请处理新的任务。',
+  MISSING_EVIDENCE: '还缺必填的证据，请把每一项都填上再提交。',
+  UNAUTHORIZED: '当前角色不能处理这张任务，请切换到任务要求的角色。',
+  EXPIRED: '这张任务已过期，等 agent 重新开出任务。',
+  NOT_OPEN: '这张任务已经处理过了。',
+  NOT_FOUND: '找不到这张任务，它可能已经被新的任务替换。',
+  STEP_NOT_ACTIVE: '审批要按顺序来，前面的步骤还没有批准。',
+  SAME_ACTOR: '同一个人不能批准同一审批链里的两步，请换另一位审批人。',
+  WRONG_TASK_TYPE: '这类任务不能这样处理：审批要批准或拒绝，现场操作要填证据完成。',
+  AGENT_UNAVAILABLE: '负责这条规则的 agent 暂时不可用，稍后再试。',
+  NOT_DISPATCHER: '只有调度员能确认发运，请切换到调度员。',
+  ALREADY_DISPATCHED: '这个案例已经发运过了。',
+  CHANGED: '确认之前案例资料变了，请看过最新结果再确认。',
+  NOT_RELEASABLE: '还有规则没通过或在等人处理，现在不能发运。',
+}

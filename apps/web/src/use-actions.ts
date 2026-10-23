@@ -15,7 +15,7 @@ export function useActions(
       await work()
       onMessage(success)
     } catch (failure) {
-      onMessage(String(failure))
+      onMessage(failure instanceof Error ? failure.message : String(failure))
     }
     await refresh()
   }

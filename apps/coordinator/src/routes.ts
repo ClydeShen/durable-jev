@@ -155,8 +155,10 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
       actorOf(request),
       dependencies.now,
     )
-    if (!result.ok)
-      throw new HttpError(result.reason === 'NOT_DISPATCHER' ? 403 : 409, result.message)
+    if (!result.ok) {
+      response.status(result.reason === 'NOT_DISPATCHER' ? 403 : 409).json(result)
+      return
+    }
     response.json(summaryOf(await caseView(caseId), catalog))
   })
 }
