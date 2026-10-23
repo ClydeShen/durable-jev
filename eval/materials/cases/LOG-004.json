@@ -244,6 +244,12 @@
     {
       "kind": "incident",
       "label": "Primary carrier Polar cancels; transport agent starts its investigation helper",
+      "situation": "It is the night before departure, and the primary carrier, Polar, has just cancelled leg 1. The cargo is insulin pens, both cold chain and controlled, so any replacement must keep the cold chain and be qualified for controlled goods. The transport planner needs options fast.",
+      "outcome": [
+        "The transport agent starts its investigation helper, an AI model with a few read-only tools.",
+        "It looks up spare capacity and tests each offer against the same rules before suggesting anything.",
+        "It can only propose: the order does not change until the transport planner confirms."
+      ],
       "incident": {
         "type": "carrierCancelled",
         "legId": "LEG-1"

@@ -2202,10 +2202,46 @@ details.a2a-raw > pre {
 }
 
 /* A filter chip in the view tabs: the focused agent, with an icon to clear it. */
+/* A toggle: on, the rule graph shows only one agent's rules; off, every rule. */
 button.focus-filter {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+}
+
+button.focus-filter[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* A small switch track; its knob moves right when the filter is on. */
+.focus-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px;
+  height: 12px;
+  border-radius: 6px;
+  background: var(--border);
+}
+
+.focus-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--surface);
+  transition: left 0.15s;
+}
+
+button.focus-filter[aria-pressed="true"] .focus-switch {
+  background: var(--accent);
+}
+
+button.focus-filter[aria-pressed="true"] .focus-switch::after {
+  left: 12px;
 }
 
 .modal-footer {
@@ -2222,10 +2258,34 @@ button.focus-filter {
   font-weight: 600;
 }
 
-.modal-steps {
-  margin: 12px 0 0;
+.scene {
+  margin: 0 0 14px;
+}
+
+.scene h4 {
+  margin: 0 0 4px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.scene-story {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.scene-outcome {
+  margin: 0;
   padding-left: 20px;
   line-height: 1.6;
+}
+
+.scene-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 /* Tasks in other cases: secondary, so folded into one muted line until opened. */

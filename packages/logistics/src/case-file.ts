@@ -30,6 +30,12 @@ const decisionSchema = z.discriminatedUnion('type', [
   }),
 ])
 
+/** How a demo action is told to the audience: what happened, then what the engine does about it. */
+const scene = {
+  situation: z.string().min(1),
+  outcome: z.array(z.string().min(1)).min(1),
+}
+
 const caseEventSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('expect'),
@@ -58,11 +64,13 @@ const caseEventSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('revise'),
     label: z.string().min(1),
+    ...scene,
     patch: z.record(z.string(), z.unknown()),
   }),
   z.object({
     kind: z.literal('incident'),
     label: z.string().min(1),
+    ...scene,
     incident: z.object({ type: z.literal('carrierCancelled'), legId: z.string().min(1) }),
   }),
   z.object({

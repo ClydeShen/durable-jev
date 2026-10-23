@@ -95,6 +95,12 @@
     {
       "kind": "revise",
       "label": "Reroute via a detour, surcharge 13,000",
+      "situation": "A road closure forces this shipment onto a detour, and the new carrier charges a NZD 13,000 surcharge. Brisk Retail's credit line cannot absorb it, so the order now exceeds its credit limit. Sales want it out the door today.",
+      "outcome": [
+        "The new route and quote become revision r2.",
+        "The route, booking and commercial checks run again; cargo checks keep their results.",
+        "Two separate approvals open: a credit exception, which needs two different commercial managers, and the surcharge. Approving only one still does not release the order."
+      ],
       "patch": {
         "caseRevision": 2,
         "entityVersions": {
