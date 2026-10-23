@@ -1,6 +1,6 @@
 import type { CheckStatus } from '@durable-jev/contracts'
 import { Panel } from '@xyflow/react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { checkStatusLabels } from '../labels'
 
 /** A labelled value: the label says what the value is, so values never run together in a line. */
@@ -65,8 +65,15 @@ export function Drawer({
   onClose(): void
   children: ReactNode
 }) {
+  useEffect(() => {
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [onClose])
   return (
-    <aside className="drawer">
+    <aside className="drawer" aria-label="详情">
       <header className="drawer-header">
         <div className="drawer-heading">{heading}</div>
         <button type="button" className="secondary small" onClick={onClose}>

@@ -1,18 +1,25 @@
 :root {
+  /* Colours meet WCAG 2.2 AA: white text on every status colour is at least 4.5:1. */
   --bg: #f6f7f9;
   --surface: #ffffff;
   --border: #d9dde3;
+  /* Borders that identify a control, such as an input, need 3:1. */
+  --control-border: #8a919c;
   --text: #1d2330;
   --muted: #5d6675;
-  --accent: #2f6fde;
-  --pass: #1f9d55;
-  --fail: #d64545;
-  --waiting: #d98a00;
-  --blocked: #6a7fa8;
-  --unknown: #8a8f98;
+  --accent: #2563c9;
+  --link: #2563c9;
+  --pass: #18794a;
+  /* Green used as text rather than as a background. */
+  --pass-text: #18794a;
+  --fail: #c02d2d;
+  --waiting: #9a5800;
+  --blocked: #4f6390;
+  --unknown: #636a75;
   --error: #9b1c1c;
   --invalidated: #8e44ad;
-  --not-applicable: #b8bec8;
+  --not-applicable: #6c737f;
+  --upstream: #0f766e;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -23,8 +30,11 @@
     --bg: #14171c;
     --surface: #1d2129;
     --border: #2f3541;
+    --control-border: #6b7380;
     --text: #e6e9ee;
     --muted: #9aa3b2;
+    --link: #8ab4ff;
+    --pass-text: #4ade80;
   }
 }
 
@@ -67,7 +77,7 @@ input,
 select {
   font: inherit;
   padding: 4px 6px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   background: var(--surface);
   color: var(--text);
@@ -151,8 +161,10 @@ button.danger {
 }
 
 button.chip.link {
+  min-height: 24px;
+  min-width: 24px;
   cursor: pointer;
-  color: var(--accent);
+  color: var(--link);
 }
 
 button.chip.link:hover {
@@ -624,7 +636,10 @@ button.agent-link:hover {
   background: var(--bg);
 }
 
-button.agent-link button.small {
+button.agent-link /* 2.5.8: click targets are at least 24 by 24 pixels. */
+button.small {
+  min-height: 24px;
+  min-width: 24px;
   padding: 2px 8px;
   font-size: 12px;
 }
@@ -656,19 +671,19 @@ button.agent-link button.small {
 }
 
 .agent-chip.order-coordination {
-  background: #2f6fde;
+  background: var(--accent);
 }
 .agent-chip.cargo-assurance {
   background: #8e44ad;
 }
 .agent-chip.transport-planning {
-  background: #16a085;
+  background: var(--upstream);
 }
 .agent-chip.commercial-control {
-  background: #d35400;
+  background: #b54708;
 }
 .agent-chip.destination-compliance {
-  background: #7f8c8d;
+  background: #5f6b6d;
 }
 
 .agent-node {
@@ -731,10 +746,12 @@ button.agent-link button.small {
 
 .investigation-status.PROPOSED {
   background: #f5d58a;
+  color: #1d2330;
 }
 
 .investigation-status.CONFIRMED {
   background: #b7e4c7;
+  color: #1d2330;
 }
 
 .investigation .actions {
@@ -1073,7 +1090,7 @@ div.event-fields > dl > dd {
   gap: 2px 12px;
   margin: 4px 0 0;
   font-size: 11px;
-  color: var(--not-applicable);
+  color: var(--muted);
 }
 
 p.technical > span {
@@ -1105,8 +1122,8 @@ p.technical > span > code {
 }
 
 .tag.pass {
-  color: var(--pass);
-  border-color: var(--pass);
+  color: var(--pass-text);
+  border-color: var(--pass-text);
   border-style: solid;
 }
 
@@ -1146,7 +1163,7 @@ span.judgement-bar > span {
 }
 
 .rule-node.relation-upstream {
-  box-shadow: 0 0 0 3px #16a085;
+  box-shadow: 0 0 0 3px var(--upstream);
 }
 
 .rule-node.relation-downstream {
@@ -1162,7 +1179,7 @@ span.judgement-bar > span {
 }
 
 .relation-tag.upstream {
-  background: #16a085;
+  background: var(--upstream);
 }
 
 .relation-tag.downstream {
@@ -1170,7 +1187,7 @@ span.judgement-bar > span {
 }
 
 .react-flow__edge.edge-upstream path {
-  stroke: #16a085;
+  stroke: var(--upstream);
   stroke-width: 2.5;
 }
 
@@ -1195,4 +1212,52 @@ span.judgement-bar > span {
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border);
+}
+
+/* Accessibility (WCAG 2.2 AA) */
+
+/* 2.4.7: keyboard focus is always visible. */
+:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+/* A rule node opens with an inner button, so it is reachable and usable by keyboard. */
+button.node-open {
+  all: unset;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.timeline td.toggle button.node-open {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 24px;
+  min-height: 24px;
+}
+
+button.node-open:focus-visible {
+  outline: 2px solid var(--link);
+}
+
+/* 2.3.3: no pulsing or flowing when the system asks for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .rule-node.playing {
+    animation: none;
+    transform: none;
+  }
+
+  .react-flow__edge.animated path {
+    animation: none;
+  }
+}
+
+/* 1.4.3: the graph library's credit link meets text contrast too. */
+.react-flow__attribution {
+  background: var(--surface);
+}
+
+.react-flow__attribution a {
+  color: var(--muted);
 }

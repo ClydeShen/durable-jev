@@ -15,7 +15,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import type { AgentNames, RuleInfo } from '../api'
 import { layoutGraph, nodeSize, type Positions } from '../graph-layout'
-import { kindLabels, mostSevere } from '../labels'
+import { checkStatusLabels, kindLabels, mostSevere } from '../labels'
 import type { PlaybackStep } from '../playback'
 import { useSavedLayout } from '../saved-layout'
 import { LayoutReset, StatusBadge } from './ui'
@@ -83,7 +83,13 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
         {relation && relationLabels[relation] && (
           <span className={`relation-tag ${relation}`}>{relationLabels[relation]}</span>
         )}
-        <strong>{rule.ruleId}</strong> {rule.title}
+        <button
+          type="button"
+          className="node-open"
+          aria-label={`${rule.ruleId} ${rule.title}，${status ? checkStatusLabels[status] : '未评估'}，打开详情`}
+        >
+          <strong>{rule.ruleId}</strong> {rule.title}
+        </button>
       </div>
       <div className="rule-node-meta">
         <span className="tag">{kindLabels[rule.kind]}</span>
@@ -121,7 +127,12 @@ function progressLabel(playback: Playback): string {
 function Narration({ playback }: { playback: Playback }) {
   if (!playback.current) return null
   return (
-    <Panel position="bottom-center" className={`narration ${playback.current.tone}`}>
+    <Panel
+      position="bottom-center"
+      className={`narration ${playback.current.tone}`}
+      role="status"
+      aria-live="polite"
+    >
       <span className="narration-text">{playback.current.text}</span>
       <span className="narration-progress">{progressLabel(playback)}</span>
       {playback.remaining > 0 && (
@@ -230,6 +241,8 @@ export function RuleGraph({
           // Every rule node has this fixed size; stating it keeps xyflow from hiding a node
           // to measure it again each time its data changes.
           measured: nodeSize,
+          // The inner button takes focus, so the node itself is not a second tab stop.
+          focusable: false,
           position: layout.moved[rule.ruleId] ?? positions[rule.ruleId] ?? { x: 0, y: 0 },
           data: {
             rule,

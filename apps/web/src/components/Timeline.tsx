@@ -128,7 +128,20 @@ export function Timeline({ entries, agentNames, titles }: Props) {
                   className={expanded ? 'event open' : 'event'}
                   onClick={() => toggle(entry.eventId)}
                 >
-                  <td className="toggle">{expanded ? '▾' : '▸'}</td>
+                  <td className="toggle">
+                    <button
+                      type="button"
+                      className="node-open"
+                      aria-expanded={expanded}
+                      aria-label={`${eventLabels[entry.eventName] ?? entry.eventName}：${summary(entry, titles)}，${expanded ? '收起' : '展开'}详情`}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        toggle(entry.eventId)
+                      }}
+                    >
+                      {expanded ? '▾' : '▸'}
+                    </button>
+                  </td>
                   <td className="time">
                     {new Date(entry.createdAt).toLocaleTimeString('zh-CN', { hour12: false })}
                   </td>

@@ -35,7 +35,13 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
       <Handle type="target" position={Position.Left} />
       <header>
         <span className={agent.available ? 'dot online' : 'dot offline'} />
-        <strong>{agent.card?.name ?? agent.agentId}</strong>
+        <button
+          type="button"
+          className="node-open"
+          aria-label={`${agent.card?.name ?? agent.agentId}，打开名片`}
+        >
+          <strong>{agent.card?.name ?? agent.agentId}</strong>
+        </button>
         <StatusBadge status={caseStatus} />
       </header>
       <p>{agent.card?.description}</p>
@@ -100,6 +106,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         id: agent.agentId,
         type: 'agent',
         measured: agentNodeSize,
+        focusable: false,
         position: layout.moved[agent.agentId] ?? positions[agent.agentId] ?? { x: 0, y: 0 },
         data: {
           agent,
