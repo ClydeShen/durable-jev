@@ -14,6 +14,7 @@ export function RoleBar({ actor, onChange, onReset }: Props) {
     <header className="role-bar">
       <h1>Durable Jev Agent 演示</h1>
       <label>
+        <span className="role-dot" aria-hidden="true" />
         当前角色
         <select
           value={actor.role}

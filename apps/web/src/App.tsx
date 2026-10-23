@@ -37,7 +37,7 @@ export function App() {
   const actions = useActions(actor, setMessage, refreshAll)
 
   return (
-    <div className="app">
+    <div className="app" data-role={actor.role}>
       <RoleBar actor={actor} onChange={setActor} onReset={actions.reset} />
       <Sidebar
         speed={speed}

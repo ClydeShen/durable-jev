@@ -1261,3 +1261,78 @@ button.node-open:focus-visible {
 .react-flow__attribution a {
   color: var(--muted);
 }
+
+/*
+ * Role colour: each role has a hue, used only at the edges (the top bar, the task panel), so a
+ * change of role is visible at a glance while buttons and status colours stay the same. Every
+ * hue reaches 3:1 against the surface in both themes.
+ */
+.app {
+  --role: var(--muted);
+}
+
+.app[data-role="warehouseOperator"] {
+  --role: #0284c7;
+}
+.app[data-role="dispatcher"] {
+  --role: #c2410c;
+}
+.app[data-role="complianceReviewer"] {
+  --role: #4f46e5;
+}
+.app[data-role="qualityReviewer"] {
+  --role: #c026d3;
+}
+.app[data-role="commercialManager"] {
+  --role: #a16207;
+}
+.app[data-role="transportPlanner"] {
+  --role: #0d9488;
+}
+.app[data-role="technicalEvaluator"] {
+  --role: #475569;
+}
+
+@media (prefers-color-scheme: dark) {
+  .app[data-role="complianceReviewer"] {
+    --role: #6366f1;
+  }
+  .app[data-role="commercialManager"] {
+    --role: #ca8a04;
+  }
+  .app[data-role="technicalEvaluator"] {
+    --role: #94a3b8;
+  }
+}
+
+.app .role-bar {
+  border-bottom: 3px solid var(--role);
+  background: color-mix(in srgb, var(--role) 7%, var(--surface));
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
+}
+
+.role-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--role);
+}
+
+.app .operator {
+  border-color: var(--role);
+}
+
+.app .task-panel {
+  border-top: 3px solid var(--role);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
+    var(--surface) 160px
+  );
+}
+
+.app .task-panel .task {
+  border-left: 3px solid var(--role);
+}
