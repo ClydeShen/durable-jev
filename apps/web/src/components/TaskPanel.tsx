@@ -2,7 +2,8 @@ import type { HumanTask } from '@durable-jev/contracts'
 import { useState } from 'react'
 import type { Actor, RuleInfo, TaskDecision } from '../api'
 import { evidenceLabels, roleLabels } from '../labels'
-import { Chip, Field, Fields } from './ui'
+import { Chip, Tag } from './chips'
+import { Field, Fields } from './ui'
 
 const deadline = (timestamp: string) =>
   new Date(timestamp).toLocaleString('zh-CN', {
@@ -29,7 +30,7 @@ function TaskCard({ task, ruleTitle, onDecide, onShowRule }: TaskCardProps) {
         <Chip onClick={onShowRule} title="在规则图里查看这条规则">
           {task.ruleId}
         </Chip>
-        <span className="tag">{operation ? '现场操作' : '审批'}</span>
+        <Tag>{operation ? '现场操作' : '审批'}</Tag>
       </header>
       {ruleTitle && <p className="task-title">{ruleTitle}</p>}
       <Fields>

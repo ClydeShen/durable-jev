@@ -6,6 +6,7 @@ import type { PlaybackSpeed } from '../playback'
 import { useCaseHistory } from '../use-case-history'
 import { AgentCard } from './AgentCard'
 import { AgentOverview } from './AgentOverview'
+import { EventFeed } from './EventFeed'
 import { RuleDetail } from './RuleDetail'
 import { RuleGraph } from './RuleGraph'
 import { Timeline } from './Timeline'
@@ -80,13 +81,8 @@ export function CaseViews({
   const [view, setView] = useState<CaseViewMode>('overview')
   const [focusAgent, setFocusAgent] = useState<string>()
   const [selectedRule, setSelectedRule] = useState<string>()
-  const { entries, titles, playback } = useCaseHistory({
-    caseId,
-    rules,
-    outcomes,
-    openTasks,
-    speed,
-  })
+  const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed })
+  const { playback } = history
   const playing = playback.current !== undefined
   useEffect(() => {
     if (playing) setView((current) => (current === 'overview' ? 'graph' : current))
@@ -132,13 +128,14 @@ export function CaseViews({
           outcomes={playback.outcomes}
           playback={playback}
           selectedRule={selectedRule}
+          openTasks={openTasks}
           focusRequest={ruleRequest}
           focusAgent={focusAgent}
           onSelect={openRule}
         />
       )}
       {view === 'timeline' && (
-        <Timeline entries={entries ?? []} agentNames={agentNames} titles={titles} />
+        <Timeline entries={history.entries ?? []} agentNames={agentNames} titles={history.titles} />
       )}
       {rule && !agentShown && (
         <RuleDetail
@@ -147,9 +144,18 @@ export function CaseViews({
           agentNames={agentNames}
           onOpenRule={openRule}
           outcomes={outcomes.filter((outcome) => outcome.ruleId === rule.ruleId)}
+          openTasks={openTasks.filter((task) => task.ruleId === rule.ruleId)}
           onClose={() => setSelectedRule(undefined)}
         />
       )}
+      <EventFeed
+        items={history.feed}
+        besideDrawer={Boolean(rule || agentShown)}
+        onShowRule={(ruleId) => {
+          setView('graph')
+          openRule(ruleId)
+        }}
+      />
       {agentShown && (
         <AgentCard
           agent={agentShown}

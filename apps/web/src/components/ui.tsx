@@ -1,7 +1,5 @@
-import type { CheckStatus } from '@durable-jev/contracts'
 import { Panel } from '@xyflow/react'
 import { type ReactNode, useEffect } from 'react'
-import { checkStatusLabels } from '../labels'
 
 /** A labelled value: the label says what the value is, so values never run together in a line. */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -17,39 +15,22 @@ export function Fields({ children }: { children: ReactNode }) {
   return <div className="fields">{children}</div>
 }
 
-export function StatusBadge({ status }: { status?: CheckStatus }) {
-  return (
-    <span className={`status-badge check-status ${status ?? 'NONE'}`}>
-      {status ? checkStatusLabels[status] : '未评估'}
-    </span>
-  )
-}
-
-/** An identifier such as a rule id; clickable when it leads somewhere. */
-export function Chip({
-  children,
+export function Section({
   title,
-  onClick,
+  action,
+  children,
 }: {
+  title: string
+  /** A link-like control on the heading line, such as "open the rule graph". */
+  action?: ReactNode
   children: ReactNode
-  title?: string
-  onClick?(): void
 }) {
-  return onClick ? (
-    <button type="button" className="chip link" title={title} onClick={onClick}>
-      {children}
-    </button>
-  ) : (
-    <span className="chip" title={title}>
-      {children}
-    </span>
-  )
-}
-
-export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="drawer-section">
-      <h4>{title}</h4>
+      <div className="section-heading">
+        <h4>{title}</h4>
+        {action}
+      </div>
       {children}
     </section>
   )
@@ -97,19 +78,5 @@ export function LayoutReset({ count, onReset }: { count: number; onReset(): void
         '可拖动方块调整位置，浏览器会记住'
       )}
     </Panel>
-  )
-}
-
-/** A list of short items, one tag each, instead of a run of text joined by separators. */
-export function Tags({ items, empty = '无' }: { items: readonly string[]; empty?: string }) {
-  if (items.length === 0) return <span className="muted">{empty}</span>
-  return (
-    <span className="chips">
-      {items.map((item) => (
-        <span key={item} className="tag">
-          {item}
-        </span>
-      ))}
-    </span>
   )
 }

@@ -1,15 +1,7 @@
 import type { Actor, Investigation } from '../api'
-import { checkStatusLabels, roleLabels } from '../labels'
-import { Chip, Field, Fields } from './ui'
-
-const statusLabels: Record<Investigation['status'], string> = {
-  RUNNING: '调查中',
-  PROPOSED: '待计划员确认',
-  ESCALATED: '已转人工',
-  CONFIRMED: '已确认改派',
-  REJECTED: '已否决',
-  STALE: '已过期',
-}
+import { checkStatusLabels } from '../labels'
+import { Badge, Chip, InvestigationBadge, RoleChip, Tag } from './chips'
+import { Field, Fields } from './ui'
 
 const time = (timestamp: string) => `${timestamp.slice(5, 10)} ${timestamp.slice(11, 16)} UTC`
 
@@ -28,13 +20,13 @@ function Proposal({ proposal }: { proposal: NonNullable<Investigation['proposal'
         <Field label="规则预检">
           <span className="chips">
             {proposal.checks.map((check) => (
-              <span
+              <Badge
                 key={`${check.ruleId}@${check.scope}`}
-                className={`check-pill check-status ${check.status}`}
+                tone={check.status}
                 title={`${check.title}：${checkStatusLabels[check.status]}`}
               >
                 {check.ruleId}
-              </span>
+              </Badge>
             ))}
           </span>
         </Field>
@@ -62,10 +54,8 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
           <article key={investigation.investigationId} className="investigation">
             <header>
               <strong>调查助手</strong>
-              <span className="tag">运输计划 agent</span>
-              <span className={`investigation-status ${investigation.status}`}>
-                {statusLabels[investigation.status]}
-              </span>
+              <Tag>运输计划 agent</Tag>
+              <InvestigationBadge status={investigation.status} />
               <span className="muted">
                 {investigation.incident.legId} 的承运商取消（资料版本 r{investigation.caseRevision}
                 ）
@@ -87,7 +77,7 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
             {investigation.decidedBy && (
               <Fields>
                 <Field label="决定人">
-                  {investigation.decidedBy.id}（{roleLabels[investigation.decidedBy.role]}）
+                  <RoleChip forRole={investigation.decidedBy.role} />
                 </Field>
               </Fields>
             )}
@@ -106,7 +96,9 @@ export function InvestigationPanel({ investigations, actor, onDecide }: Props) {
               </div>
             )}
             {investigation.status === 'PROPOSED' && !canDecide && (
-              <p className="muted">只有运输计划员能确认或否决这条提议。</p>
+              <p className="muted">
+                只有 <RoleChip forRole="transportPlanner" /> 能确认或否决这条提议。
+              </p>
             )}
           </article>
         )

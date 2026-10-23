@@ -1,6 +1,7 @@
 import type { Role } from '@durable-jev/contracts'
 import type { Actor } from '../api'
 import { demoOperators, roleLabels } from '../labels'
+import { RoleChip } from './chips'
 
 interface Props {
   actor: Actor
@@ -32,7 +33,7 @@ export function RoleBar({ actor, onChange, onReset }: Props) {
       </label>
       <span className="operator" title="审计记录里的操作人，随角色切换">
         <span className="stat-label">操作人</span>
-        <strong>{actor.id}</strong>
+        <RoleChip forRole={actor.role} />
       </span>
       <button type="button" className="secondary" onClick={onReset}>
         重置演示

@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
 import type { RuleCheck } from '../api'
 import { evidenceLabels, roleLabels } from '../labels'
-import { Chip, Field, Fields, Tags } from './ui'
+import { Chip, Tags } from './chips'
+import { Field, Fields } from './ui'
 
 type Expression = NonNullable<RuleCheck['combiner']>
 type Parameters = Record<string, string | number | boolean>

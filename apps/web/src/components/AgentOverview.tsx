@@ -17,7 +17,8 @@ import type { AgentStatus, RuleInfo } from '../api'
 import { layoutGraph, type Positions } from '../graph-layout'
 import { kindLabels, mostSevere } from '../labels'
 import { useSavedLayout } from '../saved-layout'
-import { LayoutReset, StatusBadge } from './ui'
+import { StatusBadge, Tag } from './chips'
+import { LayoutReset } from './ui'
 
 const agentNodeSize = { width: 280, height: 170 }
 
@@ -49,9 +50,9 @@ function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
         <footer>
           <span className="chips">
             {Object.entries(summary.rulesByKind).map(([kind, count]) => (
-              <span key={kind} className="tag">
+              <Tag key={kind}>
                 {kindLabels[kind as keyof typeof kindLabels]} {count}
-              </span>
+              </Tag>
             ))}
           </span>
           <span className="agent-node-stats">
@@ -148,7 +149,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         <LayoutReset count={Object.keys(layout.moved).length} onReset={layout.reset} />
         <Panel position="top-left" className="graph-hint">
           点击 agent 查看它负责什么。箭头：一个 agent 的规则用到另一个 agent 的结论。
-          <span className="tag">通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</span>
+          <Tag>通信 {agents[0]?.transport === 'a2a' ? 'A2A' : '原生 HTTP'}</Tag>
         </Panel>
       </ReactFlow>
     </div>

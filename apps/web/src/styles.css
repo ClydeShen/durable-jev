@@ -133,57 +133,143 @@ button.danger {
   overflow-wrap: anywhere;
 }
 
-.status-badge {
-  display: inline-block;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 1px 8px;
-  border-radius: 10px;
-  color: #fff;
-  background: var(--status, var(--unknown));
-  white-space: nowrap;
-}
-
-.chip {
-  display: inline-block;
-  font:
-    12px ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Consolas,
-    monospace;
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  white-space: nowrap;
-}
-
-button.chip.link {
-  min-height: 24px;
-  min-width: 24px;
-  cursor: pointer;
-  color: var(--link);
-}
-
-button.chip.link:hover {
-  border-color: var(--accent);
-}
-
 .chips {
   display: inline-flex;
   flex-wrap: wrap;
   gap: 4px;
 }
 
+/*
+ * Small labels, four kinds (see components/chips.tsx). They share one height, font size and
+ * baseline, so badges, chips and tags line up in rows and in field grids alike.
+ */
+.badge,
+.chip,
+.entity-chip,
 .tag {
-  font-size: 11px;
-  padding: 1px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* Badge: a status, filled in its colour. */
+.badge {
+  border-radius: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--status, var(--unknown));
+}
+
+/* Chip: an identifier, monospaced with square corners. */
+.chip {
   border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+button.chip.link {
+  cursor: pointer;
+  color: var(--link);
+}
+
+button.chip.link:hover {
+  border-color: var(--link);
+}
+
+/* Entity chip: a person or an agent, round, in its colour. */
+.entity-chip {
+  border-radius: 12px;
+  border: 1px solid var(--entity, var(--role, var(--border)));
+  background: color-mix(in srgb, var(--entity, var(--role, var(--surface))) 10%, var(--surface));
+  color: var(--text);
+}
+
+button.entity-chip {
+  cursor: pointer;
+}
+
+button.entity-chip:hover {
+  background: color-mix(in srgb, var(--entity, var(--role)) 22%, var(--surface));
+}
+
+.entity-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--entity, var(--role, var(--muted)));
+}
+
+.entity-action {
+  color: var(--muted);
+}
+
+/* Tag: a category or count, neutral with square corners. */
+.tag {
+  border-radius: 4px;
+  border: 1px solid var(--border);
   background: var(--bg);
   color: var(--muted);
-  border: 1px dashed var(--border);
+}
+
+.tag.highlight {
+  border-color: var(--pass-text);
+  color: var(--pass-text);
+}
+
+.tag.upstream,
+.tag.downstream {
+  border: none;
+  color: #fff;
+  background: var(--upstream);
+}
+
+.tag.downstream {
+  background: var(--invalidated);
+}
+
+/* Agent colours, for agent chips. */
+[data-agent="order-coordination"] {
+  --entity: var(--accent);
+}
+[data-agent="cargo-assurance"] {
+  --entity: var(--invalidated);
+}
+[data-agent="transport-planning"] {
+  --entity: var(--upstream);
+}
+[data-agent="commercial-control"] {
+  --entity: #b54708;
+}
+[data-agent="destination-compliance"] {
+  --entity: #5f6b6d;
+}
+
+/* Inside graph nodes and the case list the same labels come in a compact size. */
+.rule-node .badge,
+.rule-node .tag,
+.rule-node .entity-chip,
+.agent-node .badge,
+.agent-node .tag,
+.case .badge,
+.case .entity-chip {
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+
+.rule-node-meta .badge,
+.agent-node header .badge {
+  margin-left: auto;
 }
 
 .drawer {
@@ -466,28 +552,6 @@ button.primary-action {
   min-height: 0;
 }
 
-.order-status {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background: var(--unknown);
-  color: #fff;
-}
-
-.order-status.READY_TO_DISPATCH,
-.order-status.DISPATCHED {
-  background: var(--pass);
-}
-
-.order-status.AWAITING_HUMAN {
-  background: var(--waiting);
-}
-
-.order-status.TECHNICAL_FAILURE,
-.order-status.REJECTED {
-  background: var(--fail);
-}
-
 .rule-node {
   box-sizing: border-box;
   padding: 6px 8px;
@@ -509,11 +573,6 @@ button.primary-action {
   align-items: center;
   gap: 4px;
   margin-top: 6px;
-  font-size: 11px;
-}
-
-.rule-node-meta .status-badge {
-  margin-left: auto;
   font-size: 11px;
 }
 
@@ -661,31 +720,6 @@ button.small {
   margin-bottom: 8px;
 }
 
-.agent-chip {
-  font-size: 12px;
-  padding: 1px 6px;
-  border-radius: 8px;
-  color: #fff;
-  background: var(--unknown);
-  white-space: nowrap;
-}
-
-.agent-chip.order-coordination {
-  background: var(--accent);
-}
-.agent-chip.cargo-assurance {
-  background: #8e44ad;
-}
-.agent-chip.transport-planning {
-  background: var(--upstream);
-}
-.agent-chip.commercial-control {
-  background: #b54708;
-}
-.agent-chip.destination-compliance {
-  background: #5f6b6d;
-}
-
 .agent-node {
   box-sizing: border-box;
   padding: 10px 12px;
@@ -735,23 +769,6 @@ button.small {
 .investigation .rationale {
   color: var(--muted);
   font-size: 13px;
-}
-
-.investigation-status {
-  font-size: 12px;
-  padding: 1px 8px;
-  border-radius: 10px;
-  background: var(--border);
-}
-
-.investigation-status.PROPOSED {
-  background: #f5d58a;
-  color: #1d2330;
-}
-
-.investigation-status.CONFIRMED {
-  background: #b7e4c7;
-  color: #1d2330;
 }
 
 .investigation .actions {
@@ -875,28 +892,11 @@ label.evidence code {
   color: var(--muted);
 }
 
-.check-pill {
-  font:
-    11px ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Consolas,
-    monospace;
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: #fff;
-  background: var(--status, var(--unknown));
-}
-
 .agent-node footer {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 8px;
-}
-
-.agent-node header .status-badge {
-  margin-left: auto;
 }
 
 .agent-node-stats {
@@ -1057,74 +1057,16 @@ label.evidence code {
   white-space: normal;
 }
 
-div.event-fields > dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 1px 12px;
-  margin: 0;
-  font-size: 12px;
-}
-
-div.event-fields > dl > dt {
-  color: var(--muted);
-}
-
-div.event-fields > dl > dd {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-
-.event-fields dd .event-fields {
-  padding-left: 8px;
-  border-left: 2px solid var(--border);
-}
-
-.event-fields blockquote {
-  margin: 0;
-  padding: 2px 8px;
-}
-
-.technical {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 12px;
-  margin: 4px 0 0;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-p.technical > span {
-  max-width: 260px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-p.technical > span > code {
-  font-size: 11px;
-}
-
 .operator {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
-  border-radius: 14px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  font-size: 13px;
 }
 
 .selection-hint {
   display: flex;
   align-items: center;
   gap: 6px;
-}
-
-.tag.pass {
-  color: var(--pass-text);
-  border-color: var(--pass-text);
-  border-style: solid;
 }
 
 .judgement {
@@ -1168,22 +1110,6 @@ span.judgement-bar > span {
 
 .rule-node.relation-downstream {
   box-shadow: 0 0 0 3px var(--invalidated);
-}
-
-.relation-tag {
-  margin-right: 4px;
-  padding: 0 4px;
-  border-radius: 3px;
-  font-size: 10px;
-  color: #fff;
-}
-
-.relation-tag.upstream {
-  background: var(--upstream);
-}
-
-.relation-tag.downstream {
-  background: var(--invalidated);
 }
 
 .react-flow__edge.edge-upstream path {
@@ -1271,36 +1197,36 @@ button.node-open:focus-visible {
   --role: var(--muted);
 }
 
-.app[data-role="warehouseOperator"] {
+[data-role="warehouseOperator"] {
   --role: #0284c7;
 }
-.app[data-role="dispatcher"] {
+[data-role="dispatcher"] {
   --role: #c2410c;
 }
-.app[data-role="complianceReviewer"] {
+[data-role="complianceReviewer"] {
   --role: #4f46e5;
 }
-.app[data-role="qualityReviewer"] {
+[data-role="qualityReviewer"] {
   --role: #c026d3;
 }
-.app[data-role="commercialManager"] {
+[data-role="commercialManager"] {
   --role: #a16207;
 }
-.app[data-role="transportPlanner"] {
+[data-role="transportPlanner"] {
   --role: #0d9488;
 }
-.app[data-role="technicalEvaluator"] {
+[data-role="technicalEvaluator"] {
   --role: #475569;
 }
 
 @media (prefers-color-scheme: dark) {
-  .app[data-role="complianceReviewer"] {
+  [data-role="complianceReviewer"] {
     --role: #6366f1;
   }
-  .app[data-role="commercialManager"] {
+  [data-role="commercialManager"] {
     --role: #ca8a04;
   }
-  .app[data-role="technicalEvaluator"] {
+  [data-role="technicalEvaluator"] {
     --role: #94a3b8;
   }
 }
@@ -1320,10 +1246,6 @@ button.node-open:focus-visible {
   background: var(--role);
 }
 
-.app .operator {
-  border-color: var(--role);
-}
-
 .app .task-panel {
   border-top: 3px solid var(--role);
   background: linear-gradient(
@@ -1341,4 +1263,277 @@ button.node-open:focus-visible {
   margin: 6px 0;
   font-size: 13px;
   color: var(--muted);
+}
+
+/* Role chips: a role in its colour; clicking switches to it. */
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+button.link-action {
+  min-height: 24px;
+  padding: 0 4px;
+  background: none;
+  border: none;
+  color: var(--link);
+  font-size: 12px;
+}
+
+button.link-action:hover {
+  text-decoration: underline;
+}
+
+.narration-roles {
+  margin-top: 6px;
+}
+
+/* Timeline detail: what happened, in a grid that uses the width; technical record one level down. */
+
+.event-detail-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 6px 16px;
+  width: 100%;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.fact.wide {
+  grid-column: 1 / -1;
+}
+
+.fact-label {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.fact-value {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.fact.wide > .fact-value > .facts {
+  padding: 6px 8px;
+  border-left: 2px solid var(--border);
+  background: var(--surface);
+  border-radius: 0 6px 6px 0;
+}
+
+.technical-detail {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+div.technical-detail > dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 1px 12px;
+  margin: 0 0 6px;
+}
+
+div.technical-detail > dl > dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.narration-text {
+  display: flex;
+  flex-direction: column;
+}
+
+table.record-table {
+  width: auto;
+  font-size: 12px;
+}
+
+table.record-table > thead > tr > th {
+  font-weight: normal;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.timeline table.record-table > thead > tr > th,
+.timeline table.record-table > tbody > tr > td {
+  padding: 2px 12px 2px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Objective tracker (HUD): the next moves, always in view under the case header. */
+
+.next-steps {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 0 16px 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.next-steps.done {
+  border-left-color: var(--pass);
+}
+
+.next-label {
+  flex: none;
+  padding-top: 3px;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.next-steps ul {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.next-steps ul > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Minimap: each rule in its status colour. */
+
+.react-flow__minimap {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.react-flow__minimap-node {
+  fill: var(--not-applicable);
+}
+.react-flow__minimap-node.PASS {
+  fill: var(--pass);
+}
+.react-flow__minimap-node.FAIL,
+.react-flow__minimap-node.ERROR {
+  fill: var(--fail);
+}
+.react-flow__minimap-node.WAITING_HUMAN {
+  fill: var(--waiting);
+}
+.react-flow__minimap-node.BLOCKED_DEPENDENCY {
+  fill: var(--blocked);
+}
+.react-flow__minimap-node.INVALIDATED {
+  fill: var(--invalidated);
+}
+
+.technical-detail pre.data {
+  max-height: 240px;
+  overflow: auto;
+}
+
+/* Event feed: game-style notifications that stack top-down, fly in and fade out. */
+
+.event-feed {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  width: min(380px, 60%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+}
+
+.event-feed.beside-drawer {
+  right: calc(min(520px, 100%) + 16px);
+}
+
+@keyframes feed-in {
+  from {
+    transform: translateX(48px);
+    opacity: 0;
+  }
+}
+
+@keyframes feed-out {
+  to {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+}
+
+.feed-item {
+  display: flex;
+  max-width: 100%;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.16);
+  font-size: 13px;
+  pointer-events: auto;
+  /* Lifetime 5 s: fly in, stay, fade out over the last 0.6 s. */
+  animation:
+    feed-in 280ms ease-out,
+    feed-out 600ms ease-in 4400ms forwards;
+}
+
+.feed-item.task {
+  border-left-color: var(--waiting);
+}
+
+.feed-item.invalidated {
+  border-left-color: var(--invalidated);
+}
+
+.feed-item.rule {
+  border-left-color: var(--pass);
+}
+
+.feed-icon {
+  margin-right: 8px;
+}
+
+button.feed-link {
+  all: unset;
+  display: flex;
+  cursor: pointer;
+}
+
+button.feed-link:focus-visible {
+  outline: 2px solid var(--link);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feed-item {
+    animation: feed-out 1ms linear 4400ms forwards;
+  }
 }

@@ -1,5 +1,5 @@
 import type { CaseSummary } from '../api'
-import { orderStatusLabels, roleLabels } from '../labels'
+import { OrderStatusBadge, RoleLabel } from './chips'
 
 interface Props {
   cases: CaseSummary[]
@@ -20,17 +20,13 @@ export function CaseList({ cases, selected, onSelect }: Props) {
         >
           <span className="case-line">
             <strong>{summary.caseId}</strong>
-            <span className={`order-status ${summary.status}`}>
-              {orderStatusLabels[summary.status]}
-            </span>
+            <OrderStatusBadge status={summary.status} />
           </span>
           {summary.waitingOn.length > 0 && (
             <span className="case-waiting">
               <span className="stat-label">等</span>
               {summary.waitingOn.map((role) => (
-                <span key={role} className="tag">
-                  {roleLabels[role]}
-                </span>
+                <RoleLabel key={role} forRole={role} />
               ))}
             </span>
           )}
