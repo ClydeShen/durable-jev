@@ -9,14 +9,19 @@ import {
 } from '@durable-jev/agent-core'
 import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-jev/agent-transport'
 import { type AgentId, agentIdSchema } from '@durable-jev/contracts'
-import { agentProfiles, createLogisticsRuntime, loadCaseCatalog } from '@durable-jev/logistics'
+import {
+  agentProfiles,
+  caseFileOf,
+  createLogisticsRuntime,
+  loadCaseCatalog,
+} from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
 import { createService } from '@durable-jev/service-kit'
 import express from 'express'
 import { watchAgents } from './agent-watch.js'
 import { collectEvents, EventLog } from './event-log.js'
 import { InvestigationClient } from './investigation-client.js'
-import { type AgentStatus, coordinatorRoutes } from './routes.js'
+import { type AgentStatus, coordinatorRoutes, type OrderOptions } from './routes.js'
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = process.env.MATERIALS_DIR ?? join(repositoryRoot, 'eval/materials')
@@ -39,14 +44,30 @@ const catalog = loadCaseCatalog(join(materials, 'cases'))
 const store = CaseStore.open(join(dataDirectory, 'order-coordination.sqlite'))
 const liveJudge: SemanticJudge | undefined =
   process.env.MODEL_MODE === 'live' ? new JevJudge() : undefined
-const { runtime, rulePack } = createLogisticsRuntime({
+const { runtime, rulePack, reference } = createLogisticsRuntime({
   agentId: 'order-coordination',
   materialsDirectory: materials,
   store,
   judgeFor: (shipment) =>
-    liveJudge ?? new ScriptedJudge(catalog.get(shipment.caseId)?.scriptedJudgements ?? []),
+    liveJudge ?? new ScriptedJudge(caseFileOf(catalog, shipment.caseId)?.scriptedJudgements ?? []),
   now,
 })
+const orderOptions: OrderOptions = {
+  customers: [...reference.customers.values()].map((customer) => ({
+    customerId: customer.customerId,
+    name: customer.name,
+    restrictions: customer.restrictionsText,
+  })),
+  carriers: [...reference.carriers.values()].map(({ carrierId, name }) => ({ carrierId, name })),
+  vehicles: [...reference.vehicles.values()].map(
+    ({ vehicleId, carrierId, temperatureControlled }) => ({
+      vehicleId,
+      carrierId,
+      temperatureControlled,
+    }),
+  ),
+  locations: [...reference.locations.keys()],
+}
 const endpoints = agentEndpoints(process.env.AGENT_ENDPOINTS)
 const transport = process.env.AGENT_TRANSPORT === 'a2a' ? 'a2a' : 'native'
 const a2aTasks = new Map<AgentId, number>()
@@ -147,6 +168,7 @@ service.app.use(
     coordination: { runtime, store },
     orchestrator,
     catalog,
+    orderOptions,
     rulePack,
     investigations: new InvestigationClient(transportUrl),
     agentStatuses,
