@@ -58,6 +58,64 @@ function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
   )
 }
 
+interface ActiveViewProps {
+  view: CaseViewMode
+  agents: AgentStatus[]
+  rules: RuleInfo[]
+  agentNames: AgentNames
+  history: ReturnType<typeof useCaseHistory>
+  selectedRule?: string
+  openTasks: HumanTask[]
+  ruleRequest?: { ruleIds: string[] }
+  focusAgent?: string
+  onSelectRule(ruleId: string | undefined): void
+  onOpenAgent(agentId: string): void
+}
+
+/** The view picked in the tabs, drawn with the case's played-back outcomes. */
+function ActiveView({
+  view,
+  agents,
+  rules,
+  agentNames,
+  history,
+  selectedRule,
+  openTasks,
+  ruleRequest,
+  focusAgent,
+  onSelectRule,
+  onOpenAgent,
+}: ActiveViewProps) {
+  return (
+    <>
+      {view === 'overview' && (
+        <AgentOverview
+          agents={agents}
+          rules={rules}
+          outcomes={history.playback.outcomes}
+          onOpenAgent={onOpenAgent}
+        />
+      )}
+      {view === 'graph' && (
+        <RuleGraph
+          rules={rules}
+          agentNames={agentNames}
+          outcomes={history.playback.outcomes}
+          playback={history.playback}
+          selectedRule={selectedRule}
+          openTasks={openTasks}
+          focusRequest={ruleRequest}
+          focusAgent={focusAgent}
+          onSelect={onSelectRule}
+        />
+      )}
+      {view === 'timeline' && (
+        <Timeline entries={history.entries ?? []} agentNames={agentNames} titles={history.titles} />
+      )}
+    </>
+  )
+}
+
 interface Props {
   caseId: string
   outcomes: RuleOutcome[]
@@ -70,8 +128,8 @@ interface Props {
   openAgent?: string
   onOpenAgent(agentId: string | undefined): void
   speed: PlaybackSpeed
-  /** Plays the case from its first event, as for an order just submitted. */
-  fromStart: boolean
+  /** Set when the case was just submitted or reset: this run plays from its first event. */
+  replayRun?: string
   /** A rule to show, asked for from outside the views (a task's rule). */
   ruleRequest?: { ruleIds: string[] }
 }
@@ -87,13 +145,13 @@ export function CaseViews({
   openAgent,
   onOpenAgent,
   speed,
-  fromStart,
+  replayRun,
   ruleRequest,
 }: Props) {
   const [view, setView] = useState<CaseViewMode>('overview')
   const [focusAgent, setFocusAgent] = useState<string>()
   const [selectedRule, setSelectedRule] = useState<string>()
-  const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed, fromStart })
+  const history = useCaseHistory({ caseId, rules, outcomes, openTasks, speed, replayRun })
   const { playback } = history
   const playing = playback.current !== undefined
   useEffect(() => {
@@ -122,33 +180,33 @@ export function CaseViews({
         }
         onClearFocus={() => setFocusAgent(undefined)}
       />
-      {view === 'overview' && (
-        <AgentOverview
+      {/* Notifications sit over the graph or timeline, never over the case header's controls. */}
+      <div className="view-area">
+        <ActiveView
+          view={view}
           agents={agents}
           rules={rules}
-          outcomes={playback.outcomes}
+          agentNames={agentNames}
+          history={history}
+          selectedRule={selectedRule}
+          openTasks={openTasks}
+          ruleRequest={ruleRequest}
+          focusAgent={focusAgent}
+          onSelectRule={openRule}
           onOpenAgent={(agentId) => {
             setSelectedRule(undefined)
             onOpenAgent(agentId)
           }}
         />
-      )}
-      {view === 'graph' && (
-        <RuleGraph
-          rules={rules}
-          agentNames={agentNames}
-          outcomes={playback.outcomes}
-          playback={playback}
-          selectedRule={selectedRule}
-          openTasks={openTasks}
-          focusRequest={ruleRequest}
-          focusAgent={focusAgent}
-          onSelect={openRule}
+        <EventFeed
+          items={history.feed}
+          besideDrawer={Boolean(rule || agentShown)}
+          onShowRule={(ruleId) => {
+            setView('graph')
+            openRule(ruleId)
+          }}
         />
-      )}
-      {view === 'timeline' && (
-        <Timeline entries={history.entries ?? []} agentNames={agentNames} titles={history.titles} />
-      )}
+      </div>
       {rule && !agentShown && (
         <RuleDetail
           rule={rule}
@@ -160,14 +218,6 @@ export function CaseViews({
           onClose={() => setSelectedRule(undefined)}
         />
       )}
-      <EventFeed
-        items={history.feed}
-        besideDrawer={Boolean(rule || agentShown)}
-        onShowRule={(ruleId) => {
-          setView('graph')
-          openRule(ruleId)
-        }}
-      />
       {agentShown && (
         <AgentCard
           agent={agentShown}

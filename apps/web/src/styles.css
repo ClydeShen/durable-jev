@@ -1563,6 +1563,14 @@ table.record-table > thead > tr > th {
 
 /* Event feed: game-style notifications that stack top-down, fly in and fade out. */
 
+.view-area {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .event-feed {
   position: absolute;
   top: 12px;

@@ -16,9 +16,9 @@ export const playbackSpeeds: [PlaybackSpeed, string][] = [
 
 /** How long each step stays on screen. */
 export const stepDelayMs: Record<Exclude<PlaybackSpeed, 'realtime'>, number> = {
-  fast: 450,
-  medium: 1100,
-  slow: 2000,
+  fast: 1200,
+  medium: 2000,
+  slow: 3200,
 }
 
 /** One thing that happened, shown on the rule graph: what it was and which rules it touched. */

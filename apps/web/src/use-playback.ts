@@ -18,13 +18,13 @@ interface Options {
   titles: ReadonlyMap<string, string>
   /** Where the case stands, shown once the last step has played. */
   finale: PlaybackStep
-  /** Plays the case from its first event, as for an order just submitted. */
-  fromStart: boolean
+  /** Set when the case was just submitted or reset: this run plays from its first event. */
+  replayRun?: string
 }
 
 /**
  * Plays what happens to a case step by step. Events that were already there when the case
- * opened are not replayed, unless it plays from the start; new ones play at the chosen speed, or
+ * opened are not replayed, unless this is a run to replay; new ones play at the chosen speed, or
  * at once in real time.
  */
 export function usePlayback({
@@ -34,25 +34,27 @@ export function usePlayback({
   speed,
   titles,
   finale,
-  fromStart,
+  replayRun,
 }: Options) {
-  const [shown, setShown] = useState<{ caseId: string; upTo: number }>()
+  // What has been shown belongs to one run of the case: opening it, or a submit or reset of it.
+  const run = replayRun ?? caseId
+  const [shown, setShown] = useState<{ run: string; upTo: number }>()
   const [current, setCurrent] = useState<PlaybackStep>()
   const last = (entries?.length ?? 0) - 1
-  const replay = fromStart && speed !== 'realtime'
+  const replay = replayRun !== undefined && speed !== 'realtime'
   const opened = replay ? -1 : last
-  const upTo = shown?.caseId === caseId ? Math.min(shown.upTo, last) : opened
+  const upTo = shown?.run === run ? Math.min(shown.upTo, last) : opened
 
   useEffect(() => {
-    if (entries && (shown?.caseId !== caseId || speed === 'realtime')) {
-      setShown({ caseId, upTo: replay ? -1 : entries.length - 1 })
+    if (entries && (shown?.run !== run || speed === 'realtime')) {
+      setShown({ run, upTo: replay ? -1 : entries.length - 1 })
       setCurrent(undefined)
     }
-  }, [caseId, entries, shown?.caseId, speed, replay])
+  }, [run, entries, shown?.run, speed, replay])
 
   const steps = useMemo(
-    () => (entries && shown?.caseId === caseId ? playbackSteps(entries, upTo, titles) : []),
-    [entries, shown?.caseId, caseId, upTo, titles],
+    () => (entries && shown?.run === run ? playbackSteps(entries, upTo, titles) : []),
+    [entries, shown?.run, run, upTo, titles],
   )
   const next = steps[0]
   // The timeline is fetched again every poll, so the timer keys on the step's position, not on
@@ -67,7 +69,7 @@ export function usePlayback({
     const timer = setTimeout(
       () => {
         if (next) {
-          setShown({ caseId, upTo: next.upTo })
+          setShown({ run, upTo: next.upTo })
           setCurrent(next)
         } else if (current && !current.final) setCurrent(latestFinale.current)
         else setCurrent(undefined)
@@ -76,7 +78,7 @@ export function usePlayback({
       (current?.final ? 3 : 1) * (current || !next ? stepDelayMs[speed] : 0),
     )
     return () => clearTimeout(timer)
-  }, [nextUpTo, current, speed, caseId])
+  }, [nextUpTo, current, speed, run])
 
   return {
     // Before the timeline loads, a case played from the start shows nothing decided yet.
@@ -85,7 +87,7 @@ export function usePlayback({
     remaining: steps.length,
     /** Shows the end state now. */
     skip: () => {
-      setShown({ caseId, upTo: last })
+      setShown({ run, upTo: last })
       setCurrent(undefined)
     },
   }
