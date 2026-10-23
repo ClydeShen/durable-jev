@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadLogisticsRulePack } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge } from '@durable-jev/model-providers'
 import { loadScreeningSamples, screenSample, scriptedAnswers } from './screening.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 const materials = join(repositoryRoot, 'eval/materials')
 const reportDirectory = join(repositoryRoot, 'var/reports')
 const live = process.env.MODEL_MODE === 'live'

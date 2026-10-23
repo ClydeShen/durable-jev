@@ -1,8 +1,9 @@
 import { type ChildProcess, spawn } from 'node:child_process'
 import { createInterface } from 'node:readline'
+import { fileURLToPath } from 'node:url'
 import type { ServiceDefinition } from './services.js'
 
-const repositoryRoot = new URL('../../../', import.meta.url).pathname
+const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
 
 export interface ServiceState {
   name: string

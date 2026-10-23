@@ -1,7 +1,8 @@
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { loadRulePack, RulePackError } from './rule-pack.js'
 
-const materials = new URL('../../../eval/materials/', import.meta.url).pathname
+const materials = fileURLToPath(new URL('../../../eval/materials/', import.meta.url))
 
 describe('loadRulePack', () => {
   it('loads the policy-v1 materials without validation issues', () => {

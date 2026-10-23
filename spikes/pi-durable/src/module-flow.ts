@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import {
   JevJudge,
   ScriptedJudge,
@@ -17,7 +18,7 @@ import {
 } from '@earendil-works/pi-durable'
 import { openNodeSqliteStorage } from '@earendil-works/pi-durable/storage/sqlite/node'
 
-const workDirectory = new URL('../var/module/', import.meta.url).pathname
+const workDirectory = fileURLToPath(new URL('../var/module/', import.meta.url))
 const storagePath = `${workDirectory}cargo-module.sqlite`
 const evaluationLogPath = `${workDirectory}evaluation-log.json`
 const flowIdPath = `${workDirectory}flow-id.txt`

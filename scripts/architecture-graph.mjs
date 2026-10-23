@@ -2,8 +2,9 @@
 // With --check it fails instead when the committed graph no longer matches the code.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
-const root = new URL('..', import.meta.url).pathname
+const root = fileURLToPath(new URL('..', import.meta.url))
 const target = new URL('../docs/architecture-graph.md', import.meta.url)
 const sourceFolders = ['packages', 'apps', 'tools']
   .flatMap((group) => readdirSync(root + group).map((name) => `${group}/${name}/src`))
