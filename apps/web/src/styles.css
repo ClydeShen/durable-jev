@@ -2310,3 +2310,27 @@ nav.policy-index {
 nav.policy-index > a {
   color: var(--link);
 }
+
+table.policy-table {
+  width: 100%;
+  margin: 0 0 12px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+dialog.modal article.policy-text table.policy-table th,
+dialog.modal article.policy-text table.policy-table td {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+dialog.modal article.policy-text table.policy-table th {
+  background: var(--bg);
+}
+
+dialog.modal article.policy-text > ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}

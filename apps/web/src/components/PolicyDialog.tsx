@@ -3,17 +3,72 @@ import { api, type PolicyText } from '../api'
 import { Chip } from './chips'
 import { Modal } from './ui'
 
-/** A policy paragraph with its bold rule titles and `parameter` names kept. */
-function Paragraph({ text }: { text: string }) {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/)
+/** Inline text with its bold rule titles and `parameter` names kept. */
+function Inline({ text }: { text: string }) {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/).map((part, index) => {
+    const key = `${index}:${part}`
+    if (part.startsWith('**')) return <strong key={key}>{part.slice(2, -2)}</strong>
+    if (part.startsWith('`')) return <code key={key}>{part.slice(1, -1)}</code>
+    return part
+  })
+}
+
+const cellsOf = (row: string) =>
+  row
+    .replace(/^\||\|$/g, '')
+    .split('|')
+    .map((cell) => cell.trim())
+
+/** A markdown table: its first row is the header, the dashed row under it is dropped. */
+function Table({ rows }: { rows: string[] }) {
+  const [header = '', , ...body] = rows
+  const columns = cellsOf(header)
+  return (
+    <table className="policy-table">
+      <thead>
+        <tr>
+          {columns.map((cell) => (
+            <th key={cell}>
+              <Inline text={cell} />
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {body.map((row) => (
+          <tr key={row}>
+            {cellsOf(row)
+              .map((cell, index) => ({ column: columns[index], cell }))
+              .map(({ column, cell }) => (
+                <td key={column}>
+                  <Inline text={cell} />
+                </td>
+              ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+/** One block of the policy: a table, a list or a paragraph. */
+function Block({ text }: { text: string }) {
+  const lines = text.split('\n')
+  if (text.startsWith('|')) return <Table rows={lines} />
+  if (text.startsWith('- ')) {
+    return (
+      <ul>
+        {lines.map((line) => (
+          <li key={line}>
+            <Inline text={line.slice(2)} />
+          </li>
+        ))}
+      </ul>
+    )
+  }
   return (
     <p>
-      {parts.map((part, index) => {
-        const key = `${index}:${part}`
-        if (part.startsWith('**')) return <strong key={key}>{part.slice(2, -2)}</strong>
-        if (part.startsWith('`')) return <code key={key}>{part.slice(1, -1)}</code>
-        return part
-      })}
+      <Inline text={text} />
     </p>
   )
 }
@@ -26,7 +81,7 @@ function PolicyBody({ policy }: { policy: PolicyText }) {
     <article className="policy-text">
       <h2>{policy.title}</h2>
       {policy.preamble.map((text) => (
-        <Paragraph key={text} text={text} />
+        <Block key={text} text={text} />
       ))}
       <nav className="policy-index" aria-label="Policy sections">
         {parts.map((section) => (
@@ -39,7 +94,7 @@ function PolicyBody({ policy }: { policy: PolicyText }) {
         <section key={section.heading} id={anchorOf(section.heading)}>
           {section.level === 2 ? <h3>{section.heading}</h3> : <h4>{section.heading}</h4>}
           {section.paragraphs.map((text) => (
-            <Paragraph key={text} text={text} />
+            <Block key={text} text={text} />
           ))}
         </section>
       ))}

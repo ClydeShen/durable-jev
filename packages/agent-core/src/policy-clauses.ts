@@ -1,4 +1,7 @@
-/** One heading of the policy and the paragraphs under it, as written (with `**` and backticks). */
+/**
+ * One heading of the policy and the blocks under it, as written (with `**` and backticks). A
+ * table or a list keeps one line per row or item; a paragraph is joined into one line.
+ */
 interface PolicySection {
   heading: string
   /** 2 for a part or appendix, 3 for a subsection such as one destination. */
@@ -22,22 +25,30 @@ export interface PolicyClause {
   paragraphs: string[]
 }
 
-/** Splits the policy markdown into its title, preamble and sections of joined-up paragraphs. */
+/** A block's text: table rows and list items keep their own lines, a paragraph is joined up. */
+function blockText(block: string): string {
+  const lines = block
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+  const lineBlock = lines.every((line) => line.startsWith('|') || line.startsWith('- '))
+  return lines.join(lineBlock ? '\n' : ' ')
+}
+
+/** Splits the policy markdown into its title, preamble and sections of blocks. */
 export function policyDocument(markdown: string): PolicyDocument {
   const document: PolicyDocument = { title: '', preamble: [], sections: [] }
-  for (const paragraph of markdown.split(/\n\s*\n/)) {
-    const text = paragraph.replace(/\s*\n\s*/g, ' ').trim()
-    if (!text) continue
+  for (const text of markdown
+    .split(/\n\s*\n/)
+    .map(blockText)
+    .filter(Boolean)) {
     const heading = /^(#{1,3}) (.+)$/.exec(text)
-    const hashes = heading?.[1]?.length
-    if (heading && hashes === 1) document.title = heading[2] ?? ''
-    else if (heading) {
-      document.sections.push({
-        heading: heading[2] ?? '',
-        level: hashes === 2 ? 2 : 3,
-        paragraphs: [],
-      })
-    } else (document.sections.at(-1)?.paragraphs ?? document.preamble).push(text)
+    const level = heading?.[1]?.length
+    const title = heading?.[2] ?? ''
+    if (level === 1) document.title = title
+    else if (level)
+      document.sections.push({ heading: title, level: level === 2 ? 2 : 3, paragraphs: [] })
+    else (document.sections.at(-1)?.paragraphs ?? document.preamble).push(text)
   }
   return document
 }
