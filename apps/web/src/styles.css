@@ -60,7 +60,7 @@ body {
 
 .app {
   display: grid;
-  grid-template-columns: 220px 1fr 320px;
+  grid-template-columns: 248px 1fr 320px;
   grid-template-rows: auto 1fr;
   height: 100vh;
 }
@@ -452,21 +452,15 @@ ol.gate-steps {
   gap: 8px;
 }
 
-.dot {
-  margin-top: 5px;
-  flex: none;
-}
-
 button.agent-link strong {
-  display: block;
   font-size: 13px;
+  font-weight: 500;
 }
 
 button.agent-link small {
-  display: block;
+  margin-left: auto;
   font-size: 11px;
   color: var(--muted);
-  line-height: 1.4;
 }
 
 .hint {
@@ -476,6 +470,7 @@ button.agent-link small {
 }
 
 .dot {
+  flex: none;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -518,13 +513,16 @@ h2 {
   margin: 0;
 }
 
+/* One line per case, all the same height: its id, a dot per role it waits for, its status. */
 .case {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  margin-bottom: 8px;
+  height: 36px;
+  margin-bottom: 6px;
+  padding: 0 10px;
   text-align: left;
   background: var(--bg);
   color: var(--text);
@@ -536,18 +534,15 @@ h2 {
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
-.case-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
+.case-id {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
-.case-waiting {
+.case-roles {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
+  gap: 3px;
+  justify-self: end;
 }
 
 main {
@@ -790,7 +785,7 @@ td {
 
 button.agent-link {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 8px;
   flex: 1;
   min-width: 0;

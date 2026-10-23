@@ -1,5 +1,6 @@
 import type { CaseSummary } from '../api'
-import { OrderStatusBadge, RoleLabel } from './chips'
+import { roleLabels } from '../labels'
+import { OrderStatusBadge } from './chips'
 
 interface Props {
   cases: CaseSummary[]
@@ -25,18 +26,17 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
           className={summary.caseId === selected ? 'case selected' : 'case'}
           onClick={() => onSelect(summary.caseId)}
         >
-          <span className="case-line">
-            <strong>{summary.caseId}</strong>
-            <OrderStatusBadge status={summary.status} />
+          <strong className="case-id">{summary.caseId}</strong>
+          <span
+            className="case-roles"
+            role="img"
+            aria-label={`Waits for ${summary.waitingOn.map((role) => roleLabels[role]).join(', ') || 'nobody'}`}
+          >
+            {summary.waitingOn.map((role) => (
+              <span key={role} className="entity-dot" data-role={role} title={roleLabels[role]} />
+            ))}
           </span>
-          {summary.waitingOn.length > 0 && (
-            <span className="case-waiting">
-              <span className="stat-label">Awaits</span>
-              {summary.waitingOn.map((role) => (
-                <RoleLabel key={role} forRole={role} />
-              ))}
-            </span>
-          )}
+          <OrderStatusBadge status={summary.status} />
         </button>
       ))}
     </nav>

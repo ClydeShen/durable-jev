@@ -32,7 +32,7 @@ export function GraphLegend({ legend }: { legend: Legend }) {
         <section id={panelId} className="legend-panel" aria-label="What the colours and marks mean">
           <h4>Colours</h4>
           <dl>
-            {legend.entries.map((entry) => (
+            {[...legend.entries, ...legend.highlights].map((entry) => (
               <div key={entry.colour}>
                 <dt>
                   <span className={`legend-swatch check-status ${entry.colour}`} />
