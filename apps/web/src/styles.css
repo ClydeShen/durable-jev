@@ -2134,3 +2134,63 @@ section.legend-panel > dl dd {
   margin: 2px 0 0;
   color: var(--muted);
 }
+
+/* The A2A Agent Card: a modal over the console, wide enough to read the card's JSON. */
+dialog.a2a-dialog {
+  box-sizing: border-box;
+  width: min(720px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.24);
+}
+
+dialog.a2a-dialog::backdrop {
+  background: rgb(0 0 0 / 0.35);
+}
+
+dialog.a2a-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+
+.a2a-skills {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+ul.a2a-skills > li {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.a2a-skill-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+details.a2a-raw > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+details.a2a-raw > pre {
+  overflow: auto;
+  max-height: 320px;
+  margin: 8px 0 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: var(--bg);
+  font-size: 12px;
+}

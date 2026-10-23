@@ -1,9 +1,11 @@
 import type { Role } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
+import { useState } from 'react'
 import { agentRelations } from '../agent-relations'
 import type { AgentNames, AgentStatus, RuleInfo } from '../api'
 import { kindLabels, mostSevere } from '../labels'
-import { Chip, RoleChip, StatusBadge, Tag, Tags } from './chips'
+import { A2aCardDialog } from './A2aCardDialog'
+import { RoleChip, StatusBadge, Tag, Tags } from './chips'
 import { Drawer, Field, Fields, Section } from './ui'
 
 /** What makes these agents durable, as the demo shows it. */
@@ -66,112 +68,131 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
   const relations = agentRelations(rules)
   const name = (agentId: string) => agentNames[agentId] ?? agentId
   const summary = agent.summary
+  const [cardOpen, setCardOpen] = useState(false)
   return (
-    <Drawer
-      onClose={onClose}
-      heading={
-        <>
-          <span className={agent.available ? 'dot online' : 'dot offline'} />
-          <h3>{agent.card?.name ?? agent.agentId}</h3>
-          <Tag>Durable Jev Agent</Tag>
-        </>
-      }
-    >
-      <Section title="What it does">
-        <p className="lead">{agent.card?.description}</p>
-        <ul className="responsibilities">
-          {agent.responsibilities.map((item) => (
-            <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </Section>
-      <Section
-        title={`Its rules (${owned.length})`}
-        action={
-          <button type="button" className="link-action" onClick={onShowRules}>
-            Show its rule graph →
-          </button>
+    <>
+      <Drawer
+        onClose={onClose}
+        heading={
+          <>
+            <span className={agent.available ? 'dot online' : 'dot offline'} />
+            <h3>{agent.card?.name ?? agent.agentId}</h3>
+            <Tag>Durable Jev Agent</Tag>
+          </>
         }
       >
-        <div className="chips">
-          {Object.entries(summary?.rulesByKind ?? {}).map(([kind, count]) => (
-            <Tag key={kind}>
-              {kindLabels[kind as keyof typeof kindLabels]} {count}
-            </Tag>
-          ))}
-        </div>
-      </Section>
-      <Section title="Who it works with">
-        <Fields>
-          <Field label="People">
-            <RoleChips roles={peopleOf(owned)} empty="None, every rule is automatic" />
-          </Field>
-          <Field label="Uses results from">
-            <Tags
-              items={relations
-                .filter((relation) => relation.to === agent.agentId)
-                .map((relation) => name(relation.from))}
-            />
-          </Field>
-          <Field label="Gives results to">
-            <Tags
-              items={relations
-                .filter((relation) => relation.from === agent.agentId)
-                .map((relation) => name(relation.to))}
-            />
-          </Field>
-        </Fields>
-      </Section>
-      <Section title="In this order">
-        <Fields>
-          <Field label="Its rules overall">
-            <StatusBadge
-              status={mostSevere(
-                outcomes
-                  .filter((outcome) => ownedIds.has(outcome.ruleId))
-                  .map((outcome) => outcome.status),
-              )}
-            />
-          </Field>
-          <Field label="Open tasks, all cases">
-            {Object.keys(summary?.openTasksByRole ?? {}).length === 0 ? (
-              <span className="muted">None</span>
-            ) : (
-              <span className="chips">
-                {Object.entries(summary?.openTasksByRole ?? {}).map(([role, count]) => (
-                  <RoleChip key={role} forRole={role as Role} note={`${count}`} />
-                ))}
-              </span>
-            )}
-          </Field>
-        </Fields>
-      </Section>
-      <Section title="Running">
-        <Fields>
-          <Field label="Process">
-            {agent.available ? 'Online' : 'Offline (it catches up on missed evaluations when back)'}
-          </Field>
-          <Field label="Transport">
-            {agent.transport === 'a2a' ? `A2A (${agent.a2aTasks} tasks handled)` : 'Native HTTP'}
-          </Field>
-          {agent.card && agent.agentId !== 'order-coordination' && (
-            <Field label="Agent Card">
-              <Chip>{agent.card.url}/.well-known/agent-card.json</Chip>
+        <Section title="What it does">
+          <p className="lead">{agent.card?.description}</p>
+          <ul className="responsibilities">
+            {agent.responsibilities.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </Section>
+        <Section
+          title={`Its rules (${owned.length})`}
+          action={
+            <button type="button" className="link-action" onClick={onShowRules}>
+              Show its rule graph →
+            </button>
+          }
+        >
+          <div className="chips">
+            {Object.entries(summary?.rulesByKind ?? {}).map(([kind, count]) => (
+              <Tag key={kind}>
+                {kindLabels[kind as keyof typeof kindLabels]} {count}
+              </Tag>
+            ))}
+          </div>
+        </Section>
+        <Section title="Who it works with">
+          <Fields>
+            <Field label="People">
+              <RoleChips roles={peopleOf(owned)} empty="None, every rule is automatic" />
             </Field>
-          )}
-        </Fields>
-      </Section>
-      <details className="explainer">
-        <summary>What is a Durable Agent?</summary>
-        <dl>
-          {durableTraits.map(([title, text]) => (
-            <div key={title}>
-              <dt>{title}</dt>
-              <dd>{text}</dd>
-            </div>
-          ))}
-        </dl>
-      </details>
-    </Drawer>
+            <Field label="Uses results from">
+              <Tags
+                items={relations
+                  .filter((relation) => relation.to === agent.agentId)
+                  .map((relation) => name(relation.from))}
+              />
+            </Field>
+            <Field label="Gives results to">
+              <Tags
+                items={relations
+                  .filter((relation) => relation.from === agent.agentId)
+                  .map((relation) => name(relation.to))}
+              />
+            </Field>
+          </Fields>
+        </Section>
+        <Section title="In this order">
+          <Fields>
+            <Field label="Its rules overall">
+              <StatusBadge
+                status={mostSevere(
+                  outcomes
+                    .filter((outcome) => ownedIds.has(outcome.ruleId))
+                    .map((outcome) => outcome.status),
+                )}
+              />
+            </Field>
+            <Field label="Open tasks, all cases">
+              {Object.keys(summary?.openTasksByRole ?? {}).length === 0 ? (
+                <span className="muted">None</span>
+              ) : (
+                <span className="chips">
+                  {Object.entries(summary?.openTasksByRole ?? {}).map(([role, count]) => (
+                    <RoleChip key={role} forRole={role as Role} note={`${count}`} />
+                  ))}
+                </span>
+              )}
+            </Field>
+          </Fields>
+        </Section>
+        <Section title="Running">
+          <Fields>
+            <Field label="Process">
+              {agent.available
+                ? 'Online'
+                : 'Offline (it catches up on missed evaluations when back)'}
+            </Field>
+            <Field label="Transport">
+              {agent.transport === 'a2a' ? `A2A (${agent.a2aTasks} tasks handled)` : 'Native HTTP'}
+            </Field>
+            {agent.card && (
+              <Field label="Agent Card">
+                <button
+                  type="button"
+                  className="chip link"
+                  title="Show the A2A Agent Card"
+                  onClick={() => setCardOpen(true)}
+                >
+                  {agent.card.url}/.well-known/agent-card.json
+                </button>
+              </Field>
+            )}
+          </Fields>
+        </Section>
+        <details className="explainer">
+          <summary>What is a Durable Agent?</summary>
+          <dl>
+            {durableTraits.map(([title, text]) => (
+              <div key={title}>
+                <dt>{title}</dt>
+                <dd>{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </details>
+      </Drawer>
+      {cardOpen && agent.card && (
+        <A2aCardDialog
+          agentId={agent.agentId}
+          cardUrl={`${agent.card.url}/.well-known/agent-card.json`}
+          onClose={() => setCardOpen(false)}
+        />
+      )}
+    </>
   )
 }

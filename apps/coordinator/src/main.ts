@@ -104,6 +104,20 @@ async function cardOf(url: string): Promise<AgentStatus['card']> {
   return { name: card.name, description: card.description, url }
 }
 
+/** An agent's full A2A Agent Card, as any A2A client discovers it. */
+async function agentCardOf(agentId: string): Promise<unknown> {
+  const url =
+    agentId === 'order-coordination'
+      ? `http://localhost:${port}`
+      : [...endpoints].find(([id]) => id === agentId)?.[1]
+  if (!url) throw new HttpError(404, `no agent ${agentId}`)
+  try {
+    return await (await fetch(`${url}/.well-known/agent-card.json`)).json()
+  } catch {
+    throw new HttpError(503, `${agentId} is offline; restart it to read its Agent Card`)
+  }
+}
+
 async function agentStatuses(): Promise<AgentStatus[]> {
   const local: AgentStatus = {
     agentId: 'order-coordination',
@@ -198,6 +212,7 @@ service.app.use(
     rulePack,
     investigations: new InvestigationClient(transportUrl),
     agentStatuses,
+    agentCardOf,
     controlUrl,
     timeline: (caseId) => eventLog.timeline(caseId),
     now,

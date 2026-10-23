@@ -173,6 +173,14 @@
 
 ---
 
+## 问答：agent 之间怎么协作？
+
+| # | 点什么 | 屏幕上会看到 | 你说 |
+|---|---|---|---|
+| 1 | 左侧 Agents 列表点任一 agent，例如 **Cargo assurance** | 右侧打开 agent 名片 | "每个 agent 都对外发布一张标准的 A2A 名片。" |
+| 2 | 名片 **Running** 一栏点 **Agent Card** 后面的 `…/.well-known/agent-card.json` | 弹出 **A2A Agent Card**：名称、版本、JSON-RPC 端点，以及 5 个 skill | "订单协调先读这张名片，知道它在哪、会什么，再通过 JSON-RPC 调用这些 skill：提交案例、重新评估、查询状态、记录人工决定、列出待办。" |
+| 3 | 展开 **Raw JSON** | 名片原文 | "这就是标准 A2A 协议的原样内容，任何 A2A 客户端都能读。" |
+
 ## 演示中出状况
 
 | 情况 | 怎么办 |

@@ -2,11 +2,26 @@ import type { Message, Part } from '@a2a-js/sdk'
 
 /** Business capabilities every Durable Jev Agent offers over A2A. */
 export const caseSkills = {
-  'submit-case': 'Take a new shipment revision and evaluate the rules this agent owns',
-  'evaluate-case': "Re-evaluate a case with other agents' latest rule outcomes",
-  'case-state': "Report this agent's rule outcomes and human tasks for a case",
-  'decide-task': 'Record a human decision on a task this agent owns',
-  'open-tasks': 'List the open human tasks this agent owns',
+  'submit-case': {
+    name: 'Submit a case',
+    description: 'Take a new shipment revision and evaluate the rules this agent owns',
+  },
+  'evaluate-case': {
+    name: 'Evaluate a case',
+    description: "Re-evaluate a case with other agents' latest rule outcomes",
+  },
+  'case-state': {
+    name: 'Report case state',
+    description: "Report this agent's rule outcomes and human tasks for a case",
+  },
+  'decide-task': {
+    name: 'Decide a task',
+    description: 'Record a human decision on a task this agent owns',
+  },
+  'open-tasks': {
+    name: 'List open tasks',
+    description: 'List the open human tasks this agent owns',
+  },
 } as const
 
 export type CaseSkill = keyof typeof caseSkills
