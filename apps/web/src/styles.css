@@ -609,8 +609,7 @@ button.primary-action {
   gap: 8px 24px;
 }
 
-.stat,
-.demo-actions {
+.stat {
   display: grid;
   grid-template-rows: 16px var(--control-height-small);
   row-gap: 2px;
@@ -632,15 +631,9 @@ button.primary-action {
   color: var(--muted);
 }
 
-.demo-actions {
-  grid-auto-flow: column;
-  justify-content: start;
-  column-gap: 6px;
-  margin-left: auto;
-}
-
-.demo-actions > button {
-  grid-row: 2;
+.demo-actions > .stat-value {
+  gap: 6px;
+  font-weight: 400;
 }
 
 .rule-graph {
@@ -1261,16 +1254,6 @@ span.judgement-bar > span {
   margin-right: min(520px, 100%);
 }
 
-.other-cases {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
 /* Accessibility (WCAG 2.2 AA) */
 
 /* 2.4.7: keyboard focus is always visible. */
@@ -1558,7 +1541,7 @@ table.record-table > thead > tr > th {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin: 0 16px 8px;
+  margin: 8px 16px;
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -2057,18 +2040,24 @@ button.order-send {
   margin-left: auto;
 }
 
+/* Borderless, so it reads as a caption to the tabs; still the tabs' height, on their centre line. */
 button.legend-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px 10px;
-  min-height: var(--control-height-small);
-  padding: 2px 8px;
-  border: 1px solid var(--border);
+  min-height: var(--control-height);
+  padding: 0 8px;
+  border: none;
   border-radius: 6px;
-  background: var(--surface);
+  background: transparent;
   color: var(--muted);
   font-size: 11px;
+}
+
+button.legend-strip:hover,
+button.legend-strip[aria-expanded="true"] {
+  background: var(--bg);
 }
 
 .legend-title {
@@ -2148,10 +2137,10 @@ section.legend-panel > dl dd {
   color: var(--muted);
 }
 
-/* The A2A Agent Card: a modal over the console, wide enough to read the card's JSON. */
-dialog.a2a-dialog {
+/* A modal over the console: the A2A Agent Card, a demo action to confirm. */
+dialog.modal {
   box-sizing: border-box;
-  width: min(720px, calc(100vw - 32px));
+  width: min(560px, calc(100vw - 32px));
   max-height: calc(100vh - 64px);
   padding: 0;
   border: 1px solid var(--border);
@@ -2162,11 +2151,15 @@ dialog.a2a-dialog {
   box-shadow: 0 16px 48px rgb(0 0 0 / 0.24);
 }
 
-dialog.a2a-dialog::backdrop {
+dialog.modal.wide {
+  width: min(720px, calc(100vw - 32px));
+}
+
+dialog.modal::backdrop {
   background: rgb(0 0 0 / 0.35);
 }
 
-dialog.a2a-dialog[open] {
+dialog.modal[open] {
   display: flex;
   flex-direction: column;
 }
@@ -2211,6 +2204,62 @@ details.a2a-raw > pre {
 /* A filter chip in the view tabs: the focused agent, with an icon to clear it. */
 button.focus-filter {
   display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-lead {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.modal-steps {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+/* Tasks in other cases: secondary, so folded into one muted line until opened. */
+details.other-cases {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+details.other-cases > summary {
+  cursor: pointer;
+}
+
+details.other-cases ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+details.other-cases > ul {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+details.other-cases li > ul {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+  padding-left: 12px;
+}
+
+details.other-cases li > ul > li {
+  display: flex;
   align-items: center;
   gap: 6px;
 }

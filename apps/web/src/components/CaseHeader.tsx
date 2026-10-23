@@ -1,6 +1,7 @@
 import type { Actor, CaseDetail } from '../api'
 import { countOf } from '../labels'
 import { OrderStatusBadge, RoleChip } from './chips'
+import { DemoActions } from './DemoActions'
 import { IconButton } from './ui'
 
 interface Props {
@@ -30,9 +31,6 @@ export function CaseHeader({
   onReset,
 }: Props) {
   const canDispatch = actor.role === 'dispatcher' && detail.status === 'READY_TO_DISPATCH'
-  const open = detail.status !== 'DISPATCHED'
-  const nextRevision = detail.revisions.find((revision) => !revision.applied)
-  const nextIncident = detail.incidents[detail.investigations.length]
   return (
     <section className="case-header">
       <div className="case-title">
@@ -60,29 +58,7 @@ export function CaseHeader({
           </span>
           <span className="stat-label">Waiting for</span>
         </div>
-        {open && (nextRevision || nextIncident) && (
-          <div className="demo-actions">
-            <span className="stat-label">Demo actions</span>
-            {nextRevision && (
-              <button
-                type="button"
-                className="secondary small"
-                onClick={() => onRevise(nextRevision.index)}
-              >
-                Change the order: {nextRevision.label}
-              </button>
-            )}
-            {nextIncident && (
-              <button
-                type="button"
-                className="secondary small"
-                onClick={() => onReportIncident(nextIncident.index)}
-              >
-                Incident: {nextIncident.label}
-              </button>
-            )}
-          </div>
-        )}
+        <DemoActions detail={detail} onRevise={onRevise} onReportIncident={onReportIncident} />
       </div>
     </section>
   )

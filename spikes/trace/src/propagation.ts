@@ -1,13 +1,16 @@
 import { context, propagation, type SpanContext, trace } from '@opentelemetry/api'
-import { InMemorySpanExporter, SimpleSpanProcessor } from '@opentelemetry/sdk-trace-base'
-import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node'
+import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks'
+import { W3CTraceContextPropagator } from '@opentelemetry/core'
+import { InMemorySpanExporter, SimpleSpanProcessor, TracerProvider } from '@opentelemetry/sdk-trace'
 import express from 'express'
 
 const spanExporter = new InMemorySpanExporter()
-const tracerProvider = new NodeTracerProvider({
-  spanProcessors: [new SimpleSpanProcessor(spanExporter)],
+const tracerProvider = new TracerProvider({
+  spanProcessors: [new SimpleSpanProcessor({ exporter: spanExporter })],
 })
-tracerProvider.register()
+context.setGlobalContextManager(new AsyncLocalStorageContextManager())
+propagation.setGlobalPropagator(new W3CTraceContextPropagator())
+trace.setGlobalTracerProvider(tracerProvider)
 
 const coordinatorTracer = trace.getTracer('shipment-coordinator')
 const cargoTracer = trace.getTracer('cargo-assurance')

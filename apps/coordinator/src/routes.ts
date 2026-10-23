@@ -94,6 +94,12 @@ function scriptedRevisions(catalog: CaseCatalog, caseId: string) {
   )
 }
 
+/** What a scripted change touches: the entities whose version it raises, and documents. */
+function changedEntities(patch: Record<string, unknown>): string[] {
+  const entities = Object.keys((patch.entityVersions as Record<string, unknown>) ?? {})
+  return 'documents' in patch ? [...entities, 'documents'] : entities
+}
+
 function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
   return (caseFileOf(catalog, caseId)?.events ?? []).flatMap((event) =>
     event.kind === 'incident' ? [{ label: event.label, incident: event.incident }] : [],
@@ -134,6 +140,7 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
       revisions: scriptedRevisions(catalog, shipment.caseId).map((revision, index) => ({
         index,
         label: revision.label,
+        changes: changedEntities(revision.patch),
         applied: shipment.caseRevision >= Number(revision.patch.caseRevision ?? 0),
       })),
       incidents: scriptedIncidents(catalog, shipment.caseId).map((incident, index) => ({

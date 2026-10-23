@@ -23,7 +23,7 @@ export interface CaseDetail extends CaseSummary {
   shipment: Shipment
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
-  revisions: { index: number; label: string; applied: boolean }[]
+  revisions: { index: number; label: string; changes: string[]; applied: boolean }[]
   incidents: { index: number; label: string }[]
   investigations: Investigation[]
 }

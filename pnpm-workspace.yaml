@@ -4,5 +4,14 @@ packages:
   - tools/*
   - spikes/*
   - eval/runner
-onlyBuiltDependencies:
-  - esbuild
+# Dependencies whose install scripts may run; every other one with a script is listed as denied.
+allowBuilds:
+  esbuild: true
+  "@google/genai": false
+  lefthook: false
+  protobufjs: false
+# Exact versions in package.json, the Node version in engines enforced, and one shell for scripts on
+# every platform.
+saveExact: true
+engineStrict: true
+shellEmulator: true

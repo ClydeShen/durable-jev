@@ -1,5 +1,5 @@
 import { Panel } from '@xyflow/react'
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import { Icon, type IconName } from './icons'
 
 /** A square button showing only a common icon; its name is its tooltip and accessible name. */
@@ -104,5 +104,53 @@ export function LayoutReset({ moved, onReset }: { moved: boolean; onReset(): voi
     <Panel position="top-right">
       <IconButton icon="reset" label="Restore automatic layout" onClick={onReset} />
     </Panel>
+  )
+}
+
+/**
+ * A modal over the console, for what the presenter shows or confirms. Escape, the close icon or a
+ * click on the backdrop closes it; closing never runs anything.
+ */
+export function Modal({
+  title,
+  aside,
+  footer,
+  wide,
+  onClose,
+  children,
+}: {
+  title: string
+  /** Shown beside the title, such as the address the content came from. */
+  aside?: ReactNode
+  footer?: ReactNode
+  /** For content read like a document, such as JSON. */
+  wide?: boolean
+  onClose(): void
+  children: ReactNode
+}) {
+  const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => dialog.current?.showModal(), [])
+  return (
+    <dialog
+      ref={dialog}
+      className={wide ? 'modal wide' : 'modal'}
+      aria-label={title}
+      onClose={onClose}
+      // Escape closes this modal only, not a drawer under it.
+      onKeyDown={(event) => event.stopPropagation()}
+      onClick={(event) => {
+        if (event.target === dialog.current) dialog.current.close()
+      }}
+    >
+      <header className="drawer-header">
+        <div className="drawer-heading">
+          <h3>{title}</h3>
+          {aside}
+        </div>
+        <IconButton icon="close" label="Close" onClick={() => dialog.current?.close()} />
+      </header>
+      <div className="drawer-body">{children}</div>
+      {footer && <footer className="modal-footer">{footer}</footer>}
+    </dialog>
   )
 }

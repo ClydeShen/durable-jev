@@ -2,7 +2,9 @@
 
 Every spike can be reproduced in this repository. The findings hold for the pinned versions only.
 
-## Pi Durable 1.3.0
+## Pi Durable 1.4.0
+
+First verified on 1.3.0; every check below was run again on 1.4.0.
 
 Reproduce: `pnpm --filter @durable-jev/spike-pi-durable crash-recovery` (scripted model, no key
 needed)
@@ -37,7 +39,10 @@ against crash loops.
 
 ### Limits
 
-- The API is marked Experimental; the version is pinned at 1.3.0.
+- The API is marked Experimental; the version is pinned at 1.4.0.
+- 1.4.0 migrates a SQLite store to schema version 2 when it opens it, and 1.3.0 cannot open it
+  again: after upgrading, `var/data` cannot go back to an older Pi Durable. 1.4.0 also parks a task
+  that crashes 5 times in a row without committing (`settings.restartLimit`).
 - One store is owned by one process; there is no cross-process lock.
 - The SQLite store relies on Node's built-in `node:sqlite` (an ExperimentalWarning is printed at run
   time).
@@ -60,7 +65,7 @@ evaluate R14.
 | Completed rules are not evaluated again | Passes. After two crashes R02 and R18 each ran once (Jev was called once); results came from the checkpoint |
 | Waiting for a person across restarts | Passes. The parent task stays `waiting` on the approval subtask; after the restart the subtask listens to the decision document again |
 | The human decision arrives | Passes. A `harness.commit` from outside writes the session document; the subtask's `watchDoc` sees it and ends, and the parent moves on to its `decide` stage |
-| Approval expiry | Supported by design (in the subtask, `runtime.sleep(expiresAt)` races the decision); not tested in this run |
+| Approval expiry | Supported by design (in the subtask, a phase timer for the time left until `expiresAt` races the decision; after a restart the phase arms what is left); not tested in this run |
 
 Points to note:
 
@@ -139,7 +144,7 @@ safety data sheet match the declaration, Noul) together.
   accurately, SDK retries are off (`maxRetries: 0`) and the harness manages retries.
 - The environment variable is the official `TYPESAFE_API_KEY`.
 
-## Trace propagation (OpenTelemetry API 1.9.1 / SDK 2.12.0)
+## Trace propagation (OpenTelemetry API 1.10.0 / SDK 3.0.0)
 
 Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
@@ -153,6 +158,8 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
 - Only `@opentelemetry/api` plus the SDK's manual propagation, no automatic instrumentation, so the
   behaviour is predictable.
+- SDK 3.0 sets nothing up by itself: the spike registers the `TracerProvider`, the
+  `AsyncLocalStorage` context manager and the W3C trace-context propagator explicitly.
 - When spans are stored for observation their links are stored too; the console joins old and new
   traces by correlationId and links.
 - The A2A client can inject `traceparent` with the SDK's `CallInterceptor`; to be verified in T5.1.
@@ -161,24 +168,24 @@ Reproduce: `pnpm --filter @durable-jev/spike-trace propagation`
 
 | Dependency | Version |
 |---|---|
-| Node | 22.22.0 |
-| pnpm | 10.28.0 |
+| Node | 26.12.1 |
+| pnpm | 12.15.0 |
 | TypeScript | 6.0.3 |
-| `@earendil-works/pi-durable` / `pi-ai` / `chord` | 1.3.0 |
+| `@earendil-works/pi-durable` / `pi-ai` / `chord` | 1.4.0 |
 | `@a2a-js/sdk` | 1.3.0 |
 | `@typesafe-ai/sdk` | 0.7.0, model `jev-1.14.0` |
-| `@opentelemetry/api` | 1.9.1 |
-| `@opentelemetry/sdk-trace-node` / `sdk-trace-base` | 2.12.0 |
+| `@opentelemetry/api` | 1.10.0 |
+| `@opentelemetry/sdk-trace` / `core` / `context-async-hooks` | 3.0.0 |
 | Express | 5.3.0 |
 
-Every dependency is written to `package.json` at an exact version (`save-exact=true` in `.npmrc`),
+Every dependency is written to `package.json` at an exact version (`saveExact: true` in `pnpm-workspace.yaml`),
 and the lockfile is committed.
 
 ## Summary
 
 | Dependency | Feasible | Main limits |
 |---|---|---|
-| Pi Durable | Yes (agents and module-level flows) | Experimental; one process owns a store; after a restart `waitForTask` may return a non-terminal record; `callers` and `restartLimit` not yet verified |
+| Pi Durable | Yes (agents and module-level flows) | Experimental; one process owns a store; after a restart `waitForTask` may return a non-terminal record; `callers` not yet verified; a store migrated by 1.4.0 cannot be opened by 1.3.0 |
 | A2A SDK | Yes | No deduplication of retries; server adapters for Express and gRPC only |
 | Jev | Yes | Rate limiting not verified |
 | OpenTelemetry | Yes | None |

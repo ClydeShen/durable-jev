@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { type A2aAgentCard, api } from '../api'
 import { Chip, Tag } from './chips'
-import { Field, Fields, IconButton, Section } from './ui'
+import { Field, Fields, Modal, Section } from './ui'
 
 const yesNo = (value?: boolean) => (value ? 'Yes' : 'No')
 
@@ -61,36 +61,15 @@ export function A2aCardDialog({
   cardUrl: string
   onClose(): void
 }) {
-  const dialog = useRef<HTMLDialogElement>(null)
   const [card, setCard] = useState<A2aAgentCard>()
   const [error, setError] = useState<string>()
   useEffect(() => {
-    dialog.current?.showModal()
     api.agentCard(agentId).then(setCard, (failure: Error) => setError(failure.message))
   }, [agentId])
   return (
-    <dialog
-      ref={dialog}
-      className="a2a-dialog"
-      aria-label="A2A Agent Card"
-      onClose={onClose}
-      // Escape closes this dialog only, not the drawer under it.
-      onKeyDown={(event) => event.stopPropagation()}
-      onClick={(event) => {
-        if (event.target === dialog.current) dialog.current.close()
-      }}
-    >
-      <header className="drawer-header">
-        <div className="drawer-heading">
-          <h3>A2A Agent Card</h3>
-          <Chip>{cardUrl}</Chip>
-        </div>
-        <IconButton icon="close" label="Close" onClick={() => dialog.current?.close()} />
-      </header>
-      <div className="drawer-body">
-        {error && <p className="message error">{error}</p>}
-        {card ? <CardBody card={card} /> : !error && <p className="muted">Loading…</p>}
-      </div>
-    </dialog>
+    <Modal title="A2A Agent Card" aside={<Chip>{cardUrl}</Chip>} wide onClose={onClose}>
+      {error && <p className="message error">{error}</p>}
+      {card ? <CardBody card={card} /> : !error && <p className="muted">Loading…</p>}
+    </Modal>
   )
 }

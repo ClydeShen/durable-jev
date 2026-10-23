@@ -2,9 +2,9 @@
 
 ## Requirements
 
-- Node 26 (26.11 or a later 26.x, as in `mise.toml` and CI; `pnpm install` refuses any other major
-  version). With nvm: `nvm install 26.11.1`, then `nvm use 26.11.1`
-- pnpm 10+
+- Node 26 (26.12 or a later 26.x, as in `mise.toml` and CI; `pnpm install` refuses anything older
+  or another major version). With nvm: `nvm install 26.12.1`, then `nvm use 26.12.1`
+- pnpm 10 or later: it switches itself to the version in `packageManager` (12.15.0)
 - Optional: with [mise](https://mise.jdx.dev) installed, run `mise install` at the repository root
   to get the same Node and gitleaks versions as CI (see `mise.toml`)
 - No key needed: `MODEL_MODE=scripted` is the default, and Jev's judgements replay the answers
