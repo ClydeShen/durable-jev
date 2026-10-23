@@ -2252,5 +2252,14 @@ details.other-cases > ul {
 }
 
 details.other-cases li > ul {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
   padding-left: 12px;
+}
+
+details.other-cases li > ul > li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }

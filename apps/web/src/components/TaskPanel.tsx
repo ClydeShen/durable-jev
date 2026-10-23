@@ -96,10 +96,12 @@ function OtherCases({
   tasks,
   titles,
   onSelectCase,
+  onShowRule,
 }: {
   tasks: readonly HumanTask[]
   titles: ReadonlyMap<string, string>
   onSelectCase(caseId: string): void
+  onShowRule(caseId: string, ruleId: string): void
 }) {
   if (tasks.length === 0) return null
   const byCase = Map.groupBy(tasks, (task) => task.caseId)
@@ -109,13 +111,19 @@ function OtherCases({
       <ul>
         {[...byCase].map(([caseId, caseTasks]) => (
           <li key={caseId}>
-            <button type="button" className="link-action" onClick={() => onSelectCase(caseId)}>
-              {caseId}
-            </button>
+            <Chip onClick={() => onSelectCase(caseId)} title="Switch to this case">
+              {caseId} {caseTasks.length}
+            </Chip>
             <ul>
               {caseTasks.map((task) => (
                 <li key={task.humanTaskId}>
-                  {task.ruleId} {titles.get(task.ruleId)}
+                  <Chip
+                    onClick={() => onShowRule(task.caseId, task.ruleId)}
+                    title="Show this rule in its case"
+                  >
+                    {task.ruleId}
+                  </Chip>
+                  <span>{titles.get(task.ruleId)}</span>
                 </li>
               ))}
             </ul>
@@ -157,7 +165,12 @@ export function TaskPanel(props: Props) {
           ))}
         </ul>
       )}
-      <OtherCases tasks={others} titles={titles} onSelectCase={onSelectCase} />
+      <OtherCases
+        tasks={others}
+        titles={titles}
+        onSelectCase={onSelectCase}
+        onShowRule={onShowRule}
+      />
     </section>
   )
 }
