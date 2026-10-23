@@ -6,7 +6,7 @@ import { Chip, Tag } from './chips'
 import { Field, Fields } from './ui'
 
 const deadline = (timestamp: string) =>
-  new Date(timestamp).toLocaleString('zh-CN', {
+  new Date(timestamp).toLocaleString('en-GB', {
     month: 'numeric',
     day: 'numeric',
     hour: '2-digit',
@@ -27,19 +27,19 @@ function TaskCard({ task, ruleTitle, onDecide, onShowRule }: TaskCardProps) {
   return (
     <li className="task">
       <header className="task-header">
-        <Chip onClick={onShowRule} title="在规则图里查看这条规则">
+        <Chip onClick={onShowRule} title="Show this rule in the rule graph">
           {task.ruleId}
         </Chip>
-        <Tag>{operation ? '现场操作' : '审批'}</Tag>
+        <Tag>{operation ? 'Field operation' : 'Approval'}</Tag>
       </header>
       {ruleTitle && <p className="task-title">{ruleTitle}</p>}
       <Fields>
         {task.approvalChain && (
-          <Field label="审批步骤">
-            第 {task.approvalChain.stepIndex + 1} 步，共 {task.approvalChain.stepCount} 步
+          <Field label="Approval step">
+            Step {task.approvalChain.stepIndex + 1} of {task.approvalChain.stepCount}
           </Field>
         )}
-        <Field label="截止">{deadline(task.expiresAt)}</Field>
+        <Field label="Due">{deadline(task.expiresAt)}</Field>
       </Fields>
       {operation ? (
         <form
@@ -63,15 +63,15 @@ function TaskCard({ task, ruleTitle, onDecide, onShowRule }: TaskCardProps) {
               />
             </label>
           ))}
-          <button type="submit">完成并提交</button>
+          <button type="submit">Complete and submit</button>
         </form>
       ) : (
         <div className="actions">
           <button type="button" onClick={() => onDecide({ type: 'approve' })}>
-            批准
+            Approve
           </button>
           <button type="button" className="danger" onClick={() => onDecide({ type: 'reject' })}>
-            拒绝
+            Reject
           </button>
         </div>
       )}
@@ -103,9 +103,9 @@ function OtherCases({
   if (counts.size === 0) return null
   return (
     <p className="other-cases">
-      <span className="stat-label">其他案例的待办</span>
+      <span className="stat-label">Tasks in other cases</span>
       {[...counts].map(([caseId, count]) => (
-        <Chip key={caseId} onClick={() => onSelectCase(caseId)} title="切换到这个案例">
+        <Chip key={caseId} onClick={() => onSelectCase(caseId)} title="Switch to this case">
           {caseId} {count}
         </Chip>
       ))}
@@ -124,7 +124,7 @@ export function TaskPanel(props: Props) {
   return (
     <section className="task-panel">
       <h2>
-        {roleLabels[actor.role]} {actor.id} 的待办
+        Tasks for {roleLabels[actor.role]} {actor.id}
         <span className="count">{own.length}</span>
       </h2>
       {message && (
@@ -133,7 +133,7 @@ export function TaskPanel(props: Props) {
         </p>
       )}
       {own.length === 0 ? (
-        <p className="empty">这个案例没有你的待办</p>
+        <p className="empty">No tasks for you in this case</p>
       ) : (
         <ul>
           {own.map((task) => (

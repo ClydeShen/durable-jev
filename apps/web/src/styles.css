@@ -797,6 +797,7 @@ button.small {
 
 .view-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 6px 16px;
   border-bottom: 1px solid var(--border);
@@ -859,6 +860,7 @@ button.small {
 
 .graph-bar-group {
   display: inline-flex;
+  white-space: nowrap;
   align-items: center;
   gap: 6px;
   cursor: help;

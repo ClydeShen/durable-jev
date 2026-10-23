@@ -20,7 +20,7 @@ interface Props {
 export function PlaybackControl({ speed, onChange }: Props) {
   return (
     <section className="playback-control">
-      <h2>动画速度</h2>
+      <h2>Playback speed</h2>
       <div className="segmented">
         {playbackSpeeds.map(([value, label]) => (
           <button

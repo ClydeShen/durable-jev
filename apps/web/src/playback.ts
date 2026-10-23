@@ -8,10 +8,10 @@ export type PlaybackSpeed = 'realtime' | 'fast' | 'medium' | 'slow'
 
 /** Slowest first, as a speed control reads from left to right. */
 export const playbackSpeeds: [PlaybackSpeed, string][] = [
-  ['slow', '慢'],
-  ['medium', '中'],
-  ['fast', '快'],
-  ['realtime', '实时（不放动画）'],
+  ['slow', 'Slow'],
+  ['medium', 'Medium'],
+  ['fast', 'Fast'],
+  ['realtime', 'Real time (no animation)'],
 ]
 
 /** How long each step stays on screen. */
@@ -44,15 +44,15 @@ function keyOf(ruleId: unknown, scope: unknown): string {
 
 function scopeText(scope: unknown): string {
   const value = scope as CheckScope
-  if (value.kind === 'cargoItem') return `货物 ${value.cargoItemId}`
-  if (value.kind === 'leg') return `运输段 ${value.legId}`
-  return '整单'
+  if (value.kind === 'cargoItem') return `item ${value.cargoItemId}`
+  if (value.kind === 'leg') return `leg ${value.legId}`
+  return 'whole order'
 }
 
 const decisionVerbs: Record<string, string> = {
-  COMPLETED: '完成了',
-  APPROVED: '批准了',
-  REJECTED: '拒绝了',
+  COMPLETED: 'completed',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
 }
 
 function stepFor(
@@ -66,11 +66,11 @@ function stepFor(
   switch (entry.eventName) {
     case 'human_task.decided': {
       const actor = payload.actor as { id: string; role: Role } | undefined
-      const who = actor ? `${roleLabels[actor.role]} ${actor.id}` : '有人'
-      const verb = decisionVerbs[String(payload.status)] ?? '处理了'
+      const who = actor ? `${roleLabels[actor.role]} ${actor.id}` : 'Someone'
+      const verb = decisionVerbs[String(payload.status)] ?? 'handled'
       return {
         upTo: index,
-        text: `${who} ${verb} ${ruleId}「${title}」的任务`,
+        text: `${who} ${verb} the task of ${ruleId} "${title}"`,
         ruleIds: [ruleId],
         tone: 'task',
       }
@@ -79,7 +79,7 @@ function stepFor(
       const status = payload.status as CheckStatus
       return {
         upTo: index,
-        text: `${ruleId}「${title}」（${scopeText(payload.scope)}）判断：${checkStatusLabels[status]}`,
+        text: `${ruleId} "${title}" (${scopeText(payload.scope)}): ${checkStatusLabels[status]}`,
         ruleIds: [ruleId],
         tone: 'rule',
         status,
@@ -88,35 +88,35 @@ function stepFor(
     case 'jev.completed':
       return {
         upTo: index,
-        text: `Jev 回答了 ${payload.questionId} 的问题`,
+        text: `Jev answered the question of ${payload.questionId}`,
         ruleIds: [String(payload.questionId)],
         tone: 'info',
       }
     case 'human_task.opened':
       return {
         upTo: index,
-        text: `${ruleId}「${title}」开出人工任务，等人处理`,
+        text: `${ruleId} "${title}" opens a task and waits for a person`,
         ruleIds: [ruleId],
         tone: 'task',
       }
     case 'human_task.carried_forward':
       return {
         upTo: index,
-        text: `${ruleId}「${title}」需要的资料没变：人工任务转到 r${payload.caseRevision}，继续等人处理`,
+        text: `${ruleId} "${title}": its inputs did not change, so its task moves to r${payload.caseRevision} and still waits for a person`,
         ruleIds: [ruleId],
         tone: 'task',
       }
     case 'case.dispatched':
       return {
         upTo: index,
-        text: `调度员 ${payload.confirmedBy} 确认发运`,
+        text: `Dispatcher ${payload.confirmedBy} confirms dispatch`,
         ruleIds: [],
         tone: 'info',
       }
     case 'investigation.started':
       return {
         upTo: index,
-        text: `${(payload.incident as { legId?: string } | undefined)?.legId ?? ''} 的承运商取消：运输计划 agent 启动调查助手找替代运力`,
+        text: `The carrier of ${(payload.incident as { legId?: string } | undefined)?.legId ?? ''} cancelled: the transport planning agent starts its investigation helper to find a replacement`,
         ruleIds: [],
         tone: 'info',
       }
@@ -130,14 +130,14 @@ function stepFor(
     case 'investigation.proposed':
       return {
         upTo: index,
-        text: '调查助手提出改派建议（见上方调查卡片），等运输计划员确认；确认之前订单不变',
+        text: 'The helper proposes a reroute (see the investigation card above) and waits for the transport planner; the order does not change until then',
         ruleIds: [],
         tone: 'info',
       }
     case 'investigation.confirmed':
       return {
         upTo: index,
-        text: '运输计划员确认改派：订单生成新的资料版本，用到路线、承运商、报价的规则要重新判断',
+        text: 'The transport planner confirms the reroute: the order gets a new revision, and rules that use the route, carrier or quote are decided again',
         ruleIds: [],
         tone: 'info',
       }
@@ -149,8 +149,8 @@ function stepFor(
 /** A revision handed to the agents; the first one is the order arriving. */
 function submittedText(caseRevision: number): string {
   return caseRevision === 1
-    ? '订单协调 agent 收到新订单，各 agent 从第一条规则开始逐条判断'
-    : `订单资料版本 r${caseRevision} 交给各 agent 评估`
+    ? 'Order coordination receives the new order; every agent decides its rules one by one from the first'
+    : `Revision r${caseRevision} goes to every agent`
 }
 
 /**
@@ -170,11 +170,11 @@ export function playbackSteps(
       if (previous?.tone === 'invalidated') {
         previous.upTo = index
         previous.ruleIds.push(String(entry.payload.ruleId))
-        previous.text = `资料变更（${entry.payload.change}）：${new Set(previous.ruleIds).size} 条规则的结果失效，需要重新判断`
+        previous.text = `Change ${entry.payload.change}: ${new Set(previous.ruleIds).size} results are invalidated and will be decided again`
       } else {
         steps.push({
           upTo: index,
-          text: `资料变更（${entry.payload.change}）：${entry.payload.ruleId} 的结果失效，需要重新判断`,
+          text: `Change ${entry.payload.change}: the result of ${entry.payload.ruleId} is invalidated and will be decided again`,
           ruleIds: [String(entry.payload.ruleId)],
           tone: 'invalidated',
         })
@@ -255,7 +255,7 @@ export function whereItStands(
 ): PlaybackStep {
   const waiting = openTasks.map((task) => ({
     ruleId: task.ruleId,
-    text: `${task.ruleId} 等${roleLabels[task.requiredRole]}`,
+    text: `${task.ruleId} waits for the ${roleLabels[task.requiredRole].toLowerCase()}`,
   }))
   const failed = [
     ...new Set(
@@ -266,7 +266,7 @@ export function whereItStands(
   ]
   const parts = [
     ...new Set(waiting.map((item) => item.text)),
-    ...failed.map((ruleId) => `${ruleId} 不通过`),
+    ...failed.map((ruleId) => `${ruleId} failed`),
   ]
   return {
     upTo: -1,
@@ -274,6 +274,9 @@ export function whereItStands(
     roles: [...new Set(openTasks.map((task) => task.requiredRole))],
     tone: parts.length > 0 ? 'task' : 'rule',
     ruleIds: [...new Set([...waiting.map((item) => item.ruleId), ...failed])],
-    text: parts.length > 0 ? `现在停在：${parts.join('；')}` : '没有待办，也没有不通过的规则',
+    text:
+      parts.length > 0
+        ? `Where it stands: ${parts.join('; ')}`
+        : 'No open tasks and no failed rules',
   }
 }

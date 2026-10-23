@@ -9,21 +9,24 @@ import { Drawer, Field, Fields, Section } from './ui'
 /** What makes these agents durable, as the demo shows it. */
 const durableTraits: [string, string][] = [
   [
-    '状态不随进程丢失',
-    '案例、规则结果、人工任务和事件都存在本 agent 自己的数据库里。进程崩溃后重启，从中断的地方继续；技术评估者角色可以在左侧终止、重启 agent 来演示。',
+    'State survives the process',
+    "Cases, rule results, human tasks and events live in the agent's own database. After a crash it restarts where it stopped; as the technical evaluator you can stop and restart agents on the left to show it.",
   ],
   [
-    '可以等很久',
-    '审批和现场操作是规则图的一部分。等人的时候不占进程，任务有截止时间，过期会重新开出。',
+    'It can wait a long time',
+    'Approvals and field work are part of the rule graph. Waiting for a person holds no process; tasks have deadlines and are reissued when they expire.',
   ],
   [
-    '只重算受影响的部分',
-    '每个结果都记下它依据的输入。资料变更时只重算受影响的规则，其余结果直接沿用，并标出是哪次变更让结果失效。',
+    'Only what is affected is decided again',
+    'Every result records the inputs it used. A change decides only the affected rules again, keeps the other results, and marks which change invalidated a result.',
   ],
-  ['每一步都有记录', '每个决定都作为事件记下来，时间线里能看到谁、在什么时候、因为什么做了什么。'],
   [
-    '模型只提议，不做决定',
-    '运输计划的调查助手跑在 Pi Durable 上，每次工具调用都存检查点，崩溃后从检查点继续。它有调用次数和时间上限，只能提出建议，由人确认。',
+    'Every step is on record',
+    'Every decision is kept as an event: the timeline shows who did what, when and why.',
+  ],
+  [
+    'Models propose, people decide',
+    "Transport planning's investigation helper runs on Pi Durable: every tool call is checkpointed and a crash resumes from the checkpoint. It has limits on calls and time, and it can only propose; a person confirms.",
   ],
 ]
 
@@ -74,7 +77,7 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
         </>
       }
     >
-      <Section title="负责什么">
+      <Section title="What it does">
         <p className="lead">{agent.card?.description}</p>
         <ul className="responsibilities">
           {agent.responsibilities.map((item) => (
@@ -83,10 +86,10 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
         </ul>
       </Section>
       <Section
-        title={`它的规则（${owned.length} 条）`}
+        title={`Its rules (${owned.length})`}
         action={
           <button type="button" className="link-action" onClick={onShowRules}>
-            查看规则图 →
+            Show its rule graph →
           </button>
         }
       >
@@ -98,19 +101,19 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
           ))}
         </div>
       </Section>
-      <Section title="和谁协作">
+      <Section title="Who it works with">
         <Fields>
-          <Field label="需要的人">
-            <RoleChips roles={peopleOf(owned)} empty="无，全部自动判断" />
+          <Field label="People">
+            <RoleChips roles={peopleOf(owned)} empty="None, every rule is automatic" />
           </Field>
-          <Field label="用到谁的结论">
+          <Field label="Uses results from">
             <Tags
               items={relations
                 .filter((relation) => relation.to === agent.agentId)
                 .map((relation) => name(relation.from))}
             />
           </Field>
-          <Field label="结论交给谁">
+          <Field label="Gives results to">
             <Tags
               items={relations
                 .filter((relation) => relation.from === agent.agentId)
@@ -119,9 +122,9 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
           </Field>
         </Fields>
       </Section>
-      <Section title="本单">
+      <Section title="In this order">
         <Fields>
-          <Field label="它的规则总体">
+          <Field label="Its rules overall">
             <StatusBadge
               status={mostSevere(
                 outcomes
@@ -130,24 +133,26 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
               )}
             />
           </Field>
-          <Field label="所有案例的待办">
+          <Field label="Open tasks, all cases">
             {Object.keys(summary?.openTasksByRole ?? {}).length === 0 ? (
-              <span className="muted">无</span>
+              <span className="muted">None</span>
             ) : (
               <span className="chips">
                 {Object.entries(summary?.openTasksByRole ?? {}).map(([role, count]) => (
-                  <RoleChip key={role} forRole={role as Role} note={`${count} 件`} />
+                  <RoleChip key={role} forRole={role as Role} note={`${count}`} />
                 ))}
               </span>
             )}
           </Field>
         </Fields>
       </Section>
-      <Section title="运行状态">
+      <Section title="Running">
         <Fields>
-          <Field label="进程">{agent.available ? '在线' : '离线（恢复后会补上错过的评估）'}</Field>
-          <Field label="通信方式">
-            {agent.transport === 'a2a' ? `A2A（已处理 ${agent.a2aTasks} 个任务）` : '原生 HTTP'}
+          <Field label="Process">
+            {agent.available ? 'Online' : 'Offline (it catches up on missed evaluations when back)'}
+          </Field>
+          <Field label="Transport">
+            {agent.transport === 'a2a' ? `A2A (${agent.a2aTasks} tasks handled)` : 'Native HTTP'}
           </Field>
           {agent.card && agent.agentId !== 'order-coordination' && (
             <Field label="Agent Card">
@@ -157,7 +162,7 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
         </Fields>
       </Section>
       <details className="explainer">
-        <summary>什么是 Durable Agent？</summary>
+        <summary>What is a Durable Agent?</summary>
         <dl>
           {durableTraits.map(([title, text]) => (
             <div key={title}>

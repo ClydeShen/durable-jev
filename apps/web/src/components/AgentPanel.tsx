@@ -18,7 +18,7 @@ export function AgentPanel({ agents, canControl, onOpen, onControl }: Props) {
               <span className={agent.available ? 'dot online' : 'dot offline'} />
               <span>
                 <strong>{agent.card?.name ?? agent.agentId}</strong>
-                <small>{agent.available ? agent.card?.description : '离线'}</small>
+                <small>{agent.available ? agent.card?.description : 'Offline'}</small>
               </span>
             </button>
             {canControl && agent.agentId !== 'order-coordination' && (
@@ -27,7 +27,7 @@ export function AgentPanel({ agents, canControl, onOpen, onControl }: Props) {
                 className={agent.available ? 'danger small' : 'small'}
                 onClick={() => onControl(agent.agentId, agent.available ? 'crash' : 'start')}
               >
-                {agent.available ? '终止' : '重启'}
+                {agent.available ? 'Stop' : 'Restart'}
               </button>
             )}
           </li>

@@ -76,11 +76,12 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
     <section className="new-order">
       <header className="case-header">
         <div className="case-title">
-          <h2>新订单</h2>
-          <Tag>以客户身份下单</Tag>
+          <h2>New order</h2>
+          <Tag>Placed as the customer</Tag>
         </div>
         <p className="story">
-          客户在下单入口提交订单，订单协调 agent 收到后，各 agent 从第一条规则开始评估。
+          The customer submits an order; once order coordination receives it, every agent evaluates
+          it from the first rule.
         </p>
       </header>
       {failure && <p className="message">{failure}</p>}
@@ -93,17 +94,17 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
           }}
         >
           <div className="order-steps">
-            <Step number={1} title="选一个样例">
+            <Step number={1} title="Pick a sample">
               <SamplePicker
                 samples={form.samples}
                 selected={draft.sample.sampleId}
                 onSelect={(sample) => setDraft(startFrom(sample))}
               />
             </Step>
-            <Step number={2} title="客户与交付">
+            <Step number={2} title="Customer and delivery">
               <OrderBasics shipment={draft.shipment} options={form.options} onChange={update} />
             </Step>
-            <Step number={3} title="货物">
+            <Step number={3} title="Cargo">
               <CargoFields
                 items={draft.shipment.cargoItems}
                 onChange={(index, patch: Partial<CargoItem>) =>
@@ -111,7 +112,7 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
                 }
               />
             </Step>
-            <Step number={4} title="运输段">
+            <Step number={4} title="Legs">
               <LegFields
                 legs={draft.shipment.legs}
                 options={form.options}
@@ -120,7 +121,11 @@ export function NewOrder({ onSubmit, onCancel }: Props) {
                 }
               />
             </Step>
-            <Step number={5} title="随附文件" hint="来自样例，随订单一起提交，这里不能改">
+            <Step
+              number={5}
+              title="Documents"
+              hint="From the sample; they go with the order and cannot be edited here"
+            >
               <Documents documents={draft.shipment.documents} />
             </Step>
           </div>

@@ -40,7 +40,7 @@ function Judgement({ judgement }: { judgement: unknown }) {
 }
 
 const readableTime = (value: unknown) =>
-  new Date(String(value)).toLocaleString('zh-CN', { hour12: false })
+  new Date(String(value)).toLocaleString('en-GB', { hour12: false })
 
 /** A list of records, such as the pre-checked rules: one compact row each. */
 function RecordTable({ records }: { records: readonly Record<string, unknown>[] }) {
@@ -98,10 +98,10 @@ function Value({ name, value }: { name: string; value: unknown }) {
   if (isStatus(value)) return <StatusBadge status={value} />
   if (isPerson(value)) return <RoleChip forRole={value.role} />
   if (value === null || typeof value !== 'object') return <>{String(value)}</>
-  if (Object.keys(value).length === 0) return <span className="muted">无</span>
+  if (Object.keys(value).length === 0) return <span className="muted">None</span>
   if (Array.isArray(value)) {
     return value.every((item) => typeof item !== 'object') ? (
-      value.join('、')
+      value.join(', ')
     ) : (
       <RecordTable records={value as Record<string, unknown>[]} />
     )
@@ -142,24 +142,24 @@ export function EventDetail({ entry }: { entry: TimelineEntry }) {
         aria-expanded={technical}
         onClick={() => setTechnical(!technical)}
       >
-        {technical ? '▾' : '▸'} 技术细节
+        {technical ? '▾' : '▸'} Technical details
       </button>
       {technical && (
         <div className="technical-detail">
           <dl>
-            <dt>事件</dt>
+            <dt>Event</dt>
             <dd>
               <code>{entry.eventName}</code>
             </dd>
-            <dt>事件编号</dt>
+            <dt>Event ID</dt>
             <dd>
               <code>{entry.eventId}</code>
             </dd>
-            <dt>来自</dt>
+            <dt>From</dt>
             <dd>
               <code>{entry.agentId}</code>
             </dd>
-            <dt>时间（UTC）</dt>
+            <dt>Time (UTC)</dt>
             <dd>
               <code>{entry.createdAt}</code>
             </dd>

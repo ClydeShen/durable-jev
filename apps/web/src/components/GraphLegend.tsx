@@ -10,7 +10,7 @@ export function GraphLegend({ legend }: { legend: Legend }) {
   return (
     <div className="graph-legend">
       <button type="button" className="legend-strip" aria-describedby={detailsId}>
-        <span className="legend-title">图例</span>
+        <span className="legend-title">Legend</span>
         {legend.entries.map((entry) => (
           <span key={entry.colour} className="legend-item">
             <span className={`legend-swatch check-status ${entry.colour}`} />

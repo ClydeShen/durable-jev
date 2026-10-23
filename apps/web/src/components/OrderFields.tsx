@@ -38,7 +38,7 @@ function Categories({
 }) {
   return (
     <fieldset className="order-input order-choices">
-      <legend className="field-label">类别</legend>
+      <legend className="field-label">Category</legend>
       {categories.map((category) => {
         const checked = selected.includes(category)
         return (
@@ -77,7 +77,7 @@ function CargoCard({
     <li className="order-card">
       <Chip>{item.cargoItemId}</Chip>
       <div className="order-grid">
-        <OrderInput label="货物描述" wide>
+        <OrderInput label="Description" wide>
           <textarea
             rows={2}
             value={item.description}
@@ -88,7 +88,7 @@ function CargoCard({
           selected={item.declaredCategories}
           onChange={(declaredCategories) => onChange({ declaredCategories })}
         />
-        <OrderInput label="数量">
+        <OrderInput label="Quantity">
           <input
             type="number"
             min={1}
@@ -97,7 +97,7 @@ function CargoCard({
             onChange={(event) => onChange({ quantity: Number(event.target.value) })}
           />
         </OrderInput>
-        <OrderInput label="总重（kg）">
+        <OrderInput label="Total weight (kg)">
           <input
             type="number"
             min={0.001}
@@ -110,12 +110,12 @@ function CargoCard({
           />
         </OrderInput>
         {range && (
-          <OrderInput label="温度要求（°C）">
+          <OrderInput label="Temperature range (°C)">
             <span className="order-range">
               <input
                 type="number"
                 step={0.1}
-                aria-label="最低温度"
+                aria-label="Lowest temperature"
                 value={range.minDeciCelsius / 10}
                 onChange={(event) =>
                   onChange({
@@ -126,11 +126,11 @@ function CargoCard({
                   })
                 }
               />
-              至
+              to
               <input
                 type="number"
                 step={0.1}
-                aria-label="最高温度"
+                aria-label="Highest temperature"
                 value={range.maxDeciCelsius / 10}
                 onChange={(event) =>
                   onChange({
@@ -197,9 +197,9 @@ function LegCard({
         </span>
       </span>
       <div className="order-grid">
-        <OrderInput label="起点">{place('origin')}</OrderInput>
-        <OrderInput label="终点">{place('destination')}</OrderInput>
-        <OrderInput label="承运商">
+        <OrderInput label="From">{place('origin')}</OrderInput>
+        <OrderInput label="To">{place('destination')}</OrderInput>
+        <OrderInput label="Carrier">
           <select
             value={leg.carrierId}
             onChange={(event) => {
@@ -215,7 +215,7 @@ function LegCard({
             ))}
           </select>
         </OrderInput>
-        <OrderInput label="车辆">
+        <OrderInput label="Vehicle">
           <select
             value={leg.vehicleId}
             onChange={(event) => onChange({ vehicleId: event.target.value })}
@@ -223,12 +223,12 @@ function LegCard({
             {vehicles.map((vehicle) => (
               <option key={vehicle.vehicleId} value={vehicle.vehicleId}>
                 {vehicle.vehicleId}
-                {vehicle.temperatureControlled ? '（温控）' : ''}
+                {vehicle.temperatureControlled ? ' (temperature controlled)' : ''}
               </option>
             ))}
           </select>
         </OrderInput>
-        <OrderInput label="计划出发（UTC）">
+        <OrderInput label="Planned departure (UTC)">
           <input
             type="datetime-local"
             required
@@ -236,7 +236,7 @@ function LegCard({
             onChange={(event) => onChange({ plannedDeparture: fromTimeInput(event.target.value) })}
           />
         </OrderInput>
-        <OrderInput label="计划到达（UTC）">
+        <OrderInput label="Planned arrival (UTC)">
           <input
             type="datetime-local"
             required
@@ -274,7 +274,7 @@ export function LegFields({
 
 /** The documents the sample order carries; they go with the order unchanged. */
 export function Documents({ documents }: { documents: Shipment['documents'] }) {
-  if (documents.length === 0) return <p className="muted">这个样例没有附带文件。</p>
+  if (documents.length === 0) return <p className="muted">This sample has no documents.</p>
   return (
     <ul className="order-documents">
       {documents.map((document) => (
@@ -302,7 +302,7 @@ export function OrderBasics({
   const deliveryWindow = shipment.deliveryWindow
   return (
     <div className="order-grid">
-      <OrderInput label="客户">
+      <OrderInput label="Customer">
         <select
           value={shipment.customerId}
           onChange={(event) => onChange({ customerId: event.target.value })}
@@ -314,7 +314,7 @@ export function OrderBasics({
           ))}
         </select>
       </OrderInput>
-      <OrderInput label="目的国">
+      <OrderInput label="Destination country">
         <input
           required
           pattern="[A-Z]{2}"
@@ -323,7 +323,7 @@ export function OrderBasics({
           onChange={(event) => onChange({ destinationCountry: event.target.value.toUpperCase() })}
         />
       </OrderInput>
-      <OrderInput label="交接方式">
+      <OrderInput label="Handover">
         <select
           value={shipment.handover}
           onChange={(event) => onChange({ handover: event.target.value as Shipment['handover'] })}
@@ -335,7 +335,7 @@ export function OrderBasics({
           ))}
         </select>
       </OrderInput>
-      <OrderInput label="报价（€）">
+      <OrderInput label="Quote (€)">
         <input
           type="number"
           min={0}
@@ -352,7 +352,7 @@ export function OrderBasics({
           }
         />
       </OrderInput>
-      <OrderInput label="最早送达（UTC）">
+      <OrderInput label="Deliver from (UTC)">
         <input
           type="datetime-local"
           required
@@ -364,7 +364,7 @@ export function OrderBasics({
           }
         />
       </OrderInput>
-      <OrderInput label="最晚送达（UTC）">
+      <OrderInput label="Deliver by (UTC)">
         <input
           type="datetime-local"
           required
@@ -377,7 +377,7 @@ export function OrderBasics({
         />
       </OrderInput>
       {customer?.restrictions && (
-        <p className="order-note wide">客户的送货限制：{customer.restrictions}</p>
+        <p className="order-note wide">Customer's delivery restrictions: {customer.restrictions}</p>
       )}
     </div>
   )

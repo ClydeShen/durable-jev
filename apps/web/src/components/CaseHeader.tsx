@@ -1,4 +1,5 @@
 import type { Actor, CaseDetail } from '../api'
+import { countOf } from '../labels'
 import { OrderStatusBadge, RoleChip } from './chips'
 
 interface Props {
@@ -39,52 +40,52 @@ export function CaseHeader({
         <div className="case-title-actions">
           {canDispatch && (
             <button type="button" className="primary-action" onClick={onDispatch}>
-              确认发运
+              Confirm dispatch
             </button>
           )}
           <button
             type="button"
             className="secondary small case-reset"
-            title="只把这个案例恢复到刚收到订单时的样子，并从第一条规则重新回放；其他案例不受影响"
+            title="Returns only this case to the moment its order arrived and plays it again from the first rule; other cases stay as they are"
             onClick={onReset}
           >
-            ↺ 重置本案例
+            ↺ Reset this case
           </button>
         </div>
       </div>
       <p className="story">{detail.story}</p>
       <div className="case-facts">
-        <Stat label="资料版本" value={`r${detail.caseRevision}`} />
-        <Stat label="货物" value={`${detail.shipment.cargoItems.length} 件`} />
-        <Stat label="运输段" value={`${detail.shipment.legs.length} 个`} />
+        <Stat label="Revision" value={`r${detail.caseRevision}`} />
+        <Stat label="Cargo" value={countOf(detail.shipment.cargoItems.length, 'item')} />
+        <Stat label="Legs" value={`${detail.shipment.legs.length}`} />
         <div className="stat">
           <span className="stat-value chips">
             {detail.waitingOn.length === 0
               ? '—'
               : detail.waitingOn.map((role) => <RoleChip key={role} forRole={role} />)}
           </span>
-          <span className="stat-label">正在等</span>
+          <span className="stat-label">Waiting for</span>
         </div>
         {open && (nextRevision || nextIncident) && (
           <div className="demo-actions">
-            <span className="stat-label">演示操作</span>
+            <span className="stat-label">Demo actions</span>
             {nextRevision && (
               <button
                 type="button"
                 className="secondary small"
                 onClick={() => onRevise(nextRevision.index)}
               >
-                变更资料：{nextRevision.label}
+                Change the order: {nextRevision.label}
               </button>
             )}
             {nextIncident && (
               <button
                 type="button"
                 className="secondary small"
-                title="模拟一个意外：运输计划 agent 会启动调查助手找替代方案，提议交给运输计划员确认"
+                title="Simulates a mishap: the transport planning agent starts its investigation helper, which proposes a replacement for the transport planner to confirm"
                 onClick={() => onReportIncident(nextIncident.index)}
               >
-                发生事件：{nextIncident.label}
+                Incident: {nextIncident.label}
               </button>
             )}
           </div>

@@ -13,9 +13,9 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
   return (
     <nav className="case-list">
       <div className="case-list-heading">
-        <h2>案例</h2>
+        <h2>Cases</h2>
         <button type="button" className="secondary small" onClick={onNewOrder}>
-          ＋ 新订单
+          + New order
         </button>
       </div>
       {cases.map((summary) => (
@@ -31,7 +31,7 @@ export function CaseList({ cases, selected, onSelect, onNewOrder }: Props) {
           </span>
           {summary.waitingOn.length > 0 && (
             <span className="case-waiting">
-              <span className="stat-label">等</span>
+              <span className="stat-label">Awaits</span>
               {summary.waitingOn.map((role) => (
                 <RoleLabel key={role} forRole={role} />
               ))}

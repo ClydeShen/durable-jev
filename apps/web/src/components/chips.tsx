@@ -4,7 +4,7 @@
  * - Badge: a status (rule result, order, investigation), filled in the status colour.
  * - Chip: an identifier (rule, case, offer), monospaced; clickable when it leads somewhere.
  * - EntityChip: a person or an agent, with its colour dot; clickable to switch or open it.
- * - Tag: a category or count (rule kind, "现场操作"), neutral.
+ * - Tag: a category or count (rule kind, "Field operation"), neutral.
  *
  * All four share one height and baseline, so they line up wherever they meet.
  */
@@ -38,7 +38,9 @@ export function Badge({
 }
 
 export function StatusBadge({ status }: { status?: CheckStatus }) {
-  return <Badge tone={status ?? 'NONE'}>{status ? checkStatusLabels[status] : '未评估'}</Badge>
+  return (
+    <Badge tone={status ?? 'NONE'}>{status ? checkStatusLabels[status] : 'Not evaluated'}</Badge>
+  )
 }
 
 /** An order's status in the colour of the rule status it corresponds to. */
@@ -58,12 +60,12 @@ export function OrderStatusBadge({ status }: { status: OrderStatus }) {
 }
 
 const investigationLabels: Record<Investigation['status'], string> = {
-  RUNNING: '调查中',
-  PROPOSED: '待计划员确认',
-  ESCALATED: '已转人工',
-  CONFIRMED: '已确认改派',
-  REJECTED: '已否决',
-  STALE: '已过期',
+  RUNNING: 'Investigating',
+  PROPOSED: 'Awaiting the planner',
+  ESCALATED: 'Handed to a person',
+  CONFIRMED: 'Reroute confirmed',
+  REJECTED: 'Rejected',
+  STALE: 'Out of date',
 }
 
 const investigationTones: Record<Investigation['status'], CheckStatus> = {
@@ -121,7 +123,7 @@ export function Tag({
 }
 
 /** A list of short items, one tag each, instead of a run of text joined by separators. */
-export function Tags({ items, empty = '无' }: { items: readonly string[]; empty?: string }) {
+export function Tags({ items, empty = 'None' }: { items: readonly string[]; empty?: string }) {
   if (items.length === 0) return <span className="muted">{empty}</span>
   return (
     <span className="chips">
@@ -190,7 +192,7 @@ export function RoleChip({ forRole, note }: { forRole: Role; note?: string }) {
   return (
     <EntityChip
       colour={{ 'data-role': forRole }}
-      title={current ? '当前角色' : `切换到${roleLabels[forRole]}`}
+      title={current ? 'Current role' : `Switch to ${roleLabels[forRole]}`}
       onClick={current ? undefined : () => switchRole(forRole)}
       action="⇄"
     >
@@ -207,7 +209,7 @@ export function AgentChip({ agentId, name }: { agentId: string; name: string }) 
   return (
     <EntityChip
       colour={{ 'data-agent': agentId }}
-      title={`查看${name}的名片`}
+      title={`Open the card of ${name}`}
       onClick={() => openAgent(agentId)}
       action="›"
     >

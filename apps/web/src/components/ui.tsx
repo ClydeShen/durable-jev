@@ -54,11 +54,11 @@ export function Drawer({
     return () => window.removeEventListener('keydown', closeOnEscape)
   }, [onClose])
   return (
-    <aside className="drawer" aria-label="详情">
+    <aside className="drawer" aria-label="Details">
       <header className="drawer-header">
         <div className="drawer-heading">{heading}</div>
         <button type="button" className="secondary small" onClick={onClose}>
-          关闭
+          Close
         </button>
       </header>
       <div className="drawer-body">{children}</div>
@@ -80,7 +80,7 @@ export function LayoutReset({ moved, onReset }: { moved: boolean; onReset(): voi
   if (!moved) return null
   return (
     <button type="button" className="secondary small" onClick={onReset}>
-      恢复自动排版
+      Restore automatic layout
     </button>
   )
 }

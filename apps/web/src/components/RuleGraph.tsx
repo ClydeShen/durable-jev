@@ -39,7 +39,10 @@ type RuleNodeData = {
 
 type Relation = 'selected' | 'upstream' | 'downstream' | 'unrelated'
 
-const relationLabels: Partial<Record<Relation, string>> = { upstream: '上游', downstream: '下游' }
+const relationLabels: Partial<Record<Relation, string>> = {
+  upstream: 'Upstream',
+  downstream: 'Downstream',
+}
 
 /** How each rule relates to the selected rule: its direct dependencies and dependents. */
 function relationsTo(
@@ -90,7 +93,7 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
     <div
       className={classes.filter(Boolean).join(' ')}
       style={nodeSize}
-      title={`${rule.ruleId} ${rule.title}（${kindLabels[rule.kind]}，${ownerName}）`}
+      title={`${rule.ruleId} ${rule.title} (${kindLabels[rule.kind]}, ${ownerName})`}
     >
       <Handle type="target" position={Position.Left} />
       <div className="rule-node-title">
@@ -102,20 +105,20 @@ function RuleNode({ data }: NodeProps<Node<RuleNodeData>>) {
         <button
           type="button"
           className="node-open"
-          aria-label={`${rule.ruleId} ${rule.title}，${status ? checkStatusLabels[status] : '未评估'}，打开详情`}
+          aria-label={`${rule.ruleId} ${rule.title}, ${status ? checkStatusLabels[status] : 'not evaluated'}, open details`}
         >
           <strong>{rule.ruleId}</strong> {rule.title}
         </button>
       </div>
       <div className="rule-node-meta">
         {waitingFor.length > 0 ? (
-          waitingFor.map((role) => <RoleLabel key={role} forRole={role} prefix="等" />)
+          waitingFor.map((role) => <RoleLabel key={role} forRole={role} prefix="Awaits " />)
         ) : (
           <Tag>{kindLabels[rule.kind]}</Tag>
         )}
-        {boundary && <span className="muted">来自 {ownerName}</span>}
+        {boundary && <span className="muted">from {ownerName}</span>}
         {invalidatedBy && (
-          <span className="invalidated" title={`因变更 ${invalidatedBy} 重算`}>
+          <span className="invalidated" title={`Decided again after change ${invalidatedBy}`}>
             ↻ {invalidatedBy.split(' ')[0]}
           </span>
         )}
@@ -162,8 +165,8 @@ function Follow({ ruleIds }: { ruleIds?: readonly string[] }) {
 }
 
 function progressLabel(playback: Playback): string {
-  if (playback.current?.final) return '当前状态'
-  return playback.remaining > 0 ? `还有 ${playback.remaining} 步` : '最后一步'
+  if (playback.current?.final) return 'Where it stands'
+  return playback.remaining > 0 ? `${playback.remaining} steps to go` : 'Last step'
 }
 
 function Narration({ playback }: { playback: Playback }) {
@@ -188,7 +191,7 @@ function Narration({ playback }: { playback: Playback }) {
       <span className="narration-progress">{progressLabel(playback)}</span>
       {playback.remaining > 0 && (
         <button type="button" className="secondary small" onClick={playback.skip}>
-          跳到最后
+          Skip to the end
         </button>
       )}
     </Panel>
@@ -353,7 +356,7 @@ export function RuleGraph({
       >
         <Background />
         <Controls showInteractive={false} />
-        <MiniMap pannable zoomable nodeClassName={minimapClass} ariaLabel="规则图缩略图" />
+        <MiniMap pannable zoomable nodeClassName={minimapClass} ariaLabel="Rule graph overview" />
         <Follow ruleIds={step?.ruleIds} />
         <Follow ruleIds={focusRequest?.ruleIds} />
         <Narration playback={playback} />
@@ -361,11 +364,11 @@ export function RuleGraph({
           {filteredCount > 0 && (
             <span
               className="graph-bar-group"
-              title={`目的国进口要求和客户合同条款共 ${selectedCount + filteredCount} 条，各自只对特定的目的国、商品类别或客户生效。系统先按本单的目的国、客户和商品类别挑出适用的，其余不评估，也不显示。`}
+              title={`${selectedCount + filteredCount} import requirements and customer contract terms, each applying only to certain destinations, commodity groups or customers. The ones that fit this order's destination, customer and commodity groups are picked first; the rest are neither evaluated nor shown.`}
             >
-              <span className="stat-label">专项规则</span>
-              <Tag tone="highlight">本单适用 {selectedCount} 条</Tag>
-              <Tag>与本单无关 {filteredCount} 条，未显示</Tag>
+              <span className="stat-label">Specific rules</span>
+              <Tag tone="highlight">{selectedCount} apply to this order</Tag>
+              <Tag>{filteredCount} do not apply, not shown</Tag>
             </span>
           )}
           <LayoutReset moved={Object.keys(layout.moved).length > 0} onReset={layout.reset} />

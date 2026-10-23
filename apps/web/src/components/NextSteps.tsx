@@ -18,13 +18,13 @@ function TaskStep({
   onShowRule(): void
 }) {
   const step = task.approvalChain
-    ? `（第 ${task.approvalChain.stepIndex + 1}/${task.approvalChain.stepCount} 步）`
+    ? ` (step ${task.approvalChain.stepIndex + 1} of ${task.approvalChain.stepCount})`
     : ''
   return (
     <li>
       <RoleChip forRole={task.requiredRole} />
-      <span>{task.taskType === 'APPROVAL' ? '批准' : '完成'}</span>
-      <Chip onClick={onShowRule} title="在规则图里查看这条规则">
+      <span>{task.taskType === 'APPROVAL' ? 'approves' : 'completes'}</span>
+      <Chip onClick={onShowRule} title="Show this rule in the rule graph">
         {task.ruleId}
       </Chip>
       <span className="muted">
@@ -62,36 +62,36 @@ export function NextSteps({ detail, rules, onShowRule }: Props) {
     ...proposals.map((proposal) => (
       <li key={proposal.investigationId}>
         <RoleChip forRole="transportPlanner" />
-        <span>确认或否决调查助手的改派建议</span>
+        <span>confirms or rejects the helper's reroute proposal</span>
       </li>
     )),
     ...(detail.status === 'READY_TO_DISPATCH'
       ? [
           <li key="dispatch">
             <RoleChip forRole="dispatcher" />
-            <span>确认发运（案例上方的按钮）</span>
+            <span>confirms dispatch (the button above the case)</span>
           </li>,
         ]
       : []),
   ]
   if (detail.status === 'DISPATCHED') {
     return (
-      <section className="next-steps done" aria-label="下一步">
-        <span className="next-label">✓ 已发运</span>
-        <span className="muted">这个案例的流程已经结束</span>
+      <section className="next-steps done" aria-label="Next steps">
+        <span className="next-label">✓ Dispatched</span>
+        <span className="muted">This case is complete</span>
       </section>
     )
   }
   return (
-    <section className="next-steps" aria-label="下一步">
-      <span className="next-label">下一步</span>
+    <section className="next-steps" aria-label="Next steps">
+      <span className="next-label">Next</span>
       {steps.length > 0 ? (
         <ul>{steps}</ul>
       ) : (
         <span className="muted">
           {failed.length > 0
-            ? `没有人能推进：${failed.join('、')} 不通过，需要变更资料`
-            : '没有待办，agent 正在评估'}
+            ? `Nobody can move it on: ${failed.join(', ')} failed, and the order data must change`
+            : 'No tasks; the agents are evaluating'}
         </span>
       )}
     </section>

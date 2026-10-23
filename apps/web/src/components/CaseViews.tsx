@@ -16,9 +16,9 @@ import { Timeline } from './Timeline'
 type CaseViewMode = 'overview' | 'graph' | 'timeline'
 
 const viewModes: [CaseViewMode, string][] = [
-  ['overview', 'Agent 总览'],
-  ['graph', '规则图'],
-  ['timeline', '时间线'],
+  ['overview', 'Agents'],
+  ['graph', 'Rule graph'],
+  ['timeline', 'Timeline'],
 ]
 
 interface ViewTabsProps {
@@ -50,7 +50,7 @@ function ViewTabs({ view, onView, focusName, onClearFocus }: ViewTabsProps) {
       ))}
       {focusName && (
         <button type="button" className="secondary" onClick={onClearFocus}>
-          仅 {focusName} ✕
+          Only {focusName} ✕
         </button>
       )}
       {legend && <GraphLegend legend={legend} />}
