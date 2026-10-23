@@ -1332,7 +1332,6 @@ button.node-open:focus-visible {
 }
 
 .app .task-panel {
-  border-top: 3px solid var(--role);
   background: linear-gradient(
     to bottom,
     color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
