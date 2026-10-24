@@ -9,7 +9,7 @@ import {
   sourceRevision,
   writeEvidence,
 } from './experiment-evidence.js'
-import { type GateScenario, observeGateChange } from './gate-change.js'
+import { type GateScenario, gateCases, observeGateChange, scenarioEvidence } from './gate-change.js'
 import { prepareGatePack, rehearseGateAuthoring } from './gate-change-packs.js'
 
 if (process.env.MODEL_MODE === 'live') throw new Error('gate characterization is scripted only')
@@ -49,16 +49,13 @@ for (const mutation of ['P2', 'P3'] as const) {
     prepareGatePack(baseline, candidate, mutation, variant === 'new-version')
     const hashes = packHashes(candidate)
     const observations = []
-    for (const activation of ['pinned', 're-evaluate', 'new-case', 'unaffected'] as const) {
-      const initialStates =
-        activation === 'pinned' || activation === 're-evaluate' ? [false, true] : [false]
-      for (const completed of initialStates) {
-        const scenario: GateScenario = { mutation, variant, activation, completed }
-        const directory = join(run, 'runs', `${mutation}-${variant}-${activation}-${completed}`)
-        const observation = await observeGateChange(scenario, baseline, candidate, directory)
-        writeEvidence(join(directory, 'observation.json'), observation)
-        observations.push(observation)
-      }
+    for (const testCase of gateCases) {
+      const scenario: GateScenario = { mutation, variant, ...testCase }
+      const { activation, completed } = scenarioEvidence(scenario)
+      const directory = join(run, 'runs', `${mutation}-${variant}-${activation}-${completed}`)
+      const observation = await observeGateChange(scenario, baseline, candidate, directory)
+      writeEvidence(join(directory, 'observation.json'), observation)
+      observations.push(observation)
     }
     const authoring =
       variant === 'new-version'

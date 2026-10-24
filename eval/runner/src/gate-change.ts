@@ -4,15 +4,44 @@ import { canonicalJson, type HumanTask } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import { applyRevision } from '@durable-jev/logistics'
 import { actor, caseFile, FaultLab } from './faults/lab.js'
+import { gateMutations } from './gate-change-packs.js'
 
-export interface GateScenario {
-  mutation: 'P2' | 'P3'
+type GateCase =
+  | { kind: 'existing'; activation: 'pinned' | 're-evaluate'; completed: boolean }
+  | { kind: 'new' | 'unaffected'; completed: false }
+
+export type GateScenario = GateCase & {
+  mutation: keyof typeof gateMutations
   variant: 'same-version' | 'new-version'
-  activation: 'pinned' | 're-evaluate' | 'new-case' | 'unaffected'
-  completed: boolean
 }
 
-const ruleOf = (mutation: GateScenario['mutation']) => (mutation === 'P2' ? 'R13' : 'R21')
+export const gateCases: readonly GateCase[] = [
+  { kind: 'existing', activation: 'pinned', completed: false },
+  { kind: 'existing', activation: 'pinned', completed: true },
+  { kind: 'existing', activation: 're-evaluate', completed: false },
+  { kind: 'existing', activation: 're-evaluate', completed: true },
+  { kind: 'new', completed: false },
+  { kind: 'unaffected', completed: false },
+]
+
+/** Preserve the archived report format while keeping case type and policy activation distinct. */
+export function scenarioEvidence(scenario: GateScenario) {
+  let activation: 'pinned' | 're-evaluate' | 'new-case' | 'unaffected'
+  if (scenario.kind === 'existing') activation = scenario.activation
+  else activation = scenario.kind === 'new' ? 'new-case' : 'unaffected'
+  return {
+    mutation: scenario.mutation,
+    variant: scenario.variant,
+    activation,
+    completed: scenario.completed,
+  }
+}
+
+interface GateAttempt {
+  sameActor?: string
+  missingReport?: string
+  result: string
+}
 
 function snapshot(view: CaseView, ruleId: string) {
   return {
@@ -44,39 +73,50 @@ async function decide(lab: FaultLab, task: HumanTask, action: HumanAction) {
 
 async function finishGate(lab: FaultLab, ruleId: string) {
   const decisions = []
-  for (let step = 0; step < 3; step++) {
+  const maxGateActions = 3 // A loop guard for these one/two-step fixtures, not an engine limit.
+  for (let step = 0; step < maxGateActions; step++) {
     const task = await lab.openTask(`${ruleId}@ITEM-1`)
     if (!task) break
     const wrongRole = await decide(lab, task, { type: 'approve', actor: actor('x', 'dispatcher') })
-    const sameActor =
-      task.requiredRole === 'qualityReviewer'
-        ? await decide(lab, task, {
-            type: 'approve',
-            actor: actor('complianceReviewer', 'qualityReviewer'),
-          })
-        : undefined
-    const missingReport =
-      task.taskType === 'OPERATION' ? await decide(lab, task, actionFor(task)) : undefined
-    const result =
-      missingReport === 'ACCEPTED' ? missingReport : await decide(lab, task, actionFor(task, true))
+    const attempt =
+      task.taskType === 'APPROVAL'
+        ? await probeApproval(lab, task)
+        : await probeOperation(lab, task)
     decisions.push({
       taskId: task.humanTaskId,
       role: task.requiredRole,
       wrongRole,
-      sameActor,
-      missingReport,
-      result,
+      ...attempt,
     })
-    if (result !== 'ACCEPTED') break
+    if (attempt.result !== 'ACCEPTED') break
   }
   return decisions
+}
+
+async function probeApproval(lab: FaultLab, task: HumanTask): Promise<GateAttempt> {
+  const sameActor =
+    task.requiredRole === 'qualityReviewer'
+      ? await decide(lab, task, {
+          type: 'approve',
+          actor: actor('complianceReviewer', 'qualityReviewer'),
+        })
+      : undefined
+  return { sameActor, result: await decide(lab, task, actionFor(task)) }
+}
+
+async function probeOperation(lab: FaultLab, task: HumanTask): Promise<GateAttempt> {
+  const missingReport = await decide(lab, task, actionFor(task))
+  // An accepted incomplete submission already completed the old task; do not submit twice.
+  const result =
+    missingReport === 'ACCEPTED' ? missingReport : await decide(lab, task, actionFor(task, true))
+  return { missingReport, result }
 }
 
 async function prepare(lab: FaultLab, scenario: GateScenario, ruleId: string) {
   const sample = caseFile(lab.caseId)
   const revision = sample.events.find((event) => event.kind === 'revise')
   const shipment =
-    scenario.activation === 'unaffected' || !revision
+    scenario.kind === 'unaffected' || !revision
       ? sample.shipment
       : applyRevision(sample.shipment, revision.patch)
   await lab.submit(shipment)
@@ -95,11 +135,11 @@ export async function observeGateChange(
   candidate: string,
   directory: string,
 ) {
-  const ruleId = ruleOf(scenario.mutation)
-  const mutationCase = scenario.mutation === 'P2' ? 'LOG-003' : 'LOG-008'
-  const caseId = scenario.activation === 'unaffected' ? 'LOG-001' : mutationCase
-  const selected = scenario.activation === 'pinned' ? baseline : candidate
-  const initial = scenario.activation === 'new-case' ? candidate : baseline
+  const { ruleId, caseId: mutationCase } = gateMutations[scenario.mutation]
+  const caseId = scenario.kind === 'unaffected' ? 'LOG-001' : mutationCase
+  const pinned = scenario.kind === 'existing' && scenario.activation === 'pinned'
+  const selected = pinned ? baseline : candidate
+  const initial = scenario.kind === 'new' ? candidate : baseline
   const open = (materialsDirectory: string) =>
     new FaultLab(caseId, { materialsDirectory, dataDirectory: join(directory, 'stores') })
   const original = open(initial)
@@ -114,12 +154,23 @@ export async function observeGateChange(
     const after = snapshot(await lab.view(), ruleId)
     const prior = before.tasks.find((task) => task.status === 'OPEN')
     const staleDecision =
-      scenario.activation === 're-evaluate' && scenario.variant === 'new-version' && prior
+      scenario.kind === 'existing' &&
+      scenario.activation === 're-evaluate' &&
+      scenario.variant === 'new-version' &&
+      prior
         ? await decide(lab, prior, actionFor(prior))
         : undefined
     const decisions = await finishGate(lab, ruleId)
     const final = snapshot(await lab.view(), ruleId)
-    const observation = { scenario, before, after, staleDecision, decisions, final, problems }
+    const observation = {
+      scenario: scenarioEvidence(scenario),
+      before,
+      after,
+      staleDecision,
+      decisions,
+      final,
+      problems,
+    }
     checkObservation(observation)
     return observation
   } finally {

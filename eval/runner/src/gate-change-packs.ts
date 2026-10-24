@@ -5,23 +5,32 @@ import { canonicalJson } from '@durable-jev/contracts'
 import { loadLogisticsRulePack } from '@durable-jev/logistics'
 import type { RuleSet } from '@durable-jev/rule-engine'
 import { writeEvidence } from './experiment-evidence.js'
-import type { GateScenario } from './gate-change.js'
 
-const policyText = {
-  P2: '**R13 Compliance sign-off.** Applies to: each controlled cargo item. Prerequisites: R10, R11 and R12. A compliance reviewer must approve the item for the current cargo, carrier and route versions. A quality reviewer must then approve every controlled item, whether or not it is cold chain. The two approvals must be given by different people. Approvals expire after `approvalExpiryHours`.',
-  P3: '**R21 Repacked.** Applies to: each cold-chain cargo item, only when R18 does not pass. A warehouse operator must repack the item and record the new packaging id, a photo reference and an inspection report reference (`inspectionReportRef`).',
-}
+export const gateMutations = {
+  P2: {
+    ruleId: 'R13',
+    caseId: 'LOG-003',
+    policyText:
+      '**R13 Compliance sign-off.** Applies to: each controlled cargo item. Prerequisites: R10, R11 and R12. A compliance reviewer must approve the item for the current cargo, carrier and route versions. A quality reviewer must then approve every controlled item, whether or not it is cold chain. The two approvals must be given by different people. Approvals expire after `approvalExpiryHours`.',
+  },
+  P3: {
+    ruleId: 'R21',
+    caseId: 'LOG-008',
+    policyText:
+      '**R21 Repacked.** Applies to: each cold-chain cargo item, only when R18 does not pass. A warehouse operator must repack the item and record the new packaging id, a photo reference and an inspection report reference (`inspectionReportRef`).',
+  },
+} as const
 
 export function prepareGatePack(
   baseline: string,
   candidate: string,
-  mutation: GateScenario['mutation'],
+  mutation: keyof typeof gateMutations,
   versioned: boolean,
 ) {
   cpSync(baseline, candidate, { recursive: true, errorOnExist: true })
   const rulesPath = join(candidate, 'rules.json')
   const rules = JSON.parse(readFileSync(rulesPath, 'utf8')) as RuleSet
-  const ruleId = mutation === 'P2' ? 'R13' : 'R21'
+  const { ruleId, policyText } = gateMutations[mutation]
   const rule = rules.rules.find((entry) => entry.ruleId === ruleId)
   if (!rule?.humanGate) throw new Error(`missing ${ruleId} gate`)
   if (mutation === 'P2') {
@@ -39,7 +48,7 @@ export function prepareGatePack(
   const policy = readFileSync(policyPath, 'utf8')
   const paragraph = new RegExp(`^\\*\\*${ruleId} [^\\n]+`, 'm')
   if (!paragraph.test(policy)) throw new Error(`missing ${ruleId} policy paragraph`)
-  writeFileSync(policyPath, policy.replace(paragraph, policyText[mutation]))
+  writeFileSync(policyPath, policy.replace(paragraph, policyText))
   loadLogisticsRulePack(candidate)
 }
 
@@ -49,13 +58,13 @@ export function rehearseGateAuthoring(
   directory: string,
   baseline: string,
   candidate: string,
-  mutation: GateScenario['mutation'],
+  mutation: keyof typeof gateMutations,
 ) {
   const input = join(directory, 'input')
   const output = join(directory, 'proposals')
   cpSync(baseline, input, { recursive: true, errorOnExist: true })
   cpSync(join(candidate, 'policy-v1.md'), join(input, 'policy-v1.md'))
-  const ruleId = mutation === 'P2' ? 'R13' : 'R21'
+  const { ruleId } = gateMutations[mutation]
   const pack = loadLogisticsRulePack(candidate)
   const proposed = pack.ruleSet.rules.find((rule) => rule.ruleId === ruleId)
   const prior = loadLogisticsRulePack(baseline).ruleSet.rules.find((rule) => rule.ruleId === ruleId)

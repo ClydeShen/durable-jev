@@ -12,7 +12,12 @@ import {
   fauxToolCall,
 } from '@earendil-works/pi-ai/providers/faux'
 import { nvidiaProvider } from '@earendil-works/pi-ai/providers/nvidia'
-import { type AuthoringModel, authorRules } from './author-rules.js'
+import {
+  type AuthoringModel,
+  type AuthoringRequest,
+  type AuthoringResult,
+  authorRules,
+} from './author-rules.js'
 import { selectPolicy } from './policy-sections.js'
 import { diffRules } from './rule-diff.js'
 
@@ -63,25 +68,26 @@ function liveModel(): AuthoringModel {
   }
 }
 
-async function propose(sectionPrefix: string) {
+function readRequest(sectionPrefix: string): AuthoringRequest {
   const section = selectPolicy(readFileSync(join(materials, 'policy-v1.md'), 'utf8'), sectionPrefix)
   const pack = loadRulePack(materials, codeEvaluatorRefs, logisticsRuleConstraints)
+  return {
+    section,
+    ruleSet: pack.ruleSet,
+    parameters: pack.parameters,
+    factsCatalog: readFileSync(join(materials, 'facts-catalog.md'), 'utf8'),
+    constraints: logisticsRuleConstraints,
+    codeEvaluatorRefs,
+  }
+}
+
+async function propose(sectionPrefix: string) {
+  const request = readRequest(sectionPrefix)
   const live = process.env.MODEL_MODE === 'live'
-  const model = live ? liveModel() : scriptedModel(slugOf(section.title))
-  const factsCatalog = readFileSync(join(materials, 'facts-catalog.md'), 'utf8')
-  const result = await authorRules(
-    {
-      section,
-      ruleSet: pack.ruleSet,
-      parameters: pack.parameters,
-      factsCatalog,
-      codeEvaluatorRefs,
-      constraints: logisticsRuleConstraints,
-    },
-    model,
-  )
+  const model = live ? liveModel() : scriptedModel(slugOf(request.section.title))
+  const result = await authorRules(request, model)
   const proposal = {
-    section: section.title,
+    section: request.section.title,
     generatedAt: new Date().toISOString(),
     mode: live ? 'live' : 'scripted',
     model: `${model.provider}/${model.modelId}`,
@@ -93,36 +99,36 @@ async function propose(sectionPrefix: string) {
     acceptanceMeaning:
       'schema, scope and version validation only; business review is still required',
     materialsDirectory: materials,
-    input: {
-      section,
-      ruleSet: pack.ruleSet,
-      parameters: pack.parameters,
-      factsCatalog,
-      constraints: logisticsRuleConstraints,
-      codeEvaluatorRefs: [...codeEvaluatorRefs],
-    },
-    diff: diffRules(pack.ruleSet.rules, result.rules),
+    input: { ...request, codeEvaluatorRefs: [...request.codeEvaluatorRefs] },
+    diff: diffRules(request.ruleSet.rules, result.rules),
     attempts: result.attempts,
     rules: result.rules,
   }
   mkdirSync(proposalsDirectory, { recursive: true })
-  const path = join(proposalsDirectory, `${slugOf(section.title)}-${Date.now()}.json`)
+  const path = join(proposalsDirectory, `${slugOf(request.section.title)}-${Date.now()}.json`)
   writeFileSync(path, `${JSON.stringify(proposal, null, 2)}\n`)
   process.stdout.write(
-    [
-      `section: ${proposal.section} (${proposal.mode}, ${proposal.model})`,
-      ...result.attempts.map(
-        (attempt, index) =>
-          `attempt ${index + 1}: ${attempt.issues.length === 0 ? 'valid' : attempt.issues.join('; ')} (${attempt.durationMs} ms, ${attempt.inputTokens}+${attempt.outputTokens} tokens)`,
-      ),
-      `diff: added ${proposal.diff.added.join(', ') || '-'}; changed ${proposal.diff.changed.join(', ') || '-'}; unchanged ${proposal.diff.unchanged.length}`,
-      proposal.accepted
-        ? `proposal: ${path}\napply after review: pnpm author --materials ${JSON.stringify(materials)} --apply ${JSON.stringify(path)}`
-        : `proposal rejected by validation: ${path}`,
-      '',
-    ].join('\n'),
+    `section: ${proposal.section} (${proposal.mode}, ${proposal.model})\n${proposalSummary(result, proposal.diff, path)}`,
   )
   process.exitCode = proposal.accepted ? 0 : 1
+}
+
+function proposalSummary(
+  result: AuthoringResult,
+  diff: ReturnType<typeof diffRules>,
+  path: string,
+): string {
+  return [
+    ...result.attempts.map(
+      (attempt, index) =>
+        `attempt ${index + 1}: ${attempt.issues.length === 0 ? 'valid' : attempt.issues.join('; ')} (${attempt.durationMs} ms, ${attempt.inputTokens}+${attempt.outputTokens} tokens)`,
+    ),
+    `diff: added ${diff.added.join(', ') || '-'}; changed ${diff.changed.join(', ') || '-'}; unchanged ${diff.unchanged.length}`,
+    result.accepted
+      ? `proposal: ${path}\napply after review: pnpm author --materials ${JSON.stringify(materials)} --apply ${JSON.stringify(path)}`
+      : `proposal rejected by validation: ${path}`,
+    '',
+  ].join('\n')
 }
 
 function apply(proposalPath: string) {
