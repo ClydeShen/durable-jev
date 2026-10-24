@@ -23,7 +23,9 @@ any conflict.
 
 ## 2. Folders
 
-- `.harness/`: the source of truth for implementation, managed by the agent.
+- `.harness/`: a shared working aid autonomously maintained by delivery agents for decisions,
+  plans, limits, progress and handoffs. It is not the application runtime or permission to change
+  owner agreements; protected files retain their existing restrictions.
 - `docs/`: documents for the user (getting started, demo guide, runtime controls, M0 findings, final
   report).
 - `eval/`: test materials, answer keys, fault scenarios, benchmark runner.

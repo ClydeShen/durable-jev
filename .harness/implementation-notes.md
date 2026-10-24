@@ -54,15 +54,46 @@ costs. Changes required after freeze are measured. The runnable backup is not th
 
 ### Work arrangement and next action
 
-1. Start from this documentation-only plan on `baseline-cleanup-plan`; refactoring is paused.
-2. Before implementation, review the planned small slices and uncertain durable-state ownership
-   with the owner. Start with the existing rule/fact contracts, then runtime and transport boundaries.
+1. Continue on `baseline-cleanup-plan`. The owner authorized the two small cleanup stages;
+   implementation has begun with rule validation and applicability indexing, not the shelved refactor.
+2. Continue extracting the existing rule/fact contracts in small slices, then runtime and transport
+   boundaries. Discuss uncertain durable-state ownership with the owner before changing it.
 3. Keep every slice independently verifiable. Do not weaken validation, change protected materials
    to pass a check, or claim module-wide Pi Durable execution based on helper-only recovery.
 4. At the cleanup gate, run full checks/replay/faults and inspect the running demo; ask the owner
    to review it before recording the experimental baseline commit and material/environment hashes.
 5. After freeze, measure logistics policy changes (both existing-order strategies), then insurance
    adaptation; finish controlled comparisons, independent blind evaluation and the report.
+
+### First cleanup slice: domain-owned selection constraints
+
+`packages/logistics/src/rule-constraints.ts` now supplies allowed applicability dimensions,
+the cargo-category vocabulary and the logistics extension-rule convention. Runtime pack loading
+and the authoring CLI pass the same constraints into shared validation. The authoring CLI adds
+one dependency on the existing logistics package; there is no new package or directory hierarchy.
+
+The shared applicability schema retains dimension names instead of silently discarding them.
+`RuleIndex` indexes dimension/value collections without interpreting business names, distinguishes
+unresolved dimensions from resolved empty ones, and avoids delimiter collisions. Compatibility
+table categories are also domain-supplied; core conflict/qualification checks remain shared.
+The logistics boundary still rejects unknown dimensions/categories, incomplete tables and missing
+extension applicability. Empty applicability on a logistics extension is now rejected too, rather
+than making the extension unconditional. Existing committed materials satisfy these constraints.
+
+Verification: `pnpm check` (142 tests, zero clones), eight scripted replay cases, fault scenarios
+(17 pass; F06 not applicable), and 26 screening samples with no missed rules. S14 selects three
+extra rules; these are development/screening results, not blind evidence. The default ports were
+occupied by the checkpoint demo, so the candidate runs on ports 4300-4304 with separate temporary
+data and control port 4399, using the existing launcher supervisor and built service entries.
+Browser checks on that candidate passed filtering, drawers, scene dialogs, timeline and order
+entry in both themes; 16 accessibility scans found no violations and no page errors were recorded.
+The existing console layout is unchanged. No live model calls were made.
+
+T8.2 is still in progress: rule owners/roles/scopes, invalidation dimensions, fact/FEEL contexts
+and graph-level classifier selection still contain logistics assumptions. CaseRuntime, human
+gates and A2A still accept Shipment; durable ownership has not changed. Do not claim cross-domain
+execution or freeze the experimental baseline based on this slice. Protected materials, skills,
+the backup branch and recovery tag remain unchanged.
 
 At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
 passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh
