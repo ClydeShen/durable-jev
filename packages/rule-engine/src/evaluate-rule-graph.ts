@@ -8,7 +8,14 @@ import {
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import { type CollectionScope, type Expression, referencedRules } from './expression.js'
-import type { CaseFacts, Facts } from './facts.js'
+import {
+  type CaseFacts,
+  type Facts,
+  factsInScope,
+  factValue,
+  scopeKey,
+  scopeMembers,
+} from './facts.js'
 import {
   evaluateFeel,
   feelContext,
@@ -91,38 +98,6 @@ export interface RuleGraphEvaluation {
   outcomeOf(ruleId: RuleId, scope?: CheckScope): RuleOutcome | undefined
 }
 
-export function scopeKey(scope: CheckScope): string {
-  if (scope.kind === 'cargoItem') return `cargoItem:${scope.cargoItemId}`
-  if (scope.kind === 'leg') return `leg:${scope.legId}`
-  return 'order'
-}
-
-function membersOf(facts: CaseFacts, scope: RuleScope): CheckScope[] {
-  if (scope === 'cargoItem') {
-    return facts.cargoItems.map(({ cargoItemId }) => ({ kind: 'cargoItem', cargoItemId }))
-  }
-  if (scope === 'leg') return facts.legs.map(({ legId }) => ({ kind: 'leg', legId }))
-  return [{ kind: 'order' }]
-}
-
-function factsOf(facts: CaseFacts, scope: CheckScope): Facts {
-  if (scope.kind === 'cargoItem') {
-    return facts.cargoItems.find((item) => item.cargoItemId === scope.cargoItemId)?.facts ?? {}
-  }
-  if (scope.kind === 'leg') return facts.legs.find((leg) => leg.legId === scope.legId)?.facts ?? {}
-  return facts.order
-}
-
-function readPath(source: Facts, path: string): unknown {
-  return path
-    .split('.')
-    .reduce<unknown>(
-      (value, key) =>
-        value !== null && typeof value === 'object' ? (value as Facts)[key] : undefined,
-      source,
-    )
-}
-
 function topologicalOrder(rules: readonly RuleDefinition[]): RuleDefinition[] {
   const byId = new Map(rules.map((rule) => [rule.ruleId, rule]))
   const ordered: RuleDefinition[] = []
@@ -163,8 +138,9 @@ class GraphState implements ExpressionContext {
 
   resultOf(ruleId: RuleId, scope: CheckScope): RuleOutcome | undefined {
     const target = this.scopeOfRule.get(ruleId)
-    const resolved: CheckScope = target === 'order' ? { kind: 'order' } : scope
-    if (target !== 'order' && target !== scope.kind) return undefined
+    const root = this.facts.root.scope
+    const resolved: CheckScope = target === root.kind ? root : scope
+    if (target !== root.kind && target !== scope.kind) return undefined
     return this.results.get(`${ruleId}@${scopeKey(resolved)}`)
   }
 
@@ -181,19 +157,23 @@ class GraphState implements ExpressionContext {
   }
 
   private factOf(path: string, scope: CheckScope): unknown {
-    if (path.startsWith('order.')) return readPath(this.facts.order, path.slice('order.'.length))
-    return readPath(factsOf(this.facts, scope), path)
+    const source = Object.hasOwn(this.facts.context, path.split('.')[0] ?? '')
+      ? this.facts.context
+      : (factsInScope(this.facts, scope)?.facts ?? {})
+    return factValue(source, path)
   }
 
   membersOf(scope: CollectionScope): CheckScope[] {
-    return membersOf(this.facts, scope)
+    return scopeMembers(this.facts, scope)
   }
 
   dependencyFingerprints(ruleId: RuleId, scope: CheckScope): string[] {
     const target = this.scopeOfRule.get(ruleId)
     if (target === undefined) return []
     const scopes =
-      target === 'order' || target === scope.kind ? [scope] : membersOf(this.facts, target)
+      target === this.facts.root.scope.kind || target === scope.kind
+        ? [scope]
+        : scopeMembers(this.facts, target)
     return scopes.map((member) => this.resultOf(ruleId, member)?.inputFingerprint ?? 'missing')
   }
 
@@ -234,12 +214,12 @@ class GraphState implements ExpressionContext {
   dependencyOutcome(ruleId: RuleId, scope: CheckScope): Outcome {
     const target = this.scopeOfRule.get(ruleId)
     if (target === undefined) return outcome('ERROR')
-    if (target === 'order' || target === scope.kind) {
+    if (target === this.facts.root.scope.kind || target === scope.kind) {
       const status = this.statusOf(ruleId, scope)
       return outcome(status, isPendingCheckStatus(status) ? [ruleId] : [])
     }
     return combineAllOf(
-      membersOf(this.facts, target).map((member) => {
+      scopeMembers(this.facts, target).map((member) => {
         const status = this.statusOf(ruleId, member)
         return outcome(status, isPendingCheckStatus(status) ? [ruleId] : [])
       }),
@@ -299,7 +279,7 @@ function runLeaf(
     rule,
     scope,
     facts: state.facts,
-    scopeFacts: factsOf(state.facts, scope),
+    scopeFacts: factsInScope(state.facts, scope)?.facts ?? {},
     parameters: environment.parameters,
     inputFingerprint,
     resultOf: (ruleId) => state.resultOf(ruleId, scope),
@@ -367,12 +347,11 @@ function indexOf(ruleSet: RuleSet): RuleIndex {
 function selectionProfile(ruleSet: RuleSet, state: GraphState): SelectionProfile {
   const classifier = ruleSet.selection?.classifierRuleId
   const classifications = classifier
-    ? membersOf(state.facts, 'cargoItem').map((scope) => state.resultOf(classifier, scope))
+    ? scopeMembers(state.facts, 'cargoItem').map((scope) => state.resultOf(classifier, scope))
     : []
   const decided = classifications.every((result) => result?.status === 'PASS')
   return {
-    destinations: [state.facts.order.destinationCountry],
-    customers: [state.facts.order.customerId],
+    ...state.facts.selection,
     commodityGroups: decided
       ? new Set(classifications.flatMap((result) => result?.observedValue as string[]))
       : undefined,
@@ -439,7 +418,7 @@ export async function evaluateRuleGraph(
         ? index.decide(rule.ruleId, selectionProfile(ruleSet, state))
         : 'selected'
     const results = await Promise.all(
-      membersOf(facts, rule.scope).map(async (scope): Promise<RuleOutcome> => {
+      scopeMembers(facts, rule.scope).map(async (scope): Promise<RuleOutcome> => {
         if (!executes(rule)) return providedOutcome(provided, rule.ruleId, scope)
         if (selection !== 'selected') {
           return selectionOutcome(rule, scope, selection, ruleSet.selection?.classifierRuleId)
@@ -467,6 +446,6 @@ export async function evaluateRuleGraph(
   return {
     outcomes: state.all().filter((result) => executed.has(result.ruleId)),
     escalations,
-    outcomeOf: (ruleId, scope = { kind: 'order' }) => state.resultOf(ruleId, scope),
+    outcomeOf: (ruleId, scope = facts.root.scope) => state.resultOf(ruleId, scope),
   }
 }

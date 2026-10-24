@@ -50,9 +50,14 @@ const shipment = (caseRevision: number, items: number) =>
 
 const factsOf = (current: Shipment): CaseFacts => ({
   entityVersions: current.entityVersions,
-  order: {},
-  cargoItems: current.cargoItems.map((item) => ({ cargoItemId: item.cargoItemId, facts: {} })),
-  legs: [],
+  root: { scope: { kind: 'order' }, facts: {} },
+  context: { cargoItems: current.cargoItems.map(() => ({})) },
+  collections: {
+    cargoItem: current.cargoItems.map((item) => ({
+      scope: { kind: 'cargoItem', cargoItemId: item.cargoItemId },
+      facts: {},
+    })),
+  },
 })
 
 function agent(agentId: RuleDefinition['owner']) {

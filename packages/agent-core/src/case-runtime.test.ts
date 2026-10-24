@@ -63,9 +63,14 @@ const shipment = {
 
 const factsOf = (case_: Shipment): CaseFacts => ({
   entityVersions: case_.entityVersions,
-  order: {},
-  cargoItems: case_.cargoItems.map((item) => ({ cargoItemId: item.cargoItemId, facts: {} })),
-  legs: [],
+  root: { scope: { kind: 'order' }, facts: {} },
+  context: { cargoItems: case_.cargoItems.map(() => ({})) },
+  collections: {
+    cargoItem: case_.cargoItems.map((item) => ({
+      scope: { kind: 'cargoItem', cargoItemId: item.cargoItemId },
+      facts: {},
+    })),
+  },
 })
 
 function runtime(now = () => '2026-11-02T08:00:00.000Z') {

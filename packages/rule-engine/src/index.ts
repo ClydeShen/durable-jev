@@ -4,9 +4,8 @@ export {
   type LeafEvaluator,
   type LeafInput,
   type RuleOutcome,
-  scopeKey,
 } from './evaluate-rule-graph.js'
-export type { CaseFacts, Facts } from './facts.js'
+export { type CaseFacts, type Facts, scopeKey } from './facts.js'
 export { feelContext, type PolicyParameters, semanticState } from './feel.js'
 export { type EntityChange, invalidateDependentsOf } from './invalidation.js'
 export {

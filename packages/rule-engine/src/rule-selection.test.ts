@@ -81,11 +81,18 @@ const classifiedAs =
   () => ({ status, observedValue: groups })
 
 function order(destinationCountry: string, customerId: string): CaseFacts {
+  const orderFacts = { destinationCountry, customerId, handover: 'dock', documents: [] }
+  const item = { description: 'Insulin pens' }
   return {
     entityVersions: {},
-    order: { destinationCountry, customerId, handover: 'dock', documents: [] },
-    cargoItems: [{ cargoItemId: 'ITEM-1', facts: { description: 'Insulin pens' } }],
-    legs: [],
+    root: { scope: { kind: 'order' }, facts: orderFacts },
+    context: { order: orderFacts, cargoItems: [item], legs: [] },
+    collections: {
+      cargoItem: [
+        { scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' }, facts: item, context: { item } },
+      ],
+    },
+    selection: { destinations: [destinationCountry], customers: [customerId] },
   }
 }
 

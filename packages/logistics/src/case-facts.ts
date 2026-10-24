@@ -55,23 +55,42 @@ function documentsVersion(shipment: Shipment): string {
 }
 
 export function buildCaseFacts(shipment: Shipment, reference: ReferenceData): CaseFacts {
+  const order = orderFacts(shipment, reference)
+  const cargoItems = shipment.cargoItems.map((item) => {
+    const facts = itemFacts(shipment, item)
+    return {
+      scope: { kind: 'cargoItem' as const, cargoItemId: item.cargoItemId },
+      facts,
+      context: { item: facts },
+    }
+  })
+  const legs = shipment.legs.map((leg) => {
+    const facts = legFacts(leg, reference)
+    return { scope: { kind: 'leg' as const, legId: leg.legId }, facts, context: { leg: facts } }
+  })
   return {
     entityVersions: { ...shipment.entityVersions, documents: documentsVersion(shipment) },
-    order: {
-      caseId: shipment.caseId,
-      shipmentId: shipment.shipmentId,
-      customerId: shipment.customerId,
-      customer: reference.customers.get(shipment.customerId),
-      destinationCountry: shipment.destinationCountry,
-      deliveryWindow: shipment.deliveryWindow,
-      handover: shipment.handover,
-      quote: shipment.quote,
-      documents: shipment.documents,
+    root: { scope: { kind: 'order' }, facts: order },
+    context: {
+      order,
+      cargoItems: cargoItems.map((item) => item.facts),
+      legs: legs.map((leg) => leg.facts),
     },
-    cargoItems: shipment.cargoItems.map((item) => ({
-      cargoItemId: item.cargoItemId,
-      facts: itemFacts(shipment, item),
-    })),
-    legs: shipment.legs.map((leg) => ({ legId: leg.legId, facts: legFacts(leg, reference) })),
+    collections: { cargoItem: cargoItems, leg: legs },
+    selection: { destinations: [shipment.destinationCountry], customers: [shipment.customerId] },
+  }
+}
+
+function orderFacts(shipment: Shipment, reference: ReferenceData): Facts {
+  return {
+    caseId: shipment.caseId,
+    shipmentId: shipment.shipmentId,
+    customerId: shipment.customerId,
+    customer: reference.customers.get(shipment.customerId),
+    destinationCountry: shipment.destinationCountry,
+    deliveryWindow: shipment.deliveryWindow,
+    handover: shipment.handover,
+    quote: shipment.quote,
+    documents: shipment.documents,
   }
 }

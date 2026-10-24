@@ -20,7 +20,7 @@ export const reservationMigrations: readonly Migration[] = [
 
 export function reserveTransport(db: Db): LeafEvaluator {
   return ({ facts, scopeFacts }) => {
-    const caseId = String(facts.order.caseId)
+    const caseId = String(facts.root.facts.caseId)
     const legId = String(scopeFacts.legId)
     const routeVersion = Number(facts.entityVersions.route)
     const carrierId = String(scopeFacts.carrierId)

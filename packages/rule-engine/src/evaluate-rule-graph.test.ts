@@ -119,14 +119,25 @@ function caseWith(
   items: { id: string; weightGrams: number; categories: string[] }[],
   legCount = 1,
 ): CaseFacts {
+  const cargoItems = items.map(({ id, ...facts }) => ({
+    scope: { kind: 'cargoItem' as const, cargoItemId: id },
+    facts,
+    context: { item: facts },
+  }))
+  const legs = Array.from({ length: legCount }, (_, index) => ({
+    scope: { kind: 'leg' as const, legId: `LEG-${index + 1}` },
+    facts: {},
+    context: { leg: {} },
+  }))
   return {
     entityVersions: {},
-    order: {},
-    cargoItems: items.map(({ id, ...facts }) => ({ cargoItemId: id, facts })),
-    legs: Array.from({ length: legCount }, (_, index) => ({
-      legId: `LEG-${index + 1}`,
-      facts: {},
-    })),
+    root: { scope: { kind: 'order' }, facts: {} },
+    context: {
+      order: {},
+      cargoItems: cargoItems.map((member) => member.facts),
+      legs: legs.map((leg) => leg.facts),
+    },
+    collections: { cargoItem: cargoItems, leg: legs },
   }
 }
 
@@ -208,14 +219,18 @@ describe('evaluateRuleGraph', () => {
 
   it('treats a missing input to an expression as unknown', async () => {
     const facts = caseWith([{ id: 'ITEM-1', weightGrams: 0, categories: ['general'] }])
-    const [first] = facts.cargoItems
-    if (first) first.facts = { categories: ['general'] }
+    const first = facts.collections.cargoItem?.[0]
+    if (first) delete first.facts.weightGrams
     const graph = await evaluateRuleGraph(ruleSet, facts, evaluatorsWith())
     expect(graph.outcomeOf('R02', item('ITEM-1'))?.status).toBe('UNKNOWN')
   })
 
   it('treats an order without legs as unknown, not as a valid plan', async () => {
-    const facts = { ...generalItems, legs: [] }
+    const facts = {
+      ...generalItems,
+      collections: { ...generalItems.collections, leg: [] },
+      context: { ...generalItems.context, legs: [] },
+    }
     const graph = await evaluateRuleGraph(ruleSet, facts, evaluatorsWith())
     expect(graph.outcomeOf('R30')?.status).toBe('UNKNOWN')
     expect(graph.outcomeOf('R40')?.status).toBe('UNKNOWN')

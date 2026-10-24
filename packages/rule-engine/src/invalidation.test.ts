@@ -88,23 +88,35 @@ function countingEvaluators() {
   return { calls, environment: { evaluators, parameters: {} } }
 }
 
-const original: CaseFacts = {
-  entityVersions: { cargo: 1, route: 1, carrier: 1, quote: 1 },
-  order: { customerActive: true },
-  cargoItems: [{ cargoItemId: 'ITEM-1', facts: { weightGrams: 400_000 } }],
-  legs: [
-    { legId: 'LEG-1', facts: { vehicleId: 'VEH-7', vehicleMaxPayloadGrams: 12_000_000 } },
-    { legId: 'LEG-2', facts: { vehicleId: 'VEH-9', vehicleMaxPayloadGrams: 12_000_000 } },
-  ],
+function vehicleFacts(vehicleId: string, vehicleMaxPayloadGrams: number): CaseFacts {
+  const order = { customerActive: true }
+  const item = { weightGrams: 400_000 }
+  const legs = [
+    { vehicleId, vehicleMaxPayloadGrams },
+    { vehicleId: 'VEH-9', vehicleMaxPayloadGrams: 12_000_000 },
+  ]
+  return {
+    entityVersions: { cargo: 1, route: 1, carrier: 1, quote: 1 },
+    root: { scope: { kind: 'order' }, facts: order },
+    context: { order, cargoItems: [item], legs },
+    collections: {
+      cargoItem: [
+        { scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' }, facts: item, context: { item } },
+      ],
+      leg: legs.map((facts, index) => ({
+        scope: { kind: 'leg', legId: `LEG-${index + 1}` },
+        facts,
+        context: { leg: facts },
+      })),
+    },
+  }
 }
 
+const original = vehicleFacts('VEH-7', 12_000_000)
+
 const vehicleChanged: CaseFacts = {
-  ...original,
+  ...vehicleFacts('VEH-12', 8_000_000),
   entityVersions: { ...original.entityVersions, route: 2 },
-  legs: [
-    { legId: 'LEG-1', facts: { vehicleId: 'VEH-12', vehicleMaxPayloadGrams: 8_000_000 } },
-    original.legs[1] as CaseFacts['legs'][number],
-  ],
 }
 
 describe('invalidateDependentsOf', () => {
@@ -115,6 +127,32 @@ describe('invalidateDependentsOf', () => {
 })
 
 describe('incremental evaluation', () => {
+  it('invalidates a code result when a domain-named context input changes', async () => {
+    const definition = rule('R01', { scope: 'order', inputPaths: ['record.amount'] })
+    const rules: RuleSet = { ruleSetVersion: 'context', rules: [definition], mixingMatrix: [] }
+    const facts = (amount: number): CaseFacts => ({
+      entityVersions: {},
+      root: { scope: { kind: 'order' }, facts: { amount } },
+      context: { record: { amount } },
+      collections: {},
+    })
+    const environment = {
+      parameters: {},
+      evaluators: new Map<string, LeafEvaluator>([
+        ['R01', ({ scopeFacts }) => ({ status: 'PASS', observedValue: scopeFacts.amount })],
+      ]),
+    }
+    const before = await evaluateRuleGraph(rules, facts(100), environment)
+    const after = await evaluateRuleGraph(rules, facts(200), environment, {
+      previous: before.outcomes,
+    })
+    expect(after.outcomeOf('R01')?.observedValue).toBe(200)
+    expect(after.outcomeOf('R01')?.inputFingerprint).not.toBe(
+      before.outcomeOf('R01')?.inputFingerprint,
+    )
+    expect(after.outcomeOf('R01')?.reused).not.toBe(true)
+  })
+
   it('reuses unchanged code and Jev results but always rechecks human gates', async () => {
     const { calls, environment } = countingEvaluators()
     const first = await evaluateRuleGraph(ruleSet, original, environment)

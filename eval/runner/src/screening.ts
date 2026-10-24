@@ -58,9 +58,18 @@ export async function screenSample(
   }))
   const facts = {
     entityVersions: {},
-    order: { destinationCountry: sample.destinationCountry, customerId: sample.customerId },
-    cargoItems,
-    legs: [],
+    root: {
+      scope: { kind: 'order' as const },
+      facts: { destinationCountry: sample.destinationCountry, customerId: sample.customerId },
+    },
+    context: { cargoItems: cargoItems.map((item) => item.facts) },
+    collections: {
+      cargoItem: cargoItems.map((item) => ({
+        scope: { kind: 'cargoItem' as const, cargoItemId: item.cargoItemId },
+        facts: item.facts,
+        context: { item: item.facts },
+      })),
+    },
   }
   const classify = semanticEvaluator(judge)
   const evaluations = await Promise.all(

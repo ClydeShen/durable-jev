@@ -1,17 +1,8 @@
 import type { CheckScope, CheckStatus } from '@durable-jev/contracts'
 import { evaluate } from 'feelin'
-import type { CaseFacts, Facts } from './facts.js'
+import { type CaseFacts, type Facts, factsInScope, factValue } from './facts.js'
 
 export type PolicyParameters = Record<string, string | number | boolean>
-
-function scopeContext(facts: CaseFacts, scope: CheckScope): Facts {
-  if (scope.kind === 'cargoItem') {
-    return { item: facts.cargoItems.find((item) => item.cargoItemId === scope.cargoItemId)?.facts }
-  }
-  if (scope.kind === 'leg')
-    return { leg: facts.legs.find((leg) => leg.legId === scope.legId)?.facts }
-  return {}
-}
 
 export function feelContext(
   facts: CaseFacts,
@@ -19,11 +10,9 @@ export function feelContext(
   parameters: PolicyParameters,
 ): Facts {
   return {
-    order: facts.order,
-    cargoItems: facts.cargoItems.map((item) => item.facts),
-    legs: facts.legs.map((leg) => leg.facts),
+    ...facts.context,
+    ...factsInScope(facts, scope)?.context,
     params: parameters,
-    ...scopeContext(facts, scope),
   }
 }
 
@@ -69,14 +58,7 @@ export function parametersReferencedBy(expression: string): string[] {
   ]
 }
 
-const contextRoots = /\b(order|cargoItems|legs|item|leg|params)((?:\.[A-Za-z_][A-Za-z0-9_]*)*)/g
-
-function readContextPath(context: Facts, path: string): unknown {
-  return path.split('.').reduce<unknown>((value, key) => {
-    if (Array.isArray(value)) return value.map((element) => (element as Facts | undefined)?.[key])
-    return value !== null && typeof value === 'object' ? (value as Facts)[key] : undefined
-  }, context)
-}
+const contextPaths = /\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*/g
 
 export function feelInputs(
   expressions: readonly string[],
@@ -84,8 +66,10 @@ export function feelInputs(
 ): Record<string, unknown> {
   const paths = new Set(
     expressions.flatMap((expression) =>
-      [...expression.matchAll(contextRoots)].map((match) => match[0]),
+      [...expression.matchAll(contextPaths)]
+        .map((match) => match[0])
+        .filter((path) => Object.hasOwn(context, path.split('.')[0] ?? '')),
     ),
   )
-  return Object.fromEntries([...paths].sort().map((path) => [path, readContextPath(context, path)]))
+  return Object.fromEntries([...paths].sort().map((path) => [path, factValue(context, path)]))
 }

@@ -29,9 +29,17 @@ const inspection: RuleDefinition = {
 
 const facts: CaseFacts = {
   entityVersions: {},
-  order: {},
-  cargoItems: [{ cargoItemId: 'ITEM-1', facts: { inspectionNote: 'Outer carton crushed' } }],
-  legs: [],
+  root: { scope: { kind: 'order' }, facts: {} },
+  context: {},
+  collections: {
+    cargoItem: [
+      {
+        scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' },
+        facts: { inspectionNote: 'Outer carton crushed' },
+        context: { item: { inspectionNote: 'Outer carton crushed' } },
+      },
+    ],
+  },
 }
 
 describe('semanticEvaluator', () => {
@@ -43,7 +51,7 @@ describe('semanticEvaluator', () => {
       rule: inspection,
       scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' },
       facts,
-      scopeFacts: facts.cargoItems[0]?.facts ?? {},
+      scopeFacts: facts.collections.cargoItem?.[0]?.facts ?? {},
       parameters: {},
       inputFingerprint: 'fp',
       resultOf: () => undefined,
@@ -84,7 +92,7 @@ describe('semanticEvaluator as a classifier', () => {
       rule: classifier,
       scope: { kind: 'cargoItem', cargoItemId: 'ITEM-1' },
       facts,
-      scopeFacts: facts.cargoItems[0]?.facts ?? {},
+      scopeFacts: facts.collections.cargoItem?.[0]?.facts ?? {},
       parameters: {},
       inputFingerprint: 'fp',
       resultOf: () => undefined,
