@@ -56,14 +56,24 @@ The owner approved refactoring; NVIDIA live generation/planning remains unapprov
 
 The owner subsequently authorized a new Jev-only allowance: at most five actual API attempts
 per next step (authoring/review evaluation, agent/fixed-workflow comparison, blind evaluation,
-insurance adaptation), at most 20 total. Current usage under this approval: 0/5 in each step,
-0/20 total; no live request was made when recording this decision. See spec section 17 and
-`docs/evaluation-plan.md`. Persist and enforce the allowance at the request boundary before any
-live use, including failures/retries; do not run unrestricted live replay or spend unused calls
-in another step. The budget guard has not yet been implemented. NVIDIA needs separate approval.
+insurance adaptation), at most 20 total. Current usage: authoring/review 3/5, each other step 0/5,
+3/20 total. See spec section 17, `docs/evaluation-plan.md` and `docs/jev-probe.md`. The bounded
+entrypoint now reserves and fsyncs `.harness/jev-allowance.jsonl` before HTTP, with exclusive
+locking, fail-closed validation, no automatic retries/redirects and conservative failure counting.
+This is not a provider-wide quota: use one authoritative live checkout, never roll back its journal
+to refund allowance, and do not invoke unguarded live entrypoints or transfer slots between steps.
+NVIDIA still needs separate approval.
 
-Next prepare bounded evaluation and independent human review/cost recording, then use Jev only
-when the scripted checks and frozen inputs are ready. T8.5 and T7.2 remain open; finish that
+Three frozen development inputs from clean source `6c812d9` returned HTTP 200: corrected SDS
+matches (0.88 versus scripted 0.94), damaged packaging requires the new inspection report, intact
+packaging needs no re-packaging task. Business branches match scripted controls. All other
+judgments are scripted; this is neither a blind result nor independent authoring/live planning.
+Committed inputs/results are in `docs/jev-probe-evidence.json`; scene 12 shows the report only.
+Recovery: `workflow-live-semantic-probe-2026-10-24` and matching `backup/` branch. Three runner
+files and one test file were added within the existing structure; no core/material/UI/skill change.
+
+Next prepare independent human review/cost recording. Only two authoring/review slots remain;
+do not repeat the three-request batch. T8.5 and T7.2 remain open; finish that
 evidence before insurance.
 Do not interpret W2's expected-loss checks as successful memory recovery or claim savings from
 the two authored strategies. No protected-material edit is authorized by the new live allowance.

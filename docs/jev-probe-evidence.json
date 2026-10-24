@@ -1,0 +1,824 @@
+{
+  "plan": {
+    "sourceCommit": "6c812d9a1ee4f9d3e9ee7b1759a6d85de2afc7c7",
+    "sourceStatus": "",
+    "generatedAt": "2026-10-24T10:34:43.525Z",
+    "authorization": "jev-2026-10-24",
+    "step": "authoring-review",
+    "plannedRequests": 3,
+    "labelStatus": "draft development fixtures; not blind or independent authoring evidence",
+    "sourceHashes": {
+      "authoring/part-a.json": "aeab8f2bf4c34ca22e52656100dab1a67629b20391603e4beda01fa1ddcd6dc5",
+      "authoring/schedule-g.json": "83b3f35b3668b3ed8c2d9e5f442628d00fd26390f8acdd73fdf757c2c96a5359",
+      "authoring/schedule-h.json": "7573f26bf5ddc279b8acff802bfe4bbddaba67afc7d533091d58bb7225de53f1",
+      "cases/LOG-001.json": "7af25aa1d900893608bcf6f56a71cbbd1dd1f565ef8f9966d3501cf7361014a3",
+      "cases/LOG-002.json": "bb391f4a3d785408b0b7c8906e9893fbf6eb0381d0925a314ebba009f04e95b4",
+      "cases/LOG-003.json": "7b2c18367e3893fe3ee74c299b2b784edc600a4deae646f0857440d09770392c",
+      "cases/LOG-004.json": "a99aa7a58e6e619bbc7db0acb9b3d8f4b698e52bcb02e8d84dd26e14d1e97d97",
+      "cases/LOG-005.json": "b1e0e8ff252080ad0a86296faf3718d434af9a7ae4b5afc995ecaed65c991519",
+      "cases/LOG-006.json": "d1c280a70f8d5677686db4c8bebeda16c81be16fccddb7f5ff58f716f6694640",
+      "cases/LOG-007.json": "83c76373fd9e488116158ad43b3ba82a7cd69405c38713f0e11f2559c3722722",
+      "cases/LOG-008.json": "411c3973afdae78ae6016d0d71cc638b716ac73570aa54c9970cd82a8ee4dd7f",
+      "facts-catalog.md": "a395b78f8bbb5828cec4a1a949bd7832d681c4b7c51f1b06dfe9029b72c11a5d",
+      "mock-data/capacity-offers.json": "355456ce3a9a0bdb962fcce3f58d68cb07f64f518a70ef275f796496973b238f",
+      "mock-data/carriers.json": "d0472d453fdc0286ac522527a0fe4887b736512025016a7ab93d7b25693662f2",
+      "mock-data/customers.json": "0c9045f785e388a672925386fa511cbefb4a57a8ee55913b39d8c286fa97d018",
+      "mock-data/hubs.json": "36fe3062824ddb7bdba7be46d6bdf19f86e3e9c896fe47a44c4b76f3b827efc2",
+      "mock-data/locations.json": "657b5b82381ecf47992cfff962318ecf6e1fa821edfa9c12e8decdeba3e257b8",
+      "mock-data/vehicles.json": "53142a058fe4fffb3e0faaf0abce6e4848fdb26660eb681b76350cad9709b9b9",
+      "policy-parameters.json": "d36c78e663c884a5ef745300cdc76788f6dfbdfcbc08135826a6305db506d077",
+      "policy-v1.md": "d0eabfd03602fb1076aa0a1044f15501a39145199048624c260b7ad542236913",
+      "rules.json": "5fa43140a9dc97e29cde0b7416af0b6195feaebad19750d190d28142566cfc4e",
+      "screening/samples.json": "08b1e87266ce228691e533cd728b2aa905f97351f66b23f5cba6b04d4567d4fc"
+    },
+    "implementationHashes": {
+      "experiment-evidence.d.ts": "c6a76092ae6c3cd4eea78bf7db69490fda6683f4656625628485fb17fd6d3273",
+      "experiment-evidence.d.ts.map": "60d0e4deddac40b2eacaf002cc73de0f0dfc39abb8856471d4778879174f6557",
+      "experiment-evidence.js": "f5372b23b0044942e7044fc95fdb55210d6d9f6df16c434f2eee3a672a5dbbe3",
+      "experiment-evidence.js.map": "091f2b8fe33859eb9af05eb649a3ffac5533b36cec358d296ba36c3e275351be",
+      "faults-main.d.ts": "d188113845e30dc592d11b15afae897907e303b81dd9851244afcc83d336ef23",
+      "faults-main.d.ts.map": "b1a7bff934ad5f5014f8877a849259c5a08a8b25f9a570a6bd60da41a449b5bf",
+      "faults-main.js": "df12b747f1743b864026a4af5ee49eb3bcc973bef79f12aa77434ec7f08d2114",
+      "faults-main.js.map": "6c8687964a3836c03cbf46dd9ded82deae51162389e9fa2fb0f902c3141e90bd",
+      "faults/crash-child.d.ts": "8ee046dfcec88e039f49fa2fc22d39b2674ebb2712c7fdf23e222424cd0af746",
+      "faults/crash-child.d.ts.map": "6e7a303324615e96faf3c0bf0717b33fc7cb0df7d04d0290d9b19214a4457ffd",
+      "faults/crash-child.js": "240bfb38cc121da19a91825a4fd2f8110f0ebe1f1b19e3e811dc8f3e82250f83",
+      "faults/crash-child.js.map": "c610350f639053aa4c6edbc61fd93b6eb49e9abae4fc55c5cab1e68d2b2bd0ff",
+      "faults/lab.d.ts": "42af8db8e36ef6651f6d400d0e5d3116e3f906cd44509e0100ad34f509fb7392",
+      "faults/lab.d.ts.map": "d7732be989f633f5b5839d9d10fd26a7f3903c74f56af6bcccf352a5340ab7b7",
+      "faults/lab.js": "55fdd048b3b157aa390f7a49036c23a110b180aed774ee6196557fa2d3e2fafb",
+      "faults/lab.js.map": "b3efd2b04e5043ec6548faca3118de60d4b197a37ae5f7491fc6f63c91512004",
+      "faults/scenarios.d.ts": "e3c0a0fc89f425f149d719e1a808c14c82e81510f77056404b3b62c1e4527861",
+      "faults/scenarios.d.ts.map": "fe6dcefb6a77dc9d5bfe16c58b95d46f1cfbf8a1d721d0f04a66e547bbb98e57",
+      "faults/scenarios.js": "85d83ae92156c462db6a538535f8c47c87fd99d3d6d6f8c7c57be54e635a3a33",
+      "faults/scenarios.js.map": "c7ac45abdf984510339650a16d0f97c5015f948afcfd893118a7cbae2a319dbe",
+      "gate-change-main.d.ts": "6b23594a4507dd94a69ad80054090b6b9454f8e80b04a08617936e494c6a506f",
+      "gate-change-main.d.ts.map": "da4cb243294b6fd8dc91919e09dfbc7261e412f685e4fc77a7ca10178ad3c879",
+      "gate-change-main.js": "f0071bb8e805f142362856228b7960ec04770f98007dbad07291853ae0b3a608",
+      "gate-change-main.js.map": "2a5e9e50b7aaca41b772065769ae3fa283b393c1bfd9ed96f12eb956beda1c0b",
+      "gate-change-packs.d.ts": "cb36ad31635cad33b5f0c59e43d0a3f41613fc1ffff3e7c0a9dd28e9aa576970",
+      "gate-change-packs.d.ts.map": "759c2fc39b08f41eba18ddf5c5b2cd9ca6e5af9f57922c8fe7242b565909f23c",
+      "gate-change-packs.js": "564e8f5a24094fa4218c479f508d3c5c71790c9eecffe4200bbb0b6e06f54773",
+      "gate-change-packs.js.map": "0eda43bcfc0b633e59088e274d0cd313bead4e6ba617215b390d18fb8f5d47d6",
+      "gate-change.d.ts": "6537cc8b74642e1c6e06061bf782e7cb598533ce99bc94b0a050eaae46fbdab5",
+      "gate-change.d.ts.map": "b11f3530fe9d9d9328981ef75d50396b155365b36f2b63ae9c96ab2447a7dbf2",
+      "gate-change.js": "a60bd314b772e749152c625328c7b6549049e6b365bc05c017bb8976ce0bb9b2",
+      "gate-change.js.map": "96821548c0e7858149860803347f1634becd68b7a19287929a11e485a87482b5",
+      "investigation-child.d.ts": "8d4e498b78798e9c318be42e45df13c244278dddab8c3e7404f501a1af6f2fa1",
+      "investigation-child.d.ts.map": "a4455f669f93b2bda7565818b9f750592d6c67c1c3a7f891f6ac86d707520304",
+      "investigation-child.js": "fc29ed63a0eb0a52467087f013da118693b8dd520fdb7ca3bc2c23710173d4ee",
+      "investigation-child.js.map": "8ad11f5087babb033cad70e8c54fa3eb5c30a1320c63b0507e2a119fdbd56359",
+      "investigation-experiment.d.ts": "1345ada89b348c206c3b30d1edc83f760e2935121b686ee14810d5e5595af7c6",
+      "investigation-experiment.d.ts.map": "d4b7069d60618ed1b89c3ed8964196d312a9733e311b1d2126560129e83f7e36",
+      "investigation-experiment.js": "130b10cf82817041c28f50d26ca4cba891b7c300adb40ffae1959162dc2e3e2a",
+      "investigation-experiment.js.map": "f44bea7775a44e534a05f7ef5e6d17b08335d9e297c4a67cbc9d0e39967ae432",
+      "investigation-main.d.ts": "1b174d83462e1d63726424cf70d92146a060cefbcae2bddd7224360b94cf89a9",
+      "investigation-main.d.ts.map": "37dd528d8893b244f8f19df5b4c52a71b115b7f268752ed2a8e708cd2b66500f",
+      "investigation-main.js": "7fd88af4bdfab22873d625382553c0a790810f237fe602083018078c995926d7",
+      "investigation-main.js.map": "ebf340f86fd17c4d7166a91e3230f690e7d6f7a2ee12cf3a7ff83411e447a49f",
+      "jev-allowance.d.ts": "d73a71836d3209d2fce7c817f8b6fe0fa3813d140ad8068786299ce1a5fdb70f",
+      "jev-allowance.d.ts.map": "6dbc4e09e93916735b9899cd21a03edb49eb9ee892b33c6519a115eb80d9a6a2",
+      "jev-allowance.js": "0c3426b152ca2984a9e8c3f32edb839c503cf6d5a991f1bcd34d982f16724970",
+      "jev-allowance.js.map": "fba524632cf1970cd1cea2a06a8ac503f0175f6cdceecfced336296ca8f02554",
+      "jev-probe-main.d.ts": "b55ee5bfd317bfa7d03fad893b61a609ac6599f3850cab4ff2d01566afcd3acf",
+      "jev-probe-main.d.ts.map": "a917cbb99e35bc57abafc115102ef4f2a60e85336f70502e790c4a657fc435f0",
+      "jev-probe-main.js": "31e91d3de771d79667c4b9442c9fad0b9745462ae65502615e41b811aa0465f8",
+      "jev-probe-main.js.map": "53334a8140fc45831bc79cb8fea3de55108ce6d38cec17856734cf96e0eedb76",
+      "jev-probe.d.ts": "eaacea66f645b09b88d080fee0c27cb8d517c17d3118b0a0d9dc0187fe6c2a16",
+      "jev-probe.d.ts.map": "3cae61fab9b243d110ba3bc8980efa0d92cdac0b5ad96212e0d59dc880f76a0d",
+      "jev-probe.js": "5d08043348e9affb52b4b237600ec470aa20af04a8af39234baca5855e0d12c7",
+      "jev-probe.js.map": "1829679408270c01bbef111343847b876f7e3484c4b57c06d01dbe2831213df8",
+      "policy-change-main.d.ts": "f78754925fbddf3dded6a639826c7019f5e7f980912fbceadc89e52ac3ab85d2",
+      "policy-change-main.d.ts.map": "999f2bc6b0ccae78a2a1c1c446e23247f27f883ebdf630d4e2bbf18e7c7379dd",
+      "policy-change-main.js": "036020c600ecf5012731828db111631794ff41ea30c8946d4dc6fbab4570287a",
+      "policy-change-main.js.map": "a05f936ba5d9c78a894531199872b9004a06e336b65bf82d4a0ba3fad058ff2b",
+      "policy-change.d.ts": "aac5b9b82db4ab5e34e81bad6a914aad32850bc63670160579ce6d3ee752233a",
+      "policy-change.d.ts.map": "eaf39a1bee679bd991c8e7cda55c19963519eed7d51cf427ac2bd30c17b92216",
+      "policy-change.js": "26f94ad629f6d9a6e8ff7ee4c94de8349d5eeb8e5e51a42e582c111facbcdd86",
+      "policy-change.js.map": "762666b828326d7601ebdd6ad9bfbaf0d547f4817e747381d90b9ce8733e106f",
+      "policy-evidence.d.ts": "5d372b5482c7a908d77282c4e67172e2014417fd10625be3a8488291c0ad0cec",
+      "policy-evidence.d.ts.map": "4067c7dee5394159e7df14f805c792a3eb68fab901ff350c6bb5ce9b3bd68e54",
+      "policy-evidence.js": "235da2f7f99df2ba00a6035cb71b13cf1546b0adeb09e19498e3b188005d768f",
+      "policy-evidence.js.map": "1295eb2988f7a6ea735205bc014cc2309a3c4d8d40e41cc36d4f52c4b8263842",
+      "policy-workflow-child.d.ts": "3e4973de985f3b090366652afb0dd95f4df1f89adb0cc5acbc5026bc0d99244d",
+      "policy-workflow-child.d.ts.map": "cb03a5b3f1d48cdadf0b0f6e6bd059a844446c8205437ee3d2f04aed5ca2da03",
+      "policy-workflow-child.js": "cfd2ec6aabacfb1f0edf3d522be27ed285f4bdcac030831c33a5c5ed96c8f9ef",
+      "policy-workflow-child.js.map": "bb7a91c5fad35b93951f14fbe145157803d85779cbc3d799181df9ba81c2a498",
+      "policy-workflow-runner.d.ts": "4afa63cbdab824bd729903a68ab54395ab9637e672747ac02435427cf03c5199",
+      "policy-workflow-runner.d.ts.map": "b200f160100183d9f33861bb7b692fc2a374e4e007165e7d48854a7a84fb806f",
+      "policy-workflow-runner.js": "687e70ea28c3be7f286d834167bbf0dbc7ca9c91e99ebfec2f6f04e19b9e9fc7",
+      "policy-workflow-runner.js.map": "1600f3e2638a544af2f57e3e0e0648595aa4ac3ca081bc74149566618989a355",
+      "policy-workflow.d.ts": "27af9f976c322c1f30d584c543b44884f6f1cb5bdd979784ca9554889dd8182c",
+      "policy-workflow.d.ts.map": "83b34a1e7c48e0c8e2994cbc1859cc7538d96263777ae7ee018655c405dfd269",
+      "policy-workflow.js": "4960073cf46df37d4e8c54a5b0cdf43b77e4109c5ea617ad129f6a4b1b19befe",
+      "policy-workflow.js.map": "d0931f2fbd79baefb15acfb366e1874feb20be11e08cd5a6e8bb96f1d118fcc3",
+      "replay-main.d.ts": "bf4ee315dc0321476daa4f3ca06807924de80d123a3fa607eaf33302c54a9344",
+      "replay-main.d.ts.map": "a7500129cf3daf71fb5d25c87190ddf9b3d8ef514f5eaba2aa1b88af0daef64f",
+      "replay-main.js": "e322081b7413d543d6a59e48cbbafa8b96270d0063b8b875147a5e9cac24378d",
+      "replay-main.js.map": "9aeacef49b95a18753be93ae39c4b030b597f2f476239e80f7b6115a81119f40",
+      "replay.d.ts": "2edea397d18eec9240145632065b32d18b724a75f406034a78516125d7b33a56",
+      "replay.d.ts.map": "8e65c9b0cc95c71468c40a7ee07ed8f3e2dec826871cc80ac0b85f9f19772766",
+      "replay.js": "837179f43899bcec48ca316e5dd75af574f17ebc74615b02ca2e03aa707b3f1d",
+      "replay.js.map": "7b7873b0507e938c50799ac411be0ff940dba0c0aca187c06e1f275ca107a25e",
+      "screening-main.d.ts": "e0694e820600a18d9228e382b399766124af1dd58bf2b5dc6a5bad3ae4da4e4f",
+      "screening-main.d.ts.map": "56b5fefc90c0234afc4f34a3c0f8069029d58054101234220dae4bd6677b9f99",
+      "screening-main.js": "4a6d9ceeb5834dcabfd89d5223995cd03bbb2d7225a509d81e65b2c117c66f72",
+      "screening-main.js.map": "fea03d5e4df84395f4db562dcf2fd9119a808178f0dfe079d15a1061e0612085",
+      "screening.d.ts": "bb029732c5399de81a06907bacab9e0727ef583df32102c84a8466660ca856a9",
+      "screening.d.ts.map": "23258c67d54de6ed7d180da47f4df767aadc803666241ea96190589badfd6d6b",
+      "screening.js": "36e55d3c524f2f96dc497d2d575398f249aa7dfbf75e34f9e19e39f99ad3ed68",
+      "screening.js.map": "4b3fc99409a25fd2670944ebe457e45c2ad65604d02f9e363ba4c1c22b9c98dc",
+      "tsconfig.tsbuildinfo": "e99a2cb3c8715786d9f5c7761d6f3bac00566ea8e84050fa40fe26dda44763e7"
+    },
+    "packHashes": {
+      "P2": {
+        "authoring/part-a.json": "aeab8f2bf4c34ca22e52656100dab1a67629b20391603e4beda01fa1ddcd6dc5",
+        "authoring/schedule-g.json": "83b3f35b3668b3ed8c2d9e5f442628d00fd26390f8acdd73fdf757c2c96a5359",
+        "authoring/schedule-h.json": "7573f26bf5ddc279b8acff802bfe4bbddaba67afc7d533091d58bb7225de53f1",
+        "cases/LOG-001.json": "7af25aa1d900893608bcf6f56a71cbbd1dd1f565ef8f9966d3501cf7361014a3",
+        "cases/LOG-002.json": "bb391f4a3d785408b0b7c8906e9893fbf6eb0381d0925a314ebba009f04e95b4",
+        "cases/LOG-003.json": "7b2c18367e3893fe3ee74c299b2b784edc600a4deae646f0857440d09770392c",
+        "cases/LOG-004.json": "a99aa7a58e6e619bbc7db0acb9b3d8f4b698e52bcb02e8d84dd26e14d1e97d97",
+        "cases/LOG-005.json": "b1e0e8ff252080ad0a86296faf3718d434af9a7ae4b5afc995ecaed65c991519",
+        "cases/LOG-006.json": "d1c280a70f8d5677686db4c8bebeda16c81be16fccddb7f5ff58f716f6694640",
+        "cases/LOG-007.json": "83c76373fd9e488116158ad43b3ba82a7cd69405c38713f0e11f2559c3722722",
+        "cases/LOG-008.json": "411c3973afdae78ae6016d0d71cc638b716ac73570aa54c9970cd82a8ee4dd7f",
+        "facts-catalog.md": "a395b78f8bbb5828cec4a1a949bd7832d681c4b7c51f1b06dfe9029b72c11a5d",
+        "mock-data/capacity-offers.json": "355456ce3a9a0bdb962fcce3f58d68cb07f64f518a70ef275f796496973b238f",
+        "mock-data/carriers.json": "d0472d453fdc0286ac522527a0fe4887b736512025016a7ab93d7b25693662f2",
+        "mock-data/customers.json": "0c9045f785e388a672925386fa511cbefb4a57a8ee55913b39d8c286fa97d018",
+        "mock-data/hubs.json": "36fe3062824ddb7bdba7be46d6bdf19f86e3e9c896fe47a44c4b76f3b827efc2",
+        "mock-data/locations.json": "657b5b82381ecf47992cfff962318ecf6e1fa821edfa9c12e8decdeba3e257b8",
+        "mock-data/vehicles.json": "53142a058fe4fffb3e0faaf0abce6e4848fdb26660eb681b76350cad9709b9b9",
+        "policy-parameters.json": "d36c78e663c884a5ef745300cdc76788f6dfbdfcbc08135826a6305db506d077",
+        "policy-v1.md": "ec3784d1a447e77caddc5c8eb212e06f1a44dcbfaa8307708d3c78315a3000e2",
+        "rules.json": "c9d998e3252dbf92aebaedc2a10fb56191c4fd44b059461e96528da9463a4df5",
+        "screening/samples.json": "08b1e87266ce228691e533cd728b2aa905f97351f66b23f5cba6b04d4567d4fc"
+      },
+      "P3": {
+        "authoring/part-a.json": "aeab8f2bf4c34ca22e52656100dab1a67629b20391603e4beda01fa1ddcd6dc5",
+        "authoring/schedule-g.json": "83b3f35b3668b3ed8c2d9e5f442628d00fd26390f8acdd73fdf757c2c96a5359",
+        "authoring/schedule-h.json": "7573f26bf5ddc279b8acff802bfe4bbddaba67afc7d533091d58bb7225de53f1",
+        "cases/LOG-001.json": "7af25aa1d900893608bcf6f56a71cbbd1dd1f565ef8f9966d3501cf7361014a3",
+        "cases/LOG-002.json": "bb391f4a3d785408b0b7c8906e9893fbf6eb0381d0925a314ebba009f04e95b4",
+        "cases/LOG-003.json": "7b2c18367e3893fe3ee74c299b2b784edc600a4deae646f0857440d09770392c",
+        "cases/LOG-004.json": "a99aa7a58e6e619bbc7db0acb9b3d8f4b698e52bcb02e8d84dd26e14d1e97d97",
+        "cases/LOG-005.json": "b1e0e8ff252080ad0a86296faf3718d434af9a7ae4b5afc995ecaed65c991519",
+        "cases/LOG-006.json": "d1c280a70f8d5677686db4c8bebeda16c81be16fccddb7f5ff58f716f6694640",
+        "cases/LOG-007.json": "83c76373fd9e488116158ad43b3ba82a7cd69405c38713f0e11f2559c3722722",
+        "cases/LOG-008.json": "411c3973afdae78ae6016d0d71cc638b716ac73570aa54c9970cd82a8ee4dd7f",
+        "facts-catalog.md": "a395b78f8bbb5828cec4a1a949bd7832d681c4b7c51f1b06dfe9029b72c11a5d",
+        "mock-data/capacity-offers.json": "355456ce3a9a0bdb962fcce3f58d68cb07f64f518a70ef275f796496973b238f",
+        "mock-data/carriers.json": "d0472d453fdc0286ac522527a0fe4887b736512025016a7ab93d7b25693662f2",
+        "mock-data/customers.json": "0c9045f785e388a672925386fa511cbefb4a57a8ee55913b39d8c286fa97d018",
+        "mock-data/hubs.json": "36fe3062824ddb7bdba7be46d6bdf19f86e3e9c896fe47a44c4b76f3b827efc2",
+        "mock-data/locations.json": "657b5b82381ecf47992cfff962318ecf6e1fa821edfa9c12e8decdeba3e257b8",
+        "mock-data/vehicles.json": "53142a058fe4fffb3e0faaf0abce6e4848fdb26660eb681b76350cad9709b9b9",
+        "policy-parameters.json": "d36c78e663c884a5ef745300cdc76788f6dfbdfcbc08135826a6305db506d077",
+        "policy-v1.md": "e6e40616bbdec2f6c93f289c54878a022444faf60db9560f5585fccd203c5a48",
+        "rules.json": "7d5f5add9bc615712ebd963d0b38adffc20250b01ef295052b179f2171e9b0d1",
+        "screening/samples.json": "08b1e87266ce228691e533cd728b2aa905f97351f66b23f5cba6b04d4567d4fc"
+      }
+    },
+    "cases": [
+      {
+        "spec": {
+          "id": "P2-corrected-sds",
+          "mutation": "P2",
+          "caseId": "LOG-003",
+          "revise": true,
+          "rule": "R10",
+          "gate": "R13"
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "text": "The safety data sheet describes the same goods as the cargo description.",
+              "kind": "noul"
+            },
+            "state": {
+              "description": "Industrial descaling concentrate, corrosive, 12 drums of 25 L (controlled class C2)",
+              "safetyDataSheet": "Safety data sheet: citric acid descaling concentrate, UN 3265, hazard class 8 (corrosive liquid), 12 x 25 L drums."
+            },
+            "scripted": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "d74fd7a9fb64aa5391a67de3bd18d4de932e0f91a4c64c0dbd447e0546ea436d",
+              "judgement": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "raw": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R10",
+              "status": "PASS",
+              "observedValue": 0.94
+            },
+            {
+              "ruleId": "R13",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-003/R13/cargoItem:ITEM-1/ea0a2e810c8e/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R13",
+              "role": "complianceReviewer",
+              "status": "OPEN",
+              "evidence": []
+            }
+          ]
+        }
+      },
+      {
+        "spec": {
+          "id": "P3-damaged-packaging",
+          "mutation": "P3",
+          "caseId": "LOG-008",
+          "revise": true,
+          "rule": "R18",
+          "gate": "R21"
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shipper lid cracked during re-stacking, insulation exposed."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "e63f71a1770075880db7e45f489fa26829a3755b940e0a8f8840a91dd5136691",
+              "judgement": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "FAIL",
+              "observedValue": "damaged_packaging"
+            },
+            {
+              "ruleId": "R21",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-008/R21/cargoItem:ITEM-1/ef440f47eec6/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R21",
+              "role": "warehouseOperator",
+              "status": "OPEN",
+              "evidence": ["newPackagingId", "photoRef", "inspectionReportRef"]
+            }
+          ]
+        }
+      },
+      {
+        "spec": {
+          "id": "P3-intact-packaging",
+          "mutation": "P3",
+          "caseId": "LOG-008",
+          "revise": false,
+          "rule": "R18",
+          "gate": "R21"
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shippers intact, seals unbroken."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "824d2dd096ebf488fc8ee6c14a5f7235140f69a98414479aeb2e1b013e6247a1",
+              "judgement": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "PASS",
+              "observedValue": "no_risk"
+            },
+            {
+              "ruleId": "R21",
+              "status": "NOT_APPLICABLE"
+            }
+          ],
+          "tasks": []
+        }
+      }
+    ]
+  },
+  "report": {
+    "planHash": "ec4cc071eeb49ce13adf27aaa0bf5d596fdb0c46c536f2da6a5e5b886f0d3a48",
+    "sourceCommit": "6c812d9a1ee4f9d3e9ee7b1759a6d85de2afc7c7",
+    "modelMode": "hybrid",
+    "scope": "three selected semantic inputs; all other judgments scripted; no live generation, blind or savings claim",
+    "before": [],
+    "after": [
+      {
+        "sequence": 1,
+        "step": "authoring-review",
+        "run": "/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P2-corrected-sds",
+        "bodyHash": "491690a83a7c0cab0f7a06c3aa951a72e273b6d4ff5984623773b30aa18132aa",
+        "reservedAt": "2026-10-24T10:34:57.302Z"
+      },
+      {
+        "sequence": 2,
+        "step": "authoring-review",
+        "run": "/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P3-damaged-packaging",
+        "bodyHash": "b715328ea635e0266a58f397bef6964d1c0556bc1cba3e12149f586dde3a7a0a",
+        "reservedAt": "2026-10-24T10:34:57.980Z"
+      },
+      {
+        "sequence": 3,
+        "step": "authoring-review",
+        "run": "/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P3-intact-packaging",
+        "bodyHash": "b0ec5737c0aa67f4a3d90a22a77153f20dbf229a211c5d929c1dd8561e235b7b",
+        "reservedAt": "2026-10-24T10:34:58.466Z"
+      }
+    ],
+    "observations": [
+      {
+        "spec": {
+          "id": "P2-corrected-sds",
+          "mutation": "P2",
+          "caseId": "LOG-003",
+          "revise": true,
+          "rule": "R10",
+          "gate": "R13"
+        },
+        "httpStatus": 200,
+        "answer": {
+          "questionId": "R10",
+          "promptVersion": "r10-v1",
+          "provider": "jev",
+          "modelId": "jev-1.14.0",
+          "inputHash": "d74fd7a9fb64aa5391a67de3bd18d4de932e0f91a4c64c0dbd447e0546ea436d",
+          "judgement": {
+            "kind": "noul",
+            "probability": 0.88
+          },
+          "raw": {
+            "type": "noul",
+            "noul": 0.88
+          },
+          "usage": {
+            "inputTokens": 361,
+            "outputTokens": 20
+          },
+          "durationMs": 224
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "text": "The safety data sheet describes the same goods as the cargo description.",
+              "kind": "noul"
+            },
+            "state": {
+              "description": "Industrial descaling concentrate, corrosive, 12 drums of 25 L (controlled class C2)",
+              "safetyDataSheet": "Safety data sheet: citric acid descaling concentrate, UN 3265, hazard class 8 (corrosive liquid), 12 x 25 L drums."
+            },
+            "scripted": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "d74fd7a9fb64aa5391a67de3bd18d4de932e0f91a4c64c0dbd447e0546ea436d",
+              "judgement": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "raw": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R10",
+              "status": "PASS",
+              "observedValue": 0.94
+            },
+            {
+              "ruleId": "R13",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-003/R13/cargoItem:ITEM-1/ea0a2e810c8e/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R13",
+              "role": "complianceReviewer",
+              "status": "OPEN",
+              "evidence": []
+            }
+          ]
+        },
+        "observed": {
+          "input": {
+            "question": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "text": "The safety data sheet describes the same goods as the cargo description.",
+              "kind": "noul"
+            },
+            "state": {
+              "description": "Industrial descaling concentrate, corrosive, 12 drums of 25 L (controlled class C2)",
+              "safetyDataSheet": "Safety data sheet: citric acid descaling concentrate, UN 3265, hazard class 8 (corrosive liquid), 12 x 25 L drums."
+            },
+            "scripted": {
+              "questionId": "R10",
+              "promptVersion": "r10-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "d74fd7a9fb64aa5391a67de3bd18d4de932e0f91a4c64c0dbd447e0546ea436d",
+              "judgement": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "raw": {
+                "kind": "noul",
+                "probability": 0.94
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R10",
+              "status": "PASS",
+              "observedValue": 0.88
+            },
+            {
+              "ruleId": "R13",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-003/R13/cargoItem:ITEM-1/ea0a2e810c8e/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R13",
+              "role": "complianceReviewer",
+              "status": "OPEN",
+              "evidence": []
+            }
+          ]
+        }
+      },
+      {
+        "spec": {
+          "id": "P3-damaged-packaging",
+          "mutation": "P3",
+          "caseId": "LOG-008",
+          "revise": true,
+          "rule": "R18",
+          "gate": "R21"
+        },
+        "httpStatus": 200,
+        "answer": {
+          "questionId": "R18",
+          "promptVersion": "r18-v1",
+          "provider": "jev",
+          "modelId": "jev-1.14.0",
+          "inputHash": "e63f71a1770075880db7e45f489fa26829a3755b940e0a8f8840a91dd5136691",
+          "judgement": {
+            "kind": "choice",
+            "choice": "damaged_packaging",
+            "probabilities": {
+              "no_risk": 0,
+              "damaged_packaging": 0.99,
+              "cold_chain_risk": 0.01
+            },
+            "confidence": 0.98
+          },
+          "raw": {
+            "type": "choice",
+            "choice": "damaged_packaging",
+            "confidence": 0.98,
+            "probabilities": {
+              "no_risk": 0,
+              "damaged_packaging": 0.99,
+              "cold_chain_risk": 0.01
+            }
+          },
+          "usage": {
+            "inputTokens": 372,
+            "outputTokens": 51
+          },
+          "durationMs": 159
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shipper lid cracked during re-stacking, insulation exposed."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "e63f71a1770075880db7e45f489fa26829a3755b940e0a8f8840a91dd5136691",
+              "judgement": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "FAIL",
+              "observedValue": "damaged_packaging"
+            },
+            {
+              "ruleId": "R21",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-008/R21/cargoItem:ITEM-1/ef440f47eec6/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R21",
+              "role": "warehouseOperator",
+              "status": "OPEN",
+              "evidence": ["newPackagingId", "photoRef", "inspectionReportRef"]
+            }
+          ]
+        },
+        "observed": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shipper lid cracked during re-stacking, insulation exposed."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "e63f71a1770075880db7e45f489fa26829a3755b940e0a8f8840a91dd5136691",
+              "judgement": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "damaged_packaging"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "FAIL",
+              "observedValue": "damaged_packaging"
+            },
+            {
+              "ruleId": "R21",
+              "status": "WAITING_HUMAN",
+              "observedValue": "LOG-008/R21/cargoItem:ITEM-1/ef440f47eec6/r1"
+            }
+          ],
+          "tasks": [
+            {
+              "ruleId": "R21",
+              "role": "warehouseOperator",
+              "status": "OPEN",
+              "evidence": ["newPackagingId", "photoRef", "inspectionReportRef"]
+            }
+          ]
+        }
+      },
+      {
+        "spec": {
+          "id": "P3-intact-packaging",
+          "mutation": "P3",
+          "caseId": "LOG-008",
+          "revise": false,
+          "rule": "R18",
+          "gate": "R21"
+        },
+        "httpStatus": 200,
+        "answer": {
+          "questionId": "R18",
+          "promptVersion": "r18-v1",
+          "provider": "jev",
+          "modelId": "jev-1.14.0",
+          "inputHash": "824d2dd096ebf488fc8ee6c14a5f7235140f69a98414479aeb2e1b013e6247a1",
+          "judgement": {
+            "kind": "choice",
+            "choice": "no_risk",
+            "probabilities": {
+              "no_risk": 1,
+              "damaged_packaging": 0,
+              "cold_chain_risk": 0
+            },
+            "confidence": 1
+          },
+          "raw": {
+            "type": "choice",
+            "choice": "no_risk",
+            "confidence": 1,
+            "probabilities": {
+              "no_risk": 1,
+              "damaged_packaging": 0,
+              "cold_chain_risk": 0
+            }
+          },
+          "usage": {
+            "inputTokens": 368,
+            "outputTokens": 49
+          },
+          "durationMs": 111
+        },
+        "control": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shippers intact, seals unbroken."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "824d2dd096ebf488fc8ee6c14a5f7235140f69a98414479aeb2e1b013e6247a1",
+              "judgement": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "PASS",
+              "observedValue": "no_risk"
+            },
+            {
+              "ruleId": "R21",
+              "status": "NOT_APPLICABLE"
+            }
+          ],
+          "tasks": []
+        },
+        "observed": {
+          "input": {
+            "question": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "text": "Which risk signal does the warehouse inspection note show?",
+              "kind": "choice",
+              "options": {
+                "no_risk": "No packaging damage or temperature risk is described",
+                "damaged_packaging": "Physical damage to the packaging is described",
+                "cold_chain_risk": "Temperature control appears compromised without physical damage"
+              }
+            },
+            "state": {
+              "inspectionNote": "Shippers intact, seals unbroken."
+            },
+            "scripted": {
+              "questionId": "R18",
+              "promptVersion": "r18-v1",
+              "provider": "scripted",
+              "modelId": "scripted",
+              "inputHash": "824d2dd096ebf488fc8ee6c14a5f7235140f69a98414479aeb2e1b013e6247a1",
+              "judgement": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "raw": {
+                "kind": "choice",
+                "choice": "no_risk"
+              },
+              "usage": "unknown",
+              "durationMs": 0
+            }
+          },
+          "outcomes": [
+            {
+              "ruleId": "R18",
+              "status": "PASS",
+              "observedValue": "no_risk"
+            },
+            {
+              "ruleId": "R21",
+              "status": "NOT_APPLICABLE"
+            }
+          ],
+          "tasks": []
+        }
+      }
+    ]
+  }
+}

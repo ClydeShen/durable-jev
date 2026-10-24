@@ -344,7 +344,12 @@ Total ceiling: 20 actual outbound Jev request attempts from this approval, not 2
 replays. Usage when authorized: zero in every step. Failed/timed-out attempts and retries count;
 unused allowance is not transferred between steps. Persist/reserve allowance before requests
 and enforce both limits across restarts before enabling live evaluation. The SDK already has
-automatic retries disabled, but cross-run budget enforcement remains to be implemented.
+automatic retries disabled. The bounded probe now enforces both limits using the append-only
+`.harness/jev-allowance.jsonl` journal, reserved and fsynced before transport. It is a local
+entrypoint guard, not a provider-wide quota; use one authoritative checkout and never restore an
+older journal to refund consumed requests. Current usage is authoring/review 3/5, all other steps
+0/5, total 3/20. See [the live probe](jev-probe.md) and its committed raw evidence: three real
+semantic answers substituted into scripted flows, not independent authoring or blind evaluation.
 
 Do not use unrestricted `MODEL_MODE=live pnpm replay` or `models:live-check` under this allowance:
 a replay can consume many requests, and the latter also invokes another provider. Continue

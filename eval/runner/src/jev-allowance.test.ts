@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -123,5 +124,3 @@ describe('bounded Jev requests', () => {
     expect(readJevAllowance(path)).toHaveLength(1)
   })
 })
-
-import { spawnSync } from 'node:child_process'

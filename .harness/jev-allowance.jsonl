@@ -1,1 +1,4 @@
 {"authorization":"jev-2026-10-24","perStep":5,"total":20}
+{"sequence":1,"step":"authoring-review","run":"/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P2-corrected-sds","bodyHash":"491690a83a7c0cab0f7a06c3aa951a72e273b6d4ff5984623773b30aa18132aa","reservedAt":"2026-10-24T10:34:57.302Z"}
+{"sequence":2,"step":"authoring-review","run":"/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P3-damaged-packaging","bodyHash":"b715328ea635e0266a58f397bef6964d1c0556bc1cba3e12149f586dde3a7a0a","reservedAt":"2026-10-24T10:34:57.980Z"}
+{"sequence":3,"step":"authoring-review","run":"/workspace/durable-jev/eval/runner/dist/jev-probe-main.js:/workspace/durable-jev/var/reports/jev-probe-LaznGh:P3-intact-packaging","bodyHash":"b0ec5737c0aa67f4a3d90a22a77153f20dbf229a211c5d929c1dd8561e235b7b","reservedAt":"2026-10-24T10:34:58.466Z"}

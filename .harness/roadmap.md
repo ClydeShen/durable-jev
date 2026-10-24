@@ -27,6 +27,12 @@ The owner-approved readability follow-up keeps the same P2/P3 evidence and repor
 with explicit scenarios and mutation mappings. It does not complete another evaluation task,
 authorize live calls or reset post-baseline costs; see `workflow-readability-2026-10-24`.
 
+The subsequent Jev-only allowance is five requests per next step, twenty total. A persisted
+request guard and three real semantic probes now exist (`docs/jev-probe.md`): authoring/review
+3/5, all other steps 0/5, total 3/20. This hybrid development check does not complete T8.5 or
+T7.2. Independent review/cost recording and blind custody remain open; NVIDIA generation/planning
+still requires separate approval. Recovery: `workflow-live-semantic-probe-2026-10-24`.
+
 ## P0 Skeleton and technical spikes (PRD M0)
 
 | Status | ID | Task | Done when | Depends on |

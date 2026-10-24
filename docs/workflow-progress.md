@@ -102,6 +102,7 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 | W2-01 | Offer variants, strategy control, checkpoint comparison, evidence and synchronized presenter script | Investigation checkpoint; 32 runs, including eight observed memory recovery failures | Unmeasured | Delivery-agent usage unavailable; runtime model calls: 0 |
 | W1-03 | P2/P3 gate migration, isolated authoring CLI, validation/application rehearsal, repairs and presenter script | Gate-change checkpoint; 24 observations and two synthetic authoring rehearsals | Unmeasured | Delivery-agent usage unavailable; live model calls: 0; faux token reports are not billing |
 | W1-04 | Owner-approved readability cleanup of P2/P3 and authoring orchestration | Same 24 observations and Markdown report as d520c01; explicit cases, mutation mapping and separate probes; no behavior/core change | Unmeasured | Delivery-agent usage unavailable; live model calls: 0 |
+| W1-05 | Persist request allowance, freeze selected inputs and substitute real semantic answers into scripted controls | Three HTTP 200 Jev responses; same business branches; raw inputs/hashes/results in jev-probe-evidence.json; docs and presenter script synchronized | Unmeasured | 3 real Jev requests, 1,101 input / 120 output tokens; price and delivery-agent usage unknown; no NVIDIA |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,
 active human minutes (or null), prompt/model version, tokens (or null), proposal, review edits and
@@ -120,6 +121,11 @@ P2/P3 checkpoint: `workflow-gate-changes-2026-10-24` /
 Readability follow-up: `workflow-readability-2026-10-24` /
 `backup/workflow-readability-2026-10-24`; original P2/P3 checkpoint remains at `d520c01`.
 Resolve exact commits with `git rev-parse <tag>^{commit}`.
+
+Bounded live semantic probe: `workflow-live-semantic-probe-2026-10-24` /
+`backup/workflow-live-semantic-probe-2026-10-24`. See [the evidence and limitations](jev-probe.md).
+This adds three real judgments, not a complete live workflow or authoring comparison. Its journal
+has consumed 3/5 authoring/review slots and 3/20 total; restoring code must never refund usage.
 
 W1 completes the first engineering continuity slice. The subsequent
 [P2/P3 slice](gate-change-experiment.md) adds owner-approved approval-chain/evidence changes with
