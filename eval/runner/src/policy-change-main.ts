@@ -1,9 +1,13 @@
-import { execFileSync } from 'node:child_process'
 import { cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadCaseCatalog, loadLogisticsRulePack } from '@durable-jev/logistics'
-import { createExperimentDirectory, fileHash, packHashes } from './experiment-evidence.js'
+import {
+  createExperimentDirectory,
+  fileHash,
+  packHashes,
+  sourceRevision,
+} from './experiment-evidence.js'
 import {
   observePolicyChange,
   type PolicyObservation,
@@ -90,8 +94,7 @@ const report = {
   fixtureReviewStatus: sample.reviewStatus,
   modelMode: 'scripted',
   baselineRef: 'baseline-2026-10-24-r2',
-  sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  sourceStatus: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }),
+  ...sourceRevision(root),
   scope:
     'R35 characterization and full logistics continuity; no live authoring or blind-test claim',
   activationMechanism:

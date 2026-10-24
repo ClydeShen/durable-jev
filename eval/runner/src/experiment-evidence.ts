@@ -1,9 +1,17 @@
-import { spawnSync } from 'node:child_process'
+import { execFileSync, spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { canonicalJson } from '@durable-jev/contracts'
+
+export function sourceRevision(root: string) {
+  const git = (...args: string[]) => execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+  return {
+    sourceCommit: git('rev-parse', 'HEAD').trim(),
+    sourceStatus: git('status', '--porcelain'),
+  }
+}
 
 export function createExperimentDirectory(root: string, prefix: string): string {
   const directory = join(root, 'var/reports')

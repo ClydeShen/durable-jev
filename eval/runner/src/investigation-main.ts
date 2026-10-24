@@ -1,4 +1,3 @@
-import { execFileSync } from 'node:child_process'
 import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -8,6 +7,7 @@ import {
   fileHash,
   packHashes,
   runExperimentProcess,
+  sourceRevision,
   writeEvidence,
 } from './experiment-evidence.js'
 import type { InvestigationEvidence, InvestigationScenario } from './investigation-experiment.js'
@@ -160,8 +160,7 @@ const sourceFiles = [
 writeEvidence(join(run, 'report.json'), {
   generatedAt: new Date().toISOString(),
   baselineRef: 'baseline-2026-10-24-r2',
-  sourceCommit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(),
-  sourceStatus: execFileSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }),
+  ...sourceRevision(root),
   modelMode: 'scripted',
   reviewStatus: 'draft',
   humanMinutes: null,

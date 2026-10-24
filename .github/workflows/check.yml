@@ -33,6 +33,8 @@ jobs:
         run: pnpm eval:policy-change
       - name: Investigation strategies and checkpoint controls
         run: pnpm eval:investigation
+      - name: Approval and evidence migration with authoring rehearsal
+        run: pnpm eval:gate-change
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
@@ -60,3 +62,4 @@ jobs:
       - run: pnpm faults
       - run: pnpm eval:policy-change
       - run: pnpm eval:investigation
+      - run: pnpm eval:gate-change

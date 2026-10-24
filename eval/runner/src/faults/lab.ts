@@ -30,6 +30,7 @@ export const actor = (id: string, role: Role) => ({ id, role })
 
 export interface LabOptions {
   dataDirectory?: string
+  materialsDirectory?: string
   judgeFor?(shipment: Shipment): SemanticJudge
 }
 
@@ -43,7 +44,7 @@ export class FaultLab {
     options: LabOptions = {},
   ) {
     this.agents = createLocalLogisticsAgents({
-      materialsDirectory: materials,
+      materialsDirectory: options.materialsDirectory ?? materials,
       dataDirectory: options.dataDirectory,
       judgeFor: options.judgeFor ?? (() => new ScriptedJudge(caseFile(caseId).scriptedJudgements)),
       now: () => this.now(),
