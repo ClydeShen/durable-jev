@@ -110,11 +110,13 @@ to human-gate applicability/parameters need an explicit rule-version bump to ret
 That can conservatively require another approval; policy-change experiments measure the outcome
 and work under both existing-case strategies rather than assume all changes are automatic.
 
-The formal next step is logistics policy-change specification and cost measurement, separately
-for keeping old cases on old policy and re-evaluating unshipped cases under new policy. Reviewed
-direct-edit/authoring comparisons and independent blind evaluation precede claims about savings.
-Motor-insurance claims follow; logistics vehicle-insurance A2A collaboration is optional. See
-[evaluation-plan.md](evaluation-plan.md). No such experiment was started by freezing the baseline.
+The first post-baseline slice exercises the owner-approved P1 threshold under both activation
+modes, including complete release and process recovery controls. Its 48 scripted flows preserve
+the stale-task and extra-approval findings; see [workflow-progress.md](workflow-progress.md) for
+source changes, evidence and stage recovery refs. Reviewed direct-edit/authoring comparisons,
+effort measurements and independent blind evaluation still precede claims about savings.
+Bounded investigation evidence and motor-insurance claims follow; cross-domain vehicle-insurance
+A2A collaboration is optional. The overall protocol remains [evaluation-plan.md](evaluation-plan.md).
 
 ## Reliability
 

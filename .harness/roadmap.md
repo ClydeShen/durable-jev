@@ -15,6 +15,9 @@ not blanket claims that domain independence or module-wide Pi Durable integratio
 
 Post-baseline work is authorized on `feat/durable-policy-workflow`. Stage definitions, CEO-facing
 evidence, the effort ledger and recovery refs are in `docs/workflow-progress.md`.
+W1 completes the first P1 continuity slice: 44 rule observations and 48 full-flow/control runs,
+including 32 process resumptions. T8.5 stays open for authoring comparisons, other mutations and
+independent evaluation. Next is bounded investigation evidence (W2), not a new baseline cleanup.
 
 ## P0 Skeleton and technical spikes (PRD M0)
 

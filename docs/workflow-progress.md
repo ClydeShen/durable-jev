@@ -20,7 +20,7 @@ business transition into Pi. Each stage ends with checks, an evidence record, a 
 an immutable annotated recovery tag plus backup branch. Do not move earlier refs. No PR or merge
 is implied. Keep the current UI layout and existing package/folder boundaries.
 
-## W1 mutation specification (draft)
+## W1 mutation specification (owner-approved, 2026-10-24)
 
 P1 changes R35's additional transportation cost approval threshold from NZD 500 to NZD 750.
 Only amounts strictly above the threshold need a commercial manager's approval. New orders use
@@ -33,11 +33,13 @@ that discipline, an NZD 800 previously approved order may need reapproval even t
 both limits. Report that additional work rather than hiding it as a free migration.
 
 Use copies under ignored `var/reports/`, preserving protected source materials and their lock.
-The initial policy paragraph and expectations await owner review. Scripted engineering checks
-may characterize draft behavior; they do not establish business correctness, authoring quality,
-blind accuracy or savings. Do not call real models during development.
+The owner approved the threshold, strict comparison and both activation modes on 2026-10-24.
+The wider LOG-005 case labels remain draft. Engineering checks establish continuity and the
+approved threshold boundary; they do not establish authoring quality, blind accuracy or savings.
+Do not call real models during development. R35's original policy paragraph names the threshold
+parameter rather than a literal amount, so the copied paragraph needs no wording change for P1.
 
-Extend the existing P1 probe with a complete logistics flow and separate process recovery:
+The existing P1 command now includes a complete logistics flow and separate process recovery:
 
 - Record the exact baseline/candidate pack and activation choice before starting.
 - Submit pending and already-approved NZD 600/800 orders with the original policy.
@@ -50,6 +52,43 @@ Extend the existing P1 probe with a complete logistics flow and separate process
 The runner chooses a pack explicitly; it does not implement production policy deployment or
 atomic activation across service databases. Business waiting/recovery belongs to SQLite;
 P1 contains no investigation and therefore is not evidence of Pi or dynamic planning.
+
+## W1 evidence and source walkthrough
+
+Run `pnpm check`, then `pnpm eval:policy-change`. Each unique `var/reports/policy-change-*`
+directory retains the copied packs, plan/input hashes, agent SQLite databases, process logs,
+state snapshots and JSON/Markdown report. Both CI platforms run it. The report includes the
+source commit/dirty status and relevant executable hashes; reproduce from the checkpoint for
+a clean source reference. Absolute run paths are local artifact locations, not portable URLs.
+
+There are 44 rule-level observations (22 per variant), including 24 new-order boundary checks.
+Sixteen full-flow scenarios cover two variants, two activation modes, two amounts and two initial
+approval states. Each has an uninterrupted control plus exits with code 137 before and after
+policy propagation: 48 completed flows, including 32 process resumptions. Compare full outcome
+status/fingerprint and task-identity/status snapshots, not just the final release boolean.
+
+| Observation | Meaning for the technical CEO | Meaning for the non-technical CEO |
+|---|---|---|
+| Retaining the old pack preserves pending/completed approval behavior | The same engine/runtime can execute an explicitly selected historical pack | Existing work can continue under the old threshold |
+| Parameter-only re-evaluation leaves an NZD 600 pending approval usable | Applicability parameters do not automatically change this human gate's fingerprint | A policy rollout needs more than editing a number |
+| Versioned re-evaluation refuses the old task and reopens approval at NZD 800 | Existing version-based task invalidation works; shared engine is unchanged | Extra review work must be included in the change cost |
+| Resumed flows match controls, with one booking and one dispatch event each | SQLite owns business recovery; replay-safe side effects survive these process exits | Completed work survives these interruptions without duplicate booking/dispatch |
+
+Recovery checks and threshold checks fail the command on regression. Known parameter-only
+stale-task behavior remains a reported finding, not a hidden test waiver or a successful migration
+claim. This is local-agent assembly, not a new native/A2A transport benchmark. Interruptions are
+at propagation boundaries; partial cross-service rollout and arbitrary failure timing are untested.
+
+The source change is four small runner files in the existing `eval/runner/src/`: workflow assembly,
+process entry, comparison runner and evidence hashing. The existing P1 command composes them.
+The only business-package change is `LocalLogisticsAgents.close()`, which releases all five
+SQLite handles between control phases. No rule engine, runtime contract, schema, dependency,
+protected material, UI or package hierarchy changed. CI and knip register the new executable path.
+
+Implementation repair record: one inferred declaration exposed a private logistics type; an
+explicit workflow result type fixed the typecheck. One local command used the host Node version
+after a failed search and was rerun with the pinned PATH. Neither was counted as a runtime finding.
+These iterations and runner preparation remain post-baseline effort; human time is unmeasured.
 
 ## Effort ledger
 
@@ -68,6 +107,11 @@ for direct-edit and authoring paths. No savings can be calculated from this inco
 
 ## Recovery record
 
-Planning checkpoint: `workflow-plan-2026-10-24` / `backup/workflow-plan-2026-10-24`.
-The W1 implementation checkpoint and observations will be recorded after validation.
+Planning checkpoint: `workflow-plan-2026-10-24` / `backup/workflow-plan-2026-10-24` at `31ae95b`.
+W1 checkpoint: `workflow-policy-continuity-2026-10-24` /
+`backup/workflow-policy-continuity-2026-10-24`.
 Resolve exact commits with `git rev-parse <tag>^{commit}`.
+
+W1 completes the first engineering continuity slice, not all T8.5 experiments: reviewed authoring,
+P2/P3, independent blind evaluation and effort comparisons remain open. W2 is next: a bounded
+investigation/control experiment with explicit tool-choice evidence and Pi/domain state ownership.

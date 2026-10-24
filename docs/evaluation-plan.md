@@ -26,6 +26,8 @@ The documentation revision changes no implementation, materials or engineering c
 does not reset that cost boundary. Start experiment branches from the revised recovery tag.
 The source audit and P1 observations below describe the pre-cleanup checkpoint and must be
 re-characterized after freeze, not relabeled as post-baseline or blind results.
+The first post-baseline re-characterization and full-flow recovery slice is recorded separately
+in [workflow-progress.md](workflow-progress.md), including the owner's P1 semantics approval.
 
 ## Questions the evidence must answer
 
@@ -136,7 +138,9 @@ Two candidate variants isolate parameter-only edits from an edit that also raise
 version and the rule-set version. Each variant records 22 observations: paired new-order boundary
 cases under both packs, unchanged controls, pending approvals and previously completed approvals
 under both activation strategies. The runs are deterministic characterization, not blind samples.
-The copied policy paragraph is unchanged, and the mutation remains `reviewStatus: draft`.
+The copied policy paragraph is unchanged because R35 references the parameter by name. The
+owner approved the strict P1 threshold and both activation modes on 2026-10-24; the broader
+fixture labels and unreviewed observations remain `reviewStatus: draft`.
 
 | Observed case | Parameter only | Parameter plus rule version |
 |---|---|---|
@@ -157,11 +161,13 @@ It also conservatively requires another approval for the NZD 800 case, although 
 above both thresholds. Count that reapproval as work; do not silently assume it is free or always
 the desired migration policy.
 
-These observations establish a capability boundary. The experiment chooses packs explicitly and recreates the commercial runtime
-over the same in-memory store; there is no implemented production version router, policy-text
-generation comparison, whole-order release score or restart-during-policy-transition result.
-Timings cover one local runtime initialization/evaluation. Human effort and preparation cost
-remain unmeasured. Preserve both variants rather than repairing the engine before reporting the baseline.
+The original probe chooses packs explicitly and recreates the commercial runtime over an in-memory
+store. W1 now also records complete logistics release and process exits before/after propagation,
+using the same file-backed agent stores after restart. There is still no production policy router,
+atomic cross-service policy rollout or policy-authoring comparison. Runtime timings are local
+observations, not human effort or a latency benchmark. Human effort remains unmeasured; runner
+preparation and repairs are included qualitatively in the post-baseline ledger. Both variants
+preserve the original capability boundary rather than silently repairing the baseline.
 
 ## Second domain: motor insurance claims
 

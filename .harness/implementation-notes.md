@@ -8,9 +8,22 @@ should know.
 The owner authorized continuing on a new branch, emphasizing migration-friendly structure and
 separate technical/non-technical CEO evidence, with remote recovery at each validated stage.
 Active branch: `feat/durable-policy-workflow`, starting at verified `baseline-2026-10-24-r2`
-(`57373a8`). See `spec.md` section 16 and `docs/workflow-progress.md` for stages, draft P1 scope,
+(`57373a8`). See `spec.md` section 16 and `docs/workflow-progress.md` for stages, approved P1 scope,
 cost ledger and recovery records. Baseline Linux/Windows CI and remote refs were verified again.
 Start with isolated-copy logistics policy continuity; keep source materials and skills unchanged.
+
+W1 adds full logistics continuity to `pnpm eval:policy-change`: 44 rule observations and 16
+scenarios with uninterrupted/before-transition/after-transition process controls (48 flows).
+The owner approved the strict NZD 500 → 750 threshold and both activation modes; wider labels
+remain draft. Both variants preserve the baseline stale-task/reapproval findings. Shared engine
+behavior is unchanged; SQLite recovery is not Pi planning evidence. The only domain-package
+addition is an explicit close method for local agents. No protected material or UI changes.
+
+Planning checkpoint `workflow-plan-2026-10-24` resolves to `31ae95b`; W1 checkpoint is
+`workflow-policy-continuity-2026-10-24`, each with a matching `backup/` branch. Original recovery
+refs remain unchanged. See the progress document for evidence, effort gaps and restore semantics.
+Next deepen bounded investigation and its fixed-workflow comparison (W2); T8.5's authoring,
+P2/P3 and independent evaluation are still open. Do not claim P1 is a completed cost comparison.
 
 The frozen-baseline handoff below records the starting point. Its instruction to create an
 experiment branch is now complete; do not switch back to the maintenance or backup branches.

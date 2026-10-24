@@ -250,3 +250,6 @@ documentation-only recovery revision. This is not an instruction to restart the 
   model decisions and SQLite recovery from Pi checkpoints.
 - Count all post-baseline work. Draft isolated-copy engineering experiments may proceed;
   business labels still need owner review. Protected materials and live-model restrictions remain.
+- The owner subsequently approved P1: R35's threshold moves from NZD 500 to NZD 750 with a
+  strictly-greater comparison, testing both old-policy retention and new-policy re-evaluation.
+  This approval covers that synthetic rule, not independent review of all existing demo labels.
