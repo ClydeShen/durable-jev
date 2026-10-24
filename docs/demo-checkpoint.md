@@ -30,9 +30,10 @@ This is a source checkpoint, not a backup of credentials, installed dependencies
 reports or the current local database. The demo initializes from the committed logistics
 materials. Protected materials and delivery-agent skills are unchanged.
 
-The future experimental baseline is separate: finish and verify the agreed code cleanup first,
-then freeze that baseline. Cleanup effort is not part of subsequent policy-change or cross-domain
-migration cost measurements. Logistics-to-insurance A2A cooperation remains an optional bonus.
+The experimental baseline is now separately frozen as `baseline-2026-10-24`, following the verified
+cleanup and owner acceptance; see [baseline.md](baseline.md). This older demo checkpoint is unchanged.
+Cleanup effort is not part of subsequent policy-change or cross-domain migration cost measurements.
+Logistics-to-insurance A2A cooperation remains an optional bonus.
 
 The working branch is `baseline-cleanup-plan`, created from this checkpoint. Read the current
 handoff in `.harness/implementation-notes.md` before resuming implementation. Changes to this

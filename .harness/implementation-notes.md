@@ -3,15 +3,23 @@
 Only plan changes and high-level points that differ from spec, design or roadmap and that the user
 should know.
 
-## Current handoff: baseline acceptance candidate (2026-10-24)
+## Current handoff: frozen experimental baseline (2026-10-24)
 
 Read this section first when taking over from another delivery agent. The agreed scope is in
-`spec.md` (especially sections 9-13); the execution order is in `roadmap.md` P8. Earlier dated
+`spec.md` (especially sections 9-14); the execution order is in `roadmap.md` P8. Earlier dated
 notes below are historical context, not instructions to override the latest owner decisions.
 
 ### Branches and recovery
 
 - Repository: `ClydeShen/durable-jev`.
+- The owner accepted functional and structural scope and explicitly authorized baseline freezing.
+- Experimental baseline: annotated tag `baseline-2026-10-24` and backup branch
+  `backup/baseline-2026-10-24`; both identify the documentation-only archive after accepted
+  implementation `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`. Resolve the exact archive commit
+  from the tag; `docs/baseline-manifest.json` records environment, hashes and acceptance.
+- Keep baseline recovery refs unchanged by convention. Later experiments branch from the tag;
+  the complete post-freeze diff and effort count, including shared-core changes. No experiment
+  was initiated by the freeze. Original demo recovery refs below remain distinct and unchanged.
 - Frozen remote backup branch: `backup/demo-2026-10-24`.
 - Annotated recovery tag: `demo-checkpoint-2026-10-24`.
 - Both resolve to source commit `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`; origin was read back
@@ -54,15 +62,18 @@ costs. Changes required after freeze are measured. The runnable backup is not th
 
 ### Work arrangement and next action
 
-1. Continue on `baseline-cleanup-plan`; the two cleanup stages are technically complete, not a
-   resumption of the shelved refactor. `docs/baseline.md` records the candidate and its limits.
-2. T8.4 awaits owner review of the preserved demo and scope before formal baseline freeze.
-   Do not infer confirmation from technical checks alone or silently tag a formal baseline.
-3. Preserve the implementation candidate, environment/material hashes and acceptance evidence.
-   Do not weaken domain validation or claim whole-flow Pi Durable scheduling.
-4. After confirmation, freeze a distinct baseline ref without moving the demo recovery refs.
-5. After freeze, measure logistics policy changes (both existing-order strategies), then insurance
-   adaptation; finish controlled comparisons, independent blind evaluation and the report.
+1. T8.4 is complete with the owner's explicit confirmation. `docs/baseline.md` records the frozen
+   scope, restore instructions and limits; no experimental-baseline tag should be moved or replaced.
+2. Before T8.5 implementation, create a new experiment branch from `baseline-2026-10-24`.
+   Do not develop on either backup branch or blindly resume the shelved refactor.
+3. Next is reviewed logistics policy-change preparation and measurement, keeping old-policy
+   retention and new-policy re-evaluation distinct. Protected material changes still require
+   separate consent and owner-run materials locking; freezing grants no blanket permission.
+4. Then measure insurance adaptation, controlled comparisons, blind evaluation and the report.
+   Keep prior development probes separate from post-baseline cost and blind evidence.
+
+The dated cleanup/acceptance slices below record the path to freeze. Their earlier statements
+about pending confirmation are historical; this current handoff and `spec.md` section 14 supersede them.
 
 ### First cleanup slice: domain-owned selection constraints
 

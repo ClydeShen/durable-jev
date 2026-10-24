@@ -1,8 +1,8 @@
 # Evaluation plan: durable-agent capabilities and development cost
 
-Status: experiment design and source audit, not a performance or cost result. The immediate
-priority is a demo-preserving shared-core cleanup, followed by an explicit baseline freeze.
-Only then measure logistics policy changes and motor insurance adaptation. There is
+Status: experiment design and source audit, not a performance or cost result. The owner-approved
+experimental baseline is frozen at `baseline-2026-10-24`; see [baseline.md](baseline.md).
+Next measure logistics policy changes, then motor insurance adaptation. There is
 no nominated incumbent engine; large real-world rule estates motivate the question, not a
 specific product comparison.
 
@@ -18,8 +18,8 @@ experimental baseline. The owner explicitly excludes the agreed pre-baseline cle
 policy-change and cross-domain migration costs. Document that preparation separately; do not
 present subsequent results as the total cost of creating the engine from scratch.
 
-Freeze the baseline after the cleanup gates and owner review, recording the commit, material
-hashes and environment. Count all further adaptation, preparation, review and failed attempts
+The frozen baseline records its accepted commit, material hashes and environment in
+`docs/baseline-manifest.json`. Count all further adaptation, preparation, review and failed attempts
 required by each measured experiment. Do not move the baseline retrospectively to exclude costs.
 The source audit and P1 observations below describe the pre-cleanup checkpoint and must be
 re-characterized after freeze, not relabeled as post-baseline or blind results.
@@ -58,7 +58,7 @@ unchanged. The first cleanup slice makes applicability indexing dimension-agnost
 selection/table vocabulary from logistics constraints. Unknown applicability keys are retained by
 the shared schema and rejected when unsupported by the logistics validator, rather than stripped.
 The second slice normalizes root/scoped facts and moves FEEL aliases plus customer/destination
-selection values to logistics assembly. The baseline candidate also makes identity/scope vocabulary
+selection values to logistics assembly. The frozen baseline also makes identity/scope vocabulary
 and classifier scope/dimension domain-supplied, and uses domain-validated generic runtime/transport
 payloads. Compatibility scope shapes and old SQL names remain intentionally. Current acceptance
 and limits are in [baseline.md](baseline.md); handoff details are in `.harness/implementation-notes.md`.

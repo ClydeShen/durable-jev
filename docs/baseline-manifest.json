@@ -1,0 +1,48 @@
+{
+  "status": "frozen",
+  "acceptedOn": "2026-10-24",
+  "ownerConfirmed": true,
+  "recoveryTag": "baseline-2026-10-24",
+  "backupBranch": "backup/baseline-2026-10-24",
+  "acceptedImplementationCommit": "78b139e788ec11a118c2433bc2a5f1bd4c85c3ac",
+  "acceptedImplementationTree": "ca96ae5c74e2ad50440116e13c34ac9f468bb878",
+  "archiveCommit": "resolve recoveryTag^{commit}; documentation-only freeze after acceptedImplementationCommit",
+  "toolchain": {
+    "node": "26.12.1",
+    "pnpm": "12.15.0",
+    "typescript": "6.0.3",
+    "target": "ES2025",
+    "modelMode": "scripted"
+  },
+  "sha256LfNormalized": {
+    "eval/materials.lock.json": "e2e634157a813a7b23a9a162294f6ad18227735b828062188a564b16d8ed376d",
+    "pnpm-lock.yaml": "c0f075670191d70444917f4aba2e345366cf79c19a370605494900335b43d023"
+  },
+  "acceptance": {
+    "testsPassed": 157,
+    "productionFilesScanned": 154,
+    "detectedClones": 0,
+    "minimumCloneTokens": 50,
+    "replayCasesPassed": 8,
+    "faultScenariosPassed": 17,
+    "faultScenariosNotApplicable": ["F06"],
+    "browserAccessibilityScansPassed": 16,
+    "layoutGeometryUnchanged": true,
+    "nativeA2aHttpParity": "pass",
+    "legacyStoreCasesResumed": 8,
+    "concurrentDecisionAndMalformedRequestRegressions": "pass"
+  },
+  "acceptedImplementationCi": {
+    "url": "https://github.com/ClydeShen/durable-jev/actions/runs/40067411538",
+    "linux": "success",
+    "windows": "success"
+  },
+  "demoRecovery": {
+    "tag": "demo-checkpoint-2026-10-24",
+    "branch": "backup/demo-2026-10-24",
+    "commit": "0265a05b3a8f4196133d6ee1d009c7a5ee44243f"
+  },
+  "measurementBoundary": "Cleanup and quality repairs are excluded; count all subsequent experiment adaptations against recoveryTag.",
+  "archiveScope": "Tracked source, materials, configuration and documents; no credentials, dependencies, temporary reports or local database.",
+  "limitsReference": "docs/baseline.md#freeze-record-and-limits"
+}

@@ -1,9 +1,13 @@
-# Experimental baseline candidate
+# Frozen experimental baseline
 
-Status: cleanup and technical acceptance candidate; owner confirmation is required before freeze.
-Work branch: `baseline-cleanup-plan`. The frozen runnable-demo backup remains
-`backup/demo-2026-10-24` / `demo-checkpoint-2026-10-24` at `0265a05`.
-Implementation candidate after quality repair: `b439834295d9c645630820c5c702a535ba6cf07f`.
+Status: accepted by the owner and frozen on 2026-10-24.
+Recovery tag: `baseline-2026-10-24` (annotated).
+Backup branch: `backup/baseline-2026-10-24`.
+Accepted implementation: `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`.
+Both recovery refs point to the subsequent documentation-only freeze commit, including this record
+and [baseline-manifest.json](baseline-manifest.json), with identical application source and materials.
+The earlier runnable-demo backup remains `backup/demo-2026-10-24` /
+`demo-checkpoint-2026-10-24` at `0265a05`; it is not the experimental baseline.
 
 This is a research POC, not an insurance product or a production-ready general-purpose engine.
 The two cleanup stages establish a small shared execution boundary without changing the existing
@@ -91,9 +95,36 @@ The A2A reset exercise exposed stale completed-request receipts after business d
 The candidate ties receipt invalidation to native reset and the coordinator's reset assembly;
 normal request retries still deduplicate. Regression tests cover reset/resubmit through both transports.
 
-Local evidence files live under `var/reports/` and `/tmp/durable-jev-baseline-*`; they are not
-part of a fresh clone or independent blind evidence. The current acceptance manifest is
-`var/reports/baseline-candidate.json`, generated after the implementation commit.
+The accepted implementation passed both Linux and Windows
+[CI jobs](https://github.com/ClydeShen/durable-jev/actions/runs/40067411538).
+The committed acceptance record is [baseline-manifest.json](baseline-manifest.json).
+Detailed local evidence under `var/reports/` and `/tmp/durable-jev-*` is not part of a fresh clone
+or independent blind evidence; reproduce the automated gates using the commands below.
+
+## Recovery and future work
+
+Keep both recovery refs unchanged by convention; no repository protection rule is claimed.
+Restore into a separate directory, without overwriting an existing working tree:
+
+```sh
+git clone --branch baseline-2026-10-24 https://github.com/ClydeShen/durable-jev.git durable-jev-baseline
+cd durable-jev-baseline
+pnpm bootstrap
+pnpm check
+pnpm replay
+pnpm faults
+pnpm start
+```
+
+Use the pinned toolchain below; the default scripted console is http://localhost:4100.
+The archive contains tracked source, materials, engineering configuration and handoff records,
+not credentials, installed dependencies, temporary evidence or the current local database.
+The demo initializes from committed materials. Resolve the exact archive commit with
+`git rev-parse baseline-2026-10-24^{commit}`.
+
+Future experiments start on a new branch from `baseline-2026-10-24`, not on either backup branch.
+Use that tag for migration diffs and count additional shared-core, domain, material and wiring
+work after this freeze. No policy-change or insurance experiment is initiated by archiving it.
 
 ## Freeze record and limits
 
@@ -105,9 +136,9 @@ SHA-256 references (current LF checkout):
 - `eval/materials.lock.json`: `e2e634157a813a7b23a9a162294f6ad18227735b828062188a564b16d8ed376d`
 - `pnpm-lock.yaml`: `c0f075670191d70444917f4aba2e345366cf79c19a370605494900335b43d023`
 
-Freeze a distinct baseline ref only after owner confirmation; record its exact commit and evidence
-manifest. Do not move the recovery backup, silently reset the experimental baseline after seeing
-costs, or present cleanup as measured policy/domain adaptation effort.
+The owner confirmed this baseline after reviewing the functional and structural acceptance.
+Do not move either baseline or demo recovery refs, silently reset the experimental baseline after
+seeing costs, or present cleanup as measured policy/domain adaptation effort.
 
 Remaining limits are research findings, not an automatic product backlog: simulated materials,
 unreviewed labels, no blind set or measured authoring savings yet, logistics-only UI/composition,

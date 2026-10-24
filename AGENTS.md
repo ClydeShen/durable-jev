@@ -2,9 +2,11 @@
 
 Before continuing work, read `.harness/implementation-notes.md` (current handoff),
 `.harness/spec.md` (agreed scope) and `.harness/roadmap.md` (execution order).
-The runnable demo checkpoint is not the future experimental baseline. Do not move its backup
-branch or tag, resume the shelved refactor automatically, or start cost experiments before
-the cleanup baseline is frozen. Recovery instructions are in `docs/demo-checkpoint.md`.
+The experimental baseline is frozen at annotated tag `baseline-2026-10-24` and backup branch
+`backup/baseline-2026-10-24`. See `docs/baseline.md` and its committed manifest. Start future
+experiments on a new branch from that tag and count all subsequent adaptations. Do not move
+these refs or the earlier demo recovery refs, or resume the shelved refactor automatically.
+The distinct pre-cleanup demo recovery instructions remain in `docs/demo-checkpoint.md`.
 
 # Delivery agent skills
 

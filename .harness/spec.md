@@ -210,3 +210,14 @@ logistics first, with motor insurance claims as the later cross-domain experimen
   completed post-baseline cost or blind-test result.
 - Combining logistics vehicle-insurance work with insurance agents over A2A is an optional final
   bonus, not a prerequisite for the baseline, domain experiments or the existing demo.
+
+## 14. Owner-approved experimental baseline freeze (2026-10-24)
+
+- The owner accepted the functional and structural baseline and explicitly requested a separate
+  archived recovery checkpoint. Accepted implementation: `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`.
+- Annotated tag `baseline-2026-10-24` and backup branch `backup/baseline-2026-10-24` identify
+  the documentation-only freeze commit after that implementation. Keep both unchanged, separately
+  from the older demo recovery refs. Manifest and restore steps are in `docs/baseline.md`.
+- T8.4 is complete. Further experiment work starts on a new branch from the frozen tag; all
+  adaptations after this baseline belong to measured effort. Archiving starts no experiment
+  and authorizes no protected-material edits or live model calls.
