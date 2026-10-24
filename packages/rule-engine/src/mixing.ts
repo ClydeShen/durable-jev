@@ -2,7 +2,7 @@ import type { CheckStatus } from '@durable-jev/contracts'
 import type { MixingRule } from './rule-definition.js'
 
 function pairKey(left: string, right: string): string {
-  return [left, right].sort().join('+')
+  return JSON.stringify([left, right].sort())
 }
 
 export function evaluateMixing(
@@ -16,12 +16,13 @@ export function evaluateMixing(
   const violations = present.flatMap((left, index) =>
     present.slice(index + 1).flatMap((right) => {
       const entry = outcomes.get(pairKey(left, right))
-      if (!entry || entry.outcome === 'forbidden') return [`${pairKey(left, right)} forbidden`]
+      const label = `${left}+${right}`
+      if (!entry || entry.outcome === 'forbidden') return [`${label} forbidden`]
       if (
         entry.outcome === 'requiresQualification' &&
         !qualifications.includes(entry.qualification)
       ) {
-        return [`${pairKey(left, right)} needs ${entry.qualification}`]
+        return [`${label} needs ${entry.qualification}`]
       }
       return []
     }),

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { evaluateRuleGraph, type LeafEvaluator } from './evaluate-rule-graph.js'
 import type { CaseFacts } from './facts.js'
 import type { RuleDefinition, RuleSet } from './rule-definition.js'
+import { RuleIndex } from './rule-selection.js'
 import { validateRuleSet } from './validate-rule-set.js'
 
 const base: Pick<
@@ -95,6 +96,32 @@ const evaluate = (facts: CaseFacts, judge: LeafEvaluator) =>
   })
 
 describe('rule selection', () => {
+  it('indexes domain-supplied dimensions without interpreting their names', () => {
+    const index = new RuleIndex([
+      {
+        ruleId: 'POLICY-1',
+        applicability: { products: ['motor'], riskLevels: ['high', 'medium'] },
+      },
+      { ruleId: 'POLICY-2' },
+    ])
+    expect(index.decide('POLICY-1', { products: ['motor'], riskLevels: ['medium'] })).toBe(
+      'selected',
+    )
+    expect(index.decide('POLICY-1', { products: ['motor'], riskLevels: ['low'] })).toBe('filtered')
+    expect(index.decide('POLICY-1', { products: ['motor'], riskLevels: undefined })).toBe('pending')
+    expect(index.decide('POLICY-1', { products: ['motor'], riskLevels: [] })).toBe('filtered')
+    expect(index.decide('POLICY-2', {})).toBe('selected')
+  })
+
+  it('does not confuse dimension names with values containing separators', () => {
+    const index = new RuleIndex([
+      { ruleId: 'POLICY-1', applicability: { 'risk:level': ['high'], risk: ['level:low'] } },
+    ])
+    expect(index.decide('POLICY-1', { 'risk:level': ['low'], risk: ['level:high'] })).toBe(
+      'filtered',
+    )
+  })
+
   it('uses a rule set that passes validation', () => {
     const validation = validateRuleSet(ruleSet, {
       policyParameters: new Set(['commodityInclusionThreshold']),

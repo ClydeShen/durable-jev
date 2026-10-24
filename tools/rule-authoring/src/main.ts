@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadRulePack } from '@durable-jev/agent-core'
+import { logisticsRuleConstraints } from '@durable-jev/logistics'
 import { createModels, type JsonValue } from '@earendil-works/pi-ai'
 import {
   fauxAssistantMessage,
@@ -56,7 +57,7 @@ async function propose(sectionPrefix: string) {
     (candidate) => candidate.title.startsWith(sectionPrefix),
   )
   if (!section) throw new Error(`no policy section starting with "${sectionPrefix}"`)
-  const pack = loadRulePack(materials, codeEvaluatorRefs)
+  const pack = loadRulePack(materials, codeEvaluatorRefs, logisticsRuleConstraints)
   const live = process.env.MODEL_MODE === 'live'
   const model = live ? liveModel() : scriptedModel(slugOf(section.title))
   const result = await authorRules(
@@ -66,6 +67,7 @@ async function propose(sectionPrefix: string) {
       parameters: pack.parameters,
       factsCatalog: readFileSync(join(materials, 'facts-catalog.md'), 'utf8'),
       codeEvaluatorRefs,
+      constraints: logisticsRuleConstraints,
     },
     model,
   )
@@ -120,7 +122,7 @@ function apply(proposalPath: string) {
   const previous = readFileSync(rulesPath, 'utf8')
   writeFileSync(rulesPath, `${JSON.stringify(updated, null, 2)}\n`)
   try {
-    loadRulePack(materials, codeEvaluatorRefs)
+    loadRulePack(materials, codeEvaluatorRefs, logisticsRuleConstraints)
   } catch (error) {
     writeFileSync(rulesPath, previous)
     throw error

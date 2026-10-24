@@ -86,6 +86,11 @@ const ruleSet: RuleSet = {
 }
 
 const environment: ValidationEnvironment = {
+  constraints: {
+    applicabilityDimensions: ['destinations', 'commodityGroups', 'customers'],
+    mixingCategories: ['general', 'coldChain', 'controlled'],
+    requiresApplicability: (ruleId) => !/^R\d{2}$/.test(ruleId),
+  },
   policyParameters: new Set(['maxItemWeightGrams']),
   evaluatorRefs: new Set(['R01']),
 }
@@ -103,6 +108,48 @@ const codesOf = (document: unknown) =>
   validateRuleSet(document, environment).issues.map((issue) => issue.code)
 
 describe('validateRuleSet', () => {
+  it('keeps new applicability dimensions and validates the domain vocabulary explicitly', () => {
+    const document = withRules(
+      rule('R01', { scope: 'order', applicability: { riskLevels: ['high'] } }),
+    )
+    const generic = validateRuleSet(document, {
+      policyParameters: environment.policyParameters,
+      evaluatorRefs: environment.evaluatorRefs,
+    })
+    expect(generic.valid).toBe(true)
+    expect(generic.ruleSet?.rules[0]?.applicability).toEqual({ riskLevels: ['high'] })
+    expect(codesOf(document)).toEqual(['UNKNOWN_APPLICABILITY'])
+  })
+
+  it('does not infer domain selection requirements from a rule identifier', () => {
+    const document = {
+      ...ruleSet,
+      rules: [rule('POLICY-1', { scope: 'order', evaluator: { kind: 'code', ref: 'R01' } })],
+      mixingMatrix: [],
+    }
+    const generic = validateRuleSet(document, {
+      policyParameters: new Set(),
+      evaluatorRefs: new Set(['R01']),
+    })
+    expect(generic.valid).toBe(true)
+  })
+
+  it('checks compatibility tables against the supplied categories rather than cargo categories', () => {
+    const document = {
+      ...ruleSet,
+      rules: [baseRules[0]],
+      mixingMatrix: [{ categories: ['standard', 'standard'], outcome: 'allowed' }],
+    }
+    const generic = validateRuleSet(document, {
+      ...environment,
+      constraints: { mixingCategories: ['standard'] },
+    })
+    expect(generic.valid).toBe(true)
+    expect(validateRuleSet(document, environment).issues.map((issue) => issue.code)).toContain(
+      'MIXING_CATEGORY',
+    )
+  })
+
   it('accepts a consistent rule set', () => {
     const validation = validateRuleSet(ruleSet, environment)
     expect(validation.issues).toEqual([])

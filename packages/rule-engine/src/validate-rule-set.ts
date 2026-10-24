@@ -1,4 +1,4 @@
-import { type CargoCategory, cargoCategorySchema, type RuleId } from '@durable-jev/contracts'
+import type { RuleId } from '@durable-jev/contracts'
 import { type CollectionScope, type Expression, referencedRules } from './expression.js'
 import { feelSyntaxError, parametersReferencedBy } from './feel.js'
 import {
@@ -22,10 +22,12 @@ type ValidationIssueCode =
   | 'EXPRESSION_SYNTAX'
   | 'CYCLE'
   | 'MISSING_APPLICABILITY'
+  | 'UNKNOWN_APPLICABILITY'
   | 'SELECTION'
   | 'MIXING_CONFLICT'
   | 'MIXING_INCOMPLETE'
   | 'MIXING_QUALIFICATION'
+  | 'MIXING_CATEGORY'
 
 export interface ValidationIssue {
   code: ValidationIssueCode
@@ -42,6 +44,14 @@ export interface RuleSetValidation {
 export interface ValidationEnvironment {
   policyParameters: ReadonlySet<string>
   evaluatorRefs?: ReadonlySet<string>
+  constraints?: RuleConstraints
+}
+
+/** Business vocabulary supplied by the domain, not inferred from rule identifiers. */
+export interface RuleConstraints {
+  applicabilityDimensions?: readonly string[]
+  mixingCategories?: readonly string[]
+  requiresApplicability?(ruleId: string): boolean
 }
 
 function expressionsOf(rule: RuleDefinition): Expression[] {
@@ -50,10 +60,6 @@ function expressionsOf(rule: RuleDefinition): Expression[] {
     rule.combiner,
     ...(rule.humanGate?.steps.map((step) => step.appliesWhen) ?? []),
   ].filter((expression): expression is Expression => expression !== undefined)
-}
-
-function isExtensionRule(ruleId: RuleId): boolean {
-  return !/^R\d{2}$/.test(ruleId)
 }
 
 function scopeIssues(
@@ -277,15 +283,35 @@ function parameterIssues(
     }))
 }
 
-function applicabilityIssues(rule: RuleDefinition): ValidationIssue[] {
-  if (!isExtensionRule(rule.ruleId) || rule.applicability) return []
-  return [
-    {
-      code: 'MISSING_APPLICABILITY',
-      ruleId: rule.ruleId,
-      message: 'extension rules must declare applicability so they can be selected',
-    },
-  ]
+function applicabilityIssues(
+  rule: RuleDefinition,
+  constraints?: RuleConstraints,
+): ValidationIssue[] {
+  const missing: ValidationIssue[] =
+    constraints?.requiresApplicability?.(rule.ruleId) &&
+    Object.keys(rule.applicability ?? {}).length === 0
+      ? [
+          {
+            code: 'MISSING_APPLICABILITY',
+            ruleId: rule.ruleId,
+            message: 'extension rules must declare applicability so they can be selected',
+          },
+        ]
+      : []
+  const unknown = Object.keys(rule.applicability ?? {})
+    .filter(
+      (dimension) =>
+        constraints?.applicabilityDimensions &&
+        !constraints.applicabilityDimensions.includes(dimension),
+    )
+    .map(
+      (dimension): ValidationIssue => ({
+        code: 'UNKNOWN_APPLICABILITY',
+        ruleId: rule.ruleId,
+        message: `unknown applicability dimension ${dimension}`,
+      }),
+    )
+  return [...missing, ...unknown]
 }
 
 function classifierLabels(ruleSet: RuleSet): string[] | undefined {
@@ -349,36 +375,58 @@ function rulesInCycles(rules: readonly RuleDefinition[]): RuleId[] {
   return [...remainingDependencies.keys()]
 }
 
-function pairKey(categories: readonly [CargoCategory, CargoCategory]): string {
-  return [...categories].sort().join('+')
+function pairKey(categories: readonly [string, string]): string {
+  return JSON.stringify([...categories].sort())
 }
 
-function mixingMatrixIssues(matrix: readonly MixingRule[]): ValidationIssue[] {
+function mixingMatrixIssues(
+  matrix: readonly MixingRule[],
+  categories?: readonly string[],
+): ValidationIssue[] {
   const issues: ValidationIssue[] = []
   const outcomes = new Map<string, MixingRule>()
   for (const entry of matrix) {
+    if (categories && entry.categories.some((category) => !categories.includes(category))) {
+      issues.push({
+        code: 'MIXING_CATEGORY',
+        message: `${entry.categories.join('+')} contains an unknown category`,
+      })
+    }
     const key = pairKey(entry.categories)
     const existing = outcomes.get(key)
     if (
       existing &&
       (existing.outcome !== entry.outcome || existing.qualification !== entry.qualification)
     ) {
-      issues.push({ code: 'MIXING_CONFLICT', message: `${key} has conflicting outcomes` })
+      issues.push({
+        code: 'MIXING_CONFLICT',
+        message: `${entry.categories.join('+')} has conflicting outcomes`,
+      })
     }
     outcomes.set(key, entry)
     if ((entry.outcome === 'requiresQualification') !== Boolean(entry.qualification)) {
       issues.push({
         code: 'MIXING_QUALIFICATION',
-        message: `${key}: a qualification is required exactly when the outcome is requiresQualification`,
+        message: `${entry.categories.join('+')}: a qualification is required exactly when the outcome is requiresQualification`,
       })
     }
   }
-  const categories = cargoCategorySchema.options
+  return [...issues, ...missingMixingPairs(outcomes, categories ?? [])]
+}
+
+function missingMixingPairs(
+  outcomes: ReadonlyMap<string, MixingRule>,
+  categories: readonly string[],
+): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
   for (const [index, first] of categories.entries()) {
     for (const second of categories.slice(index)) {
       const key = pairKey([first, second])
       if (!outcomes.has(key)) {
-        issues.push({ code: 'MIXING_INCOMPLETE', message: `${key} has no mixing outcome` })
+        issues.push({
+          code: 'MIXING_INCOMPLETE',
+          message: `${first}+${second} has no mixing outcome`,
+        })
       }
     }
   }
@@ -424,11 +472,11 @@ export function validateRuleSet(
       ...parameterIssues(rule, environment),
       ...feelIssues(rule),
       ...semanticIssues(rule),
-      ...applicabilityIssues(rule),
+      ...applicabilityIssues(rule, environment.constraints),
     ]),
     ...cycles,
     ...selectionIssues(ruleSet),
-    ...mixingMatrixIssues(ruleSet.mixingMatrix),
+    ...mixingMatrixIssues(ruleSet.mixingMatrix, environment.constraints?.mixingCategories),
   ]
   return { valid: issues.length === 0, issues, ...(issues.length === 0 ? { ruleSet } : {}) }
 }

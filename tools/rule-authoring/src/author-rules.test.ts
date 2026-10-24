@@ -65,6 +65,20 @@ const request = {
 }
 
 describe('authorRules', () => {
+  it('applies the domain vocabulary when reviewing a generated proposal', async () => {
+    const proposal = {
+      ...weightRule('item.weightGrams <= params.maxItemWeightGrams'),
+      applicability: { riskLevels: ['high'] },
+    }
+    const result = await authorRules(
+      { ...request, constraints: { applicabilityDimensions: ['customers'] } },
+      scripted([proposal]),
+      1,
+    )
+    expect(result.accepted).toBe(false)
+    expect(result.attempts[0]?.issues.join()).toContain('UNKNOWN_APPLICABILITY')
+  })
+
   it('sends validation issues back to the model until the rules are valid', async () => {
     const result = await authorRules(
       request,

@@ -18,4 +18,4 @@ export {
   type SemanticRule,
 } from './rule-definition.js'
 export { RuleIndex, type SelectionProfile } from './rule-selection.js'
-export { type ValidationIssue, validateRuleSet } from './validate-rule-set.js'
+export { type RuleConstraints, type ValidationIssue, validateRuleSet } from './validate-rule-set.js'

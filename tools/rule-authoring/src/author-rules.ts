@@ -1,5 +1,6 @@
 import {
   type PolicyParameters,
+  type RuleConstraints,
   type RuleDefinition,
   type RuleSet,
   ruleDefinitionSchema,
@@ -28,6 +29,7 @@ export interface AuthoringRequest {
   parameters: PolicyParameters
   factsCatalog: string
   codeEvaluatorRefs: ReadonlySet<string>
+  constraints?: RuleConstraints
 }
 
 interface AuthoringAttempt {
@@ -78,6 +80,7 @@ function sectionPrompt(section: PolicySection): string {
 
 function issueTexts(ruleSet: RuleSet, request: AuthoringRequest): string[] {
   return validateRuleSet(ruleSet, {
+    constraints: request.constraints,
     policyParameters: new Set(Object.keys(request.parameters)),
     evaluatorRefs: request.codeEvaluatorRefs,
   }).issues.map((issue) => `${issue.code} ${issue.ruleId ?? ''} ${issue.message}`)

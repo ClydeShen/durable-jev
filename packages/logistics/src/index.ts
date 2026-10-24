@@ -24,3 +24,4 @@ export {
 } from './reroute/reroute-desk.js'
 export { rerouterModel, scriptedRerouter } from './reroute/scripted-rerouter.js'
 export { applyRevision } from './revision.js'
+export { logisticsRuleConstraints } from './rule-constraints.js'

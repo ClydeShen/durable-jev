@@ -84,8 +84,8 @@ export async function screenSample(
   const extensionRules = ruleSet.rules.filter((rule) => rule.applicability)
   const selectedBy = (groups: string[]) => {
     const profile: SelectionProfile = {
-      destination: sample.destinationCountry,
-      customer: sample.customerId,
+      destinations: [sample.destinationCountry],
+      customers: [sample.customerId],
       commodityGroups: new Set(groups),
     }
     return new Set(

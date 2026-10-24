@@ -13,6 +13,15 @@ const matrix: MixingRule[] = [
 ]
 
 describe('evaluateMixing', () => {
+  it('keeps domain category names distinct when they contain separators', () => {
+    const table: MixingRule[] = [
+      { categories: ['a+b', 'c'], outcome: 'allowed' },
+      { categories: ['a', 'b+c'], outcome: 'forbidden' },
+    ]
+    expect(evaluateMixing(table, ['a+b', 'c'], []).status).toBe('PASS')
+    expect(evaluateMixing(table, ['a', 'b+c'], []).status).toBe('FAIL')
+  })
+
   it('allows permitted mixes', () => {
     expect(evaluateMixing(matrix, ['general', 'coldChain', 'general'], [])).toEqual({
       status: 'PASS',

@@ -1,6 +1,5 @@
 import {
   agentIdSchema,
-  cargoCategorySchema,
   roleSchema,
   ruleEngineKindSchema,
   ruleIdSchema,
@@ -62,13 +61,7 @@ const semanticRuleSchema = z.object({
 export type SemanticRule = z.infer<typeof semanticRuleSchema>
 
 /** Index keys of an extension rule: it is selected only when every declared dimension matches. */
-const applicabilitySchema = z.object({
-  destinations: z.array(z.string().min(1)).min(1).optional(),
-  commodityGroups: z.array(z.string().min(1)).min(1).optional(),
-  customers: z.array(z.string().min(1)).min(1).optional(),
-})
-export type Applicability = z.infer<typeof applicabilitySchema>
-
+const applicabilitySchema = z.record(z.string().min(1), z.array(z.string().min(1)).min(1))
 export const ruleDefinitionSchema = z.object({
   ruleId: ruleIdSchema,
   version: z.string().min(1),
@@ -92,7 +85,7 @@ export const ruleDefinitionSchema = z.object({
 export type RuleDefinition = z.infer<typeof ruleDefinitionSchema>
 
 const mixingRuleSchema = z.object({
-  categories: z.tuple([cargoCategorySchema, cargoCategorySchema]),
+  categories: z.tuple([z.string().min(1), z.string().min(1)]),
   outcome: z.enum(['allowed', 'forbidden', 'requiresQualification']),
   qualification: z.string().min(1).optional(),
 })

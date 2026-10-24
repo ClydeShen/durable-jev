@@ -1,17 +1,18 @@
 import { fileURLToPath } from 'node:url'
-import { loadRulePack, semanticEvaluator } from '@durable-jev/agent-core'
+import { semanticEvaluator } from '@durable-jev/agent-core'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 import { evaluateRuleGraph, type LeafEvaluator } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
 import { buildCaseFacts } from './case-facts.js'
 import { loadCaseFile } from './case-file.js'
+import { loadLogisticsRulePack } from './logistics-runtime.js'
 import { loadReferenceData } from './reference-data.js'
 
 const materials = fileURLToPath(new URL('../../../eval/materials/', import.meta.url))
 
 describe('LOG-001 materials', () => {
   it('pass every applicable rule and wait only for the warehouse to load', async () => {
-    const pack = loadRulePack(materials, new Set(['R29']))
+    const pack = loadLogisticsRulePack(materials)
     const caseFile = loadCaseFile(`${materials}cases/LOG-001.json`)
     const facts = buildCaseFacts(caseFile.shipment, loadReferenceData(`${materials}mock-data`))
     const semantic = semanticEvaluator(new ScriptedJudge(caseFile.scriptedJudgements))

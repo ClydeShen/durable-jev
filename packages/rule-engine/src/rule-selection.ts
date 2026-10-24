@@ -1,36 +1,29 @@
 import type { RuleId } from '@durable-jev/contracts'
-import type { Applicability, RuleDefinition } from './rule-definition.js'
+import type { RuleDefinition } from './rule-definition.js'
 
-export interface SelectionProfile {
-  destination: unknown
-  customer: unknown
-  /** Undefined while the classifier has not decided. */
-  commodityGroups: ReadonlySet<string> | undefined
-}
+/** Undefined is unresolved; an empty collection is a resolved dimension with no matches. */
+export type SelectionProfile = Readonly<Record<string, Iterable<unknown> | undefined>>
 
 export type SelectionDecision = 'selected' | 'filtered' | 'pending'
 
-type Dimension = keyof Applicability
-
 /**
- * Index over the extension rules' applicability: for an order profile it returns the rules to
+ * Index over the rules' applicability: for a domain profile it returns the rules to
  * evaluate, so the thousands that do not apply are filtered by lookup, not evaluated.
  */
 export class RuleIndex {
-  private readonly declared = new Map<RuleId, Dimension[]>()
-  private readonly byKey = new Map<string, Set<RuleId>>()
+  private readonly declared = new Map<RuleId, string[]>()
+  private readonly byDimension = new Map<string, Map<string, Set<RuleId>>>()
 
-  constructor(rules: readonly RuleDefinition[]) {
+  constructor(rules: readonly Pick<RuleDefinition, 'ruleId' | 'applicability'>[]) {
     for (const rule of rules) {
       if (!rule.applicability) continue
-      const dimensions = (Object.keys(rule.applicability) as Dimension[]).filter(
-        (dimension) => rule.applicability?.[dimension] !== undefined,
-      )
+      const dimensions = Object.keys(rule.applicability)
       this.declared.set(rule.ruleId, dimensions)
       for (const dimension of dimensions) {
+        const values = this.byDimension.get(dimension) ?? new Map<string, Set<RuleId>>()
+        this.byDimension.set(dimension, values)
         for (const value of rule.applicability[dimension] ?? []) {
-          const key = `${dimension}:${value}`
-          this.byKey.set(key, (this.byKey.get(key) ?? new Set()).add(rule.ruleId))
+          values.set(value, (values.get(value) ?? new Set()).add(rule.ruleId))
         }
       }
     }
@@ -39,14 +32,17 @@ export class RuleIndex {
   decide(ruleId: RuleId, profile: SelectionProfile): SelectionDecision {
     const dimensions = this.declared.get(ruleId)
     if (!dimensions) return 'selected'
-    if (dimensions.includes('commodityGroups') && !profile.commodityGroups) return 'pending'
-    const matches = (dimension: Dimension, values: Iterable<unknown>) =>
-      [...values].some((value) => this.byKey.get(`${dimension}:${String(value)}`)?.has(ruleId))
-    const selected = dimensions.every((dimension) => {
-      if (dimension === 'destinations') return matches(dimension, [profile.destination])
-      if (dimension === 'customers') return matches(dimension, [profile.customer])
-      return matches(dimension, profile.commodityGroups ?? [])
-    })
+    if (
+      dimensions.some(
+        (dimension) => !Object.hasOwn(profile, dimension) || profile[dimension] === undefined,
+      )
+    )
+      return 'pending'
+    const selected = dimensions.every((dimension) =>
+      [...(profile[dimension] ?? [])].some((value) =>
+        this.byDimension.get(dimension)?.get(String(value))?.has(ruleId),
+      ),
+    )
     return selected ? 'selected' : 'filtered'
   }
 }

@@ -564,6 +564,9 @@ importers:
       '@durable-jev/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@durable-jev/logistics':
+        specifier: workspace:*
+        version: link:../../packages/logistics
       '@durable-jev/rule-engine':
         specifier: workspace:*
         version: link:../../packages/rule-engine

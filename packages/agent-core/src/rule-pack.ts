@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   type PolicyParameters,
+  type RuleConstraints,
   type RuleSet,
   type ValidationIssue,
   validateRuleSet,
@@ -45,11 +46,13 @@ function readJson(path: string): unknown {
 export function loadRulePack(
   materialsDirectory: string,
   codeEvaluatorRefs: ReadonlySet<string>,
+  constraints: RuleConstraints = {},
 ): RulePack {
   const policy = policyParametersSchema.parse(
     readJson(join(materialsDirectory, 'policy-parameters.json')),
   )
   const validation = validateRuleSet(readJson(join(materialsDirectory, 'rules.json')), {
+    constraints,
     policyParameters: new Set(Object.keys(policy.parameters)),
     evaluatorRefs: codeEvaluatorRefs,
   })

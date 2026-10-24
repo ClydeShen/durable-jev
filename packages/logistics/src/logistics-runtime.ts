@@ -15,6 +15,7 @@ import type { Migration } from '@durable-jev/store'
 import { buildCaseFacts } from './case-facts.js'
 import { loadReferenceData, type ReferenceData } from './reference-data.js'
 import { investigationMigrations } from './reroute/investigation-store.js'
+import { logisticsRuleConstraints } from './rule-constraints.js'
 import { reservationMigrations, reserveTransport } from './transport-reservation.js'
 
 export function agentMigrations(agentId: AgentId): readonly Migration[] {
@@ -46,7 +47,11 @@ export interface LogisticsRuntime {
 }
 
 export function loadLogisticsRulePack(materialsDirectory: string): RulePack {
-  return loadRulePack(materialsDirectory, new Set(Object.keys(codeEvaluatorOwners)))
+  return loadRulePack(
+    materialsDirectory,
+    new Set(Object.keys(codeEvaluatorOwners)),
+    logisticsRuleConstraints,
+  )
 }
 
 export function createLogisticsRuntime(options: LogisticsRuntimeOptions): LogisticsRuntime {

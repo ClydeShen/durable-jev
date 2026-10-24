@@ -371,8 +371,8 @@ function selectionProfile(ruleSet: RuleSet, state: GraphState): SelectionProfile
     : []
   const decided = classifications.every((result) => result?.status === 'PASS')
   return {
-    destination: state.facts.order.destinationCountry,
-    customer: state.facts.order.customerId,
+    destinations: [state.facts.order.destinationCountry],
+    customers: [state.facts.order.customerId],
     commodityGroups: decided
       ? new Set(classifications.flatMap((result) => result?.observedValue as string[]))
       : undefined,
