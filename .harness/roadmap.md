@@ -102,3 +102,14 @@ Every phase ends with something to demonstrate. The end of P2 gives an end-to-en
 | [ ] | T7.6 | B7 Durable Jev Agent cost: share of hand-written code, share of rules carried by Jev and the authoring agent, time of a live policy change, cost per rule, selection accuracy and miss rate, Jev's share of the extension rules; with a map of the rule boundaries | A measures table for the CEO; wrong releases listed separately and at 0 | T3.1, T4.3 |
 | [x] | T7.7 | `docs/agent-architecture.md` (for a technical CEO) | Each section links to implementation and evidence (written on scripted evidence first; live measures added when available) | T5.2a, T6.3a |
 | [~] | T7.5 | `docs/demo-guide.md`, `docs/report.md`: H1–H5 and the Durable Jev Agent conclusions, component recommendations | Every hypothesis has evidence (`docs/demo-guide.md` written; `docs/report.md` waits for the benchmarks) | T7.1–T7.4, T7.6 |
+| [x] | T7.8 | Record the existing reuse boundary before generalization; reproducible schema probes and source hashes | `pnpm eval:portability` records fixed owners/scopes/roles/invalidation dimensions and discarded applicability keys; source audit and limits in `docs/evaluation-plan.md` (not migration or execution evidence) | T7.7 |
+| [~] | T7.9 | Logistics policy-change protocol: reviewed mutations, direct-edit/authoring comparison, cost ledger and blind custody | P1 scripted characterization runs both activation modes and parameter-only/versioned variants (22 observations each); findings in `docs/evaluation-plan.md`. Policy review, authoring cost, independent blind evaluation and other change families remain unmeasured | T7.8 |
+
+The immediate evaluation priority is logistics policy adaptation and its full change cost. No
+specific incumbent engine has been nominated. Motor insurance claims are the selected second
+domain, to follow the logistics experiment with a bounded synthetic policy pack. Any synthetic
+rewrite baseline remains to be agreed; neither experiment establishes enterprise migration cost.
+
+The goal is evidence about durable-agent capabilities, development effort, suitability and limits,
+not product delivery. Preserve failures as research findings; do not automatically turn coupling
+or missing capabilities into a generalization or productionization backlog.

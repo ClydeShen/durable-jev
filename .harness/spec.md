@@ -109,3 +109,76 @@ logistics; the demo and the report are organised around this direction.
   Jev carries at run time and the share the authoring agent generated; the time one policy change
   takes; the cost of implementing one rule; zero wrong releases in a blind test. The 40-rule
   results are extrapolated only as a unit cost, with the extrapolation's assumptions stated.
+
+## 9. Evaluation priority: reuse and migration economics
+
+- Prioritize evidence for rule-authoring cost, blind evaluation and controlled comparisons.
+- The research question is how far durable agents can reduce rule-engine development effort and
+  form agentic workflows, under which conditions they fit, and where they need human intervention.
+  Real-project reuse and comparisons with improving or rewriting engines motivate the experiments;
+  production adoption is not this POC's acceptance criterion.
+- Evaluate policy changes within a domain separately from moving to a different domain. Record
+  reusable mechanisms, domain adapters, rule data, integration work and changes to shared code.
+- Start with policy changes in logistics, then use motor insurance claims as the second domain.
+  Keep the insurance experiment bounded by explicit synthetic policy terms and reviewed cases;
+  it is not an insurance product or a legal-compliance assessment. No particular incumbent engine
+  has been nominated, so do not invent one or present synthetic costs as an enterprise quote.
+- Validate both policy activation strategies separately: existing orders remain on their prior
+  policy, and unshipped existing orders are re-evaluated under the new policy. Keep their costs
+  and outcomes distinct.
+- Domain independence is a hypothesis to test, not an existing capability inferred from rule
+  counts or package boundaries. Record the current coupling before changing it, and charge any
+  generalization work to the candidate approach.
+- Durable agents are intended to preserve common execution mechanisms as rules and domains
+  change. Separate the benefits of declarative rules and adapters from the benefits of durable
+  waiting, recovery and idempotency; neither establishes the other's benefit by itself.
+- Use the same delivery tools and business acceptance criteria in the compared approaches.
+  Synthetic baselines do not establish the migration cost of an unspecified incumbent system.
+
+## 10. Research scope: capability, suitability and limits
+
+- This is a capability-exploration POC, not a product delivery or a general-purpose engine build.
+  Existing coupling and synthetic logistics materials are acknowledged experimental conditions.
+- Measure policy interpretation, rule generation, review and repair effort alongside runtime
+  investigation, tool use, collaboration, human waiting and recovery. Distinguish authored workflow
+  logic from decisions the agent actually makes; an automated fixed path is not evidence of dynamic planning.
+- Record unsuccessful attempts, unsupported changes, unsafe outcomes and manual interventions as
+  findings. A negative result or a narrow useful capability is a valid research outcome.
+- Do not automatically turn observed limitations into implementation requirements. Make only the
+  changes needed for an agreed experiment, preserving the original baseline and accounting for effort.
+- A domain-agnostic kernel, production policy routing and a production-readiness checklist are not
+  prerequisites for answering the current questions. Do not extrapolate synthetic results into
+  enterprise-scale savings or an order-of-magnitude cost claim without supporting measurements.
+
+## 11. Extension shape: minimal SOLID
+
+- Keep the repository small. Target a second-domain material pack plus only the domain-specific
+  fact shapes, evaluators or tools the experiment actually needs, using the existing execution path.
+- Do not duplicate the engine, runtime, services or console for insurance. Do not introduce a
+  plugin framework, speculative abstraction layers or new packages for each minor responsibility.
+- Extract only the smallest shared boundary required by demonstrated differences between the two
+  domains. Keep business concepts in the domain pack; do not scatter domain-name conditionals
+  throughout shared execution code or hide business logic inside generic configuration.
+- The CEO-facing source walkthrough must show the complete migration diff: added materials,
+  domain-specific logic, wiring and any shared-code changes. Count preparatory refactoring too.
+  A small extension is the target to test, not a claim to manufacture by concealing earlier work.
+
+## 12. Shared concept: domain agents with a common execution contract
+
+- Necessary decoupling of the current implementation is in scope. Minimal SOLID does not mean
+  preserving logistics-specific assumptions inside shared rule, runtime or transport contracts.
+- Each domain supplies its agent responsibilities, policy/rule materials, typed business facts,
+  tools and any special evaluators. A domain may contain several collaborating agents; keep the
+  existing logistics agents rather than forcing one agent per industry.
+- Share rule evaluation, agent lifecycle, durable execution integration and A2A task contracts.
+  Structured rules, semantic judgments, human gates and tool-based investigation are capabilities
+  of the same domain-agent concept, not separate industry-specific execution stacks.
+- A2A standardizes discovery, task exchange and status, not business fact schemas. Validate those
+  with the receiving domain's contract; do not obtain flexibility by removing validation.
+- The current business runtime persists through its own SQLite store; Pi Durable checkpoints the
+  investigation helper. Unifying the execution concept must explicitly identify checkpoint,
+  resume and side-effect ownership. Do not claim that the whole flow runs on Pi Durable merely
+  because the helper does, or maintain competing owners for the same workflow transition.
+- Use the two concrete domains to drive the smallest shared contracts in existing packages.
+  Keep declarative evaluation deterministic; agentic planning does not replace exact calculations
+  or authorization checks. Preserve existing logistics outcomes throughout the extraction.
