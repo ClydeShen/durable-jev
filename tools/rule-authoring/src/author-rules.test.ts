@@ -5,8 +5,9 @@ import {
   fauxProvider,
   fauxToolCall,
 } from '@earendil-works/pi-ai/providers/faux'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { type AuthoringModel, authorRules } from './author-rules.js'
+import { selectPolicy } from './policy-sections.js'
 
 const existing: RuleDefinition = {
   ruleId: 'R01',
@@ -70,6 +71,44 @@ const request = {
 }
 
 describe('authorRules', () => {
+  it('selects a single clause without losing its rule heading', () => {
+    const text = '## Part X. Weights\n\n**R01 Complete.** Required.\n\n**R02 Weight.** Limited.'
+    expect(selectPolicy(text, 'R02').text).toBe('**R02 Weight.** Limited.')
+    expect(selectPolicy(text, 'Part X').text).toContain('**R01 Complete.**')
+    expect(() => selectPolicy(text, 'R03')).toThrow()
+  })
+
+  it('rejects extra rules outside the selected policy', async () => {
+    const result = await authorRules(request, scripted([weightRule('true'), existing]), 1)
+    expect(result.accepted).toBe(false)
+    expect(result.attempts[0]?.issues).toContain('out-of-scope rule R01')
+    expect(result.attempts[0]?.submittedRules).toHaveLength(2)
+  })
+
+  it('requires a new version for changed definitions, but accepts unchanged rules', async () => {
+    const prior = weightRule('item.weightGrams <= params.maxItemWeightGrams')
+    const input = { ...request, ruleSet: { ...ruleSet, rules: [existing, prior] } }
+    expect((await authorRules(input, scripted([prior]), 1)).accepted).toBe(true)
+    const changed = { ...prior, title: 'Updated weight limit' }
+    const result = await authorRules(input, scripted([changed], [{ ...changed, version: '2' }]))
+    expect(result.accepted).toBe(true)
+    expect(result.attempts[0]?.issues).toContain('changed rule R02 needs a new version')
+  })
+
+  it('retains request failures with unknown token usage instead of inventing zero cost', async () => {
+    const model = scripted([])
+    const complete = vi.spyOn(model.models, 'complete').mockRejectedValueOnce(new Error('offline'))
+    const result = await authorRules(request, model)
+    expect(result.accepted).toBe(false)
+    expect(result.attempts).toHaveLength(1)
+    expect(result.attempts[0]).toMatchObject({
+      error: 'Error: offline',
+      inputTokens: null,
+      outputTokens: null,
+    })
+    complete.mockRestore()
+  })
+
   it('applies the domain vocabulary when reviewing a generated proposal', async () => {
     const proposal = {
       ...weightRule('item.weightGrams <= params.maxItemWeightGrams'),

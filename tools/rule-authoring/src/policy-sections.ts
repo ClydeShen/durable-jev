@@ -3,7 +3,7 @@ export interface PolicySection {
   text: string
 }
 
-export function policySections(markdown: string): PolicySection[] {
+function policySections(markdown: string): PolicySection[] {
   return markdown
     .split(/^## /m)
     .slice(1)
@@ -21,4 +21,15 @@ export function ruleIdsIn(text: string): string[] {
       ),
     ),
   ]
+}
+
+export function selectPolicy(markdown: string, selector: string): PolicySection {
+  const sections = policySections(markdown)
+  const clauses = sections
+    .flatMap((entry) => entry.text.split(/\n\s*\n/))
+    .filter((paragraph) => paragraph.startsWith(`**${selector} `))
+  if (clauses.length > 0) return { title: `Rule ${selector}`, text: clauses.join('\n\n') }
+  const section = sections.find((candidate) => candidate.title.startsWith(selector))
+  if (!section) throw new Error(`no policy rule or section matching "${selector}"`)
+  return section
 }

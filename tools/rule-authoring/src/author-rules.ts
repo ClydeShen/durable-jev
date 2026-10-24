@@ -16,6 +16,7 @@ import {
 } from '@earendil-works/pi-ai'
 import { z } from 'zod'
 import { type PolicySection, ruleIdsIn } from './policy-sections.js'
+import { diffRules } from './rule-diff.js'
 
 export interface AuthoringModel {
   models: Models
@@ -35,8 +36,10 @@ export interface AuthoringRequest {
 interface AuthoringAttempt {
   issues: string[]
   durationMs: number
-  inputTokens: number
-  outputTokens: number
+  inputTokens: number | null
+  outputTokens: number | null
+  submittedRules?: unknown
+  error?: string
 }
 
 export interface AuthoringResult {
@@ -58,6 +61,7 @@ function systemPrompt(request: AuthoringRequest): string {
   return [
     'You turn a written business policy into executable rule definitions for a rule engine.',
     'Answer only by calling submit_rules with one definition per rule of the section.',
+    'Do not change rules outside the selected section. Increment the version of a changed rule.',
     'Each definition must match this JSON schema:',
     JSON.stringify(z.toJSONSchema(ruleDefinitionSchema)),
     `Root scope: ${request.ruleSet.rootScope}`,
@@ -70,6 +74,10 @@ function systemPrompt(request: AuthoringRequest): string {
     '',
     'Rules that already exist (depend on them by id; keep their owner agents):',
     ...existing,
+    'Current definitions of the selected rules (preserve unrelated behavior):',
+    JSON.stringify(
+      request.ruleSet.rules.filter((rule) => ruleIdsIn(request.section.text).includes(rule.ruleId)),
+    ),
     '',
     `Policy parameters: ${Object.keys(request.parameters).join(', ')}`,
   ].join('\n')
@@ -117,7 +125,27 @@ function check(
   const missing = ruleIdsIn(request.section.text)
     .filter((ruleId) => !proposedIds.has(ruleId))
     .map((ruleId) => `missing a definition for ${ruleId}`)
-  return { rules, issues: [...schemaIssues, ...introduced, ...missing] }
+  return {
+    rules,
+    issues: [...schemaIssues, ...introduced, ...missing, ...changeIssues(rules, request)],
+  }
+}
+
+function changeIssues(rules: readonly RuleDefinition[], request: AuthoringRequest): string[] {
+  const expected = new Set(ruleIdsIn(request.section.text))
+  const outside = rules
+    .filter((rule) => !expected.has(rule.ruleId))
+    .map((rule) => `out-of-scope rule ${rule.ruleId}`)
+  const changed = new Set(diffRules(request.ruleSet.rules, rules).changed)
+  const unversioned = rules
+    .filter(
+      (rule) =>
+        changed.has(rule.ruleId) &&
+        request.ruleSet.rules.find((prior) => prior.ruleId === rule.ruleId)?.version ===
+          rule.version,
+    )
+    .map((rule) => `changed rule ${rule.ruleId} needs a new version`)
+  return [...outside, ...unversioned]
 }
 
 function submittedRules(message: AssistantMessage): unknown {
@@ -143,13 +171,25 @@ export async function authorRules(
   let rules: RuleDefinition[] = []
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     const startedAt = performance.now()
-    const message = await model.models.complete(llm, context, {
-      toolChoice: { type: 'function', function: { name: submitRules.name } },
-      temperature: 0,
-      maxTokens: 16_000,
-      maxRetries: 0,
-      timeoutMs: 180_000,
-    })
+    let message: AssistantMessage
+    try {
+      message = await model.models.complete(llm, context, {
+        toolChoice: { type: 'function', function: { name: submitRules.name } },
+        temperature: 0,
+        maxTokens: 16_000,
+        maxRetries: 0,
+        timeoutMs: 180_000,
+      })
+    } catch (error) {
+      attempts.push({
+        issues: ['model request failed'],
+        durationMs: Math.round(performance.now() - startedAt),
+        inputTokens: null,
+        outputTokens: null,
+        error: String(error),
+      })
+      return { rules, accepted: false, attempts }
+    }
     const checked = check(submittedRules(message), request)
     rules = checked.rules
     attempts.push({
@@ -157,6 +197,7 @@ export async function authorRules(
       durationMs: Math.round(performance.now() - startedAt),
       inputTokens: message.usage.input,
       outputTokens: message.usage.output,
+      submittedRules: submittedRules(message),
     })
     if (checked.issues.length === 0) return { rules, accepted: true, attempts }
     const call = message.content.find((block): block is ToolCall => block.type === 'toolCall')

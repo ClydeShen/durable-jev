@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 import { loadRulePack } from '@durable-jev/agent-core'
 import { logisticsRuleConstraints } from '@durable-jev/logistics'
 import { createModels, type JsonValue } from '@earendil-works/pi-ai'
@@ -12,12 +13,22 @@ import {
 } from '@earendil-works/pi-ai/providers/faux'
 import { nvidiaProvider } from '@earendil-works/pi-ai/providers/nvidia'
 import { type AuthoringModel, authorRules } from './author-rules.js'
-import { policySections } from './policy-sections.js'
+import { selectPolicy } from './policy-sections.js'
 import { diffRules } from './rule-diff.js'
 
 const repositoryRoot = fileURLToPath(new URL('../../../', import.meta.url))
-const materials = join(repositoryRoot, 'eval/materials')
-const proposalsDirectory = join(repositoryRoot, 'var/authoring')
+const argumentsOf = parseArgs({
+  allowPositionals: true,
+  options: {
+    materials: { type: 'string' },
+    output: { type: 'string' },
+    apply: { type: 'boolean' },
+  },
+})
+const materials = resolve(argumentsOf.values.materials ?? join(repositoryRoot, 'eval/materials'))
+const proposalsDirectory = resolve(
+  argumentsOf.values.output ?? join(repositoryRoot, 'var/authoring'),
+)
 const codeEvaluatorRefs = new Set(['R29'])
 const slugOf = (title: string) =>
   title.split('.')[0]?.trim().toLowerCase().replace(/\s+/g, '-') ?? 'section'
@@ -53,19 +64,17 @@ function liveModel(): AuthoringModel {
 }
 
 async function propose(sectionPrefix: string) {
-  const section = policySections(readFileSync(join(materials, 'policy-v1.md'), 'utf8')).find(
-    (candidate) => candidate.title.startsWith(sectionPrefix),
-  )
-  if (!section) throw new Error(`no policy section starting with "${sectionPrefix}"`)
+  const section = selectPolicy(readFileSync(join(materials, 'policy-v1.md'), 'utf8'), sectionPrefix)
   const pack = loadRulePack(materials, codeEvaluatorRefs, logisticsRuleConstraints)
   const live = process.env.MODEL_MODE === 'live'
   const model = live ? liveModel() : scriptedModel(slugOf(section.title))
+  const factsCatalog = readFileSync(join(materials, 'facts-catalog.md'), 'utf8')
   const result = await authorRules(
     {
       section,
       ruleSet: pack.ruleSet,
       parameters: pack.parameters,
-      factsCatalog: readFileSync(join(materials, 'facts-catalog.md'), 'utf8'),
+      factsCatalog,
       codeEvaluatorRefs,
       constraints: logisticsRuleConstraints,
     },
@@ -76,7 +85,22 @@ async function propose(sectionPrefix: string) {
     generatedAt: new Date().toISOString(),
     mode: live ? 'live' : 'scripted',
     model: `${model.provider}/${model.modelId}`,
+    tokenUsageMeaning: live
+      ? 'provider-reported usage; not a price quote'
+      : 'faux-provider estimates; no live model usage or billing',
     accepted: result.accepted,
+    reviewStatus: 'pending',
+    acceptanceMeaning:
+      'schema, scope and version validation only; business review is still required',
+    materialsDirectory: materials,
+    input: {
+      section,
+      ruleSet: pack.ruleSet,
+      parameters: pack.parameters,
+      factsCatalog,
+      constraints: logisticsRuleConstraints,
+      codeEvaluatorRefs: [...codeEvaluatorRefs],
+    },
     diff: diffRules(pack.ruleSet.rules, result.rules),
     attempts: result.attempts,
     rules: result.rules,
@@ -93,8 +117,8 @@ async function propose(sectionPrefix: string) {
       ),
       `diff: added ${proposal.diff.added.join(', ') || '-'}; changed ${proposal.diff.changed.join(', ') || '-'}; unchanged ${proposal.diff.unchanged.length}`,
       proposal.accepted
-        ? `proposal: ${path}\napply after review: pnpm author --apply ${path}`
-        : 'proposal rejected by validation',
+        ? `proposal: ${path}\napply after review: pnpm author --materials ${JSON.stringify(materials)} --apply ${JSON.stringify(path)}`
+        : `proposal rejected by validation: ${path}`,
       '',
     ].join('\n'),
   )
@@ -104,9 +128,12 @@ async function propose(sectionPrefix: string) {
 function apply(proposalPath: string) {
   const proposal = JSON.parse(readFileSync(proposalPath, 'utf8')) as {
     accepted: boolean
+    materialsDirectory?: string
     rules: { ruleId: string }[]
   }
   if (!proposal.accepted) throw new Error('only accepted proposals can be applied')
+  if (proposal.materialsDirectory && resolve(proposal.materialsDirectory) !== materials)
+    throw new Error('proposal belongs to another materials directory; select it explicitly')
   const rulesPath = join(materials, 'rules.json')
   const ruleSet = JSON.parse(readFileSync(rulesPath, 'utf8')) as { rules: { ruleId: string }[] }
   const proposed = new Map(proposal.rules.map((rule) => [rule.ruleId, rule]))
@@ -120,24 +147,30 @@ function apply(proposalPath: string) {
     ],
   }
   const previous = readFileSync(rulesPath, 'utf8')
-  writeFileSync(rulesPath, `${JSON.stringify(updated, null, 2)}\n`)
+  const formatted = execFileSync(
+    process.execPath,
+    [
+      join(repositoryRoot, 'node_modules/@biomejs/biome/bin/biome'),
+      'format',
+      '--stdin-file-path',
+      'rules.json',
+    ],
+    { cwd: repositoryRoot, input: JSON.stringify(updated), encoding: 'utf8' },
+  )
+  writeFileSync(rulesPath, formatted)
   try {
     loadRulePack(materials, codeEvaluatorRefs, logisticsRuleConstraints)
   } catch (error) {
     writeFileSync(rulesPath, previous)
     throw error
   }
-  execFileSync('npx', ['biome', 'format', '--write', rulesPath], {
-    cwd: repositoryRoot,
-    stdio: 'ignore',
-  })
   process.stdout.write(`applied ${proposal.rules.length} rules to ${rulesPath}\n`)
 }
 
-const [first, second] = process.argv.slice(2)
-if (first === '--apply' && second) apply(second)
+const [first] = argumentsOf.positionals
+if (argumentsOf.values.apply && first) apply(first)
 else if (first) await propose(first)
 else
   process.stderr.write(
-    'usage: pnpm author "<policy section, e.g. Part A>" | pnpm author --apply <proposal.json>\n',
+    'usage: pnpm author [--materials <directory>] [--output <directory>] "<rule or section>" | pnpm author --apply <proposal.json> [--materials <directory>]\n',
   )
