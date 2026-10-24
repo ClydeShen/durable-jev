@@ -1,14 +1,14 @@
 import { execFileSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { cpSync, readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadCaseCatalog, loadLogisticsRulePack } from '@durable-jev/logistics'
+import { createExperimentDirectory, fileHash, packHashes } from './experiment-evidence.js'
 import {
   observePolicyChange,
   type PolicyObservation,
   policyBoundaryProblems,
 } from './policy-change.js'
-import { fileHash, packHashes } from './policy-evidence.js'
 import { observePolicyWorkflow } from './policy-workflow-runner.js'
 
 if (process.env.MODEL_MODE === 'live') {
@@ -18,9 +18,7 @@ if (process.env.MODEL_MODE === 'live') {
 }
 
 const root = fileURLToPath(new URL('../../../', import.meta.url))
-const reports = join(root, 'var/reports')
-mkdirSync(reports, { recursive: true })
-const run = mkdtempSync(join(reports, 'policy-change-'))
+const run = createExperimentDirectory(root, 'policy-change')
 const baseline = join(run, 'baseline')
 const candidate = join(run, 'candidate')
 cpSync(join(root, 'eval/materials'), baseline, { recursive: true, errorOnExist: true })
@@ -69,9 +67,12 @@ for (const [name, directory] of [
 const implementationFiles = [
   fileURLToPath(import.meta.url),
   fileURLToPath(new URL('./policy-change.js', import.meta.url)),
-  ...['policy-evidence', 'policy-workflow', 'policy-workflow-child', 'policy-workflow-runner'].map(
-    (name) => fileURLToPath(new URL(`./${name}.js`, import.meta.url)),
-  ),
+  ...[
+    'experiment-evidence',
+    'policy-workflow',
+    'policy-workflow-child',
+    'policy-workflow-runner',
+  ].map((name) => fileURLToPath(new URL(`./${name}.js`, import.meta.url))),
   join(root, 'packages/rule-engine/dist/evaluate-rule-graph.js'),
   join(root, 'packages/agent-core/dist/case-runtime.js'),
   join(root, 'packages/agent-core/dist/human-gate.js'),

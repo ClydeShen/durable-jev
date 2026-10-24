@@ -1,7 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { canonicalJson } from '@durable-jev/contracts'
-import { packHashes, writeEvidence } from './policy-evidence.js'
+import { assertPackHashes, writeEvidence } from './experiment-evidence.js'
 import { PolicyWorkflow, type WorkflowScenario, type WorkflowState } from './policy-workflow.js'
 
 const [phase, directory = ''] = process.argv.slice(2)
@@ -15,9 +14,7 @@ const plan = JSON.parse(readFileSync(join(directory, 'plan.json'), 'utf8')) as {
 }
 const { scenario, hashes } = plan
 for (const name of ['baseline', 'candidate'] as const) {
-  if (canonicalJson(packHashes(scenario[name])) !== canonicalJson(hashes[name])) {
-    throw new Error(`${name} pack changed after the experiment plan was frozen`)
-  }
+  assertPackHashes(scenario[name], hashes[name])
 }
 
 const beforeFile = join(directory, 'before.json')

@@ -30,6 +30,7 @@
     "screening": "node eval/runner/dist/screening-main.js",
     "eval:portability": "node --import tsx scripts/portability-probe.mjs",
     "eval:policy-change": "node eval/runner/dist/policy-change-main.js",
+    "eval:investigation": "node eval/runner/dist/investigation-main.js",
     "faults": "node eval/runner/dist/faults-main.js",
     "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && node scripts/materials-lock.mjs --check && pnpm knip && pnpm duplication && pnpm test",
     "author": "node tools/rule-authoring/dist/main.js",

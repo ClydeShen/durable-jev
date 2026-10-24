@@ -1,9 +1,7 @@
-import { spawnSync } from 'node:child_process'
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { canonicalJson } from '@durable-jev/contracts'
-import { packHashes, writeEvidence } from './policy-evidence.js'
+import { packHashes, runExperimentProcess, writeEvidence } from './experiment-evidence.js'
 import type { PolicyWorkflow, WorkflowScenario, WorkflowState } from './policy-workflow.js'
 
 interface WorkflowResult {
@@ -13,17 +11,12 @@ interface WorkflowResult {
 }
 
 function runChild(directory: string, phase: string, expectedCode: number): number {
-  const started = performance.now()
-  const child = spawnSync(
-    process.execPath,
-    [fileURLToPath(new URL('./policy-workflow-child.js', import.meta.url)), phase, directory],
-    { encoding: 'utf8', timeout: 30_000 },
+  return runExperimentProcess(
+    new URL('./policy-workflow-child.js', import.meta.url),
+    directory,
+    phase,
+    expectedCode,
   )
-  writeFileSync(join(directory, `${phase}.log`), `${child.stdout ?? ''}${child.stderr ?? ''}`)
-  if (child.error || child.status !== expectedCode) {
-    throw new Error(`workflow ${phase} exited ${child.status}: ${child.error ?? child.stderr}`)
-  }
-  return performance.now() - started
 }
 
 function readResult(directory: string): WorkflowResult {
