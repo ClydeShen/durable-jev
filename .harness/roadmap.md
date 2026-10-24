@@ -5,6 +5,14 @@ implementation-notes).
 
 Every phase ends with something to demonstrate. The end of P2 gives an end-to-end slice.
 
+## Current execution order (owner decision, 2026-10-24)
+
+Preserve the demo checkpoint → document the plan → tidy the shared core without breaking the
+demo → freeze the experimental baseline → measure logistics policy changes → measure motor
+insurance adaptation → optional cross-domain A2A demonstration. See P8 below and the current
+handoff in `implementation-notes.md`. Historical P0-P7 completion marks are retained; they are
+not blanket claims that domain independence or module-wide Pi Durable integration is complete.
+
 ## P0 Skeleton and technical spikes (PRD M0)
 
 | Status | ID | Task | Done when | Depends on |
@@ -99,13 +107,13 @@ Every phase ends with something to demonstrate. The end of P2 gives an end-to-en
 | [ ] | T7.2 | B2 fixed workflow vs investigation helper | Completion rate, invalid call rate | T3.6, T4.6 |
 | [x] | T7.3 | B3 in-memory vs Pi Durable | Recovery success rate, repeated side effects (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | Overhead and swap test | T5.2 |
-| [ ] | T7.6 | B7 Durable Jev Agent cost: share of hand-written code, share of rules carried by Jev and the authoring agent, time of a live policy change, cost per rule, selection accuracy and miss rate, Jev's share of the extension rules; with a map of the rule boundaries | A measures table for the CEO; wrong releases listed separately and at 0 | T3.1, T4.3 |
+| [ ] | T7.6 | B7 Durable Jev Agent cost: share of hand-written code, share of rules carried by Jev and the authoring agent, time of a live policy change, cost per rule, selection accuracy and miss rate, Jev's share of the extension rules; with a map of the rule boundaries | Measured costs and all outcome categories reported, including wrong releases; zero wrong releases is a target, not a required finding | T3.1, T4.3, T8.4 |
 | [x] | T7.7 | `docs/agent-architecture.md` (for a technical CEO) | Each section links to implementation and evidence (written on scripted evidence first; live measures added when available) | T5.2a, T6.3a |
 | [~] | T7.5 | `docs/demo-guide.md`, `docs/report.md`: H1–H5 and the Durable Jev Agent conclusions, component recommendations | Every hypothesis has evidence (`docs/demo-guide.md` written; `docs/report.md` waits for the benchmarks) | T7.1–T7.4, T7.6 |
 | [x] | T7.8 | Record the existing reuse boundary before generalization; reproducible schema probes and source hashes | `pnpm eval:portability` records fixed owners/scopes/roles/invalidation dimensions and discarded applicability keys; source audit and limits in `docs/evaluation-plan.md` (not migration or execution evidence) | T7.7 |
 | [~] | T7.9 | Logistics policy-change protocol: reviewed mutations, direct-edit/authoring comparison, cost ledger and blind custody | P1 scripted characterization runs both activation modes and parameter-only/versioned variants (22 observations each); findings in `docs/evaluation-plan.md`. Policy review, authoring cost, independent blind evaluation and other change families remain unmeasured | T7.8 |
 
-The immediate evaluation priority is logistics policy adaptation and its full change cost. No
+The first measured change experiment after baseline freeze is logistics policy adaptation. No
 specific incumbent engine has been nominated. Motor insurance claims are the selected second
 domain, to follow the logistics experiment with a bounded synthetic policy pack. Any synthetic
 rewrite baseline remains to be agreed; neither experiment establishes enterprise migration cost.
@@ -113,3 +121,30 @@ rewrite baseline remains to be agreed; neither experiment establishes enterprise
 The goal is evidence about durable-agent capabilities, development effort, suitability and limits,
 not product delivery. Preserve failures as research findings; do not automatically turn coupling
 or missing capabilities into a generalization or productionization backlog.
+
+## P8 Baseline cleanup and domain experiments
+
+These tasks define the new order, not another product milestone or a new package hierarchy.
+Keep implementation slices small and preserve the current folder structure and code patterns.
+
+| Status | ID | Task | Done when | Depends on |
+|---|---|---|---|---|
+| [x] | T8.0 | Preserve the runnable demo remotely | Backup branch and annotated tag resolve to `0265a05`; checks, replay, faults and browser checks passed; restore steps in `docs/demo-checkpoint.md` | |
+| [x] | T8.1 | Align the handoff, scope, measurement boundary and working-branch plan | Decisions are committed on `baseline-cleanup-plan`, with backup refs and shelved-work warning | T8.0 |
+| [ ] | T8.2 | Extract the smallest shared rule/fact contracts | Common policy shape; logistics-specific scopes, roles, selection and special logic stay validated at the domain boundary; logistics parity verified | T8.1 |
+| [ ] | T8.3 | Align domain-agent runtime, durable ownership and A2A boundaries | Case handling and transport do not assume Shipment; checkpoint/resume/side-effect ownership is explicit and tested; no second engine or duplicated workflow state owner | T8.2 |
+| [ ] | T8.4 | Freeze the experimental baseline | Full checks, replay, faults and runnable demo reviewed; owner confirms scope; commit, material hashes and environment recorded | T8.3 |
+| [ ] | T8.5 | Run logistics policy-change experiments and authoring comparisons | T3.1/T7.6/T7.9 evidence from the frozen baseline; old-policy retention and re-evaluation scored and costed separately | T8.4 |
+| [ ] | T8.6 | Run the bounded motor-insurance claims experiment | Domain materials and necessary special logic use the shared agent execution path; complete post-baseline diff, effort and limits reported | T8.5 |
+| [ ] | T8.7 | Optional logistics vehicle-insurance collaboration over A2A | A bounded cross-domain task uses the same agent contracts without merging the two business models | T8.6 |
+
+Pre-baseline cleanup is preparation, excluded from policy-change and domain-migration cost
+measurements. Any further adaptation required after freeze is measured. Do not reset the baseline
+after seeing a costly change to erase that cost.
+
+Existing open work stays relevant: T3.2a/T7.2 distinguish actual agent decisions from fixed
+orchestration; T7.1 and independent blind evaluation test judgment quality; T7.4 tests transport
+overhead and interchangeability; T7.5 synthesizes findings. Recheck the actual Pi Durable coverage
+behind T4.7/T7.3 instead of silently extending their historical completion claims. T6.2/T6.3/T6.3a
+should expose evidence needed by the demo; T5.5 and T6.4 are lower priority unless that evidence
+needs them. Do not expand the console or build SSE merely to close every old roadmap row.

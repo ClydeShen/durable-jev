@@ -1,3 +1,11 @@
+# Project handoff
+
+Before continuing work, read `.harness/implementation-notes.md` (current handoff),
+`.harness/spec.md` (agreed scope) and `.harness/roadmap.md` (execution order).
+The runnable demo checkpoint is not the future experimental baseline. Do not move its backup
+branch or tag, resume the shelved refactor automatically, or start cost experiments before
+the cleanup baseline is frozen. Recovery instructions are in `docs/demo-checkpoint.md`.
+
 # Delivery agent skills
 
 Installed skills in `.agents/skills/` and `.claude/skills/` are tools for the delivery

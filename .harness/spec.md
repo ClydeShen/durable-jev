@@ -76,9 +76,10 @@ The POC's starting point: when rules grow in number (tens of thousands in import
 regulation, thousands of scenarios in cross-border logistics), structured and unstructured rules
 interleave, and there is state and human work, the traditional "code + rule engine + decision
 tables" takes a large team years. The aim is to show that a small team with a few Durable Jev
-Agents reaches the same result at an order of magnitude lower cost. The principle: let agents do as
+Agents might reach comparable results at substantially lower cost; an order-of-magnitude saving
+is a hypothesis, not an acceptance condition or an established result. The principle: let agents do as
 much as possible, leaving only the framework as hand-written code. The business scenario stays
-logistics; the demo and the report are organised around this direction.
+logistics first, with motor insurance claims as the later cross-domain experiment.
 
 - One business module = one Durable Jev Agent: a rule graph (declarative configuration:
   dependencies, applicability, state, invalidation) + leaf evaluators + human gates + Pi Durable
@@ -107,8 +108,9 @@ logistics; the demo and the report are organised around this direction.
   collaboration patterns, how to extend, maintenance and operations, known limits.
 - Questions to answer (measures for the CEO): the share of hand-written code; the share of rules
   Jev carries at run time and the share the authoring agent generated; the time one policy change
-  takes; the cost of implementing one rule; zero wrong releases in a blind test. The 40-rule
-  results are extrapolated only as a unit cost, with the extrapolation's assumptions stated.
+  takes; the cost of implementing one rule; wrong releases and other outcomes in a blind test.
+  Zero wrong releases is a target, not a result to manufacture. Small-sample unit costs do not
+  establish enterprise-scale savings.
 
 ## 9. Evaluation priority: reuse and migration economics
 
@@ -127,8 +129,9 @@ logistics; the demo and the report are organised around this direction.
   policy, and unshipped existing orders are re-evaluated under the new policy. Keep their costs
   and outcomes distinct.
 - Domain independence is a hypothesis to test, not an existing capability inferred from rule
-  counts or package boundaries. Record the current coupling before changing it, and charge any
-  generalization work to the candidate approach.
+  counts or package boundaries. Record the current coupling before changing it. The agreed
+  pre-baseline cleanup is excluded from later experiment costs; additional adaptation after
+  baseline freeze belongs to the measured candidate approach.
 - Durable agents are intended to preserve common execution mechanisms as rules and domains
   change. Separate the benefits of declarative rules and adapters from the benefits of durable
   waiting, recovery and idempotency; neither establishes the other's benefit by itself.
@@ -160,8 +163,9 @@ logistics; the demo and the report are organised around this direction.
   domains. Keep business concepts in the domain pack; do not scatter domain-name conditionals
   throughout shared execution code or hide business logic inside generic configuration.
 - The CEO-facing source walkthrough must show the complete migration diff: added materials,
-  domain-specific logic, wiring and any shared-code changes. Count preparatory refactoring too.
-  A small extension is the target to test, not a claim to manufacture by concealing earlier work.
+  domain-specific logic, wiring and any shared-code changes relative to the frozen experimental
+  baseline. Document pre-baseline cleanup separately, without charging it to later migration
+  measurements. A small extension is the target to test, not a claim to manufacture.
 
 ## 12. Shared concept: domain agents with a common execution contract
 
@@ -182,3 +186,25 @@ logistics; the demo and the report are organised around this direction.
 - Use the two concrete domains to drive the smallest shared contracts in existing packages.
   Keep declarative evaluation deterministic; agentic planning does not replace exact calculations
   or authorization checks. Preserve existing logistics outcomes throughout the extraction.
+
+## 13. Checkpoint, cleanup and measurement order
+
+- Preserve remote branch `backup/demo-2026-10-24` and annotated tag
+  `demo-checkpoint-2026-10-24`, both resolving to commit
+  `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`. Do not commit to, force-push or move these refs.
+  They preserve the runnable demo, not the future experimental baseline.
+- Continue on `baseline-cleanup-plan`, branched from that checkpoint. The immediate step is
+  documentation and a small-step cleanup plan, not automatic resumption of the shelved refactor.
+- First tidy the shared core within the existing folder structure, package pattern and engineering
+  rules. Keep the demo layout and behavior. Domain policies should use the same executable rule
+  shape, with domain-specific facts, identities, tools and special logic supplied at the boundary.
+- Validate each implementation slice with the relevant checks, and run `pnpm check`, `pnpm replay`
+  and `pnpm faults` before every push. Start and inspect the demo for changes that can affect it.
+  Keep source materials and skill files unchanged unless separately authorized as already specified.
+- Freeze a distinct experimental baseline only after cleanup passes the gates and the owner has
+  reviewed the preserved demo and scope. Record the commit, material hashes and environment.
+- Then measure policy changes within logistics, including both existing-order strategies; next
+  measure adaptation to motor insurance claims. Do not use pre-cleanup characterization as a
+  completed post-baseline cost or blind-test result.
+- Combining logistics vehicle-insurance work with insurance agents over A2A is an optional final
+  bonus, not a prerequisite for the baseline, domain experiments or the existing demo.

@@ -3,8 +3,90 @@
 Only plan changes and high-level points that differ from spec, design or roadmap and that the user
 should know.
 
+## Current handoff: baseline cleanup plan (2026-10-24)
+
+Read this section first when taking over from another delivery agent. The agreed scope is in
+`spec.md` (especially sections 9-13); the execution order is in `roadmap.md` P8. Earlier dated
+notes below are historical context, not instructions to override the latest owner decisions.
+
+### Branches and recovery
+
+- Repository: `ClydeShen/durable-jev`.
+- Frozen remote backup branch: `backup/demo-2026-10-24`.
+- Annotated recovery tag: `demo-checkpoint-2026-10-24`.
+- Both resolve to source commit `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`; origin was read back
+  after the atomic push. Do not move, delete or force-push these refs. They are preserved by
+  convention, not asserted to have GitHub protection rules.
+- Backup CI completed successfully: https://github.com/ClydeShen/durable-jev/actions/runs/40045476530.
+- Active planning/work branch: `baseline-cleanup-plan`, created from that commit. Push new work
+  here, not to the backup. Do not open a PR without the owner's request or merge it automatically.
+- The old branch `claude/wizardly-hopper-akkoyq` is historical, not the current continuation point.
+  PRs #17 and #18 were merged before the checkpoint. No cleanup PR has been opened.
+- Restore instructions: `docs/demo-checkpoint.md`. The checkpoint contains the polished logistics
+  demo and initial evaluation probes; it excludes the incomplete core refactor.
+
+### Shelved work is not the starting implementation
+
+An interrupted decoupling attempt is preserved only in this local repository as stash commit
+`646229f2622aa316e701778bd6ac292a4b31b10f` (initially `stash@{0}`, whose index can change).
+It includes earlier UI/docs work already committed in the checkpoint as well as incomplete
+core changes. Its attempted typecheck failed; it is not verified, pushed or part of the backup.
+Do not blindly apply/pop it onto this branch. If needed, inspect it separately and select small
+ideas after reviewing the plan. A fresh clone will not have this stash, and does not need it.
+
+### Direction and constraints
+
+This is research into durable-agent capability, suitability, limits and rule-development effort,
+not product delivery. Standardize the domain-agent execution concept: policy/rules, typed facts,
+tools and special evaluators belong to each domain; rule evaluation, durable execution integration
+and A2A contracts are shared. One domain may own several agents. Keep the current directory
+structure, package pattern, minimal SOLID approach and demo layout; no speculative plugin platform,
+parallel insurance stack or packaging explosion.
+
+The first domain remains logistics; the second is bounded synthetic motor-insurance claims.
+Policies should share an executable shape without disguising claims as shipments or removing
+domain validation. The optional final bonus is logistics vehicle-insurance work delegated to
+insurance agents over A2A. It must not block the core experiments.
+
+The owner clarified the measurement boundary: tidy the code first, preserve the demo, then freeze
+the experimental baseline. This agreed cleanup is excluded from subsequent change/migration
+costs. Changes required after freeze are measured. The runnable backup is not that future baseline.
+
+### Work arrangement and next action
+
+1. Start from this documentation-only plan on `baseline-cleanup-plan`; refactoring is paused.
+2. Before implementation, review the planned small slices and uncertain durable-state ownership
+   with the owner. Start with the existing rule/fact contracts, then runtime and transport boundaries.
+3. Keep every slice independently verifiable. Do not weaken validation, change protected materials
+   to pass a check, or claim module-wide Pi Durable execution based on helper-only recovery.
+4. At the cleanup gate, run full checks/replay/faults and inspect the running demo; ask the owner
+   to review it before recording the experimental baseline commit and material/environment hashes.
+5. After freeze, measure logistics policy changes (both existing-order strategies), then insurance
+   adaptation; finish controlled comparisons, independent blind evaluation and the report.
+
+At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
+passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh
+`pnpm start` and browser checks covered light/dark views, filtering, drawers, scene dialogs,
+timeline and order entry; 16 accessibility scans had no violations. These are demo/regression
+checks, not independent blind evidence or measured authoring savings.
+
+Known research boundaries to retain: business waiting/state currently uses the project SQLite
+runtime; Pi Durable checkpoints the investigation helper, with module-level feasibility shown
+separately in a spike. Some cross-agent behavior is coordinator propagation, not autonomous peer
+planning. The pre-cleanup P1 probe shows a parameter-only R35 change can leave a stale approval
+task, while a version bump cancels it but can require extra approvals. Preserve those observations;
+re-run characterization after cleanup rather than treating the probe as a baseline cost result.
+
+Follow the existing engineering rules: scripted mode by default, no live calls without explicit
+authorization, full `pnpm check`, `pnpm replay`, `pnpm faults` before every push, and small
+Conventional Commits. Protected materials require owner consent and owner-run materials locking.
+Installed delivery-agent skills are read/use-only, not project source to modify.
+
+## Historical decision log
+
 | Date | Point | Effect |
 |---|---|---|
+| 2026-10-24 | Preserve the verified demo remotely, then plan a demo-preserving core cleanup before freezing the experimental baseline; logistics changes precede motor insurance, with cross-domain A2A optional | Backup `0265a05`; working branch `baseline-cleanup-plan`; P8 defines the new order; pre-baseline cleanup is excluded from later change/migration costs |
 | 2026-10-19 | Jev has an official TS SDK, `@typesafe-ai/sdk` (earlier wrongly thought missing); the key variable is `TYPESAFE_API_KEY` | T0.5 needs no hand-written client; real calls wait for the key, T0.5 stays in progress |
 | 2026-10-19 | Dependencies chosen at their latest: pi-durable 1.3.0, pi-ai 1.3.0, @a2a-js/sdk 1.3.0 | Pinned after P0 verification |
 | 2026-10-19 | TypeScript 6.0.3 rather than the latest 7.x (native compiler), to avoid compatibility risk with `tsc -b` project references | No functional effect |

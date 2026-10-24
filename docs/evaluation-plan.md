@@ -1,7 +1,8 @@
 # Evaluation plan: durable-agent capabilities and development cost
 
 Status: experiment design and source audit, not a performance or cost result. The immediate
-priority is policy changes within logistics. Motor insurance claims are the selected second domain. There is
+priority is a demo-preserving shared-core cleanup, followed by an explicit baseline freeze.
+Only then measure logistics policy changes and motor insurance adaptation. There is
 no nominated incumbent engine; large real-world rule estates motivate the question, not a
 specific product comparison.
 
@@ -9,6 +10,19 @@ This is a capability-exploration POC, not a product delivery. The central hypoth
 durable agents can reduce the effort of building and changing rule-driven workflows. Explore
 feasibility, suitability and limits; do not require a fully decoupled engine before measuring.
 Current coupling and synthetic materials bound the conclusions rather than invalidate the research.
+
+## Measurement boundary
+
+The runnable checkpoint `demo-checkpoint-2026-10-24` (`0265a05`) is a recovery point, not the
+experimental baseline. The owner explicitly excludes the agreed pre-baseline cleanup from later
+policy-change and cross-domain migration costs. Document that preparation separately; do not
+present subsequent results as the total cost of creating the engine from scratch.
+
+Freeze the baseline after the cleanup gates and owner review, recording the commit, material
+hashes and environment. Count all further adaptation, preparation, review and failed attempts
+required by each measured experiment. Do not move the baseline retrospectively to exclude costs.
+The source audit and P1 observations below describe the pre-cleanup checkpoint and must be
+re-characterized after freeze, not relabeled as post-baseline or blind results.
 
 ## Questions the evidence must answer
 
@@ -149,8 +163,8 @@ tools and special evaluators, running through shared rule evaluation, durable ex
 contracts. Each industry can supply several agents with different responsibilities. A2A supplies
 task interoperability, not a universal business-data schema.
 
-Necessary extraction of logistics coupling is part of this experiment's implementation cost,
-not forbidden scope growth. Start with the existing packages and two concrete domain shapes;
+Necessary extraction of logistics coupling belongs to the agreed pre-baseline cleanup, outside
+later experiment costs. Further changes needed after freeze are counted. Start with the existing packages and two concrete domain shapes;
 do not build a general-purpose extension platform. Preserve domain-specific validation.
 
 Target one added domain material pack (policy, rules, cases and reviewed expectations), plus
@@ -164,8 +178,9 @@ out of shared execution logic, without forcing special business logic into opaqu
 Preserve the logistics behavior and evaluate both domains through the same execution mechanisms.
 
 For the technical CEO, present the full migration diff grouped as materials, domain-specific
-logic, wiring and shared-code changes. Include any earlier extraction/refactoring effort in the
-cost ledger, not just the final small insurance addition. The desired demonstration is that
+logic, wiring and shared-code changes relative to the frozen baseline. Document pre-baseline
+extraction separately; include any additional extraction after freeze in the experiment ledger.
+The desired demonstration is that
 changing domain or policy needs a small, understandable change; if the experiment requires more,
 show that limitation instead of hiding it. This does not require a new application feature.
 
