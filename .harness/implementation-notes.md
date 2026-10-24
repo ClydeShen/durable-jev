@@ -89,11 +89,41 @@ Browser checks on that candidate passed filtering, drawers, scene dialogs, timel
 entry in both themes; 16 accessibility scans found no violations and no page errors were recorded.
 The existing console layout is unchanged. No live model calls were made.
 
-T8.2 is still in progress: rule owners/roles/scopes, invalidation dimensions, fact/FEEL contexts
-and graph-level classifier selection still contain logistics assumptions. CaseRuntime, human
+At the end of that first slice, fact/FEEL contexts still contained logistics assumptions; the
+second slice below removes that fixed input shape. Rule owners/roles/scopes, invalidation dimensions
+and graph-level classifier selection remain coupled. CaseRuntime, human
 gates and A2A still accept Shipment; durable ownership has not changed. Do not claim cross-domain
 execution or freeze the experimental baseline based on this slice. Protected materials, skills,
 the backup branch and recovery tag remain unchanged.
+
+### Second cleanup slice: normalized fact inputs and contexts
+
+`CaseFacts` now carries root facts, scoped collections, a domain-built expression context and
+an optional selection profile. Logistics supplies `order`, `cargoItems`, `legs`, `item` and `leg`
+aliases in `buildCaseFacts`; the engine no longer constructs those business objects. Context
+assembly, scope lookup and input-path reading are shared in the existing rule-engine files.
+FEEL input fingerprinting recognizes supplied context roots rather than a fixed logistics list;
+business data cannot override policy parameters. Customer/destination selection values now come
+from logistics facts instead of being read from the order inside the graph evaluator.
+
+This changes the input contract, not the wire scope identifiers or their storage keys. Shipment
+validation and committed policy expressions are unchanged. RuleScope/CheckScope and scope-key
+compatibility still use logistics vocabulary, as does classifier selection; those are subsequent
+slices, not evidence of completed cross-domain execution. Runtime, persistence and A2A are untouched.
+
+Verification: 145 tests with zero clones, eight scripted replay cases, the fault suite (17 pass,
+F06 not applicable), and 26 screening samples with no missed rules. A one-off comparison against
+`2e9d592` used the same fixed clock for all eight initial case views: records, outcomes, input
+fingerprints and human tasks (including identifiers) matched exactly. Local artifacts are
+`/tmp/durable-jev-before-facts-cleanup.json` and `/tmp/durable-jev-after-facts-cleanup.json`; they
+are not committed and are not independent blind evidence. The candidate browser check uses
+ports 4500-4504, control port 4599 and a separate temporary database, leaving earlier demos alone.
+Browser interaction checks and 16 light/dark accessibility scans passed with no page errors;
+the console geometry is unchanged. This isolated demo does not reset earlier demo databases.
+
+Next: separate domain scope/identity vocabulary and classifier configuration without weakening
+logistics validation or changing existing scope keys. T8.2 remains in progress; do not start cost
+measurements, freeze the baseline, or restore the shelved refactor automatically.
 
 At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
 passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh

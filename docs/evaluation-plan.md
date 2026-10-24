@@ -57,8 +57,10 @@ The following audit describes the recovery checkpoint, not a claim that every co
 unchanged. The first cleanup slice makes applicability indexing dimension-agnostic and supplies
 selection/table vocabulary from logistics constraints. Unknown applicability keys are retained by
 the shared schema and rejected when unsupported by the logistics validator, rather than stripped.
-Owners, roles, scopes, fact contexts, classifier selection and runtime payloads still require
-further cleanup. Current progress is recorded in `.harness/implementation-notes.md`.
+The second slice normalizes root/scoped facts and moves FEEL aliases plus customer/destination
+selection values to logistics assembly. Owners, roles, scope identifiers, classifier selection
+and runtime payloads still require further cleanup. Current progress is recorded in
+`.harness/implementation-notes.md`.
 
 `pnpm eval:portability` records schema compatibility probes and LF-normalized source hashes in
 `var/reports/portability-baseline.json`. It does not call models, modify source materials or
