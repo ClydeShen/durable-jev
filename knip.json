@@ -39,6 +39,7 @@
         "src/investigation-main.ts",
         "src/investigation-child.ts",
         "src/gate-change-main.ts",
+        "src/jev-probe-main.ts",
         "src/faults-main.ts",
         "src/faults/crash-child.ts"
       ],

@@ -35,6 +35,8 @@ jobs:
         run: pnpm eval:investigation
       - name: Approval and evidence migration with authoring rehearsal
         run: pnpm eval:gate-change
+      - name: Prepare bounded semantic probes without network calls
+        run: pnpm eval:jev-probe prepare
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
@@ -63,3 +65,4 @@ jobs:
       - run: pnpm eval:policy-change
       - run: pnpm eval:investigation
       - run: pnpm eval:gate-change
+      - run: pnpm eval:jev-probe prepare

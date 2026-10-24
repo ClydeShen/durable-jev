@@ -32,6 +32,7 @@
     "eval:policy-change": "node eval/runner/dist/policy-change-main.js",
     "eval:investigation": "node eval/runner/dist/investigation-main.js",
     "eval:gate-change": "node eval/runner/dist/gate-change-main.js",
+    "eval:jev-probe": "node eval/runner/dist/jev-probe-main.js",
     "faults": "node eval/runner/dist/faults-main.js",
     "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && node scripts/materials-lock.mjs --check && pnpm knip && pnpm duplication && pnpm test",
     "author": "node tools/rule-authoring/dist/main.js",
