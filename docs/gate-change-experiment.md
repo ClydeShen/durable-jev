@@ -89,3 +89,27 @@ Next: freeze an independent direct-edit versus authoring comparison, agree a bou
 budget, and record human review/repair separately from generation. Independent held-out custody
 and reviewed labels are still needed for blind claims. Insurance remains the next domain, not a
 reason to skip these outstanding evidence limits.
+
+## Readability follow-up
+
+The owner approved a local refactor after reviewing checkpoint `workflow-gate-changes-2026-10-24`
+(`d520c01`). Recovery for this follow-up is `workflow-readability-2026-10-24` and its matching
+`backup/` branch. This is post-baseline preparation effort, not a new measurement baseline.
+
+- `gate-change-packs.ts`: `gateMutations` owns the rule ID, source case and policy paragraph for
+  each mutation. Both execution and material preparation use it; no generic plugin layer.
+- `gate-change.ts`: six explicit `gateCases` separate case kind from existing-order policy
+  activation. The type does not allow a new case to start completed. `scenarioEvidence` preserves
+  the original report fields; approval and operation probes now have separate functions.
+- `gate-change-main.ts`: iterates the six cases directly instead of constructing them through
+  activation/initial-state loops. Report names, scenario order and presenter instructions remain.
+- The authoring entry constructs one request for both generation and its evidence receipt.
+  Terminal formatting is separate from orchestration. Prompts, validation and application are
+  unchanged; logistics constraints and R29 are still explicit domain coupling, not generalized.
+
+The comparison with the clean `d520c01` report preserves all 24 observations, task records,
+candidate hashes and authoring receipts. Only run paths, proposal filename timestamps, generation
+times, attempt durations and source provenance are excluded from semantic comparison. Markdown
+reports are identical. Two small regression tests protect the six-case ordering/report shape and
+mutation mappings. No production file/package/dependency was added; no engine, UI, protected
+material or skill was changed. Extra explicit types/functions improve reading, not total line count.

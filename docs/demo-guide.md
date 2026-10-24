@@ -214,6 +214,8 @@
 
 技术观众可同时打开该运行目录里 `P2-new-version/policy-v1.md`、`rules.json`，定位 R13；再看 P3 的 R21。指出本轮规则核心没有修改；实验和编写工具的准备成本仍计入。不要现场把提案应用到原始物料目录。
 
+若继续审视源码，打开 `eval/runner/src/gate-change-packs.ts` 的 `gateMutations`，看规则、案例和政策文字的对应；再打开 `gate-change.ts` 的 `gateCases` 六行配置，以及分开的 `probeApproval`、`probeOperation`。说明：“这是实验代码的可读性整理，24 组观测和报告内容未变，没有再建一套引擎。”编写入口 `tools/rule-authoring/src/main.ts` 中，同一份 request 同时用于生成和证据记录。此整理已单独留底于 `workflow-readability-2026-10-24`，不是新 baseline。
+
 ## 后续保险领域的展示位置（尚未实现，不现场操作）
 
 接在场景 9–11 后，用一句话说明下一步：“用一份小型汽车理赔政策，检查金额、资料、人工审批和恢复能复用多少；展示新增物料、领域逻辑、接线和共享核心的完整改动。”当前不展示不存在的领域切换按钮，也不报尚未测量的迁移成本。保险实验完成后，再补实际点击步骤；物流车辆保险通过 A2A 委托保险 agent 是可选收尾。

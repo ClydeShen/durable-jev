@@ -23,6 +23,9 @@ handoff are synchronized. P2/P3 now add 24 gate-migration observations and two s
 rehearsals (`docs/gate-change-experiment.md`). Both mutations are owner-approved; independent
 authoring/cost/blind evidence is not complete. Next agree bounded live comparisons and independent
 review before insurance; no new baseline cleanup.
+The owner-approved readability follow-up keeps the same P2/P3 evidence and report contract,
+with explicit scenarios and mutation mappings. It does not complete another evaluation task,
+authorize live calls or reset post-baseline costs; see `workflow-readability-2026-10-24`.
 
 ## P0 Skeleton and technical spikes (PRD M0)
 

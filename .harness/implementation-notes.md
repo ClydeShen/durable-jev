@@ -45,6 +45,15 @@ manual candidates: do not claim independent generation, measured savings or live
 Recovery: `workflow-gate-changes-2026-10-24` and matching `backup/` branch. Demo scene 11 and
 the effort ledger are synchronized; original demo/baseline/W1/W2 refs remain unchanged.
 
+Owner-approved readability follow-up: six typed cases replace the nested scenario construction;
+P2/P3 rule/case/policy mappings live together; approval and operation probes are separate; the
+authoring CLI constructs its request once and formats its summary separately. Existing report
+shape/order and business observations match the clean `d520c01` run. No production files or
+packages were added; two tests in one test file protect the scenario table and mutation mapping.
+Recovery is `workflow-readability-2026-10-24` with a matching `backup/` branch. Preserve the
+original P2/P3 recovery refs. This is readability work, not new business capability or a cost reset.
+The owner approved refactoring only; the proposed live-generation budget is still unapproved.
+
 Next agree bounded live authoring/investigation comparisons and independent human review/cost
 recording. T8.5 and T7.2 remain open; finish that evidence before insurance.
 Do not interpret W2's expected-loss checks as successful memory recovery or claim savings from
