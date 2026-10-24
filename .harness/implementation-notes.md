@@ -156,6 +156,27 @@ uses the committed acceptance description and reruns the checks. Protected mater
 skills and recovery refs remain unchanged. Formal freeze still requires owner confirmation.
 Implementation candidate commit: `9f8a84a1466273a59621b37bdb1c14b6838b3dc4`.
 
+### Owner-requested quality repair before freeze
+
+The subsequent read-only audit reproduced concurrent decisions reading the same OPEN task before
+entering the case queue. The runtime now re-reads the task inside that queue; regressions cover
+duplicate operation completion and conflicting approval/rejection without evidence overwrite.
+Native/A2A share complete action validation, and rule outcomes have one schema-derived type.
+Malformed payloads are rejected before business calls. Carry-forward remains runtime reconciliation,
+not a remotely submitted action; existing expire/cancel/supersede inputs remain shape-validated.
+
+The duplication gate is now actually 0%, includes CSS and maintenance JavaScript, and still
+excludes tests, generated files and installed skills. Shared control declarations were consolidated
+without changing layout. The gate covers 154 production files with zero detected clones, at the
+existing 50-token minimum. Checks now pass 157 tests; this is correctness preparation before freeze,
+not a measured policy change. Folder responsibilities and acceptance rationale are in
+`docs/baseline.md`. No new package or dependency was added, and protected materials remain untouched.
+Current implementation candidate: `b439834295d9c645630820c5c702a535ba6cf07f`, superseding
+the earlier `9f8a84a` candidate without moving recovery refs. Native/A2A HTTP flows and resets
+still match; 16 browser accessibility scans pass and shell geometry is unchanged at five viewports.
+The local acceptance manifest is regenerated for this candidate. Formal freeze remains pending
+owner confirmation; no post-baseline experiment has started.
+
 At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
 passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh
 `pnpm start` and browser checks covered light/dark views, filtering, drawers, scene dialogs,

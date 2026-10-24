@@ -3,7 +3,7 @@
 Status: cleanup and technical acceptance candidate; owner confirmation is required before freeze.
 Work branch: `baseline-cleanup-plan`. The frozen runnable-demo backup remains
 `backup/demo-2026-10-24` / `demo-checkpoint-2026-10-24` at `0265a05`.
-Implementation candidate: `9f8a84a1466273a59621b37bdb1c14b6838b3dc4`.
+Implementation candidate after quality repair: `b439834295d9c645630820c5c702a535ba6cf07f`.
 
 This is a research POC, not an insurance product or a production-ready general-purpose engine.
 The two cleanup stages establish a small shared execution boundary without changing the existing
@@ -32,6 +32,29 @@ additional adaptations after freeze must be counted.
 the same runtime, SQLite waiting/recovery and native/A2A adapters. This is a contract test, not
 an insurance migration result or cost benchmark.
 
+## Folder and code distribution strategy
+
+| Location | Responsibility |
+|---|---|
+| `apps/` | Process entry points and composition: agent host, coordinator API and web console; business-specific wiring stays here rather than inside the shared engine |
+| `packages/` | Existing reusable boundaries: contracts, pure rule evaluation, case runtime, human tasks, investigation harness, transport, models and storage/service support; `logistics` supplies domain facts, vocabulary, evaluators and tools |
+| `tools/` | Launcher and reviewed rule-authoring workflow; not another runtime or a second implementation of the engine |
+| `eval/` | Protected business materials and labels, plus executable replay/fault/experiment runners; generated reports go to ignored `var/reports/` |
+| `scripts/` | Repository maintenance and engineering checks, not business logic |
+| `docs/` | User-facing architecture, operation, demo and evidence descriptions |
+| `.harness/` | Shared delivery-agent decisions, roadmap and handoff; not the runtime harness (`packages/agent-harness`) |
+| `.agents/skills/`, `.claude/skills/` | Read/use-only delivery tools, excluded from project source gates |
+
+Packages depend inward and import other packages only through their named public entries. Tests
+sit beside their owners; native/A2A adapters share request validation instead of duplicating it.
+Common controls and component-owned styles remain together in `apps/web/src/styles.css`, using
+existing tokens. No new package, dependency or folder hierarchy is required by this quality repair.
+
+This distribution is suitable for an experimental baseline because the reusable execution path
+can be distinguished from logistics assembly, exercised independently, and compared against a
+fixed source/material/environment reference. It does not prove that insurance will require no
+shared-code changes: the complete later migration diff and effort must still be measured.
+
 ## Durable ownership
 
 | State | Authoritative owner | Resume behavior |
@@ -47,7 +70,13 @@ feasibility, while the current business runtime uses project SQLite persistence.
 
 ## Technical acceptance evidence
 
-- Full quality gate: 155 tests, zero clones, strict types, boundaries, materials lock and unused-code checks.
+- Full quality gate: 157 tests, zero clones across 154 production TS/TSX/CSS/JavaScript files,
+  strict types, boundaries, materials lock and unused-code checks. The duplication gate enforces
+  0% at a 50-token minimum; tests, generated files and installed skills are excluded.
+- Concurrent completion and conflicting approval/rejection tests preserve the first accepted
+  task result. The runtime re-reads task state inside its per-case process-local queue.
+- Native and A2A tests reject malformed outcomes and decisions before calling the business client,
+  including missing actors/evidence fields, invalid statuses and remote carry-forward attempts.
 - Eight scripted logistics replays; 17 passing fault scenarios, with F06 not applicable (polling, no SSE).
 - Twenty-six screening samples with no missed rules; S14 selects three extras. These are development data.
 - Eight initial case snapshots match the pre-cleanup reference, including outcomes, fingerprints
