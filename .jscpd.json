@@ -1,8 +1,8 @@
 {
-  "path": ["packages", "apps", "tools", "eval/runner/src"],
-  "format": ["typescript", "tsx"],
+  "path": ["packages", "apps", "tools", "eval/runner/src", "scripts"],
+  "format": ["typescript", "tsx", "css", "javascript"],
   "ignore": ["**/dist/**", "**/node_modules/**", "**/*.test.ts"],
   "minTokens": 50,
-  "threshold": 1,
+  "threshold": 0,
   "reporters": ["console"]
 }

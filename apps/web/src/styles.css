@@ -105,12 +105,18 @@ label {
 
 input,
 select,
-textarea {
+textarea,
+button {
   box-sizing: border-box;
   min-height: var(--control-height);
   font: inherit;
   font-size: var(--control-font);
   line-height: var(--control-line-height);
+}
+
+input,
+select,
+textarea {
   padding: var(--space-1) var(--space-2);
   border: 1px solid var(--control-border);
   border-radius: var(--control-radius);
@@ -141,11 +147,6 @@ select {
 }
 
 button {
-  box-sizing: border-box;
-  min-height: var(--control-height);
-  font: inherit;
-  font-size: var(--control-font);
-  line-height: var(--control-line-height);
   padding: 4px 12px;
   border: none;
   border-radius: var(--control-radius);
