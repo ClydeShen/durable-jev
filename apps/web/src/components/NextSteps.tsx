@@ -23,13 +23,15 @@ function TaskStep({
   return (
     <li>
       <RoleChip forRole={task.requiredRole} />
-      <span>{task.taskType === 'APPROVAL' ? 'approves' : 'completes'}</span>
-      <Chip onClick={onShowRule} title="Show this rule in the rule graph">
-        {task.ruleId}
-      </Chip>
-      <span className="muted">
-        {title}
-        {step}
+      <span className="next-step-action">
+        <span>{task.taskType === 'APPROVAL' ? 'approves' : 'completes'}</span>
+        <Chip onClick={onShowRule} title="Show this rule in the rule graph">
+          {task.ruleId}
+        </Chip>
+        <span className="muted">
+          {title}
+          {step}
+        </span>
       </span>
     </li>
   )
@@ -62,14 +64,14 @@ export function NextSteps({ detail, rules, onShowRule }: Props) {
     ...proposals.map((proposal) => (
       <li key={proposal.investigationId}>
         <RoleChip forRole="transportPlanner" />
-        <span>confirms the reroute</span>
+        <span className="next-step-action">confirms the reroute</span>
       </li>
     )),
     ...(detail.status === 'READY_TO_DISPATCH'
       ? [
           <li key="dispatch">
             <RoleChip forRole="dispatcher" />
-            <span>confirms dispatch</span>
+            <span className="next-step-action">confirms dispatch</span>
           </li>,
         ]
       : []),

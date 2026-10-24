@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   /* Colours meet WCAG 2.2 AA: white text on every status colour is at least 4.5:1. */
   --bg: #f6f7f9;
   --surface: #ffffff;
@@ -30,6 +31,15 @@
   --control-height: 28px;
   --control-height-small: 24px;
   --control-font: 13px;
+  --control-line-height: 1.2;
+  --control-radius: 6px;
+  /* Shared inset lines for the shell, working views and detail surfaces. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --panel-inset: var(--space-4);
+  --detail-label-width: 128px;
   font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -37,6 +47,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
+    color-scheme: dark;
     --bg: #14171c;
     --surface: #1d2129;
     --canvas: #0f1216;
@@ -59,6 +70,7 @@ body {
 }
 
 .app {
+  --role: var(--muted);
   display: grid;
   grid-template-columns: 248px 1fr 320px;
   grid-template-rows: auto 1fr;
@@ -68,11 +80,14 @@ body {
 .role-bar {
   grid-column: 1 / -1;
   display: flex;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: center;
-  padding: 10px 16px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  padding: 10px var(--panel-inset);
+  background: color-mix(in srgb, var(--role) 7%, var(--surface));
+  border-bottom: 3px solid var(--role);
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
 }
 
 .role-bar h1 {
@@ -95,11 +110,24 @@ textarea {
   min-height: var(--control-height);
   font: inherit;
   font-size: var(--control-font);
-  padding: 4px 6px;
+  line-height: var(--control-line-height);
+  padding: var(--space-1) var(--space-2);
   border: 1px solid var(--control-border);
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   background: var(--surface);
   color: var(--text);
+  caret-color: var(--link);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  flex: none;
+  width: 14px;
+  height: 14px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--accent);
 }
 
 /* One chevron for every select, inset like the text so both sit on the same centre line. */
@@ -110,7 +138,6 @@ select {
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 12px;
-  line-height: 1.2;
 }
 
 button {
@@ -118,10 +145,10 @@ button {
   min-height: var(--control-height);
   font: inherit;
   font-size: var(--control-font);
-  line-height: 1.2;
+  line-height: var(--control-line-height);
   padding: 4px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--control-radius);
   background: var(--accent);
   color: #fff;
   cursor: pointer;
@@ -142,7 +169,19 @@ button.icon-button {
   display: inline-grid;
   place-items: center;
   width: var(--control-height);
+  flex: none;
   padding: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  button.secondary:enabled:hover {
+    background: var(--bg);
+    border-color: var(--control-border);
+  }
 }
 
 /* Shared building blocks: a labelled field, badges, chips, the detail drawer. */
@@ -173,12 +212,14 @@ button.icon-button {
   font-size: 13px;
   min-width: 0;
   overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
 }
 
 .chips {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 /*
@@ -226,6 +267,17 @@ button.chip.link {
 
 button.chip.link:hover {
   border-color: var(--link);
+}
+
+.field-value > button.chip.link {
+  max-width: 100%;
+  height: auto;
+  min-height: var(--control-height-small);
+  padding-block: 2px;
+  line-height: 1.4;
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: anywhere;
 }
 
 /* Entity chip: a person or an agent, round, in its colour. */
@@ -335,6 +387,7 @@ button.entity-chip:hover {
 }
 
 .drawer {
+  box-sizing: border-box;
   position: absolute;
   top: 0;
   right: 0;
@@ -352,7 +405,7 @@ button.entity-chip:hover {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  padding: 14px 16px;
+  padding: var(--space-3) var(--panel-inset);
   border-bottom: 1px solid var(--border);
 }
 
@@ -362,6 +415,8 @@ button.entity-chip:hover {
   align-items: center;
   gap: 8px;
   flex: 1;
+  min-width: 0;
+  min-height: var(--control-height);
 }
 
 .drawer-heading h3 {
@@ -370,16 +425,34 @@ button.entity-chip:hover {
 }
 
 .drawer-body {
+  min-height: 0;
   overflow-y: auto;
-  padding: 4px 16px 16px;
+  padding: var(--space-1) var(--panel-inset) var(--space-4);
+}
+
+.drawer .fields {
+  grid-template-columns: var(--detail-label-width) minmax(0, 1fr);
+}
+
+.drawer .field-label {
+  white-space: normal;
+  line-height: 1.5;
 }
 
 .drawer-section h4 {
-  margin: 16px 0 8px;
+  margin: 0;
   font-size: 13px;
   color: var(--muted);
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 var(--space-2);
 }
 
 blockquote {
@@ -486,8 +559,9 @@ button.agent-link small {
 
 .sidebar,
 .task-panel {
+  min-height: 0;
   overflow-y: auto;
-  padding: 12px;
+  padding: var(--space-3) var(--panel-inset);
   background: var(--surface);
   border-right: 1px solid var(--border);
 }
@@ -495,11 +569,25 @@ button.agent-link small {
 .task-panel {
   border-right: none;
   border-left: 1px solid var(--border);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
+    var(--surface) 160px
+  );
 }
 
 h2 {
   font-size: 15px;
   margin: 0 0 10px;
+}
+
+.playback-control > h2,
+.agent-panel > h2,
+.task-panel > h2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--control-height);
 }
 
 .case-list-heading {
@@ -567,7 +655,7 @@ main {
 }
 
 .case-header {
-  padding: 12px 16px;
+  padding: var(--space-3) var(--panel-inset);
   border-bottom: 1px solid var(--border);
 }
 
@@ -575,6 +663,7 @@ main {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: var(--control-height);
 }
 
 .case-title h2 {
@@ -623,6 +712,7 @@ button.primary-action {
   gap: 4px;
   font-size: 15px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
@@ -743,7 +833,14 @@ td {
   background: var(--bg);
 }
 
+.task-panel .task {
+  border-left: 3px solid var(--role);
+}
+
 .empty {
+  margin: var(--space-2) 0;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--muted);
 }
 
@@ -810,7 +907,7 @@ button.agent-link:hover {
 /* 2.5.8: click targets are at least 24 by 24 pixels. */
 button.small {
   min-height: var(--control-height-small);
-  min-width: 24px;
+  min-width: var(--control-height-small);
   padding: 2px 8px;
   font-size: 12px;
 }
@@ -818,20 +915,22 @@ button.small {
 .view-tabs {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  padding: 6px 16px;
+  padding: 6px var(--panel-inset);
   border-bottom: 1px solid var(--border);
 }
 
 .timeline {
   flex: 1;
   overflow: auto;
-  padding: 8px 16px;
+  padding: var(--space-2) var(--panel-inset);
   background: var(--canvas);
 }
 
 .timeline-filter {
-  margin-bottom: 8px;
+  min-height: var(--control-height);
+  margin-bottom: var(--space-2);
 }
 
 .agent-node {
@@ -849,6 +948,24 @@ button.small {
   align-items: center;
   gap: 6px;
   font-size: 14px;
+}
+
+.agent-node footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: var(--space-2);
+}
+
+.agent-node-stats {
+  display: flex;
+  gap: var(--space-3);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.agent-node .agent-node-stats strong {
+  color: var(--text);
 }
 
 .agent-node p {
@@ -887,7 +1004,7 @@ button.small {
 }
 
 .investigations {
-  padding: 0 16px 8px;
+  padding: 0 var(--panel-inset) var(--space-2);
 }
 
 .investigation {
@@ -899,6 +1016,19 @@ button.small {
 
 .investigation p {
   margin: 6px 0;
+}
+
+.investigation header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.investigation-lead {
+  margin: 6px 0;
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .investigation .rationale {
@@ -967,18 +1097,19 @@ details.explainer dd {
 
 /* Task cards, investigation card, agent nodes */
 
-.task-panel h2 {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 20px;
+  height: 20px;
   font-size: 12px;
   padding: 0 7px;
   border-radius: 10px;
   background: var(--accent);
   color: #fff;
+  font-variant-numeric: tabular-nums;
 }
 
 .task-header {
@@ -1004,7 +1135,10 @@ details.explainer dd {
 
 label.evidence span {
   display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
   justify-content: space-between;
+  gap: 2px var(--space-2);
   color: var(--text);
 }
 
@@ -1013,35 +1147,11 @@ label.evidence code {
   color: var(--muted);
 }
 
-.investigation header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
 .quote-label {
   display: block;
   margin-bottom: 2px;
   font-size: 11px;
   color: var(--muted);
-}
-
-.agent-node footer {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.agent-node-stats {
-  display: flex;
-  gap: 12px;
-  color: var(--muted);
-}
-
-.agent-node .agent-node-stats strong {
-  color: var(--text);
 }
 
 /* Playback: speed control, the rule being played, the caption. */
@@ -1136,6 +1246,8 @@ label.evidence code {
 }
 
 .narration-text {
+  display: flex;
+  flex-direction: column;
   flex: 1;
 }
 
@@ -1225,7 +1337,9 @@ span.judgement-bar > span {
 /* Selecting a rule: it, the rules it needs (upstream), the rules that need it (downstream). */
 
 .rule-node.relation-unrelated {
-  opacity: 0.25;
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--surface) 70%, var(--canvas));
+  color: var(--muted);
 }
 
 .rule-node.relation-upstream {
@@ -1284,6 +1398,11 @@ button.node-open:focus-visible {
 
 /* 2.3.3: no pulsing or flowing when the system asks for reduced motion. */
 @media (prefers-reduced-motion: reduce) {
+  .role-bar,
+  .focus-switch::after {
+    transition: none;
+  }
+
   .rule-node.playing {
     animation: none;
     transform: none;
@@ -1308,10 +1427,6 @@ button.node-open:focus-visible {
  * change of role is visible at a glance while buttons and status colours stay the same. Every
  * hue reaches 3:1 against the surface in both themes.
  */
-.app {
-  --role: var(--muted);
-}
-
 [data-role="warehouseOperator"] {
   --role: #0284c7;
 }
@@ -1344,14 +1459,6 @@ button.node-open:focus-visible {
   [data-role="technicalEvaluator"] {
     --role: #94a3b8;
   }
-}
-
-.app .role-bar {
-  border-bottom: 3px solid var(--role);
-  background: color-mix(in srgb, var(--role) 7%, var(--surface));
-  transition:
-    background-color 300ms ease,
-    border-color 300ms ease;
 }
 
 /* The role menu: the current role as a chip; its options list every role with its colour. */
@@ -1404,32 +1511,7 @@ button.role-current {
   font-weight: 600;
 }
 
-.app .task-panel {
-  background: linear-gradient(
-    to bottom,
-    color-mix(in srgb, var(--role) 6%, var(--surface)) 0,
-    var(--surface) 160px
-  );
-}
-
-.app .task-panel .task {
-  border-left: 3px solid var(--role);
-}
-
-.investigation-lead {
-  margin: 6px 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
 /* Role chips: a role in its colour; clicking switches to it. */
-
-.section-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-}
 
 button.link-action {
   min-height: 24px;
@@ -1513,11 +1595,6 @@ div.technical-detail > dl > dd {
   overflow-wrap: anywhere;
 }
 
-.narration-text {
-  display: flex;
-  flex-direction: column;
-}
-
 table.record-table {
   width: auto;
   font-size: 12px;
@@ -1541,7 +1618,7 @@ table.record-table > thead > tr > th {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin: 8px 16px;
+  margin: var(--space-2) var(--panel-inset);
   padding: 8px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
@@ -1556,26 +1633,38 @@ table.record-table > thead > tr > th {
 
 .next-label {
   flex: none;
-  padding-top: 3px;
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height-small);
   font-weight: 700;
   font-size: 12px;
   letter-spacing: 0.05em;
 }
 
 .next-steps ul {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-1) 6px;
+  min-width: 0;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .next-steps ul > li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
+}
+
+.next-step-action {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+  min-height: var(--control-height-small);
 }
 
 /* Minimap: each rule in its status colour. */
@@ -1623,7 +1712,7 @@ table.record-table > thead > tr > th {
 .event-feed {
   position: absolute;
   top: 12px;
-  right: 16px;
+  right: var(--panel-inset);
   z-index: 20;
   display: flex;
   flex-direction: column;
@@ -1637,7 +1726,7 @@ table.record-table > thead > tr > th {
 }
 
 .event-feed.beside-drawer {
-  right: calc(min(520px, 100%) + 16px);
+  right: calc(min(520px, 100%) + var(--panel-inset));
 }
 
 @keyframes feed-in {
@@ -1726,9 +1815,9 @@ main:has(> .new-order) {
 .order-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 16px;
+  gap: var(--space-4);
   align-items: start;
-  padding: 14px 16px 24px;
+  padding: 14px var(--panel-inset) 24px;
 }
 
 .order-steps {
@@ -1788,13 +1877,6 @@ main:has(> .new-order) {
   color: var(--text);
 }
 
-.order-input input,
-.order-input select,
-.order-input textarea {
-  min-height: 32px;
-  box-sizing: border-box;
-}
-
 .order-input.wide,
 .order-note.wide {
   grid-column: 1 / -1;
@@ -1851,11 +1933,6 @@ main:has(> .new-order) {
   gap: 6px;
 }
 
-.sample-card input {
-  margin: 0;
-  accent-color: var(--accent);
-}
-
 .sample-story {
   display: -webkit-box;
   overflow: hidden;
@@ -1885,7 +1962,7 @@ main:has(> .new-order) {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 28px;
+  min-height: var(--control-height);
   margin: 0 6px 6px 0;
   padding: 0 10px;
   border: 1px solid var(--control-border);
@@ -2097,7 +2174,7 @@ button.legend-strip[aria-expanded="true"] {
   width: min(640px, calc(100vw - 32px));
   max-height: min(70vh, 560px);
   overflow-y: auto;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--panel-inset);
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
@@ -2164,6 +2241,10 @@ dialog.modal[open] {
   flex-direction: column;
 }
 
+dialog.modal > .drawer-body {
+  padding-top: var(--space-4);
+}
+
 .a2a-skills {
   display: grid;
   gap: 8px;
@@ -2201,7 +2282,6 @@ details.a2a-raw > pre {
   font-size: 12px;
 }
 
-/* A filter chip in the view tabs: the focused agent, with an icon to clear it. */
 /* A toggle: on, the rule graph shows only one agent's rules; off, every rule. */
 button.focus-filter {
   display: inline-flex;
@@ -2209,9 +2289,10 @@ button.focus-filter {
   gap: 6px;
 }
 
-button.focus-filter[aria-pressed="true"] {
-  border-color: var(--accent);
-  color: var(--accent);
+button.focus-filter[aria-pressed="true"],
+button.focus-filter[aria-pressed="true"]:hover {
+  border-color: var(--link);
+  color: var(--link);
 }
 
 /* A small switch track; its knob moves right when the filter is on. */
@@ -2248,7 +2329,7 @@ button.focus-filter[aria-pressed="true"] .focus-switch::after {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 12px 16px;
+  padding: var(--space-3) var(--panel-inset);
   border-top: 1px solid var(--border);
 }
 
