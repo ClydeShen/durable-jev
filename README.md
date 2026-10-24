@@ -19,6 +19,7 @@ pnpm start       # start every service; the browser opens http://localhost:4100
 | Recover the frozen runnable demo | [demo-checkpoint.md](docs/demo-checkpoint.md) |
 | Review or restore the frozen experimental baseline | [baseline.md](docs/baseline.md) |
 | Follow post-baseline workflow evidence, CEO viewpoints and recovery checkpoints | [workflow-progress.md](docs/workflow-progress.md) |
+| Inspect investigation strategy and checkpoint controls, including memory recovery failures | [investigation-experiment.md](docs/investigation-experiment.md) |
 | Take over the current direction and working-branch plan | [implementation-notes.md](.harness/implementation-notes.md) |
 | Understand how the agents are organised and whether they carry a large rule estate | [agent-architecture.md](docs/agent-architecture.md) |
 | See the investigation helper's budgets, timeouts and human checkpoints | [runtime-controls.md](docs/runtime-controls.md) |

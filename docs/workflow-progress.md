@@ -99,6 +99,7 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 |---|---|---|---|---|
 | W1-01 | Verify refs/CI, inspect baseline, plan branch and protocol | Planning commit; remote refs and CI read back | Unmeasured | Delivery-agent usage unavailable; runtime model calls: 0 |
 | W1-02 | Extend continuity runner, characterize failures and validate | Implementation checkpoint and reproducible manifest; includes failed attempts/repairs | Unmeasured | Delivery-agent usage unavailable; scripted runtime only |
+| W2-01 | Offer variants, strategy control, checkpoint comparison, evidence and synchronized presenter script | Investigation checkpoint; 32 runs, including eight observed memory recovery failures | Unmeasured | Delivery-agent usage unavailable; runtime model calls: 0 |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,
 active human minutes (or null), prompt/model version, tokens (or null), proposal, review edits and
@@ -109,9 +110,18 @@ for direct-edit and authoring paths. No savings can be calculated from this inco
 
 Planning checkpoint: `workflow-plan-2026-10-24` / `backup/workflow-plan-2026-10-24` at `31ae95b`.
 W1 checkpoint: `workflow-policy-continuity-2026-10-24` /
-`backup/workflow-policy-continuity-2026-10-24`.
+`backup/workflow-policy-continuity-2026-10-24` at `160dc02`.
+W2 checkpoint: `workflow-investigation-controls-2026-10-24` /
+`backup/workflow-investigation-controls-2026-10-24`.
 Resolve exact commits with `git rev-parse <tag>^{commit}`.
 
 W1 completes the first engineering continuity slice, not all T8.5 experiments: reviewed authoring,
-P2/P3, independent blind evaluation and effort comparisons remain open. W2 is next: a bounded
-investigation/control experiment with explicit tool-choice evidence and Pi/domain state ownership.
+P2/P3, independent blind evaluation and effort comparisons remain open.
+
+W2 completes scripted investigation strategy/checkpoint controls. See
+[investigation-experiment.md](investigation-experiment.md) for the 32-run protocol, source
+walkthrough and limits. Eight durable resumptions match controls; eight memory resumptions lose
+their conversation. Both strategies are authored algorithms, so T7.2's live-model comparison is
+still open. Next finish the reviewed logistics mutation/authoring evidence and live-comparison
+preparation before insurance. The Chinese [demo guide](demo-guide.md) now includes both report
+demonstrations and explicitly marks insurance as future work. Update it at every stage archive.

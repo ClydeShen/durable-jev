@@ -8,6 +8,10 @@ that shows it holding. Run the evidence with `pnpm test` and `pnpm faults` (repo
 Business waiting and human task state persist in project SQLite. Pi Durable checkpoints only
 the optional investigation helper; domain transactions own business side effects. See
 [baseline.md](baseline.md) for the complete ownership boundary and current recovery checkpoint.
+Post-baseline `pnpm eval:investigation` varies offer conditions, authored strategy and checkpoint
+storage while keeping tools/rules fixed. Its [W2 record](investigation-experiment.md) distinguishes
+eight successful durable resumptions from eight observed memory failures and verifies human
+confirmation boundaries. These are scripted controls, not live-model quality claims.
 
 | Control | Where | Evidence |
 |---|---|---|

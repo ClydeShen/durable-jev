@@ -12,6 +12,8 @@ The distinct pre-cleanup demo recovery instructions remain in `docs/demo-checkpo
 Post-baseline work is now on `feat/durable-policy-workflow`. Read the current handoff first and
 `docs/workflow-progress.md` for stages, cost accounting and new recovery checkpoints. Do not
 restart the baseline cleanup or switch back to its maintenance branch.
+Every stage archive includes updated handoff/evidence documents and `docs/demo-guide.md`.
+Keep the script executable and distinguish current UI actions from report-only demonstrations.
 
 # Delivery agent skills
 

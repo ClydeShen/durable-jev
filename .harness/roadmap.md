@@ -17,7 +17,10 @@ Post-baseline work is authorized on `feat/durable-policy-workflow`. Stage defini
 evidence, the effort ledger and recovery refs are in `docs/workflow-progress.md`.
 W1 completes the first P1 continuity slice: 44 rule observations and 48 full-flow/control runs,
 including 32 process resumptions. T8.5 stays open for authoring comparisons, other mutations and
-independent evaluation. Next is bounded investigation evidence (W2), not a new baseline cleanup.
+independent evaluation. W2 adds 32 scripted strategy/checkpoint controls: eight durable resumptions
+match controls and eight memory resumptions fail with missing conversation state. Demo script and
+handoff are synchronized. Next finish logistics mutation/authoring evidence and live-comparison
+preparation before insurance; no new baseline cleanup.
 
 ## P0 Skeleton and technical spikes (PRD M0)
 
@@ -110,7 +113,7 @@ independent evaluation. Next is bounded investigation evidence (W2), not a new b
 |---|---|---|---|---|
 | [x] | T7.0 | Switch to live tuning: once the whole chain runs scripted, tune Jev's question wording, label descriptions, thresholds and the authoring agent's prompt on the development set; record measures before and after; the blind set takes no part | A tuning record; questions and threshold versions frozen before the blind test (3 rounds, see `docs/tuning-log.md`; CUST-MEDI-5 became a human step, live replay 8/8, screening misses nothing; the blind set is not built) | T3.6, T4.3, T3.8 |
 | [ ] | T7.1 | B1 Jev vs structured output | Report macro-F1, cost, p95 | T4.2 |
-| [ ] | T7.2 | B2 fixed workflow vs investigation helper | Completion rate, invalid call rate | T3.6, T4.6 |
+| [~] | T7.2 | B2 fixed workflow vs investigation helper | W2 supplies scripted strategy/checkpoint controls; live-model completion/invalid-call rates and a reviewed comparison remain open | T3.6, T4.6 |
 | [x] | T7.3 | B3 in-memory vs Pi Durable | Recovery success rate, repeated side effects (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T5.3 |
 | [ ] | T7.4 | B4 native vs A2A | Overhead and swap test | T5.2 |
 | [ ] | T7.6 | B7 Durable Jev Agent cost: share of hand-written code, share of rules carried by Jev and the authoring agent, time of a live policy change, cost per rule, selection accuracy and miss rate, Jev's share of the extension rules; with a map of the rule boundaries | Measured costs and all outcome categories reported, including wrong releases; zero wrong releases is a target, not a required finding | T3.1, T4.3, T8.4 |

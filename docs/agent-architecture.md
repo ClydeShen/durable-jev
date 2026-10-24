@@ -115,8 +115,10 @@ modes, including complete release and process recovery controls. Its 48 scripted
 the stale-task and extra-approval findings; see [workflow-progress.md](workflow-progress.md) for
 source changes, evidence and stage recovery refs. Reviewed direct-edit/authoring comparisons,
 effort measurements and independent blind evaluation still precede claims about savings.
-Bounded investigation evidence and motor-insurance claims follow; cross-domain vehicle-insurance
-A2A collaboration is optional. The overall protocol remains [evaluation-plan.md](evaluation-plan.md).
+W2 now adds [scripted investigation/checkpoint controls](investigation-experiment.md) without
+changing the domain runtime: first-valid/check-all strategies, changed offers and memory/durable
+restart behavior. Live decision quality and authoring/mutation costs remain open before motor
+insurance. Cross-domain vehicle-insurance A2A is optional. See [evaluation-plan.md](evaluation-plan.md).
 
 ## Reliability
 

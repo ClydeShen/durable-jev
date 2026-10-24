@@ -22,3 +22,5 @@ User-facing documents and test materials belong in `docs/` and `eval/`. Protecte
 4. Precedence on conflict: the user's latest instruction > `spec.md` > `design.md` > `prd.md`.
 5. Preserve frozen recovery refs. Current baseline recovery and its documentation revision are
    recorded in `../docs/baseline.md`; later experiment adaptations must remain measurable.
+6. Before each stage archive, synchronize the handoff, roadmap, evidence and Chinese demo script.
+   Confirm that every advertised action exists and separate scripted, live and future capabilities.

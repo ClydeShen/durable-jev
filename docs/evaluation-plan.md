@@ -316,6 +316,13 @@ The current faults demonstrate recovery behavior but do not yet price the implem
 against another recovery approach. Declarative policy adaptation explains rule reuse; durable
 execution explains continuity of long-running work. Report the two benefits separately.
 
+W2's [investigation controls](investigation-experiment.md) add 32 scripted runs with the same
+domain tools/rules and two authored decision policies. They isolate Pi MemoryStorage/SQLite
+under a process interruption after completed reads. The memory arm loses its conversation;
+the durable arm resumes. Both use Pi, so this is not Pi versus a non-Pi framework or a priced
+development comparison. The first-valid/check-all difference is deterministic strategy behavior,
+not evidence of an LLM advantage. T7.2's reviewed live comparison and independent custody remain open.
+
 ## Deliverables and decision boundary
 
 1. A source-hashed coupling baseline and reviewed logistics mutation specifications.

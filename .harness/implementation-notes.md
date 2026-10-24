@@ -22,8 +22,22 @@ addition is an explicit close method for local agents. No protected material or 
 Planning checkpoint `workflow-plan-2026-10-24` resolves to `31ae95b`; W1 checkpoint is
 `workflow-policy-continuity-2026-10-24`, each with a matching `backup/` branch. Original recovery
 refs remain unchanged. See the progress document for evidence, effort gaps and restore semantics.
-Next deepen bounded investigation and its fixed-workflow comparison (W2); T8.5's authoring,
-P2/P3 and independent evaluation are still open. Do not claim P1 is a completed cost comparison.
+W2 now adds `pnpm eval:investigation`: four offer conditions, two authored strategies, Pi memory
+and SQLite, uninterrupted and interrupted runs (32 total). All eight durable resumptions match
+controls; all eight memory resumptions lose the conversation while retaining RUNNING business
+records. No engine/runtime/package/UI change was needed. Proposal authority and completed-read
+reuse are checked. This is not a live-model versus fixed-workflow or cost result.
+
+W2 recovery: `workflow-investigation-controls-2026-10-24` and matching `backup/` branch.
+`docs/investigation-experiment.md` records the protocol and limits. Shared experiment helpers
+now live in `eval/runner/src/experiment-evidence.ts`; both W1 and W2 use them. The Chinese demo
+script includes both report demonstrations and corrects default scripted/live wording. The owner
+requires synchronized docs and demo script in every stage archive; this is also in AGENTS.md.
+
+Next prepare reviewed logistics P2/P3 and authoring comparisons, plus the bounded live
+investigation comparison. T8.5 and T7.2 remain open; finish that evidence before insurance.
+Do not interpret W2's expected-loss checks as successful memory recovery or claim savings from
+the two authored strategies. No live model call or protected-material edit has been authorized.
 
 The frozen-baseline handoff below records the starting point. Its instruction to create an
 experiment branch is now complete; do not switch back to the maintenance or backup branches.

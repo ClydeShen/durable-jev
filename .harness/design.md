@@ -51,7 +51,7 @@ spikes/                   One-off P0 checks, not depended on by the product code
 eval/
   materials/              policy-v1.md, rules.json, cases/, mock-data/, screening/, authoring/ (authoring recordings)
   blind/                  Blind-test answer keys, read only by the runner (to be built)
-  runner/                 Replay, screening, fault scenarios and policy-change characterization; not independent blind evidence
+  runner/                 Replay, screening, faults, policy continuity and investigation controls; not independent blind evidence
 docs/                     User documents
 var/                      Runtime data and logs, gitignored
 ```
@@ -80,7 +80,7 @@ Automated gates and review conventions are distinguished in
 | `pnpm demo:reset` | Clear the stores and load LOG-001 to LOG-008 |
 | `pnpm check` | Lint, workspace, full types, boundaries, architecture graph, materials lock, knip, zero production clones and tests |
 | `pnpm replay` / `pnpm screening` / `pnpm faults` | Replay, screening, fault scenarios; reports in `var/reports/` |
-| `pnpm eval:portability` / `pnpm eval:policy-change` | Source/schema probes and scripted policy-change characterization; cost and blind comparisons remain unmeasured |
+| `pnpm eval:portability` / `pnpm eval:policy-change` / `pnpm eval:investigation` | Source/schema probes, policy continuity and investigation strategy/checkpoint controls; cost and blind comparisons remain unmeasured |
 
 `.env.example` offers `MODEL_MODE=scripted|live`, `TYPESAFE_API_KEY`, `NVIDIA_API_KEY`. The
 default is `scripted`, so the demo runs fully without keys.
@@ -311,6 +311,16 @@ The investigation explores replacement transport capacity, not unrestricted exte
 | Traceability | Tool calls and investigation transitions emit domain events; semantic answers are recorded separately |
 
 Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
+
+### 7.3 Post-baseline investigation controls
+
+The W2 runner composes the existing logistics tools, desk and Pi runtime. It compares the authored
+first-valid strategy with an authored check-all strategy under four offer conditions, then varies
+only Pi MemoryStorage/SQLite and process interruption. Both strategies use the same rules, tool
+allow-list and human confirmation boundary. This is controlled execution/recovery evidence,
+not a live-model versus fixed-workflow result. No runtime abstraction or domain package is added.
+The script fails on continuity/control regressions while reporting expected memory checkpoint
+loss separately from successful recovery. See `docs/investigation-experiment.md`.
 
 ## 8. Model adapters
 
