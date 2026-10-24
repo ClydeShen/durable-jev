@@ -3,7 +3,7 @@
 Only plan changes and high-level points that differ from spec, design or roadmap and that the user
 should know.
 
-## Current handoff: baseline cleanup plan (2026-10-24)
+## Current handoff: baseline acceptance candidate (2026-10-24)
 
 Read this section first when taking over from another delivery agent. The agreed scope is in
 `spec.md` (especially sections 9-13); the execution order is in `roadmap.md` P8. Earlier dated
@@ -54,14 +54,13 @@ costs. Changes required after freeze are measured. The runnable backup is not th
 
 ### Work arrangement and next action
 
-1. Continue on `baseline-cleanup-plan`. The owner authorized the two small cleanup stages;
-   implementation has begun with rule validation and applicability indexing, not the shelved refactor.
-2. Continue extracting the existing rule/fact contracts in small slices, then runtime and transport
-   boundaries. Discuss uncertain durable-state ownership with the owner before changing it.
-3. Keep every slice independently verifiable. Do not weaken validation, change protected materials
-   to pass a check, or claim module-wide Pi Durable execution based on helper-only recovery.
-4. At the cleanup gate, run full checks/replay/faults and inspect the running demo; ask the owner
-   to review it before recording the experimental baseline commit and material/environment hashes.
+1. Continue on `baseline-cleanup-plan`; the two cleanup stages are technically complete, not a
+   resumption of the shelved refactor. `docs/baseline.md` records the candidate and its limits.
+2. T8.4 awaits owner review of the preserved demo and scope before formal baseline freeze.
+   Do not infer confirmation from technical checks alone or silently tag a formal baseline.
+3. Preserve the implementation candidate, environment/material hashes and acceptance evidence.
+   Do not weaken domain validation or claim whole-flow Pi Durable scheduling.
+4. After confirmation, freeze a distinct baseline ref without moving the demo recovery refs.
 5. After freeze, measure logistics policy changes (both existing-order strategies), then insurance
    adaptation; finish controlled comparisons, independent blind evaluation and the report.
 
@@ -121,9 +120,41 @@ ports 4500-4504, control port 4599 and a separate temporary database, leaving ea
 Browser interaction checks and 16 light/dark accessibility scans passed with no page errors;
 the console geometry is unchanged. This isolated demo does not reset earlier demo databases.
 
-Next: separate domain scope/identity vocabulary and classifier configuration without weakening
-logistics validation or changing existing scope keys. T8.2 remains in progress; do not start cost
-measurements, freeze the baseline, or restore the shelved refactor automatically.
+The remaining scope/identity, classifier, runtime and transport work described above was completed
+in the acceptance slice below. Earlier slice descriptions are historical, not current blockers.
+
+### Acceptance slice: validated domain agents and compatible recovery
+
+Shared contracts now accept named agents, roles and scopes; logistics supplies and validates its
+own vocabulary, invalidation dimensions, root scope and classifier configuration. The loader
+normalizes unchanged legacy materials in memory. Legacy logistics scope payloads and SQLite column
+names intentionally remain compatible; new named entity scopes do not impersonate cargo or legs.
+
+`BusinessCase` carries identity/revisions and preserves the domain payload through native/A2A.
+`CaseStore<T>` requires the domain parser for reads and writes; `CaseRuntime<T>` and human gates
+no longer import Shipment. Logistics app/CLI assembly and the console remain domain-specific.
+The generic record fixture tests custom vocabulary, approvals, invalid payload rejection, SQLite
+reopen and both transports. It is not a second-domain migration experiment or measured cost result.
+
+Actual HTTP demo exercises exposed stale A2A receipts after reset. Reset now clears the relevant
+in-memory receipts, including coordinator assembly; retries still deduplicate. Regression coverage
+includes reset/resubmit. Receipts are not claimed to survive process restart.
+
+Acceptance: 155 tests, zero clones, eight replays, fault suite (17 pass, F06 not applicable),
+26 screening samples with no misses (S14 has three extras), and scripted Schedule G authoring
+validation without applying the proposal. Eight initial views preserve outcomes, fingerprints and
+task identifiers. Databases created by recovery commit `0265a05` reopen/resume all eight cases.
+Native and A2A HTTP runs complete LOG-001 and LOG-004 through investigation, reroute, reapproval,
+dispatch and reset, with identical final rule states/fingerprints. Browser interactions and
+16 light/dark accessibility scans pass; layout geometry is unchanged.
+
+`docs/baseline.md` records state ownership and remaining limits: business persistence is SQLite,
+Pi Durable checkpoints investigation, and domain transactions own business side effects. No
+whole-flow Pi migration, insurance pack, blind evaluation or post-baseline cost measurement was
+performed. The local generated manifest is `var/reports/baseline-candidate.json`; a fresh clone
+uses the committed acceptance description and reruns the checks. Protected materials, installed
+skills and recovery refs remain unchanged. Formal freeze still requires owner confirmation.
+Implementation candidate commit: `9f8a84a1466273a59621b37bdb1c14b6838b3dc4`.
 
 At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
 passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh

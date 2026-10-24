@@ -1,0 +1,96 @@
+# Experimental baseline candidate
+
+Status: cleanup and technical acceptance candidate; owner confirmation is required before freeze.
+Work branch: `baseline-cleanup-plan`. The frozen runnable-demo backup remains
+`backup/demo-2026-10-24` / `demo-checkpoint-2026-10-24` at `0265a05`.
+Implementation candidate: `9f8a84a1466273a59621b37bdb1c14b6838b3dc4`.
+
+This is a research POC, not an insurance product or a production-ready general-purpose engine.
+The two cleanup stages establish a small shared execution boundary without changing the existing
+folder hierarchy, logistics materials, demo layout or dependency versions. No insurance policy
+experiment or change-cost measurement has started. Agreed cleanup is excluded from later costs;
+additional adaptations after freeze must be counted.
+
+## Shared core and domain assembly
+
+- The executable rule shape describes owners, scopes, dependencies, evaluators, applicability,
+  human gates and invalidation. `rootScope` and classifier scope/dimension are explicit. The loader
+  supplies metadata from logistics assembly for the unchanged legacy material pack.
+- `CaseFacts` exposes root facts, scoped collections, expression aliases and selection values.
+  The domain supplies its own vocabulary and validated business data; the engine does not build
+  shipments or infer customer/destination dimensions. Unknown domain vocabulary is rejected.
+- `CaseStore<T>` uses a domain parser for reads/writes. `CaseRuntime<T>` evaluates the shared graph,
+  reconciles human tasks and handles revisions. It does not import `Shipment`.
+- `AgentClient`, native HTTP and A2A exchange `BusinessCase` identity/revision plus the domain
+  payload. Transport validation preserves payload fields; the receiving runtime applies the
+  full domain schema before storage. The existing logistics API still returns `shipment` to its UI.
+- Domain instructions, facts, roles, reference data, tools and special evaluators remain domain-owned.
+  The existing app/CLI entry points still compose logistics. A second domain will add its materials
+  and necessary domain logic plus small assembly/launcher wiring, not another engine or service stack.
+
+`packages/agent-transport/src/domain-agent.test.ts` exercises an arbitrary record domain through
+the same runtime, SQLite waiting/recovery and native/A2A adapters. This is a contract test, not
+an insurance migration result or cost benchmark.
+
+## Durable ownership
+
+| State | Authoritative owner | Resume behavior |
+|---|---|---|
+| Case revisions, rule outcomes, human tasks, business events | CaseStore SQLite and the deterministic runtime/task state machine | Reload domain-validated data and re-evaluate unresolved work; reuse valid fingerprints |
+| Investigation conversation and completed tool steps | Pi Durable through the generic investigator harness | Resume the same conversation/checkpoints; domain tools must make side effects replay-safe |
+| Business proposal, confirmation and reservation | Domain stores/transactions and operation identifiers | Reconcile the proposal with the current revision; deterministic checks and humans retain authority |
+| A2A request receipts and task envelopes | Transport memory | Deduplicate completed requests within the running process; reset clears affected receipts; not a durable business-state store |
+
+The concept is one domain agent combining these capabilities, not two owners for the same workflow
+transition. Whole-business-flow Pi Durable scheduling is not claimed; a separate spike proves
+feasibility, while the current business runtime uses project SQLite persistence.
+
+## Technical acceptance evidence
+
+- Full quality gate: 155 tests, zero clones, strict types, boundaries, materials lock and unused-code checks.
+- Eight scripted logistics replays; 17 passing fault scenarios, with F06 not applicable (polling, no SSE).
+- Twenty-six screening samples with no missed rules; S14 selects three extras. These are development data.
+- Eight initial case snapshots match the pre-cleanup reference, including outcomes, fingerprints
+  and human task identifiers; only the internal record field names need normalization for comparison.
+- SQLite stores created by checkpoint `0265a05` reopen and resume unchanged for all eight cases.
+- Browser interaction checks and 16 light/dark accessibility scans pass; layout geometry is unchanged.
+- Real HTTP runs in both native and A2A mode complete LOG-001 and LOG-004 (investigation, reroute,
+  reapproval and dispatch), then reset successfully. All 150 final LOG-004 rule states/fingerprints match.
+- The scripted authoring CLI validates its recorded Schedule G proposal; it is not applied.
+
+The A2A reset exercise exposed stale completed-request receipts after business data was cleared.
+The candidate ties receipt invalidation to native reset and the coordinator's reset assembly;
+normal request retries still deduplicate. Regression tests cover reset/resubmit through both transports.
+
+Local evidence files live under `var/reports/` and `/tmp/durable-jev-baseline-*`; they are not
+part of a fresh clone or independent blind evidence. The current acceptance manifest is
+`var/reports/baseline-candidate.json`, generated after the implementation commit.
+
+## Freeze record and limits
+
+Toolchain: Node 26.12.1, pnpm 12.15.0, TypeScript 6.0.3, ES2025. All acceptance execution is scripted;
+no live model calls are part of this cleanup. Delivery-agent skills are unchanged and not project source.
+
+SHA-256 references (current LF checkout):
+
+- `eval/materials.lock.json`: `e2e634157a813a7b23a9a162294f6ad18227735b828062188a564b16d8ed376d`
+- `pnpm-lock.yaml`: `c0f075670191d70444917f4aba2e345366cf79c19a370605494900335b43d023`
+
+Freeze a distinct baseline ref only after owner confirmation; record its exact commit and evidence
+manifest. Do not move the recovery backup, silently reset the experimental baseline after seeing
+costs, or present cleanup as measured policy/domain adaptation effort.
+
+Remaining limits are research findings, not an automatic product backlog: simulated materials,
+unreviewed labels, no blind set or measured authoring savings yet, logistics-only UI/composition,
+three-step approval-chain limit, in-memory A2A receipts, and the investigator's restart/budget limits.
+Human-gate applicability/parameter edits still require explicit rule-version discipline: the P1
+parameter-only stale-task observation remains; a version bump can conservatively request extra
+approvals. Measure both old-policy retention and new-policy re-evaluation after freeze.
+
+Legacy logistics scope payloads and SQL column names remain compatibility boundaries so old
+tasks and databases work without migration. New named scopes use `kind` plus optional `entityId`.
+Neither compatibility nor the record contract fixture establishes full industry independence.
+
+After freeze: logistics policy changes and reviewed authoring comparisons first, then bounded motor
+insurance claims; logistics vehicle insurance over A2A is the optional final bonus. See
+[evaluation-plan.md](evaluation-plan.md) and `.harness/roadmap.md`.

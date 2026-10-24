@@ -58,9 +58,10 @@ unchanged. The first cleanup slice makes applicability indexing dimension-agnost
 selection/table vocabulary from logistics constraints. Unknown applicability keys are retained by
 the shared schema and rejected when unsupported by the logistics validator, rather than stripped.
 The second slice normalizes root/scoped facts and moves FEEL aliases plus customer/destination
-selection values to logistics assembly. Owners, roles, scope identifiers, classifier selection
-and runtime payloads still require further cleanup. Current progress is recorded in
-`.harness/implementation-notes.md`.
+selection values to logistics assembly. The baseline candidate also makes identity/scope vocabulary
+and classifier scope/dimension domain-supplied, and uses domain-validated generic runtime/transport
+payloads. Compatibility scope shapes and old SQL names remain intentionally. Current acceptance
+and limits are in [baseline.md](baseline.md); handoff details are in `.harness/implementation-notes.md`.
 
 `pnpm eval:portability` records schema compatibility probes and LF-normalized source hashes in
 `var/reports/portability-baseline.json`. It does not call models, modify source materials or

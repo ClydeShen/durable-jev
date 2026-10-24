@@ -9,11 +9,17 @@ them. Numbers come from the current rule pack (`eval/materials/rules.json`) and 
 
 A **Durable Jev Agent** is one business module packaged as a service: its rules are data (a rule
 graph), structured rules are evaluated as FEEL expressions, unstructured ones are questions to
-Jev, approvals and field work are human gates, and Pi Durable keeps long-running work alive across
-crashes. Modules talk to each other over A2A. Instead of hand-coding thousands of rules into a
+Jev, approvals and field work are human gates. Project SQLite persists business state and waiting;
+Pi Durable checkpoints the optional investigation helper. Modules talk over a common A2A contract.
+Instead of hand-coding thousands of rules into a
 rule engine and decision tables, a small team writes policy text, lets the authoring agent turn it
 into validated rule definitions, reviews the diff, and ships data. Code is kept for what code does
 best: one rule in 150 is code (R29, booking transport capacity).
+
+The cleanup candidate shares validated case/runtime contracts across domains; logistics supplies
+its facts, vocabulary, tools and policy pack. See [baseline.md](baseline.md) for the exact shared
+boundary, recovery ownership, acceptance evidence and limits. This is capability research, not
+an established enterprise cost-saving or production-readiness claim.
 
 ## The agents
 
@@ -91,11 +97,14 @@ screening samples have no missed rule (`pnpm screening`).
 3. one line in the launcher's service list.
 
 The four existing agents did not change: they load the same rule pack and the orchestrator derives
-the agent set from the rule owners. The agent id must exist in the contracts' agent list.
+the agent set from the rule owners. Logistics agent identities are validated against its profiles,
+not a global engine enum. A different domain supplies its own identities, roles and scopes.
 
 **Changing a policy value** (a threshold, a cap) is a parameter in `policy-parameters.json` or a
-rule edit, re-validated on load; the fingerprint of every affected outcome changes, so stale
-results are re-evaluated rather than reused.
+rule edit, re-validated on load. Expression input paths participate in fingerprints, but changes
+to human-gate applicability/parameters need an explicit rule-version bump to retire stale tasks.
+That can conservatively require another approval; policy-change experiments measure the outcome
+and work under both existing-case strategies rather than assume all changes are automatic.
 
 ## Reliability
 

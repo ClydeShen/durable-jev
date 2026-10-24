@@ -17,6 +17,7 @@ pnpm start       # start every service; the browser opens http://localhost:4100
 | Run it, walk through LOG-001, look up a command | [getting-started.md](docs/getting-started.md) |
 | Give a demo of about 20 minutes (in Chinese, for the presenter) | [demo-guide.md](docs/demo-guide.md) |
 | Recover the frozen runnable demo | [demo-checkpoint.md](docs/demo-checkpoint.md) |
+| Review the cleaned execution boundary and baseline acceptance | [baseline.md](docs/baseline.md) |
 | Take over the current direction and working-branch plan | [implementation-notes.md](.harness/implementation-notes.md) |
 | Understand how the agents are organised and whether they carry a large rule estate | [agent-architecture.md](docs/agent-architecture.md) |
 | See the investigation helper's budgets, timeouts and human checkpoints | [runtime-controls.md](docs/runtime-controls.md) |
