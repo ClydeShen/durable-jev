@@ -24,6 +24,7 @@ function rule(ruleId: string, overrides: Partial<RuleDefinition>): RuleDefinitio
 
 const ruleSet: RuleSet = {
   ruleSetVersion: 'test',
+  rootScope: 'order',
   mixingMatrix: [],
   rules: [
     rule('R02', {
@@ -129,7 +130,12 @@ describe('invalidateDependentsOf', () => {
 describe('incremental evaluation', () => {
   it('invalidates a code result when a domain-named context input changes', async () => {
     const definition = rule('R01', { scope: 'order', inputPaths: ['record.amount'] })
-    const rules: RuleSet = { ruleSetVersion: 'context', rules: [definition], mixingMatrix: [] }
+    const rules: RuleSet = {
+      ruleSetVersion: 'context',
+      rootScope: 'order',
+      rules: [definition],
+      mixingMatrix: [],
+    }
     const facts = (amount: number): CaseFacts => ({
       entityVersions: {},
       root: { scope: { kind: 'order' }, facts: { amount } },

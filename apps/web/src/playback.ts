@@ -255,7 +255,7 @@ export function whereItStands(
 ): PlaybackStep {
   const waiting = openTasks.map((task) => ({
     ruleId: task.ruleId,
-    text: `${task.ruleId} waits for the ${roleLabels[task.requiredRole].toLowerCase()}`,
+    text: `${task.ruleId} waits for the ${(roleLabels[task.requiredRole] ?? task.requiredRole).toLowerCase()}`,
   }))
   const failed = [
     ...new Set(

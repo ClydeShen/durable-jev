@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { businessCaseSchema } from './business-case.js'
 import { checkScopeSchema } from './check.js'
 import {
   caseIdSchema,
@@ -8,12 +9,11 @@ import {
   ruleIdSchema,
   utcTimestampSchema,
 } from './ids.js'
-import { entityVersionsSchema } from './shipment.js'
 import { humanTaskStatusSchema, humanTaskTypeSchema, roleSchema } from './statuses.js'
 
 const humanTaskTargetSchema = z.object({
   caseRevision: revisionSchema,
-  entityVersions: entityVersionsSchema,
+  entityVersions: businessCaseSchema.shape.entityVersions,
   inputFingerprint: z.string().min(1),
 })
 export type HumanTaskTarget = z.infer<typeof humanTaskTargetSchema>

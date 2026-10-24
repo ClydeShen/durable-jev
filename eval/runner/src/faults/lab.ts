@@ -53,7 +53,7 @@ export class FaultLab {
   now = () => new Date(this.clock).toISOString()
 
   get shipment(): Shipment {
-    const shipment = this.agents.coordination.store.caseRecord(this.caseId)?.shipment
+    const shipment = this.agents.coordination.store.caseRecord(this.caseId)?.data
     return shipment ?? caseFile(this.caseId).shipment
   }
 

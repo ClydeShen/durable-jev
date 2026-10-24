@@ -6,18 +6,14 @@ import type {
   CaseView,
   RulePack,
 } from '@durable-jev/agent-core'
-import {
-  type OrderOptions,
-  roleSchema,
-  type Shipment,
-  shipmentSchema,
-} from '@durable-jev/contracts'
+import { type OrderOptions, type Shipment, shipmentSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import {
   applyRevision,
   type CaseCatalog,
   caseFileOf,
   dispatchCase,
+  logisticsRoleSchema,
   newOrderId,
   orderStatusOf,
   rolesWaitedOn,
@@ -40,7 +36,7 @@ export type AgentStatus = {
 }
 
 export interface CoordinatorDependencies {
-  coordination: { runtime: CaseRuntime; store: CaseStore }
+  coordination: { runtime: CaseRuntime<Shipment>; store: CaseStore<Shipment> }
   orchestrator: CaseOrchestrator
   catalog: CaseCatalog
   orderOptions: OrderOptions
@@ -76,8 +72,8 @@ function storyOf(catalog: CaseCatalog, caseId: string): string {
     : `A new order based on ${sampleId}. ${caseFile.story}`
 }
 
-function summaryOf(view: CaseView, catalog: CaseCatalog) {
-  const { shipment } = view.record
+function summaryOf(view: CaseView<Shipment>, catalog: CaseCatalog) {
+  const { data: shipment } = view.record
   return {
     caseId: shipment.caseId,
     story: storyOf(catalog, shipment.caseId),
@@ -109,7 +105,7 @@ function scriptedIncidents(catalog: CaseCatalog, caseId: string) {
 const actorHeaderNames = ['x-demo-role', 'x-demo-user']
 
 function caseViews({ coordination, orchestrator }: CoordinatorDependencies) {
-  return async (caseId: string): Promise<CaseView> => {
+  return async (caseId: string): Promise<CaseView<Shipment>> => {
     const record = coordination.store.caseRecord(caseId)
     if (!record) throw new HttpError(404, `case ${caseId} does not exist`)
     const { outcomes, tasks } = await orchestrator.state(caseId)
@@ -124,14 +120,14 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
 
   router.get('/cases', async (_request, response) => {
     const views = await Promise.all(
-      coordination.store.cases().map((record) => caseView(record.shipment.caseId)),
+      coordination.store.cases().map((record) => caseView(record.data.caseId)),
     )
     response.json(views.map((view) => summaryOf(view, catalog)))
   })
 
   router.get('/cases/:caseId', async (request, response) => {
     const view = await caseView(request.params.caseId)
-    const { shipment } = view.record
+    const { data: shipment } = view.record
     response.json({
       ...summaryOf(view, catalog),
       shipment,
@@ -161,7 +157,7 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
   })
 
   router.post('/cases/:caseId/revisions/:index', async (request, response) => {
-    const { shipment } = (await caseView(request.params.caseId)).record
+    const { data: shipment } = (await caseView(request.params.caseId)).record
     const revision = scriptedRevisions(catalog, shipment.caseId)[Number(request.params.index)]
     if (!revision) throw new HttpError(404, `no scripted revision ${request.params.index}`)
     await orchestrator.submit(applyRevision(shipment, revision.patch))
@@ -169,7 +165,7 @@ function caseRoutes(router: Router, dependencies: CoordinatorDependencies, caseV
   })
 
   router.post('/cases/:caseId/reset', async (request, response) => {
-    const { caseId } = (await caseView(request.params.caseId)).record.shipment
+    const { caseId } = (await caseView(request.params.caseId)).record.data
     await dependencies.resetCase(caseId)
     response.json(summaryOf(await caseView(caseId), catalog))
   })
@@ -217,7 +213,7 @@ function orderRoutes(router: Router, dependencies: CoordinatorDependencies, case
     if (!catalog.has(sampleId)) throw new HttpError(404, `no sample order ${sampleId}`)
     const caseId = newOrderId(
       sampleId,
-      coordination.store.cases().map((record) => record.shipment.caseId),
+      coordination.store.cases().map((record) => record.data.caseId),
     )
     const order = {
       ...shipment,
@@ -239,7 +235,7 @@ function investigationRoutes(
   const { orchestrator, catalog, investigations } = dependencies
 
   router.post('/cases/:caseId/incidents/:index', async (request, response) => {
-    const { caseId } = (await caseView(request.params.caseId)).record.shipment
+    const { caseId } = (await caseView(request.params.caseId)).record.data
     const scripted = scriptedIncidents(catalog, caseId)[Number(request.params.index)]
     if (!scripted) throw new HttpError(404, `no scripted incident ${request.params.index}`)
     response.status(202).json(await investigations.report(caseId, scripted.incident))
@@ -254,7 +250,7 @@ function investigationRoutes(
       }),
     )
     const result = await investigations.decide(request.params.investigationId, type, headers)
-    const { shipment } = (await caseView(result.investigation.caseId)).record
+    const { data: shipment } = (await caseView(result.investigation.caseId)).record
     if (result.patch) await orchestrator.submit(applyRevision(shipment, result.patch))
     response.json(summaryOf(await caseView(shipment.caseId), catalog))
   })
@@ -262,7 +258,8 @@ function investigationRoutes(
 
 function taskRoutes(router: Router, { orchestrator }: CoordinatorDependencies) {
   router.get('/tasks', async (request, response) => {
-    const role = request.query.role === undefined ? undefined : roleSchema.parse(request.query.role)
+    const role =
+      request.query.role === undefined ? undefined : logisticsRoleSchema.parse(request.query.role)
     const tasks = await orchestrator.openTasks()
     response.json(tasks.filter((task) => role === undefined || task.requiredRole === role))
   })

@@ -34,7 +34,12 @@ const weightRule = (passWhen: string): RuleDefinition => ({
   parameters: ['maxItemWeightGrams'],
 })
 
-const ruleSet: RuleSet = { ruleSetVersion: 'test', rules: [existing], mixingMatrix: [] }
+const ruleSet: RuleSet = {
+  ruleSetVersion: 'test',
+  rootScope: 'order',
+  rules: [existing],
+  mixingMatrix: [],
+}
 
 function scripted(...attempts: RuleDefinition[][]): AuthoringModel {
   const faux = fauxProvider({ provider: 'scripted-authoring', models: [{ id: 'recorded' }] })

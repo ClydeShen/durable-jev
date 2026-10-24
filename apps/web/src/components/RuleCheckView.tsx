@@ -7,7 +7,7 @@ import { Field, Fields } from './ui'
 type Expression = NonNullable<RuleCheck['combiner']>
 type Parameters = Record<string, string | number | boolean>
 
-const collectionLabels = { cargoItem: 'item', leg: 'leg' }
+const collectionLabels: Readonly<Record<string, string>> = { cargoItem: 'item', leg: 'leg' }
 
 /** Shows a parameter's value in the unit its name declares. */
 function parameterValue(name: string, value: string | number | boolean): string {
@@ -71,9 +71,14 @@ export function ExpressionLine({ expression, onOpenRule }: ExpressionProps): Rea
         expression.consequence,
       ])
     case 'allOf':
-      return children(`Every ${collectionLabels[expression.scope]} meets:`, [expression.of])
+      return children(`Every ${collectionLabels[expression.scope] ?? expression.scope} meets:`, [
+        expression.of,
+      ])
     case 'anyOf':
-      return children(`At least one ${collectionLabels[expression.scope]} meets:`, [expression.of])
+      return children(
+        `At least one ${collectionLabels[expression.scope] ?? expression.scope} meets:`,
+        [expression.of],
+      )
   }
 }
 

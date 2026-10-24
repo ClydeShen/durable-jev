@@ -9,6 +9,7 @@ import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import { type CollectionScope, type Expression, referencedRules } from './expression.js'
 import {
+  assertFactScopes,
   type CaseFacts,
   type Facts,
   factsInScope,
@@ -116,6 +117,9 @@ function topologicalOrder(rules: readonly RuleDefinition[]): RuleDefinition[] {
 }
 
 class GraphState implements ExpressionContext {
+  get rootScope(): CheckScope {
+    return this.facts.root.scope
+  }
   private readonly results = new Map<string, RuleOutcome>()
   private readonly scopeOfRule: ReadonlyMap<RuleId, RuleScope>
 
@@ -345,14 +349,16 @@ function indexOf(ruleSet: RuleSet): RuleIndex {
 }
 
 function selectionProfile(ruleSet: RuleSet, state: GraphState): SelectionProfile {
-  const classifier = ruleSet.selection?.classifierRuleId
-  const classifications = classifier
-    ? scopeMembers(state.facts, 'cargoItem').map((scope) => state.resultOf(classifier, scope))
-    : []
-  const decided = classifications.every((result) => result?.status === 'PASS')
+  if (!ruleSet.selection) return state.facts.selection ?? {}
+  const { classifierRuleId, scope, dimension } = ruleSet.selection
+  const classifications = scopeMembers(state.facts, scope).map((member) =>
+    state.resultOf(classifierRuleId, member),
+  )
+  const decided =
+    classifications.length > 0 && classifications.every((result) => result?.status === 'PASS')
   return {
     ...state.facts.selection,
-    commodityGroups: decided
+    [dimension]: decided
       ? new Set(classifications.flatMap((result) => result?.observedValue as string[]))
       : undefined,
   }
@@ -405,6 +411,7 @@ export async function evaluateRuleGraph(
   environment: EvaluationEnvironment,
   options: EvaluationOptions = {},
 ): Promise<RuleGraphEvaluation> {
+  assertFactScopes(facts, ruleSet.rootScope)
   const state = new GraphState(ruleSet.rules, facts, environment.parameters, ruleSet.mixingMatrix)
   const escalations: RuleGraphEvaluation['escalations'] = []
   const previous = new Map((options.previous ?? []).map((result) => [outcomeKey(result), result]))

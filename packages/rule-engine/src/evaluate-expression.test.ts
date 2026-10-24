@@ -14,9 +14,10 @@ const feelValues: Record<string, boolean> = { true: true, false: false }
 
 function contextWith(
   statuses: Record<string, CheckStatus>,
-  members: Partial<Record<'cargoItem' | 'leg', string[]>> = {},
+  members: Partial<Record<string, string[]>> = {},
 ): ExpressionContext {
   return {
+    rootScope: { kind: 'order' },
     statusOf: (ruleId: RuleId, scope: CheckScope) =>
       statuses[`${ruleId}@${scopeKey(scope)}`] ?? statuses[ruleId] ?? 'UNKNOWN',
     observedValueOf: () => undefined,

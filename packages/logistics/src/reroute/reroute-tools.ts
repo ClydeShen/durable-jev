@@ -1,5 +1,6 @@
 import type { CaseRuntime, CaseStore, RulePack } from '@durable-jev/agent-core'
 import { defineInvestigationTool, type InvestigationTool } from '@durable-jev/agent-harness'
+import type { Shipment } from '@durable-jev/contracts'
 import { Type } from '@earendil-works/pi-ai'
 import type { CapacityOffer, ReferenceData } from '../reference-data.js'
 import { applyRevision } from '../revision.js'
@@ -7,18 +8,18 @@ import type { Investigation, InvestigationStore, RerouteProposal } from './inves
 import { type PlanCheck, planChecks, planPasses, reroutePatch } from './reroute-plan.js'
 
 export interface RerouteToolDependencies {
-  cases: CaseStore
-  runtime: CaseRuntime
+  cases: CaseStore<Shipment>
+  runtime: CaseRuntime<Shipment>
   rulePack: RulePack
   reference: ReferenceData
   investigations: InvestigationStore
   settle(investigation: Investigation): void
 }
 
-function shipmentOf(cases: CaseStore, caseId: string) {
+function shipmentOf(cases: CaseStore<Shipment>, caseId: string) {
   const record = cases.caseRecord(caseId)
   if (!record) throw new Error(`case ${caseId} does not exist`)
-  return record.shipment
+  return record.data
 }
 
 type OfferCheck = (

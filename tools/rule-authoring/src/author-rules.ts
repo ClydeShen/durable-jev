@@ -56,10 +56,15 @@ function systemPrompt(request: AuthoringRequest): string {
     (rule) => `- ${rule.ruleId} (${rule.owner}, ${rule.scope}): ${rule.title}`,
   )
   return [
-    'You turn a written shipment release policy into executable rule definitions for a rule engine.',
+    'You turn a written business policy into executable rule definitions for a rule engine.',
     'Answer only by calling submit_rules with one definition per rule of the section.',
     'Each definition must match this JSON schema:',
     JSON.stringify(z.toJSONSchema(ruleDefinitionSchema)),
+    `Root scope: ${request.ruleSet.rootScope}`,
+    `Allowed agents: ${request.constraints?.agents?.join(', ') ?? 'as defined by the policy'}`,
+    `Allowed roles: ${request.constraints?.roles?.join(', ') ?? 'as defined by the policy'}`,
+    `Allowed scopes: ${request.constraints?.scopes?.join(', ') ?? 'as defined by the policy'}`,
+    `Allowed applicability dimensions: ${request.constraints?.applicabilityDimensions?.join(', ') ?? 'as defined by the policy'}`,
     '',
     request.factsCatalog,
     '',

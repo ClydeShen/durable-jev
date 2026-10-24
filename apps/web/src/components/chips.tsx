@@ -11,7 +11,7 @@
 import type { CheckStatus, OrderStatus, Role } from '@durable-jev/contracts'
 import { createContext, type MouseEvent, type ReactNode, useContext } from 'react'
 import type { Investigation } from '../api'
-import { checkStatusLabels, demoOperators, orderStatusLabels, roleLabels } from '../labels'
+import { checkStatusLabels, demoOperator, orderStatusLabels, roleLabels } from '../labels'
 
 /** Cross-links the chips follow: switch to a role, open an agent's card. Provided by the app. */
 export const ConsoleLinks = createContext<{
@@ -193,11 +193,11 @@ export function RoleChip({ forRole, note }: { forRole: Role; note?: string }) {
     <EntityChip
       colour={{ 'data-role': forRole }}
       title={current ? 'Current role' : `Switch to ${roleLabels[forRole]}`}
-      onClick={current ? undefined : () => switchRole(forRole)}
+      onClick={current || !demoOperator(forRole) ? undefined : () => switchRole(forRole)}
       action="⇄"
     >
       {roleLabels[forRole]}
-      <strong>{demoOperators[forRole]}</strong>
+      <strong>{demoOperator(forRole)}</strong>
       {note && <span className="muted">{note}</span>}
     </EntityChip>
   )

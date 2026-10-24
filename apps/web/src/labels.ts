@@ -18,7 +18,7 @@ export const roleLabels: Record<Role, string> = {
 }
 
 /** The person who acts in each role, as in the demo script; switching role switches person. */
-export const demoOperators: Record<Role, string> = {
+export const demoOperators = {
   transportPlanner: 'pat',
   complianceReviewer: 'alice',
   qualityReviewer: 'bob',
@@ -26,6 +26,11 @@ export const demoOperators: Record<Role, string> = {
   warehouseOperator: 'wen',
   dispatcher: 'dee',
   technicalEvaluator: 'eve',
+} satisfies Record<Role, string>
+
+export function demoOperator(role: Role): string | undefined {
+  const operators: Partial<Record<Role, string>> = demoOperators
+  return operators[role]
 }
 
 export const checkStatusLabels: Record<CheckStatus, string> = {

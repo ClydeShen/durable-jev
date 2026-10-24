@@ -25,6 +25,36 @@ function candidate(change: (rules: RuleSet) => void): string {
 }
 
 describe('logistics rule constraints', () => {
+  it.each(['owner', 'scope', 'invalidation'] as const)(
+    'rejects a foreign %s at the logistics boundary',
+    (field) => {
+      const directory = candidate((document) => {
+        const rule = document.rules[0]
+        if (!rule) throw new Error('missing rule')
+        if (field === 'owner') rule.owner = 'record-review'
+        if (field === 'scope') rule.scope = 'record'
+        if (field === 'invalidation') rule.invalidationTriggers = ['record']
+      })
+      expect(() => loadLogisticsRulePack(directory)).toThrow('DOMAIN')
+    },
+  )
+
+  it('rejects a foreign approval role', () => {
+    const directory = candidate((document) => {
+      const step = document.rules.find((rule) => rule.humanGate)?.humanGate?.steps[0]
+      if (!step) throw new Error('missing approval step')
+      step.requiredRole = 'recordReviewer'
+    })
+    expect(() => loadLogisticsRulePack(directory)).toThrow('DOMAIN')
+  })
+
+  it('rejects a root scope that conflicts with domain assembly', () => {
+    const directory = candidate((document) => {
+      document.rootScope = 'record'
+    })
+    expect(() => loadLogisticsRulePack(directory)).toThrow('DOMAIN')
+  })
+
   it('rejects an unsupported selection dimension rather than discarding it', () => {
     const directory = candidate((document) => {
       const rule = document.rules.find((entry) => entry.applicability)

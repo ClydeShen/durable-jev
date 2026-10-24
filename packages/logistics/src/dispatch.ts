@@ -17,9 +17,9 @@ function releaseRefusal(
   reviewedRevision: number | undefined,
 ): Refusal | undefined {
   const current = store.caseRecord(caseId)
-  if (current?.dispatchedAt)
+  if (current?.completedAt)
     return { ok: false, reason: 'ALREADY_DISPATCHED', message: `${caseId} is already dispatched` }
-  if (current?.shipment.caseRevision !== reviewedRevision) {
+  if (current?.data.caseRevision !== reviewedRevision) {
     return {
       ok: false,
       reason: 'CHANGED',
@@ -51,12 +51,12 @@ export async function dispatchCase(
       message: 'only a dispatcher confirms the release',
     }
   }
-  const reviewedRevision = coordinationStore.caseRecord(caseId)?.shipment.caseRevision
+  const reviewedRevision = coordinationStore.caseRecord(caseId)?.data.caseRevision
   await orchestrator.propagate(caseId)
   const refusal = coordinationStore.transaction(() => {
     const blocked = releaseRefusal(coordinationStore, caseId, reviewedRevision)
     if (blocked) return blocked
-    coordinationStore.markDispatched(caseId, now())
+    coordinationStore.markCompleted(caseId, now())
     coordinationStore.record({
       caseId,
       eventName: 'case.dispatched',

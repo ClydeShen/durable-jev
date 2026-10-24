@@ -101,7 +101,7 @@ const warehouseRecordSchema = z.object({
   temperatureReadings: z.array(z.object({ at: utcTimestampSchema, deciCelsius: z.number().int() })),
 })
 
-export const entityVersionsSchema = z.object({
+const entityVersionsSchema = z.object({
   cargo: revisionSchema,
   route: revisionSchema,
   carrier: revisionSchema,

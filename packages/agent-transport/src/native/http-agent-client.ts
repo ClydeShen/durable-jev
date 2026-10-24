@@ -1,5 +1,5 @@
 import type { AgentCaseState, AgentClient, AgentSummary } from '@durable-jev/agent-core'
-import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
+import type { AgentId, BusinessCase, HumanTask } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { OutboxEvent } from '@durable-jev/store'
@@ -33,10 +33,10 @@ export class HttpAgentClient implements AgentClient {
     return (await response.json()) as T
   }
 
-  submit(shipment: Shipment): Promise<AgentCaseState> {
-    return this.call<AgentCaseState>(`/cases/${encodeURIComponent(shipment.caseId)}`, {
+  submit(data: BusinessCase): Promise<AgentCaseState> {
+    return this.call<AgentCaseState>(`/cases/${encodeURIComponent(data.caseId)}`, {
       method: 'PUT',
-      body: shipment,
+      body: data,
     })
   }
 

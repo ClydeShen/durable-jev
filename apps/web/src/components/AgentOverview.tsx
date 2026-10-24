@@ -26,8 +26,8 @@ type AgentNodeData = { agent: AgentStatus; caseStatus?: CheckStatus }
 function AgentNode({ data }: NodeProps<Node<AgentNodeData>>) {
   const { agent, caseStatus } = data
   const summary = agent.summary
-  const openTasks = Object.values(summary?.openTasksByRole ?? {}).reduce(
-    (sum, count) => sum + count,
+  const openTasks = Object.values(summary?.openTasksByRole ?? {}).reduce<number>(
+    (sum, count) => sum + (count ?? 0),
     0,
   )
   return (

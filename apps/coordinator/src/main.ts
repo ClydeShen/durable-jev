@@ -7,12 +7,19 @@ import {
   CaseStore,
   LocalAgentClient,
 } from '@durable-jev/agent-core'
-import { A2aAgentClient, a2aRoutes, agentCard, HttpAgentClient } from '@durable-jev/agent-transport'
-import { type AgentId, agentIdSchema, type OrderOptions } from '@durable-jev/contracts'
+import {
+  A2aAgentClient,
+  a2aRoutes,
+  agentCard,
+  forgetRequests,
+  HttpAgentClient,
+} from '@durable-jev/agent-transport'
+import { type AgentId, type OrderOptions, shipmentSchema } from '@durable-jev/contracts'
 import {
   agentProfiles,
   createLogisticsRuntime,
   loadCaseCatalog,
+  logisticsAgentIdSchema,
   scriptedJudgementsOf,
 } from '@durable-jev/logistics'
 import { JevJudge, ScriptedJudge, type SemanticJudge } from '@durable-jev/model-providers'
@@ -36,13 +43,13 @@ function agentEndpoints(setting: string | undefined): Map<AgentId, string> {
   return new Map(
     setting.split(',').map((entry) => {
       const [agentId, url] = entry.split('=')
-      return [agentIdSchema.parse(agentId), url ?? '']
+      return [logisticsAgentIdSchema.parse(agentId), url ?? '']
     }),
   )
 }
 
 const catalog = loadCaseCatalog(join(materials, 'cases'))
-const store = CaseStore.open(join(dataDirectory, 'order-coordination.sqlite'))
+const store = CaseStore.open(join(dataDirectory, 'order-coordination.sqlite'), shipmentSchema.parse)
 const liveJudge: SemanticJudge | undefined =
   process.env.MODEL_MODE === 'live' ? new JevJudge() : undefined
 const { runtime, rulePack, reference } = createLogisticsRuntime({
@@ -91,7 +98,7 @@ const orderBook = OrderBook.open(join(dataDirectory, 'orders.sqlite'))
 const orchestrator = new CaseOrchestrator(
   agents,
   rulePack.ruleSet,
-  (caseId) => store.caseRecord(caseId)?.shipment,
+  (caseId) => store.caseRecord(caseId)?.data,
 )
 
 const coordinationSummary = () => agentSummary('order-coordination', rulePack, store)
@@ -136,15 +143,15 @@ async function agentStatuses(): Promise<AgentStatus[]> {
           available: true,
           summary,
           card,
-          responsibilities: agentProfiles[agentId].responsibilities,
+          responsibilities: agentProfiles[logisticsAgentIdSchema.parse(agentId)].responsibilities,
           transport,
           a2aTasks: a2aTasks.get(agentId) ?? 0,
         }),
         (): AgentStatus => ({
           agentId,
           available: false,
-          card: { ...agentProfiles[agentId], url },
-          responsibilities: agentProfiles[agentId].responsibilities,
+          card: { ...agentProfiles[logisticsAgentIdSchema.parse(agentId)], url },
+          responsibilities: agentProfiles[logisticsAgentIdSchema.parse(agentId)].responsibilities,
           transport,
           a2aTasks: 0,
         }),
@@ -170,6 +177,7 @@ async function startStoppedAgents() {
 async function resetDemo() {
   await startStoppedAgents()
   await orchestrator.reset()
+  forgetRequests(coordinationClient)
   eventLog.clear()
   orderBook.clear()
   for (const caseFile of catalog.values()) await orchestrator.submit(caseFile.shipment)
@@ -180,6 +188,7 @@ async function resetCase(caseId: string) {
   if (!original) throw new HttpError(404, `${caseId} has no original order to start over from`)
   await startStoppedAgents()
   await orchestrator.reset(caseId)
+  forgetRequests(coordinationClient, caseId)
   eventLog.clear(caseId)
   await orchestrator.submit(original)
 }

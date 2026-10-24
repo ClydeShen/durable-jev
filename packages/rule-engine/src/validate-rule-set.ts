@@ -11,6 +11,7 @@ import {
 
 type ValidationIssueCode =
   | 'SCHEMA'
+  | 'DOMAIN'
   | 'DUPLICATE_RULE'
   | 'MISSING_REFERENCE'
   | 'UNDECLARED_DEPENDENCY'
@@ -49,6 +50,12 @@ export interface ValidationEnvironment {
 
 /** Business vocabulary supplied by the domain, not inferred from rule identifiers. */
 export interface RuleConstraints {
+  rootScope?: string
+  scopes?: readonly string[]
+  agents?: readonly string[]
+  roles?: readonly string[]
+  invalidationTriggers?: readonly string[]
+  classification?: { scope: string; dimension: string }
   applicabilityDimensions?: readonly string[]
   mixingCategories?: readonly string[]
   requiresApplicability?(ruleId: string): boolean
@@ -66,17 +73,18 @@ function scopeIssues(
   rule: RuleDefinition,
   expression: Expression,
   scopeOf: ReadonlyMap<RuleId, RuleScope>,
+  rootScope: string,
   evaluationScope: RuleScope | CollectionScope = rule.scope,
 ): ValidationIssue[] {
   const within = (child: Expression, childScope = evaluationScope) =>
-    scopeIssues(rule, child, scopeOf, childScope)
+    scopeIssues(rule, child, scopeOf, rootScope, childScope)
   switch (expression.op) {
     case 'feel':
       return []
     case 'ref':
     case 'observed': {
       const target = scopeOf.get(expression.ruleId)
-      if (!target || target === 'order' || target === evaluationScope) return []
+      if (!target || target === rootScope || target === evaluationScope) return []
       return [
         {
           code: 'SCOPE_MISMATCH',
@@ -110,6 +118,7 @@ function scopeIssues(
 function referenceIssues(
   rule: RuleDefinition,
   scopeOf: ReadonlyMap<RuleId, RuleScope>,
+  rootScope: string,
 ): ValidationIssue[] {
   const declared = new Set(rule.dependsOn)
   const missing = rule.dependsOn
@@ -130,7 +139,9 @@ function referenceIssues(
         message: `expression reads ${ruleId} which is not in dependsOn`,
       }),
     )
-  const scopes = expressionsOf(rule).flatMap((expression) => scopeIssues(rule, expression, scopeOf))
+  const scopes = expressionsOf(rule).flatMap((expression) =>
+    scopeIssues(rule, expression, scopeOf, rootScope),
+  )
   return [...missing, ...undeclared, ...scopes]
 }
 
@@ -324,7 +335,7 @@ function classifierLabels(ruleSet: RuleSet): string[] | undefined {
   return Object.keys(semantic.question.options)
 }
 
-function selectionIssues(ruleSet: RuleSet): ValidationIssue[] {
+function selectionIssues(ruleSet: RuleSet, constraints?: RuleConstraints): ValidationIssue[] {
   const labels = classifierLabels(ruleSet)
   const classifierId = ruleSet.selection?.classifierRuleId
   const issue = (ruleId: RuleId | undefined, message: string): ValidationIssue => ({
@@ -333,22 +344,29 @@ function selectionIssues(ruleSet: RuleSet): ValidationIssue[] {
     message,
   })
   const classifierExists = ruleSet.rules.some((rule) => rule.ruleId === classifierId)
-  const setIssues =
-    classifierId && classifierExists && !labels
-      ? [issue(classifierId, 'the classifier must be a choice question that selects choices')]
-      : []
+  const setIssues: ValidationIssue[] = []
+  if (classifierId && !classifierExists)
+    setIssues.push(issue(classifierId, 'the classifier rule does not exist'))
+  if (classifierId && classifierExists && !labels)
+    setIssues.push(
+      issue(classifierId, 'the classifier must be a choice question that selects choices'),
+    )
+  const classifier = ruleSet.rules.find((rule) => rule.ruleId === classifierId)
+  if (classifier && classifier.scope !== ruleSet.selection?.scope)
+    setIssues.push(issue(classifierId, 'classifier scope does not match selection scope'))
   return [
     ...setIssues,
     ...ruleSet.rules.flatMap((rule) => {
-      const groups = rule.applicability?.commodityGroups
+      const dimension = ruleSet.selection?.dimension ?? constraints?.classification?.dimension
+      const groups = dimension ? rule.applicability?.[dimension] : undefined
       if (!groups) return []
       if (!classifierId || !labels) {
-        return [issue(rule.ruleId, 'commodity groups need a rule set classifier')]
+        return [issue(rule.ruleId, 'classification selection needs a rule set classifier')]
       }
       return [
         ...(rule.dependsOn.includes(classifierId)
           ? []
-          : [issue(rule.ruleId, `selection by commodity group must depend on ${classifierId}`)]),
+          : [issue(rule.ruleId, `classification selection must depend on ${classifierId}`)]),
         ...groups
           .filter((group) => !labels.includes(group))
           .map((group) => issue(rule.ruleId, `${group} is not a label of ${classifierId}`)),
@@ -465,9 +483,11 @@ export function validateRuleSet(
     }),
   )
   const issues = [
+    ...configurationIssues(ruleSet, environment.constraints),
     ...duplicates,
     ...ruleSet.rules.flatMap((rule) => [
-      ...referenceIssues(rule, scopeOf),
+      ...referenceIssues(rule, scopeOf, ruleSet.rootScope),
+      ...domainIssues(rule, environment.constraints),
       ...evaluatorIssues(rule, environment),
       ...parameterIssues(rule, environment),
       ...feelIssues(rule),
@@ -475,8 +495,44 @@ export function validateRuleSet(
       ...applicabilityIssues(rule, environment.constraints),
     ]),
     ...cycles,
-    ...selectionIssues(ruleSet),
+    ...selectionIssues(ruleSet, environment.constraints),
     ...mixingMatrixIssues(ruleSet.mixingMatrix, environment.constraints?.mixingCategories),
   ]
   return { valid: issues.length === 0, issues, ...(issues.length === 0 ? { ruleSet } : {}) }
+}
+
+function domainIssues(rule: RuleDefinition, constraints?: RuleConstraints): ValidationIssue[] {
+  const entries: [string, readonly string[], readonly string[] | undefined][] = [
+    ['owner', [rule.owner], constraints?.agents],
+    ['scope', [rule.scope], constraints?.scopes],
+    ['role', rule.humanGate?.steps.map((step) => step.requiredRole) ?? [], constraints?.roles],
+    ['invalidation', rule.invalidationTriggers, constraints?.invalidationTriggers],
+  ]
+  return entries.flatMap(([field, values, allowed]) =>
+    values
+      .filter((value) => allowed !== undefined && !allowed.includes(value))
+      .map((value) => ({
+        code: 'DOMAIN' as const,
+        ruleId: rule.ruleId,
+        message: `unknown ${field}: ${value}`,
+      })),
+  )
+}
+
+function configurationIssues(ruleSet: RuleSet, constraints?: RuleConstraints): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
+  if (
+    (constraints?.rootScope && constraints.rootScope !== ruleSet.rootScope) ||
+    (constraints?.scopes && !constraints.scopes.includes(ruleSet.rootScope))
+  ) {
+    issues.push({ code: 'DOMAIN', message: `unknown root scope: ${ruleSet.rootScope}` })
+  }
+  if (
+    ruleSet.selection &&
+    constraints?.scopes &&
+    !constraints.scopes.includes(ruleSet.selection.scope)
+  ) {
+    issues.push({ code: 'DOMAIN', message: `unknown classifier scope: ${ruleSet.selection.scope}` })
+  }
+  return issues
 }

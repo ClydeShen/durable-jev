@@ -1,5 +1,5 @@
 import { CaseStore, type CaseView } from '@durable-jev/agent-core'
-import type { Shipment } from '@durable-jev/contracts'
+import { type Shipment, shipmentSchema } from '@durable-jev/contracts'
 import { type CaseFile, createLogisticsRuntime } from '@durable-jev/logistics'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 
@@ -38,7 +38,7 @@ function snapshot(view: CaseView): RuleSnapshot {
   }
 }
 
-function runtime(materials: string, store: CaseStore, sample: CaseFile) {
+function runtime(materials: string, store: CaseStore<Shipment>, sample: CaseFile) {
   return createLogisticsRuntime({
     agentId: 'commercial-control',
     materialsDirectory: materials,
@@ -63,7 +63,7 @@ async function newOrder(
   extraCostCents: number,
   policyPack: 'baseline' | 'candidate',
 ) {
-  const store = CaseStore.open(':memory:')
+  const store = CaseStore.open(':memory:', shipmentSchema.parse)
   try {
     const started = performance.now()
     const agent = runtime(materials, store, sample)
@@ -89,7 +89,7 @@ async function existingOrder(
   approved: boolean,
   activation: PolicyActivation,
 ): Promise<PolicyObservation> {
-  const store = CaseStore.open(':memory:')
+  const store = CaseStore.open(':memory:', shipmentSchema.parse)
   try {
     const original = runtime(baseline, store, sample)
     await original.submit(shipmentOf(sample, extraCostCents))

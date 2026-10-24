@@ -34,6 +34,7 @@ const combinator = (ruleId: string, overrides: Partial<RuleDefinition>) =>
 
 const ruleSet: RuleSet = {
   ruleSetVersion: 'test',
+  rootScope: 'order',
   mixingMatrix: [
     { categories: ['general', 'general'], outcome: 'allowed' },
     { categories: ['general', 'coldChain'], outcome: 'allowed' },

@@ -9,7 +9,7 @@ import { NewOrder } from './components/NewOrder'
 import { RoleBar } from './components/RoleBar'
 import { Sidebar } from './components/Sidebar'
 import { TaskPanel } from './components/TaskPanel'
-import { demoOperators } from './labels'
+import { demoOperator, demoOperators } from './labels'
 import type { PlaybackSpeed } from './playback'
 import { useActions } from './use-actions'
 import { useCaseSelection } from './use-case-selection'
@@ -47,7 +47,10 @@ export function App() {
   }
   const links = {
     currentRole: actor.role,
-    switchRole: (role: Role) => setActor({ role, id: demoOperators[role] }),
+    switchRole: (role: Role) => {
+      const id = demoOperator(role)
+      if (id) setActor({ role, id })
+    },
     openAgent: setOpenAgent,
   }
 

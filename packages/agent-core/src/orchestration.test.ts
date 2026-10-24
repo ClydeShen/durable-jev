@@ -1,10 +1,16 @@
-import type { Shipment } from '@durable-jev/contracts'
+import { businessCaseSchema } from '@durable-jev/contracts'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 import type { CaseFacts, RuleDefinition, RuleSet } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { CaseRuntime } from './case-runtime.js'
 import { CaseStore } from './case-store.js'
 import { type AgentClient, CaseOrchestrator, LocalAgentClient } from './orchestration.js'
+
+const testCaseSchema = businessCaseSchema.extend({
+  cargoItems: z.array(z.object({ cargoItemId: z.string().min(1) })),
+})
+type TestCase = z.infer<typeof testCaseSchema>
 
 function rule(
   ruleId: string,
@@ -29,6 +35,7 @@ function rule(
 
 const ruleSet: RuleSet = {
   ruleSetVersion: 'test',
+  rootScope: 'order',
   mixingMatrix: [],
   rules: [
     rule('R05', 'transport-planning', { expression: { passWhen: 'count(cargoItems) <= 2' } }),
@@ -43,12 +50,13 @@ const ruleSet: RuleSet = {
 const shipment = (caseRevision: number, items: number) =>
   ({
     caseId: 'LOG-T',
+    correlationId: 'corr-LOG-T',
     caseRevision,
     entityVersions: { cargo: caseRevision, route: 1, carrier: 1, quote: 1 },
     cargoItems: Array.from({ length: items }, (_, index) => ({ cargoItemId: `ITEM-${index}` })),
-  }) as unknown as Shipment
+  }) satisfies TestCase
 
-const factsOf = (current: Shipment): CaseFacts => ({
+const factsOf = (current: TestCase): CaseFacts => ({
   entityVersions: current.entityVersions,
   root: { scope: { kind: 'order' }, facts: {} },
   context: { cargoItems: current.cargoItems.map(() => ({})) },
@@ -61,7 +69,7 @@ const factsOf = (current: Shipment): CaseFacts => ({
 })
 
 function agent(agentId: RuleDefinition['owner']) {
-  const store = CaseStore.open(':memory:')
+  const store = CaseStore.open(':memory:', testCaseSchema.parse)
   const runtime = new CaseRuntime({
     agentId,
     store,
@@ -89,7 +97,7 @@ class SwitchableAgent implements AgentClient {
   private guard<T>(work: () => Promise<T>): Promise<T> {
     return this.online ? work() : Promise.reject(new Error(`${this.agentId} is offline`))
   }
-  submit = (current: Shipment) => this.guard(() => this.inner.submit(current))
+  submit = (current: TestCase) => this.guard(() => this.inner.submit(current))
   evaluate = (caseId: string, foreign: Parameters<AgentClient['evaluate']>[1]) =>
     this.guard(() => this.inner.evaluate(caseId, foreign))
   state = (caseId: string) => this.guard(() => this.inner.state(caseId))
@@ -112,7 +120,7 @@ describe('CaseOrchestrator', () => {
     const orchestrator = new CaseOrchestrator(
       [coordination.client, transport.client],
       ruleSet,
-      (caseId) => coordination.store.caseRecord(caseId)?.shipment,
+      (caseId) => coordination.store.caseRecord(caseId)?.data,
     )
     await orchestrator.submit(shipment(1, 2))
     expect(await releaseOf(orchestrator)).toBe('PASS')
@@ -124,7 +132,7 @@ describe('CaseOrchestrator', () => {
     const orchestrator = new CaseOrchestrator(
       [coordination.client, transport],
       ruleSet,
-      (caseId) => coordination.store.caseRecord(caseId)?.shipment,
+      (caseId) => coordination.store.caseRecord(caseId)?.data,
     )
     await orchestrator.submit(shipment(1, 2))
     transport.online = false

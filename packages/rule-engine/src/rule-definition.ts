@@ -7,11 +7,10 @@ import {
 import { z } from 'zod'
 import { expressionSchema } from './expression.js'
 
-const ruleScopeSchema = z.enum(['order', 'cargoItem', 'leg'])
+const ruleScopeSchema = z.string().regex(/^[a-z][a-zA-Z0-9]*$/)
 export type RuleScope = z.infer<typeof ruleScopeSchema>
 
-export const invalidationTriggers = ['cargo', 'route', 'carrier', 'quote', 'documents'] as const
-const invalidationTriggerSchema = z.enum(invalidationTriggers)
+const invalidationTriggerSchema = z.string().min(1)
 export type InvalidationTrigger = z.infer<typeof invalidationTriggerSchema>
 
 const humanGateSchema = z.object({
@@ -93,9 +92,15 @@ export type MixingRule = z.infer<typeof mixingRuleSchema>
 
 export const ruleSetSchema = z.object({
   ruleSetVersion: z.string().min(1),
+  rootScope: ruleScopeSchema,
   rules: z.array(ruleDefinitionSchema).min(1),
-  mixingMatrix: z.array(mixingRuleSchema),
-  /** The semantic rule whose selected labels are the order's commodity groups. */
-  selection: z.object({ classifierRuleId: ruleIdSchema }).optional(),
+  mixingMatrix: z.array(mixingRuleSchema).default([]),
+  selection: z
+    .object({
+      classifierRuleId: ruleIdSchema,
+      scope: ruleScopeSchema,
+      dimension: z.string().min(1),
+    })
+    .optional(),
 })
 export type RuleSet = z.infer<typeof ruleSetSchema>

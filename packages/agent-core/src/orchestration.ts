@@ -1,4 +1,4 @@
-import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
+import type { AgentId, BusinessCase, HumanTask } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import { type RuleOutcome, type RuleSet, scopeKey } from '@durable-jev/rule-engine'
 import { clearData, markPublished, type OutboxEvent, unpublishedEvents } from '@durable-jev/store'
@@ -18,7 +18,7 @@ export interface AgentAvailability {
 
 export interface AgentClient {
   readonly agentId: AgentId
-  submit(shipment: Shipment): Promise<AgentCaseState>
+  submit(data: BusinessCase): Promise<AgentCaseState>
   evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState>
   state(caseId: string): Promise<AgentCaseState>
   decide(humanTaskId: string, action: HumanAction): Promise<Decision>
@@ -30,20 +30,20 @@ export interface AgentClient {
 }
 
 const stateOf = (view: CaseView): AgentCaseState => ({
-  caseRevision: view.record.shipment.caseRevision,
+  caseRevision: view.record.data.caseRevision,
   outcomes: view.outcomes,
   tasks: view.tasks,
 })
 
-export class LocalAgentClient implements AgentClient {
+export class LocalAgentClient<T extends BusinessCase = BusinessCase> implements AgentClient {
   constructor(
     readonly agentId: AgentId,
-    private readonly runtime: CaseRuntime,
-    private readonly store: CaseStore,
+    private readonly runtime: CaseRuntime<T>,
+    private readonly store: CaseStore<T>,
   ) {}
 
-  async submit(shipment: Shipment): Promise<AgentCaseState> {
-    return stateOf(await this.runtime.submit(shipment))
+  async submit(data: BusinessCase): Promise<AgentCaseState> {
+    return stateOf(await this.runtime.submit(data))
   }
 
   async evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState> {
@@ -108,17 +108,17 @@ export class CaseOrchestrator {
   constructor(
     private readonly agents: readonly AgentClient[],
     ruleSet: RuleSet,
-    private readonly shipmentOf: (caseId: string) => Shipment | undefined,
+    private readonly caseOf: (caseId: string) => BusinessCase | undefined,
   ) {
     this.owners = new Map(ruleSet.rules.map((rule) => [rule.ruleId, rule.owner]))
   }
 
-  submit(shipment: Shipment): Promise<AgentCaseState> {
-    return this.serialized(shipment.caseId, async () => {
+  submit(data: BusinessCase): Promise<AgentCaseState> {
+    return this.serialized(data.caseId, async () => {
       const states = await Promise.all(
-        this.agents.map((agent) => agent.submit(shipment).catch(unreachable)),
+        this.agents.map((agent) => agent.submit(data).catch(unreachable)),
       )
-      return this.propagateFrom(shipment.caseId, states)
+      return this.propagateFrom(data.caseId, states)
     })
   }
 
@@ -172,12 +172,12 @@ export class CaseOrchestrator {
   }
 
   private async synchronized(caseId: string): Promise<Reachable[]> {
-    const shipment = this.shipmentOf(caseId)
+    const data = this.caseOf(caseId)
     return Promise.all(
       this.agents.map(async (agent) => {
         const state = await agent.state(caseId).catch(unreachable)
-        if (!state || !shipment || state.caseRevision === shipment.caseRevision) return state
-        return agent.submit(shipment).catch(unreachable)
+        if (!state || !data || state.caseRevision === data.caseRevision) return state
+        return agent.submit(data).catch(unreachable)
       }),
     )
   }

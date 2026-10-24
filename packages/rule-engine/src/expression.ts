@@ -1,7 +1,7 @@
 import { type RuleId, ruleIdSchema } from '@durable-jev/contracts'
 import { z } from 'zod'
 
-const collectionScopeSchema = z.enum(['cargoItem', 'leg'])
+const collectionScopeSchema = z.string().min(1)
 export type CollectionScope = z.infer<typeof collectionScopeSchema>
 
 type FactValue = string | number | boolean

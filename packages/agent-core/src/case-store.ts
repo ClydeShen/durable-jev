@@ -1,4 +1,4 @@
-import type { HumanTask, Shipment } from '@durable-jev/contracts'
+import type { BusinessCase, HumanTask } from '@durable-jev/contracts'
 import { type RuleOutcome, scopeKey } from '@durable-jev/rule-engine'
 import {
   appendToOutbox,
@@ -9,6 +9,7 @@ import {
 } from '@durable-jev/store'
 
 const caseMigrations: readonly Migration[] = [
+  // Historical SQL names stay stable so existing demo stores open without a data migration.
   {
     version: 10,
     name: 'cases, rule results and human tasks',
@@ -47,9 +48,9 @@ const caseMigrations: readonly Migration[] = [
   },
 ]
 
-export interface CaseRecord {
-  shipment: Shipment
-  dispatchedAt?: string
+export interface CaseRecord<T extends BusinessCase = BusinessCase> {
+  data: T
+  completedAt?: string
   updatedAt: string
 }
 
@@ -59,51 +60,64 @@ interface CaseRow {
   updated_at: string
 }
 
-const toRecord = (row: CaseRow): CaseRecord => ({
-  shipment: JSON.parse(row.shipment_json),
-  ...(row.dispatched_at ? { dispatchedAt: row.dispatched_at } : {}),
-  updatedAt: row.updated_at,
-})
+function toRecord<T extends BusinessCase>(
+  row: CaseRow,
+  parse: (input: unknown) => T,
+): CaseRecord<T> {
+  return {
+    data: parse(JSON.parse(row.shipment_json)),
+    ...(row.dispatched_at ? { completedAt: row.dispatched_at } : {}),
+    updatedAt: row.updated_at,
+  }
+}
 
-export class CaseStore {
-  constructor(readonly db: Db) {}
+export class CaseStore<T extends BusinessCase = BusinessCase> {
+  constructor(
+    readonly db: Db,
+    readonly parse: (input: unknown) => T,
+  ) {}
 
-  static open(path: string, agentMigrations: readonly Migration[] = []): CaseStore {
-    return new CaseStore(openStore(path, [...caseMigrations, ...agentMigrations]))
+  static open<Data extends BusinessCase>(
+    path: string,
+    parse: (input: unknown) => Data,
+    agentMigrations: readonly Migration[] = [],
+  ): CaseStore<Data> {
+    return new CaseStore(openStore(path, [...caseMigrations, ...agentMigrations]), parse)
   }
 
-  transaction<T>(work: () => T): T {
+  transaction<Result>(work: () => Result): Result {
     return this.db.transaction(work).immediate()
   }
 
-  putCase(shipment: Shipment, now: string): void {
+  putCase(data: T, now: string): void {
+    const validated = this.parse(data)
     this.db
       .prepare(
         `INSERT INTO cases (case_id, shipment_json, updated_at) VALUES (?, ?, ?)
          ON CONFLICT (case_id) DO UPDATE SET shipment_json = excluded.shipment_json, updated_at = excluded.updated_at`,
       )
-      .run(shipment.caseId, JSON.stringify(shipment), now)
+      .run(validated.caseId, JSON.stringify(validated), now)
   }
 
-  caseRecord(caseId: string): CaseRecord | undefined {
+  caseRecord(caseId: string): CaseRecord<T> | undefined {
     const row = this.db
       .prepare<[string], CaseRow>(
         'SELECT shipment_json, dispatched_at, updated_at FROM cases WHERE case_id = ?',
       )
       .get(caseId)
-    return row ? toRecord(row) : undefined
+    return row ? toRecord(row, this.parse) : undefined
   }
 
-  cases(): CaseRecord[] {
+  cases(): CaseRecord<T>[] {
     return this.db
       .prepare<[], CaseRow>(
         'SELECT shipment_json, dispatched_at, updated_at FROM cases ORDER BY case_id',
       )
       .all()
-      .map(toRecord)
+      .map((row) => toRecord(row, this.parse))
   }
 
-  markDispatched(caseId: string, now: string): void {
+  markCompleted(caseId: string, now: string): void {
     this.db
       .prepare('UPDATE cases SET dispatched_at = ?, updated_at = ? WHERE case_id = ?')
       .run(now, now, caseId)

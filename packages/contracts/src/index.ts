@@ -1,4 +1,5 @@
 export { type AgentId, agentIdSchema } from './agents.js'
+export { type BusinessCase, businessCaseSchema } from './business-case.js'
 export { canonicalJson } from './canonical-json.js'
 export type { CheckScope } from './check.js'
 export {

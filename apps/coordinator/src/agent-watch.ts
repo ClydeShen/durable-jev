@@ -11,7 +11,7 @@ export function watchAgents(orchestrator: CaseOrchestrator, store: CaseStore, in
     available = now
     if (!recovered) return
     for (const record of store.cases()) {
-      if (!record.dispatchedAt) await orchestrator.propagate(record.shipment.caseId)
+      if (!record.completedAt) await orchestrator.propagate(record.data.caseId)
     }
   }
   const timer = setInterval(() => {

@@ -6,13 +6,19 @@ const materials = fileURLToPath(new URL('../../../eval/materials/', import.meta.
 
 describe('loadRulePack', () => {
   it('loads the policy-v1 materials without validation issues', () => {
-    const pack = loadRulePack(materials, new Set(['R29']))
+    const pack = loadRulePack(materials, new Set(['R29']), {
+      rootScope: 'order',
+      classification: { scope: 'cargoItem', dimension: 'commodityGroups' },
+    })
     expect(pack.policyVersion).toBe('policy-v1')
     expect(pack.ruleSet.rules.map((rule) => rule.ruleId)).toContain('R40')
   })
 
   it('finds the policy clause of every rule, with later amendments', () => {
-    const pack = loadRulePack(materials, new Set(['R29']))
+    const pack = loadRulePack(materials, new Set(['R29']), {
+      rootScope: 'order',
+      classification: { scope: 'cargoItem', dimension: 'commodityGroups' },
+    })
     const missing = pack.ruleSet.rules.filter((rule) => !pack.clauses.has(rule.ruleId))
     expect(missing.map((rule) => rule.ruleId)).toEqual([])
     expect(pack.clauses.get('R01')).toEqual({
@@ -27,7 +33,10 @@ describe('loadRulePack', () => {
   })
 
   it('keeps the policy text in its sections, as written', () => {
-    const { policy } = loadRulePack(materials, new Set(['R29']))
+    const { policy } = loadRulePack(materials, new Set(['R29']), {
+      rootScope: 'order',
+      classification: { scope: 'cargoItem', dimension: 'commodityGroups' },
+    })
     expect(policy.title).toBe('Shipment Release Policy')
     expect(policy.preamble[0]).toMatch(/^\| Document No\. \|/)
     expect(policy.sections.map((section) => section.heading).slice(0, 5)).toEqual([
@@ -42,6 +51,6 @@ describe('loadRulePack', () => {
   })
 
   it('refuses to start when a code evaluator is not registered', () => {
-    expect(() => loadRulePack(materials, new Set())).toThrow(RulePackError)
+    expect(() => loadRulePack(materials, new Set(), { rootScope: 'order' })).toThrow(RulePackError)
   })
 })

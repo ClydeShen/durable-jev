@@ -4,7 +4,7 @@ import type { Message, Part } from '@a2a-js/sdk'
 export const caseSkills = {
   'submit-case': {
     name: 'Submit a case',
-    description: 'Take a new shipment revision and evaluate the rules this agent owns',
+    description: 'Take a new business case revision and evaluate the rules this agent owns',
   },
   'evaluate-case': {
     name: 'Evaluate a case',

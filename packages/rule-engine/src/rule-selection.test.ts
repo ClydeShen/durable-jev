@@ -64,6 +64,7 @@ const handover: RuleDefinition = {
 
 const ruleSet: RuleSet = {
   ruleSetVersion: 'test',
+  rootScope: 'order',
   mixingMatrix: [
     { categories: ['general', 'general'], outcome: 'allowed' },
     { categories: ['general', 'coldChain'], outcome: 'allowed' },
@@ -72,7 +73,7 @@ const ruleSet: RuleSet = {
     { categories: ['coldChain', 'controlled'], outcome: 'allowed' },
     { categories: ['controlled', 'controlled'], outcome: 'allowed' },
   ],
-  selection: { classifierRuleId: 'R42' },
+  selection: { classifierRuleId: 'R42', scope: 'cargoItem', dimension: 'commodityGroups' },
   rules: [classifier, permit, handover],
 }
 
@@ -103,6 +104,80 @@ const evaluate = (facts: CaseFacts, judge: LeafEvaluator) =>
   })
 
 describe('rule selection', () => {
+  it('uses declared classifier scopes and dimensions, including unresolved collections', async () => {
+    const classifyRule: RuleDefinition = {
+      ...base,
+      ruleId: 'CLASS-01',
+      title: 'Classification',
+      owner: 'record-review',
+      scope: 'entry',
+      dependsOn: [],
+      evaluator: { kind: 'semantic', ref: 'CLASS-01' },
+      invalidationTriggers: [],
+      semantic: {
+        promptVersion: '1',
+        question: { kind: 'choice', text: 'Which band?', options: { high: 'High', low: 'Low' } },
+        state: { note: 'entry.note' },
+        passWhen: { selectChoicesAtLeast: 0.25 },
+      },
+    }
+    const selectedRule: RuleDefinition = {
+      ...handover,
+      ruleId: 'POLICY-01',
+      owner: 'record-review',
+      scope: 'record',
+      dependsOn: ['CLASS-01'],
+      applicability: { riskBands: ['high'] },
+      expression: { passWhen: 'record.amount = 100' },
+      invalidationTriggers: [],
+    }
+    const rules: RuleSet = {
+      rootScope: 'record',
+      ruleSetVersion: 'classifier-contract',
+      mixingMatrix: [],
+      selection: { classifierRuleId: 'CLASS-01', scope: 'entry', dimension: 'riskBands' },
+      rules: [classifyRule, selectedRule],
+    }
+    const entry = {
+      scope: { kind: 'entry', entityId: 'ENTRY-1' },
+      facts: { note: 'Review' },
+      context: { entry: { note: 'Review' } },
+    }
+    const facts: CaseFacts = {
+      entityVersions: {},
+      root: { scope: { kind: 'record' }, facts: { amount: 100 } },
+      context: { record: { amount: 100 } },
+      collections: { entry: [entry] },
+    }
+    const environment = {
+      parameters: {},
+      evaluators: new Map<string, LeafEvaluator>([['CLASS-01', classifiedAs('PASS', ['high'])]]),
+    }
+    expect(validateRuleSet(rules, { policyParameters: new Set() }).valid).toBe(true)
+    expect(
+      (await evaluateRuleGraph(rules, facts, environment)).outcomeOf('POLICY-01')?.status,
+    ).toBe('PASS')
+    const unresolved = await evaluateRuleGraph(
+      rules,
+      { ...facts, collections: { entry: [] } },
+      environment,
+    )
+    expect(unresolved.outcomeOf('POLICY-01')).toMatchObject({
+      status: 'BLOCKED_DEPENDENCY',
+      blockedBy: ['CLASS-01'],
+    })
+    await expect(
+      evaluateRuleGraph(rules, { ...facts, collections: { entry: [entry, entry] } }, environment),
+    ).rejects.toThrow('duplicate member scope')
+    await expect(
+      evaluateRuleGraph(
+        rules,
+        { ...facts, root: { scope: { kind: 'order' }, facts: {} } },
+        environment,
+      ),
+    ).rejects.toThrow('expected root scope record')
+  })
+
   it('indexes domain-supplied dimensions without interpreting their names', () => {
     const index = new RuleIndex([
       {

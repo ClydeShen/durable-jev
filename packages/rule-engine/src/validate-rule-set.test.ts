@@ -81,6 +81,7 @@ const baseRules: RuleDefinition[] = [
 
 const ruleSet: RuleSet = {
   ruleSetVersion: 'v1',
+  rootScope: 'order',
   rules: baseRules,
   mixingMatrix: completeMixingMatrix,
 }

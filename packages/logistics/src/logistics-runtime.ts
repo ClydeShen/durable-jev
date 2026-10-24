@@ -8,7 +8,7 @@ import {
   loadRulePack,
   type RulePack,
 } from '@durable-jev/agent-core'
-import type { AgentId, Shipment } from '@durable-jev/contracts'
+import { type AgentId, type Shipment, shipmentSchema } from '@durable-jev/contracts'
 import type { SemanticJudge } from '@durable-jev/model-providers'
 import type { LeafEvaluator } from '@durable-jev/rule-engine'
 import type { Migration } from '@durable-jev/store'
@@ -35,13 +35,13 @@ function codeEvaluatorsFor(agentId: AgentId, store: CaseStore): Map<string, Leaf
 export interface LogisticsRuntimeOptions {
   agentId: AgentId
   materialsDirectory: string
-  store: CaseStore
+  store: CaseStore<Shipment>
   judgeFor(shipment: Shipment): SemanticJudge
   now(): string
 }
 
 export interface LogisticsRuntime {
-  runtime: CaseRuntime
+  runtime: CaseRuntime<Shipment>
   rulePack: RulePack
   reference: ReferenceData
 }
@@ -71,16 +71,16 @@ export function createLogisticsRuntime(options: LogisticsRuntimeOptions): Logist
 
 export interface LocalLogisticsAgents {
   orchestrator: CaseOrchestrator
-  coordination: { runtime: CaseRuntime; store: CaseStore }
+  coordination: { runtime: CaseRuntime<Shipment>; store: CaseStore<Shipment> }
   transport: {
-    runtime: CaseRuntime
-    store: CaseStore
+    runtime: CaseRuntime<Shipment>
+    store: CaseStore<Shipment>
     rulePack: RulePack
     reference: ReferenceData
   }
   rulePack: RulePack
   /** The case as all agents see it: the coordinator's record with every agent's outcomes and tasks. */
-  view(caseId: string): Promise<CaseView>
+  view(caseId: string): Promise<CaseView<Shipment>>
 }
 
 export interface LocalLogisticsOptions extends Omit<LogisticsRuntimeOptions, 'agentId' | 'store'> {
@@ -95,6 +95,7 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
   const agents = [...new Set(owners)].map((agentId) => {
     const store = CaseStore.open(
       options.dataDirectory ? join(options.dataDirectory, `${agentId}.sqlite`) : ':memory:',
+      shipmentSchema.parse,
       agentMigrations(agentId),
     )
     const { runtime, rulePack, reference } = createLogisticsRuntime({ ...options, agentId, store })
@@ -113,7 +114,7 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
   const orchestrator = new CaseOrchestrator(
     agents.map((agent) => agent.client),
     coordination.rulePack.ruleSet,
-    (caseId) => coordination.store.caseRecord(caseId)?.shipment,
+    (caseId) => coordination.store.caseRecord(caseId)?.data,
   )
   return {
     orchestrator,

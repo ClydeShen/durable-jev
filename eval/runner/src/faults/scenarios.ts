@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { AgentClient } from '@durable-jev/agent-core'
 import { A2aAgentClient, a2aRoutes, agentCard } from '@durable-jev/agent-transport'
-import { applyRevision } from '@durable-jev/logistics'
+import { applyRevision, loadLogisticsRulePack } from '@durable-jev/logistics'
 import { SemanticJudgeError } from '@durable-jev/model-providers'
 import { validateRuleSet } from '@durable-jev/rule-engine'
 import express from 'express'
@@ -371,7 +371,7 @@ export const scenarios: FaultScenario[] = [
     id: 'F16',
     title: 'The rule configuration has a cycle or a missing dependency',
     run: async () => {
-      const ruleSet = JSON.parse(readFileSync(join(materials, 'rules.json'), 'utf8'))
+      const ruleSet = loadLogisticsRulePack(materials).ruleSet
       const { parameters } = JSON.parse(
         readFileSync(join(materials, 'policy-parameters.json'), 'utf8'),
       ) as { parameters: Record<string, unknown> }

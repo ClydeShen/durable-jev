@@ -1,7 +1,7 @@
 import type { Role } from '@durable-jev/contracts'
 import { useId, useRef, useState } from 'react'
 import type { Actor } from '../api'
-import { demoOperators, roleLabels } from '../labels'
+import { demoOperator, roleLabels } from '../labels'
 import { useDismiss } from '../use-dismiss'
 import { PolicyDialog } from './PolicyDialog'
 
@@ -14,7 +14,9 @@ function RoleMenu({ actor, onChange }: { actor: Actor; onChange(actor: Actor): v
   const root = useRef<HTMLDivElement>(null)
   useDismiss(open, root, () => setOpen(false))
   const choose = (role: Role) => {
-    onChange({ role, id: demoOperators[role] })
+    const id = demoOperator(role)
+    if (!id) return
+    onChange({ role, id })
     setOpen(false)
   }
   return (
@@ -31,7 +33,7 @@ function RoleMenu({ actor, onChange }: { actor: Actor; onChange(actor: Actor): v
       >
         <span className="entity-dot" aria-hidden="true" />
         {roleLabels[actor.role]}
-        <strong>{demoOperators[actor.role]}</strong>
+        <strong>{demoOperator(actor.role)}</strong>
         <span className="entity-action" aria-hidden="true">
           ▾
         </span>
@@ -49,7 +51,7 @@ function RoleMenu({ actor, onChange }: { actor: Actor; onChange(actor: Actor): v
             >
               <span className="entity-dot" aria-hidden="true" />
               <span>{roleLabels[role]}</span>
-              <span className="muted">{demoOperators[role]}</span>
+              <span className="muted">{demoOperator(role)}</span>
             </button>
           ))}
         </div>

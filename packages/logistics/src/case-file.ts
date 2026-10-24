@@ -3,11 +3,11 @@ import {
   type CheckScope,
   checkStatusSchema,
   orderStatusSchema,
-  roleSchema,
   shipmentSchema,
 } from '@durable-jev/contracts'
 import type { ScriptedJudgement } from '@durable-jev/model-providers'
 import { z } from 'zod'
+import { logisticsRoleSchema } from './rule-constraints.js'
 
 const judgementSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -19,7 +19,7 @@ const judgementSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('noul'), probability: z.number().min(0).max(1) }),
 ])
 
-const actorSchema = z.object({ id: z.string().min(1), role: roleSchema })
+const actorSchema = z.object({ id: z.string().min(1), role: logisticsRoleSchema })
 
 const decisionSchema = z.discriminatedUnion('type', [
   z.object({ type: z.enum(['approve', 'reject']), comment: z.string().optional() }),

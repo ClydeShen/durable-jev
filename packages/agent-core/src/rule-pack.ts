@@ -51,11 +51,28 @@ export function loadRulePack(
   const policy = policyParametersSchema.parse(
     readJson(join(materialsDirectory, 'policy-parameters.json')),
   )
-  const validation = validateRuleSet(readJson(join(materialsDirectory, 'rules.json')), {
-    constraints,
-    policyParameters: new Set(Object.keys(policy.parameters)),
-    evaluatorRefs: codeEvaluatorRefs,
-  })
+  const document = z
+    .record(z.string(), z.unknown())
+    .parse(readJson(join(materialsDirectory, 'rules.json')))
+  const validation = validateRuleSet(
+    {
+      rootScope: constraints.rootScope,
+      ...document,
+      ...(document.selection
+        ? {
+            selection: {
+              ...constraints.classification,
+              ...z.record(z.string(), z.unknown()).parse(document.selection),
+            },
+          }
+        : {}),
+    },
+    {
+      constraints,
+      policyParameters: new Set(Object.keys(policy.parameters)),
+      evaluatorRefs: codeEvaluatorRefs,
+    },
+  )
   if (!validation.ruleSet) throw new RulePackError(validation.issues)
   const text = policyDocument(
     readFileSync(join(materialsDirectory, `${policy.policyVersion}.md`), 'utf8'),

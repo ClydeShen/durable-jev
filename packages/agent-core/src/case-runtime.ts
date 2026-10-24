@@ -1,9 +1,9 @@
 import type {
   AgentId,
+  BusinessCase,
   HumanTask,
   HumanTaskTarget,
   RuleEngineKind,
-  Shipment,
 } from '@durable-jev/contracts'
 import { type Decision, decideHumanTask, type HumanAction } from '@durable-jev/human-tasks'
 import type { SemanticJudge } from '@durable-jev/model-providers'
@@ -12,7 +12,6 @@ import {
   type EntityChange,
   evaluateRuleGraph,
   invalidateDependentsOf,
-  invalidationTriggers,
   type LeafEvaluator,
   type RuleDefinition,
   type RuleOutcome,
@@ -24,18 +23,18 @@ import { RecordingJudge } from './recording-judge.js'
 import type { RulePack } from './rule-pack.js'
 import { semanticEvaluator } from './semantic-evaluator.js'
 
-export interface CaseRuntimeOptions {
+export interface CaseRuntimeOptions<T extends BusinessCase> {
   agentId?: AgentId
-  store: CaseStore
+  store: CaseStore<T>
   rulePack: RulePack
-  judgeFor(shipment: Shipment): SemanticJudge
+  judgeFor(data: T): SemanticJudge
   codeEvaluators: ReadonlyMap<string, LeafEvaluator>
-  factsOf(shipment: Shipment): CaseFacts
+  factsOf(data: T): CaseFacts
   now(): string
 }
 
-export interface CaseView {
-  record: CaseRecord
+export interface CaseView<T extends BusinessCase = BusinessCase> {
+  record: CaseRecord<T>
   outcomes: RuleOutcome[]
   tasks: HumanTask[]
 }
@@ -68,12 +67,12 @@ function taskEventName(task: HumanTask, gates: HumanGateSession): string {
   if (task.status !== 'OPEN') return 'human_task.closed'
   return gates.wasCarried(task) ? 'human_task.carried_forward' : 'human_task.opened'
 }
-export class CaseRuntime {
+export class CaseRuntime<T extends BusinessCase = BusinessCase> {
   private readonly queues = new Map<string, Promise<unknown>>()
 
-  constructor(private readonly options: CaseRuntimeOptions) {}
+  constructor(private readonly options: CaseRuntimeOptions<T>) {}
 
-  view(caseId: string): CaseView {
+  view(caseId: string): CaseView<T> {
     const record = this.options.store.caseRecord(caseId)
     if (!record) throw new CaseNotFoundError(caseId)
     return {
@@ -83,24 +82,25 @@ export class CaseRuntime {
     }
   }
 
-  submit(shipment: Shipment): Promise<CaseView> {
-    return this.serialized(shipment.caseId, async () => {
+  submit(input: unknown): Promise<CaseView<T>> {
+    const data = this.options.store.parse(input)
+    return this.serialized(data.caseId, async () => {
       const { store, now } = this.options
-      const previous = store.caseRecord(shipment.caseId)?.shipment
-      const change = previous ? this.changeBetween(previous, shipment) : undefined
+      const previous = store.caseRecord(data.caseId)?.data
+      const change = previous ? this.changeBetween(previous, data) : undefined
       store.transaction(() => {
-        store.putCase(shipment, now())
+        store.putCase(data, now())
         store.record({
-          caseId: shipment.caseId,
+          caseId: data.caseId,
           eventName: 'case.submitted',
-          payload: { correlationId: shipment.correlationId, caseRevision: shipment.caseRevision },
+          payload: { correlationId: data.correlationId, caseRevision: data.caseRevision },
         })
       })
-      return this.evaluateNow(shipment.caseId, change)
+      return this.evaluateNow(data.caseId, change)
     })
   }
 
-  evaluate(caseId: string, foreign?: readonly RuleOutcome[]): Promise<CaseView> {
+  evaluate(caseId: string, foreign?: readonly RuleOutcome[]): Promise<CaseView<T>> {
     return this.serialized(caseId, () => {
       if (foreign) this.options.store.replaceForeignOutcomes(caseId, foreign)
       return this.evaluateNow(caseId)
@@ -108,10 +108,11 @@ export class CaseRuntime {
   }
 
   /**
-   * Evaluates the pure rules (expressions, tables, combinators) against a candidate shipment
+   * Evaluates the pure rules (expressions, tables, combinators) against a candidate data
    * without storing anything. Semantic, human and code rules keep their current outcomes.
    */
-  async whatIf(candidate: Shipment): Promise<RuleOutcome[]> {
+  async whatIf(input: T): Promise<RuleOutcome[]> {
+    const candidate = this.options.store.parse(input)
     const { store, rulePack, factsOf } = this.options
     const current = [
       ...store.outcomes(candidate.caseId),
@@ -162,14 +163,14 @@ export class CaseRuntime {
     })
   }
 
-  private currentTarget(view: CaseView, task: HumanTask): HumanTaskTarget {
+  private currentTarget(view: CaseView<T>, task: HumanTask): HumanTaskTarget {
     const outcome = view.outcomes.find(
       (candidate) =>
         candidate.ruleId === task.ruleId && scopeKey(candidate.scope) === scopeKey(task.scope),
     )
     return {
-      caseRevision: view.record.shipment.caseRevision,
-      entityVersions: view.record.shipment.entityVersions,
+      caseRevision: view.record.data.caseRevision,
+      entityVersions: view.record.data.entityVersions,
       inputFingerprint: outcome?.inputFingerprint ?? '',
     }
   }
@@ -194,24 +195,28 @@ export class CaseRuntime {
     )
   }
 
-  private changeBetween(previous: Shipment, next: Shipment): EntityChange | undefined {
+  private changeBetween(previous: T, next: T): EntityChange | undefined {
     const [before, after] = [this.options.factsOf(previous), this.options.factsOf(next)]
-    const entities = invalidationTriggers.filter(
+    const dimensions = new Set([
+      ...Object.keys(before.entityVersions),
+      ...Object.keys(after.entityVersions),
+    ])
+    const entities = [...dimensions].filter(
       (trigger) => before.entityVersions[trigger] !== after.entityVersions[trigger],
     )
     return entities.length > 0 ? { changeId: `r${next.caseRevision}`, entities } : undefined
   }
 
-  private async evaluateNow(caseId: string, change?: EntityChange): Promise<CaseView> {
+  private async evaluateNow(caseId: string, change?: EntityChange): Promise<CaseView<T>> {
     const { store, rulePack, factsOf, now } = this.options
     const before = this.view(caseId)
     const affected = change ? invalidateDependentsOf(rulePack.ruleSet, change) : new Set<string>()
-    const shipment = before.record.shipment
-    const gates = new HumanGateSession(shipment, before.tasks, now())
-    const judge = new RecordingJudge(this.options.judgeFor(shipment))
+    const data = before.record.data
+    const gates = new HumanGateSession(data, before.tasks, now())
+    const judge = new RecordingJudge(this.options.judgeFor(data))
     const graph = await evaluateRuleGraph(
       rulePack.ruleSet,
-      factsOf(shipment),
+      factsOf(data),
       { evaluators: this.evaluatorsFor(gates, judge), parameters: rulePack.parameters },
       {
         previous: before.outcomes,
@@ -239,7 +244,7 @@ export class CaseRuntime {
     })
     const written = store.transaction(() => {
       const current = store.caseRecord(caseId)
-      if (current?.shipment.caseRevision !== shipment.caseRevision) return false
+      if (current?.data.caseRevision !== data.caseRevision) return false
       store.replaceOutcomes(caseId, outcomes)
       for (const outcome of before.outcomes.filter((candidate) => affected.has(candidate.ruleId))) {
         store.record({
@@ -262,7 +267,7 @@ export class CaseRuntime {
             ruleId: outcome.ruleId,
             scope: outcome.scope,
             status: outcome.status,
-            caseRevision: shipment.caseRevision,
+            caseRevision: data.caseRevision,
           },
         })
       }
@@ -299,7 +304,7 @@ export class CaseRuntime {
     return written ? this.view(caseId) : this.evaluateNow(caseId, change)
   }
 
-  private serialized<T>(caseId: string, work: () => Promise<T>): Promise<T> {
+  private serialized<Result>(caseId: string, work: () => Promise<Result>): Promise<Result> {
     const previous = this.queues.get(caseId) ?? Promise.resolve()
     const next = previous.then(work, work)
     this.queues.set(

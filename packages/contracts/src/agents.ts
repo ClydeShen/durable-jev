@@ -1,10 +1,4 @@
 import { z } from 'zod'
 
-export const agentIdSchema = z.enum([
-  'order-coordination',
-  'cargo-assurance',
-  'transport-planning',
-  'commercial-control',
-  'destination-compliance',
-])
+export const agentIdSchema = z.string().regex(/^[a-z][a-z0-9-]*$/)
 export type AgentId = z.infer<typeof agentIdSchema>

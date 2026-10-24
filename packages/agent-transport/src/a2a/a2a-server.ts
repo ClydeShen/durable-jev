@@ -8,11 +8,12 @@ import {
 } from '@a2a-js/sdk/server'
 import { agentCardHandler, jsonRpcHandler, UserBuilder } from '@a2a-js/sdk/server/express'
 import type { AgentClient } from '@durable-jev/agent-core'
-import { shipmentSchema } from '@durable-jev/contracts'
+import { businessCaseSchema } from '@durable-jev/contracts'
 import type { HumanAction } from '@durable-jev/human-tasks'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import { Router } from 'express'
 import { z } from 'zod'
+import { requestCache } from '../request-cache.js'
 import {
   type CaseSkill,
   caseSkills,
@@ -52,7 +53,7 @@ export function agentCard(profile: AgentProfile, baseUrl: string, version: strin
       id,
       name,
       description,
-      tags: ['logistics'],
+      tags: ['business-rules'],
       examples: [],
       inputModes: ['application/json'],
       outputModes: ['application/json'],
@@ -74,7 +75,7 @@ function skillHandlers(
   client: AgentClient,
 ): Record<CaseSkill, (input: unknown) => Promise<unknown>> {
   return {
-    'submit-case': (input) => client.submit(shipmentSchema.parse(input)),
+    'submit-case': (input) => client.submit(businessCaseSchema.parse(input)),
     'evaluate-case': (input) => {
       const { caseId, foreign } = caseIdInput.extend({ foreign: z.array(z.unknown()) }).parse(input)
       return client.evaluate(caseId, foreign as RuleOutcome[])
@@ -138,7 +139,7 @@ function terminalTask(
  */
 export function a2aRoutes(client: AgentClient, card: AgentCard): Router {
   const handlers = skillHandlers(client)
-  const completedByKey = new Map<string, Task>()
+  const completedByKey = requestCache(client)
   const executor: AgentExecutor = {
     execute: async (context, bus) => {
       const base = {
@@ -156,13 +157,18 @@ export function a2aRoutes(client: AgentClient, card: AgentCard): Router {
       const key = request.requestKey && `${request.skill}:${request.requestKey}`
       const earlier = key ? completedByKey.get(key) : undefined
       const result = earlier
-        ? { result: dataOf(earlier.artifacts[0]?.parts ?? []) }
+        ? { result: earlier.result }
         : await handlers[request.skill](request.input).then(
             (value) => ({ result: value }),
             (error: unknown) => ({ error: String(error) }),
           )
-      const task = terminalTask(base, request, result, earlier?.id)
-      if (key && !earlier && 'result' in result) completedByKey.set(key, task)
+      const task = terminalTask(base, request, result, earlier?.taskId)
+      if (key && !earlier && 'result' in result) {
+        const input = z.record(z.string(), z.unknown()).safeParse(request.input)
+        const caseId =
+          input.success && typeof input.data.caseId === 'string' ? input.data.caseId : undefined
+        completedByKey.set(key, { caseId, taskId: task.id, result: result.result })
+      }
       bus.publish(AgentEvent.task(task))
       bus.finished()
     },

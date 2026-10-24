@@ -36,15 +36,7 @@ export const orderStatusSchema = z.enum([
 ])
 export type OrderStatus = z.infer<typeof orderStatusSchema>
 
-export const roleSchema = z.enum([
-  'transportPlanner',
-  'complianceReviewer',
-  'qualityReviewer',
-  'commercialManager',
-  'warehouseOperator',
-  'dispatcher',
-  'technicalEvaluator',
-])
+export const roleSchema = z.string().regex(/^[a-z][a-zA-Z0-9]*$/)
 export type Role = z.infer<typeof roleSchema>
 
 export const humanTaskTypeSchema = z.enum(['APPROVAL', 'OPERATION'])

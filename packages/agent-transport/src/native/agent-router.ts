@@ -1,8 +1,9 @@
 import type { AgentClient, AgentSummary } from '@durable-jev/agent-core'
-import { roleSchema, shipmentSchema } from '@durable-jev/contracts'
+import { businessCaseSchema, roleSchema } from '@durable-jev/contracts'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import { Router } from 'express'
 import { z } from 'zod'
+import { forgetRequests } from '../request-cache.js'
 
 const actionSchema = z
   .object({
@@ -17,7 +18,7 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
     response.json(summary())
   })
   router.put('/cases/:caseId', async (request, response) => {
-    response.json(await client.submit(shipmentSchema.parse(request.body)))
+    response.json(await client.submit(businessCaseSchema.parse(request.body)))
   })
   router.post('/cases/:caseId/evaluate', async (request, response) => {
     const foreign = z.array(z.unknown()).parse(request.body.foreign) as RuleOutcome[]
@@ -45,6 +46,7 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
   router.post('/reset', async (request, response) => {
     const { caseId } = z.object({ caseId: z.string().min(1).optional() }).parse(request.body ?? {})
     await client.reset(caseId)
+    forgetRequests(client, caseId)
     response.json({ reset: caseId ?? 'all' })
   })
   return router

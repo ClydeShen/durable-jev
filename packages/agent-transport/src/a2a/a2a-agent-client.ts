@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { type Message, Role, type Task, TaskState } from '@a2a-js/sdk'
 import { type Client, ClientFactory } from '@a2a-js/sdk/client'
 import type { AgentCaseState, AgentClient } from '@durable-jev/agent-core'
-import type { AgentId, HumanTask, Shipment } from '@durable-jev/contracts'
+import type { AgentId, BusinessCase, HumanTask } from '@durable-jev/contracts'
 import type { Decision, HumanAction } from '@durable-jev/human-tasks'
 import type { RuleOutcome } from '@durable-jev/rule-engine'
 import type { OutboxEvent } from '@durable-jev/store'
@@ -60,12 +60,8 @@ export class A2aAgentClient implements AgentClient {
     private readonly onTask: (record: A2aTaskRecord) => void = () => {},
   ) {}
 
-  submit(shipment: Shipment): Promise<AgentCaseState> {
-    return this.call<AgentCaseState>(
-      'submit-case',
-      shipment,
-      `${shipment.caseId}:r${shipment.caseRevision}`,
-    )
+  submit(data: BusinessCase): Promise<AgentCaseState> {
+    return this.call<AgentCaseState>('submit-case', data, `${data.caseId}:r${data.caseRevision}`)
   }
 
   evaluate(caseId: string, foreign: readonly RuleOutcome[]): Promise<AgentCaseState> {

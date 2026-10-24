@@ -1,9 +1,15 @@
-import type { Shipment } from '@durable-jev/contracts'
+import { businessCaseSchema } from '@durable-jev/contracts'
 import { ScriptedJudge } from '@durable-jev/model-providers'
 import type { CaseFacts, RuleDefinition } from '@durable-jev/rule-engine'
 import { describe, expect, it } from 'vitest'
+import { z } from 'zod'
 import { CaseRuntime } from './case-runtime.js'
 import { CaseStore } from './case-store.js'
+
+const testCaseSchema = businessCaseSchema.extend({
+  cargoItems: z.array(z.object({ cargoItemId: z.string().min(1) })),
+})
+type TestCase = z.infer<typeof testCaseSchema>
 
 function rule(ruleId: string, overrides: Partial<RuleDefinition>): RuleDefinition {
   return {
@@ -59,9 +65,9 @@ const shipment = {
   entityVersions: { cargo: 1, route: 1, carrier: 1, quote: 1 },
   cargoItems: [{ cargoItemId: 'ITEM-1' }],
   legs: [],
-} as unknown as Shipment
+} satisfies TestCase
 
-const factsOf = (case_: Shipment): CaseFacts => ({
+const factsOf = (case_: TestCase): CaseFacts => ({
   entityVersions: case_.entityVersions,
   root: { scope: { kind: 'order' }, facts: {} },
   context: { cargoItems: case_.cargoItems.map(() => ({})) },
@@ -74,14 +80,14 @@ const factsOf = (case_: Shipment): CaseFacts => ({
 })
 
 function runtime(now = () => '2026-11-02T08:00:00.000Z') {
-  const store = CaseStore.open(':memory:')
+  const store = CaseStore.open(':memory:', testCaseSchema.parse)
   return {
     store,
     runtime: new CaseRuntime({
       store,
       rulePack: {
         policyVersion: 'test',
-        ruleSet: { ruleSetVersion: 't', rules, mixingMatrix: [] },
+        ruleSet: { ruleSetVersion: 't', rootScope: 'order', rules, mixingMatrix: [] },
         parameters: {},
         policy: { title: '', preamble: [], sections: [] },
         clauses: new Map(),
@@ -136,7 +142,7 @@ describe('CaseRuntime', () => {
       caseRevision: 2,
       entityVersions: { ...shipment.entityVersions, cargo: 2 },
       cargoItems: [{ cargoItemId: 'ITEM-1' }, { cargoItemId: 'ITEM-2' }],
-    } as unknown as Shipment
+    } satisfies TestCase
     const view = await agent.submit(revised)
     expect(view.tasks.find((task) => task.humanTaskId === first?.humanTaskId)?.status).toBe(
       'SUPERSEDED',
@@ -155,7 +161,7 @@ describe('CaseRuntime', () => {
       caseRevision: 2,
       entityVersions: { ...shipment.entityVersions, cargo: 2 },
       cargoItems: [],
-    } as unknown as Shipment
+    } satisfies TestCase
     const view = await agent.submit(emptied)
     expect(statusOf(view, 'R39')).toBe('BLOCKED_DEPENDENCY')
     expect(view.tasks.find((task) => task.humanTaskId === first?.humanTaskId)?.status).toBe(

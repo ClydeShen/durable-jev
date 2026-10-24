@@ -1,4 +1,4 @@
-import type { HumanTask, Role, Shipment } from '@durable-jev/contracts'
+import type { BusinessCase, HumanTask, Role } from '@durable-jev/contracts'
 import {
   type ChainShape,
   type ChainSteps,
@@ -31,7 +31,7 @@ export class HumanGateSession {
   readonly evaluator: LeafEvaluator = (input) => this.evaluate(input)
 
   constructor(
-    private readonly shipment: Shipment,
+    private readonly data: BusinessCase,
     existing: readonly HumanTask[],
     private readonly now: string,
   ) {
@@ -50,7 +50,7 @@ export class HumanGateSession {
         outcome.inputFingerprint,
       ]),
     )
-    const { caseRevision, entityVersions } = this.shipment
+    const { caseRevision, entityVersions } = this.data
     for (const task of this.tasks.values()) {
       if (task.status !== 'OPEN') continue
       const inputFingerprint = current.get(`${task.ruleId}@${scopeKey(task.scope)}`)
@@ -81,7 +81,7 @@ export class HumanGateSession {
     const roles = this.applicableRoles(gate, input)
     if (!roles) return { status: 'BLOCKED_DEPENDENCY' }
     const shape: ChainShape = { mode: gate.mode, stepCount: roles.length }
-    const versionPrefix = `${this.shipment.caseId}/${input.rule.ruleId}/${scopeKey(input.scope)}/${input.inputFingerprint.slice(0, 12)}`
+    const versionPrefix = `${this.data.caseId}/${input.rule.ruleId}/${scopeKey(input.scope)}/${input.inputFingerprint.slice(0, 12)}`
     const chainId = this.currentChain(versionPrefix, shape)
     const opened = stepsToOpen(shape, this.stepsOf(chainId)).map((stepIndex) =>
       this.openStep(input, gate, chainId, shape, stepIndex, roles),
@@ -159,7 +159,7 @@ export class HumanGateSession {
   ): HumanTask {
     const task: HumanTask = {
       humanTaskId: `${chainId}#${stepIndex}`,
-      caseId: this.shipment.caseId,
+      caseId: this.data.caseId,
       ruleId: input.rule.ruleId,
       scope: input.scope,
       taskType: gate.taskType,
@@ -167,8 +167,8 @@ export class HumanGateSession {
       prerequisites: input.rule.dependsOn,
       evidenceRequirements: gate.evidenceRequirements,
       target: {
-        caseRevision: this.shipment.caseRevision,
-        entityVersions: this.shipment.entityVersions,
+        caseRevision: this.data.caseRevision,
+        entityVersions: this.data.entityVersions,
         inputFingerprint: input.inputFingerprint,
       },
       status: 'OPEN',

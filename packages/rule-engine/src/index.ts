@@ -10,7 +10,6 @@ export { feelContext, type PolicyParameters, semanticState } from './feel.js'
 export { type EntityChange, invalidateDependentsOf } from './invalidation.js'
 export {
   type HumanGate,
-  invalidationTriggers,
   type RuleDefinition,
   type RuleSet,
   ruleDefinitionSchema,

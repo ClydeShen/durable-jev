@@ -18,6 +18,7 @@ import type { CollectionScope, Expression, ValueTest } from './expression.js'
 import { statusOfPredicate } from './feel.js'
 
 export interface ExpressionContext {
+  rootScope: CheckScope
   statusOf(ruleId: RuleId, scope: CheckScope): CheckStatus
   observedValueOf(ruleId: RuleId, scope: CheckScope): unknown
   feel(expression: string, scope: CheckScope): unknown
@@ -51,7 +52,7 @@ function evaluateRef(ruleId: RuleId, scope: CheckScope, context: ExpressionConte
 export function evaluateExpression(
   expression: Expression,
   context: ExpressionContext,
-  scope: CheckScope = { kind: 'order' },
+  scope: CheckScope = context.rootScope,
 ): Outcome {
   const evaluate = (child: Expression, childScope: CheckScope = scope) =>
     evaluateExpression(child, context, childScope)

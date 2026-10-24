@@ -8,7 +8,7 @@ interface AgentProfile {
 }
 
 /** What each Durable Jev Agent is responsible for; published in its Agent Card. */
-export const agentProfiles: Record<AgentId, AgentProfile> = {
+export const agentProfiles = {
   'order-coordination': {
     name: 'Order coordination',
     description: "Takes the order, gathers every agent's results, releases and confirms dispatch",
@@ -59,4 +59,4 @@ export const agentProfiles: Record<AgentId, AgentProfile> = {
       "Added as the extension: adding this agent changed no other agent's code",
     ],
   },
-}
+} satisfies Record<AgentId, AgentProfile>

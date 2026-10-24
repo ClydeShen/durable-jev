@@ -5,7 +5,7 @@ import {
   type RunBudget,
   type RunOutcome,
 } from '@durable-jev/agent-harness'
-import type { Role } from '@durable-jev/contracts'
+import type { Role, Shipment } from '@durable-jev/contracts'
 import type { ReferenceData } from '../reference-data.js'
 import {
   type Incident,
@@ -31,8 +31,8 @@ const instructions = [
 const task = 'Investigate the incident and submit a reroute proposal or an escalation.'
 
 export interface RerouteDeskOptions {
-  cases: CaseStore
-  runtime: CaseRuntime
+  cases: CaseStore<Shipment>
+  runtime: CaseRuntime<Shipment>
   rulePack: RulePack
   reference: ReferenceData
   /** Pi Durable storage file, or `memory`. */
@@ -104,7 +104,7 @@ export class RerouteDesk {
 
   /** Starts the helper for an incident; one investigation per case revision. */
   async report(caseId: string, incident: Incident): Promise<Investigation> {
-    const shipment = this.options.cases.caseRecord(caseId)?.shipment
+    const shipment = this.options.cases.caseRecord(caseId)?.data
     if (!shipment) throw new Error(`case ${caseId} does not exist`)
     const investigationId = `${caseId}/INV-r${shipment.caseRevision}`
     const existing = this.investigations.get(investigationId)
@@ -163,7 +163,7 @@ export class RerouteDesk {
         message: `investigation is ${investigation.status}`,
       }
     }
-    const shipment = this.options.cases.caseRecord(investigation.caseId)?.shipment
+    const shipment = this.options.cases.caseRecord(investigation.caseId)?.data
     if (shipment?.caseRevision !== investigation.caseRevision) {
       this.finish(investigation, 'STALE', decision)
       return {
