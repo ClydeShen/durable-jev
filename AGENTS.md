@@ -9,6 +9,10 @@ experiments on a new branch from that tag and count all subsequent adaptations. 
 these refs or the earlier demo recovery refs, or resume the shelved refactor automatically.
 The distinct pre-cleanup demo recovery instructions remain in `docs/demo-checkpoint.md`.
 
+Post-baseline work is now on `feat/durable-policy-workflow`. Read the current handoff first and
+`docs/workflow-progress.md` for stages, cost accounting and new recovery checkpoints. Do not
+restart the baseline cleanup or switch back to its maintenance branch.
+
 # Delivery agent skills
 
 Installed skills in `.agents/skills/` and `.claude/skills/` are tools for the delivery

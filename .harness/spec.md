@@ -236,3 +236,17 @@ documentation-only recovery revision. This is not an instruction to restart the 
 - This is a documentation-only revision of the same experimental code/material baseline, not
   a new implementation baseline or a way to erase post-freeze adaptation costs. Later experiments
   branch from the revised recovery tag and preserve the original measurement boundary.
+
+## 16. Post-baseline workflow implementation (2026-10-24)
+
+- The owner authorized verifying baseline readiness, creating a new branch and continuing the
+  durable agentic workflow POC, prioritizing understandable code structure and migration.
+- Work on `feat/durable-policy-workflow` from `baseline-2026-10-24-r2`; preserve each validated
+  stage remotely without moving prior demo/baseline refs. No automatic PR or merge.
+- Follow `docs/workflow-progress.md`: logistics policy continuity first, deeper bounded agentic
+  investigation, then motor insurance and the optional cross-domain A2A demonstration.
+- Present source/ownership/reuse evidence for a technical CEO and change effort, workflow
+  behavior and limitations for a non-technical CEO. Distinguish fixed scripted paths from actual
+  model decisions and SQLite recovery from Pi checkpoints.
+- Count all post-baseline work. Draft isolated-copy engineering experiments may proceed;
+  business labels still need owner review. Protected materials and live-model restrictions remain.

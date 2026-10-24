@@ -13,6 +13,9 @@ insurance adaptation → optional cross-domain A2A demonstration. See P8 below a
 handoff in `implementation-notes.md`. Historical P0-P7 completion marks are retained; they are
 not blanket claims that domain independence or module-wide Pi Durable integration is complete.
 
+Post-baseline work is authorized on `feat/durable-policy-workflow`. Stage definitions, CEO-facing
+evidence, the effort ledger and recovery refs are in `docs/workflow-progress.md`.
+
 ## P0 Skeleton and technical spikes (PRD M0)
 
 | Status | ID | Task | Done when | Depends on |
@@ -134,7 +137,7 @@ Keep implementation slices small and preserve the current folder structure and c
 | [x] | T8.2 | Extract the smallest shared rule/fact contracts | Domain-owned vocabulary, constraints, facts and classifier configuration; legacy materials and scope keys preserved; generic record contract and logistics regression tests pass | T8.1 |
 | [x] | T8.3 | Align domain-agent runtime, durable ownership and A2A boundaries | Domain-validated CaseStore/CaseRuntime and native/A2A payloads; explicit SQLite/Pi/domain/transport ownership in `docs/baseline.md`; legacy stores resume; no new engine or package | T8.2 |
 | [x] | T8.4 | Freeze the experimental baseline | Original freeze `baseline-2026-10-24` remains at `25c7dbb`; current recovery `baseline-2026-10-24-r2` / `backup/baseline-2026-10-24-r2` aligns documentation only. Source/material baseline and cost boundary are unchanged. 157 tests, zero clones, replay/faults and native/A2A/browser regressions pass | T8.3 |
-| [ ] | T8.5 | Run logistics policy-change experiments and authoring comparisons | T3.1/T7.6/T7.9 evidence from the frozen baseline; old-policy retention and re-evaluation scored and costed separately | T8.4 |
+| [~] | T8.5 | Run logistics policy-change experiments and authoring comparisons | T3.1/T7.6/T7.9 evidence from the frozen baseline; old-policy retention and re-evaluation scored and costed separately | T8.4 |
 | [ ] | T8.6 | Run the bounded motor-insurance claims experiment | Domain materials and necessary special logic use the shared agent execution path; complete post-baseline diff, effort and limits reported | T8.5 |
 | [ ] | T8.7 | Optional logistics vehicle-insurance collaboration over A2A | A bounded cross-domain task uses the same agent contracts without merging the two business models | T8.6 |
 

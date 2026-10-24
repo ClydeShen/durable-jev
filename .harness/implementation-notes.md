@@ -3,7 +3,19 @@
 Only plan changes and high-level points that differ from spec, design or roadmap and that the user
 should know.
 
-## Current handoff: frozen baseline, aligned documentation revision (2026-10-24)
+## Current handoff: post-baseline workflow implementation (2026-10-24)
+
+The owner authorized continuing on a new branch, emphasizing migration-friendly structure and
+separate technical/non-technical CEO evidence, with remote recovery at each validated stage.
+Active branch: `feat/durable-policy-workflow`, starting at verified `baseline-2026-10-24-r2`
+(`57373a8`). See `spec.md` section 16 and `docs/workflow-progress.md` for stages, draft P1 scope,
+cost ledger and recovery records. Baseline Linux/Windows CI and remote refs were verified again.
+Start with isolated-copy logistics policy continuity; keep source materials and skills unchanged.
+
+The frozen-baseline handoff below records the starting point. Its instruction to create an
+experiment branch is now complete; do not switch back to the maintenance or backup branches.
+
+## Frozen baseline handoff (2026-10-24)
 
 Read this section first when taking over from another delivery agent. The agreed scope is in
 `spec.md` (especially sections 9-15); the execution order is in `roadmap.md` P8. Earlier dated
