@@ -100,7 +100,8 @@ experiment must name its real concepts and report the required adapters and shar
 
 ## First experiment: logistics policy changes
 
-The following are concrete proposed mutations, not approved policy changes or reviewed labels.
+P1-P3 below are owner-approved synthetic mutations; P4-P5 remain proposals. Approval of mutation
+semantics is not independent review of the surrounding case labels.
 Use isolated candidate packs; leave `eval/materials/` and its lock untouched. Review each revised
 policy paragraph and its expected business behavior before generation or acceptance scoring.
 
@@ -168,6 +169,11 @@ atomic cross-service policy rollout or policy-authoring comparison. Runtime timi
 observations, not human effort or a latency benchmark. Human effort remains unmeasured; runner
 preparation and repairs are included qualitatively in the post-baseline ledger. Both variants
 preserve the original capability boundary rather than silently repairing the baseline.
+
+The [P2/P3 protocol and results](gate-change-experiment.md) extend logistics characterization with
+24 gate observations and two synthesized authoring-tool rehearsals. Old same-version R21 tasks
+still accept missing new evidence; versioned gates enforce it but reopen work. These are not live
+authoring, independently reviewed outcomes or cost savings. Keep these limits in the comparison.
 
 ## Second domain: motor insurance claims
 

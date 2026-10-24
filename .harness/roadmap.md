@@ -19,8 +19,10 @@ W1 completes the first P1 continuity slice: 44 rule observations and 48 full-flo
 including 32 process resumptions. T8.5 stays open for authoring comparisons, other mutations and
 independent evaluation. W2 adds 32 scripted strategy/checkpoint controls: eight durable resumptions
 match controls and eight memory resumptions fail with missing conversation state. Demo script and
-handoff are synchronized. Next finish logistics mutation/authoring evidence and live-comparison
-preparation before insurance; no new baseline cleanup.
+handoff are synchronized. P2/P3 now add 24 gate-migration observations and two synthetic authoring
+rehearsals (`docs/gate-change-experiment.md`). Both mutations are owner-approved; independent
+authoring/cost/blind evidence is not complete. Next agree bounded live comparisons and independent
+review before insurance; no new baseline cleanup.
 
 ## P0 Skeleton and technical spikes (PRD M0)
 
@@ -120,7 +122,7 @@ preparation before insurance; no new baseline cleanup.
 | [x] | T7.7 | `docs/agent-architecture.md` (for a technical CEO) | Each section links to implementation and evidence (written on scripted evidence first; live measures added when available) | T5.2a, T6.3a |
 | [~] | T7.5 | `docs/demo-guide.md`, `docs/report.md`: H1–H5 and the Durable Jev Agent conclusions, component recommendations | Every hypothesis has evidence (`docs/demo-guide.md` written; `docs/report.md` waits for the benchmarks) | T7.1–T7.4, T7.6 |
 | [x] | T7.8 | Record the existing reuse boundary before generalization; reproducible schema probes and source hashes | `pnpm eval:portability` records fixed owners/scopes/roles/invalidation dimensions and discarded applicability keys; source audit and limits in `docs/evaluation-plan.md` (not migration or execution evidence) | T7.7 |
-| [~] | T7.9 | Logistics policy-change protocol: reviewed mutations, direct-edit/authoring comparison, cost ledger and blind custody | P1 scripted characterization runs both activation modes and parameter-only/versioned variants (22 observations each); findings in `docs/evaluation-plan.md`. Policy review, authoring cost, independent blind evaluation and other change families remain unmeasured | T7.8 |
+| [~] | T7.9 | Logistics policy-change protocol: reviewed mutations, direct-edit/authoring comparison, cost ledger and blind custody | Owner-approved P1-P3 characterized in both activation modes; P2/P3 add 24 gate observations and synthetic authoring rehearsals. Independent generation/review costs, blind evaluation and other change families remain open | T7.8 |
 
 The first measured change experiment after baseline freeze is logistics policy adaptation. No
 specific incumbent engine has been nominated. Motor insurance claims are the selected second

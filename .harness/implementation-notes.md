@@ -34,8 +34,19 @@ now live in `eval/runner/src/experiment-evidence.ts`; both W1 and W2 use them. T
 script includes both report demonstrations and corrects default scripted/live wording. The owner
 requires synchronized docs and demo script in every stage archive; this is also in AGENTS.md.
 
-Next prepare reviewed logistics P2/P3 and authoring comparisons, plus the bounded live
-investigation comparison. T8.5 and T7.2 remain open; finish that evidence before insurance.
+P2/P3 are now owner-approved and characterized by `pnpm eval:gate-change`: 24 observations,
+two synthesized authoring rehearsals and separate old-policy/re-evaluation outcomes. P2 can
+retain the first sign-off without a version bump, but chain metadata is mixed; P3 fails to enforce
+new evidence on old same-version tasks. Version bumps retire old tasks and require repeated work.
+No shared runtime fix was made. See `docs/gate-change-experiment.md` for protocol and limits.
+The authoring CLI supports isolated inputs and single rules, rejects out-of-scope/unversioned
+changes, preserves attempts/failures and uses explicit apply. Scripted proposals are copied from
+manual candidates: do not claim independent generation, measured savings or live billing.
+Recovery: `workflow-gate-changes-2026-10-24` and matching `backup/` branch. Demo scene 11 and
+the effort ledger are synchronized; original demo/baseline/W1/W2 refs remain unchanged.
+
+Next agree bounded live authoring/investigation comparisons and independent human review/cost
+recording. T8.5 and T7.2 remain open; finish that evidence before insurance.
 Do not interpret W2's expected-loss checks as successful memory recovery or claim savings from
 the two authored strategies. No live model call or protected-material edit has been authorized.
 

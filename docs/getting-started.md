@@ -52,6 +52,7 @@ blocks it), dispatching twice.
 | `pnpm eval:portability` | Record schema reuse boundaries and source hashes; no model calls or business correctness claim |
 | `pnpm eval:policy-change` | Check the approved P1 threshold in isolated copies; compare pinned/re-evaluated old orders, full-flow dispatch and process recovery; scripted only, reports under `var/reports/policy-change-*` |
 | `pnpm eval:investigation` | Compare authored investigation strategies and Pi memory/SQLite recovery; scripted only, reports under `var/reports/investigation-*`; expected memory loss is not successful recovery |
+| `pnpm eval:gate-change` | Characterize P2/P3 approval/evidence migration and rehearse isolated authoring; scripted only, reports under `var/reports/gate-change-*`; no cost or independent generation claim |
 | `pnpm check` | Everything before a commit: lint (warnings fail), workspace consistency, type checks (tests and web included), architecture boundaries, knip, duplication, unit tests; each rule is in [engineering.md](engineering.md) |
 | `pnpm materials:lock` | Record new hashes once you approve a change to a protected file (PRD, policy, rules, test materials); run by a person only |
 | `pnpm architecture` | Regenerate [architecture-graph.md](architecture-graph.md) from the real imports |

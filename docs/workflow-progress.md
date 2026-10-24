@@ -100,6 +100,7 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 | W1-01 | Verify refs/CI, inspect baseline, plan branch and protocol | Planning commit; remote refs and CI read back | Unmeasured | Delivery-agent usage unavailable; runtime model calls: 0 |
 | W1-02 | Extend continuity runner, characterize failures and validate | Implementation checkpoint and reproducible manifest; includes failed attempts/repairs | Unmeasured | Delivery-agent usage unavailable; scripted runtime only |
 | W2-01 | Offer variants, strategy control, checkpoint comparison, evidence and synchronized presenter script | Investigation checkpoint; 32 runs, including eight observed memory recovery failures | Unmeasured | Delivery-agent usage unavailable; runtime model calls: 0 |
+| W1-03 | P2/P3 gate migration, isolated authoring CLI, validation/application rehearsal, repairs and presenter script | Gate-change checkpoint; 24 observations and two synthetic authoring rehearsals | Unmeasured | Delivery-agent usage unavailable; live model calls: 0; faux token reports are not billing |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,
 active human minutes (or null), prompt/model version, tokens (or null), proposal, review edits and
@@ -113,15 +114,20 @@ W1 checkpoint: `workflow-policy-continuity-2026-10-24` /
 `backup/workflow-policy-continuity-2026-10-24` at `160dc02`.
 W2 checkpoint: `workflow-investigation-controls-2026-10-24` /
 `backup/workflow-investigation-controls-2026-10-24`.
+P2/P3 checkpoint: `workflow-gate-changes-2026-10-24` /
+`backup/workflow-gate-changes-2026-10-24`.
 Resolve exact commits with `git rev-parse <tag>^{commit}`.
 
-W1 completes the first engineering continuity slice, not all T8.5 experiments: reviewed authoring,
-P2/P3, independent blind evaluation and effort comparisons remain open.
+W1 completes the first engineering continuity slice. The subsequent
+[P2/P3 slice](gate-change-experiment.md) adds owner-approved approval-chain/evidence changes with
+24 observations and two synthetic authoring rehearsals. Versioning enforces new requirements but
+can require repeated work; same-version P3 still accepts incomplete evidence on old tasks.
+T8.5 remains open for independent authoring, blind evaluation and effort comparisons.
 
 W2 completes scripted investigation strategy/checkpoint controls. See
 [investigation-experiment.md](investigation-experiment.md) for the 32-run protocol, source
 walkthrough and limits. Eight durable resumptions match controls; eight memory resumptions lose
 their conversation. Both strategies are authored algorithms, so T7.2's live-model comparison is
-still open. Next finish the reviewed logistics mutation/authoring evidence and live-comparison
-preparation before insurance. The Chinese [demo guide](demo-guide.md) now includes both report
+still open. Next agree bounded live comparisons and independent review/cost recording before
+insurance. The Chinese [demo guide](demo-guide.md) now includes all three report
 demonstrations and explicitly marks insurance as future work. Update it at every stage archive.
