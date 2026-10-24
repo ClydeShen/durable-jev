@@ -191,6 +191,9 @@ logistics first, with motor insurance claims as the later cross-domain experimen
 
 ## 13. Checkpoint, cleanup and measurement order
 
+Historical cleanup sequence, completed by the freeze in section 14; section 15 records its
+documentation-only recovery revision. This is not an instruction to restart the cleanup.
+
 - Preserve remote branch `backup/demo-2026-10-24` and annotated tag
   `demo-checkpoint-2026-10-24`, both resolving to commit
   `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`. Do not commit to, force-push or move these refs.
@@ -221,3 +224,15 @@ logistics first, with motor insurance claims as the later cross-domain experimen
 - T8.4 is complete. Further experiment work starts on a new branch from the frozen tag; all
   adaptations after this baseline belong to measured effort. Archiving starts no experiment
   and authorizes no protected-material edits or live model calls.
+
+## 15. Baseline documentation recovery revision (2026-10-24)
+
+- The owner requested that the recovery point include documentation aligned with the actual
+  baseline. Correct stale design/ownership/interface claims and current handoff instructions;
+  preserve historical experiments and the protected PRD/materials/skills unchanged.
+- Current recovery tag: `baseline-2026-10-24-r2`; backup branch:
+  `backup/baseline-2026-10-24-r2`. Preserve the original baseline refs at `25c7dbb` and original
+  demo refs at `0265a05`, without moving or force-updating them.
+- This is a documentation-only revision of the same experimental code/material baseline, not
+  a new implementation baseline or a way to erase post-freeze adaptation costs. Later experiments
+  branch from the revised recovery tag and preserve the original measurement boundary.

@@ -3,31 +3,34 @@
 Only plan changes and high-level points that differ from spec, design or roadmap and that the user
 should know.
 
-## Current handoff: frozen experimental baseline (2026-10-24)
+## Current handoff: frozen baseline, aligned documentation revision (2026-10-24)
 
 Read this section first when taking over from another delivery agent. The agreed scope is in
-`spec.md` (especially sections 9-14); the execution order is in `roadmap.md` P8. Earlier dated
+`spec.md` (especially sections 9-15); the execution order is in `roadmap.md` P8. Earlier dated
 notes below are historical context, not instructions to override the latest owner decisions.
 
 ### Branches and recovery
 
 - Repository: `ClydeShen/durable-jev`.
 - The owner accepted functional and structural scope and explicitly authorized baseline freezing.
-- Experimental baseline: annotated tag `baseline-2026-10-24` and backup branch
-  `backup/baseline-2026-10-24`; both identify the documentation-only archive after accepted
-  implementation `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`. Resolve the exact archive commit
-  from the tag; `docs/baseline-manifest.json` records environment, hashes and acceptance.
+- Current baseline recovery: annotated tag `baseline-2026-10-24-r2` and backup branch
+  `backup/baseline-2026-10-24-r2`. It corrects stale documentation without changing the accepted
+  implementation `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`, configuration or materials. Resolve
+  the exact archive commit from the tag; `docs/baseline-manifest.json` records hashes and acceptance.
+- Original baseline refs `baseline-2026-10-24` / `backup/baseline-2026-10-24` remain unchanged
+  at `25c7dbb425ce365c61a0db0bdab8f1dcdc7e549b`. The revision does not reset experiment costs.
 - Keep baseline recovery refs unchanged by convention. Later experiments branch from the tag;
   the complete post-freeze diff and effort count, including shared-core changes. No experiment
   was initiated by the freeze. Original demo recovery refs below remain distinct and unchanged.
 - Frozen remote backup branch: `backup/demo-2026-10-24`.
 - Annotated recovery tag: `demo-checkpoint-2026-10-24`.
-- Both resolve to source commit `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`; origin was read back
+- The two demo refs resolve to `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`; origin was read back
   after the atomic push. Do not move, delete or force-push these refs. They are preserved by
   convention, not asserted to have GitHub protection rules.
 - Backup CI completed successfully: https://github.com/ClydeShen/durable-jev/actions/runs/40045476530.
-- Active planning/work branch: `baseline-cleanup-plan`, created from that commit. Push new work
-  here, not to the backup. Do not open a PR without the owner's request or merge it automatically.
+- Documentation maintenance branch: `baseline-cleanup-plan`. Do not start experiments here;
+  create a new branch from the current baseline recovery tag. Do not develop on backup branches,
+  open a PR without the owner's request, or merge automatically.
 - The old branch `claude/wizardly-hopper-akkoyq` is historical, not the current continuation point.
   PRs #17 and #18 were merged before the checkpoint. No cleanup PR has been opened.
 - Restore instructions: `docs/demo-checkpoint.md`. The checkpoint contains the polished logistics
@@ -64,8 +67,8 @@ costs. Changes required after freeze are measured. The runnable backup is not th
 
 1. T8.4 is complete with the owner's explicit confirmation. `docs/baseline.md` records the frozen
    scope, restore instructions and limits; no experimental-baseline tag should be moved or replaced.
-2. Before T8.5 implementation, create a new experiment branch from `baseline-2026-10-24`.
-   Do not develop on either backup branch or blindly resume the shelved refactor.
+2. Before T8.5 implementation, create a new experiment branch from `baseline-2026-10-24-r2`.
+   Do not develop on any backup branch or blindly resume the shelved refactor.
 3. Next is reviewed logistics policy-change preparation and measurement, keeping old-policy
    retention and new-policy re-evaluation distinct. Protected material changes still require
    separate consent and owner-run materials locking; freezing grants no blanket permission.
@@ -73,7 +76,9 @@ costs. Changes required after freeze are measured. The runnable backup is not th
    Keep prior development probes separate from post-baseline cost and blind evidence.
 
 The dated cleanup/acceptance slices below record the path to freeze. Their earlier statements
-about pending confirmation are historical; this current handoff and `spec.md` section 14 supersede them.
+about pending confirmation are historical; this current handoff and `spec.md` sections 14-15
+supersede them. The next deliverable is a short reviewed logistics mutation specification and
+cost ledger template, before implementation; it is not authorization to edit protected materials.
 
 ### First cleanup slice: domain-owned selection constraints
 
@@ -182,11 +187,11 @@ without changing layout. The gate covers 154 production files with zero detected
 existing 50-token minimum. Checks now pass 157 tests; this is correctness preparation before freeze,
 not a measured policy change. Folder responsibilities and acceptance rationale are in
 `docs/baseline.md`. No new package or dependency was added, and protected materials remain untouched.
-Current implementation candidate: `b439834295d9c645630820c5c702a535ba6cf07f`, superseding
+At that pre-freeze stage the implementation candidate was `b439834295d9c645630820c5c702a535ba6cf07f`, superseding
 the earlier `9f8a84a` candidate without moving recovery refs. Native/A2A HTTP flows and resets
 still match; 16 browser accessibility scans pass and shell geometry is unchanged at five viewports.
-The local acceptance manifest is regenerated for this candidate. Formal freeze remains pending
-owner confirmation; no post-baseline experiment has started.
+The local acceptance manifest was regenerated for that candidate. Confirmation was pending
+at that stage; the subsequent freeze and documentation revision are recorded in the current handoff.
 
 At the checkpoint, `pnpm check` passed (131 tests, no clones), all eight scripted replay cases
 passed, and the fault suite held (17 pass, F06 not applicable because the UI polls). A fresh

@@ -1,7 +1,8 @@
 # Evaluation plan: durable-agent capabilities and development cost
 
 Status: experiment design and source audit, not a performance or cost result. The owner-approved
-experimental baseline is frozen at `baseline-2026-10-24`; see [baseline.md](baseline.md).
+experimental code/material baseline is frozen at `baseline-2026-10-24`; the current recovery
+`baseline-2026-10-24-r2` adds aligned documentation only. See [baseline.md](baseline.md).
 Next measure logistics policy changes, then motor insurance adaptation. There is
 no nominated incumbent engine; large real-world rule estates motivate the question, not a
 specific product comparison.
@@ -21,6 +22,8 @@ present subsequent results as the total cost of creating the engine from scratch
 The frozen baseline records its accepted commit, material hashes and environment in
 `docs/baseline-manifest.json`. Count all further adaptation, preparation, review and failed attempts
 required by each measured experiment. Do not move the baseline retrospectively to exclude costs.
+The documentation revision changes no implementation, materials or engineering configuration and
+does not reset that cost boundary. Start experiment branches from the revised recovery tag.
 The source audit and P1 observations below describe the pre-cleanup checkpoint and must be
 re-characterized after freeze, not relabeled as post-baseline or blind results.
 

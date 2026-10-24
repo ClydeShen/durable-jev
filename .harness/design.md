@@ -1,19 +1,24 @@
 # Design
 
+Current implementation at the frozen experimental baseline, including its documentation-only
+revision. Scope decisions are in `spec.md`; current recovery refs, evidence and limits are in
+`../docs/baseline.md`. M0 spikes are feasibility evidence, not proof that their interfaces or
+whole-module Pi Durable scheduling are integrated into the business runtime.
+
 ## 1. Tech stack
 
 | Item | Choice |
 |---|---|
-| Runtime | Node 26, TypeScript strict, ESM |
+| Runtime | Node 26.12.1, TypeScript 6.0.3 strict, ESM, ES2025; pnpm 12.15.0 |
 | Package management | pnpm workspace, `saveExact: true`, lockfile committed, no Turborepo/Nx |
 | Build | `tsc -b` (project references); Vite for the web |
 | HTTP | Express 5 (the A2A SDK only offers an Express adapter) |
 | Contracts and validation | Zod |
-| Storage | better-sqlite3, one SQLite file per service under `var/data/` |
+| Storage | Project SQLite business store per agent, plus investigation checkpoint, observation and order stores under `var/data/` |
 | Tests | Vitest |
 | Logs | pino, JSON |
 | Lint and format | Biome |
-| Tracing | `@opentelemetry/api` + W3C traceparent, SDK settled in P0 |
+| Tracing | `@opentelemetry/api` + W3C traceparent verified in a P0 spike; cross-service/restart trace integration remains T6.2 |
 | Front end | Vite + React, one page holding the console and the demo controls |
 | External dependencies | `@earendil-works/pi-durable` 1.4.0, `@a2a-js/sdk` 1.3.0, `@typesafe-ai/sdk` 0.7.0 (model `jev-1.14.0`), OpenTelemetry API 1.10.0; see `docs/m0-findings.md` |
 
@@ -22,14 +27,14 @@
 ```
 apps/
   coordinator/            Order coordination agent (R01, R02, R08, R37–R40, dispatcher confirmation) + orchestrator + gateway (API, static pages)
-  agent/                  The generic Durable Jev Agent service, started by AGENT_ID as:
+  agent/                  Shared service entry point with logistics assembly, started by AGENT_ID as:
                             cargo-assurance     R03, R04, R09–R15, R17–R23; compliance, quality and warehouse tasks
                             transport-planning  R05–R07, R16, R24–R26, R29, R30; investigation helper, planner confirmation
                             commercial-control  R27, R31–R36 + CUST-* extension rules; commercial approvals
                             destination-compliance (extension demo) R41 + DEST-* extension rules
   web/                    Console and demo controls
 packages/
-  contracts/              Zod contracts: ids, shipment, check, humanTask, agents, order options
+  contracts/              Zod contracts: generic BusinessCase, identities, scopes and human tasks; legacy logistics DTOs remain here for compatibility
   rule-engine/            Pure functions: validation, combinators, evaluation, invalidation, the extension rule index
   store/                  SQLite connection, migrations, idempotent operations, outbox (the coordinator collects events into the observation store)
   model-providers/        The SemanticJudge interface: jev, structured-output, scripted
@@ -46,7 +51,7 @@ spikes/                   One-off P0 checks, not depended on by the product code
 eval/
   materials/              policy-v1.md, rules.json, cases/, mock-data/, screening/, authoring/ (authoring recordings)
   blind/                  Blind-test answer keys, read only by the runner (to be built)
-  runner/                 Replay (replay-main), screening (screening-main), fault scenarios (faults-main)
+  runner/                 Replay, screening, fault scenarios and policy-change characterization; not independent blind evidence
 docs/                     User documents
 var/                      Runtime data and logs, gitignored
 ```
@@ -56,7 +61,7 @@ Dependencies point inward: `apps → packages`; `rule-engine` and `contracts` de
 
 ## 3. Engineering conventions
 
-Each convention is enforced by a tool in `pnpm check`; rules, reasons and tools are in
+Automated gates and review conventions are distinguished in
 [docs/engineering.md](../docs/engineering.md). Business-level additions:
 
 - Names say what they mean in the business (`evaluateRuleGraph`, `invalidateDependentsOf`), no
@@ -71,11 +76,11 @@ Each convention is enforced by a tool in `pnpm check`; rules, reasons and tools 
 | Command | What it does |
 |---|---|
 | `pnpm bootstrap` | install + build everything |
-| `pnpm start` / `pnpm start:a2a` | The launcher starts the 5 agent services + web (the latter over A2A), announces the address and opens the browser |
+| `pnpm start` / `pnpm start:a2a` | Build, start five services (the coordinator serves the web), announce the address and open the browser; the latter selects A2A |
 | `pnpm demo:reset` | Clear the stores and load LOG-001 to LOG-008 |
-| `pnpm check` | Lint, full type check (tests and web included), knip, unit tests |
+| `pnpm check` | Lint, workspace, full types, boundaries, architecture graph, materials lock, knip, zero production clones and tests |
 | `pnpm replay` / `pnpm screening` / `pnpm faults` | Replay, screening, fault scenarios; reports in `var/reports/` |
-| `pnpm bench` | Run the benchmarks (to be built) |
+| `pnpm eval:portability` / `pnpm eval:policy-change` | Source/schema probes and scripted policy-change characterization; cost and blind comparisons remain unmeasured |
 
 `.env.example` offers `MODEL_MODE=scripted|live`, `TYPESAFE_API_KEY`, `NVIDIA_API_KEY`. The
 default is `scripted`, so the demo runs fully without keys.
@@ -90,19 +95,22 @@ services.
 
 `PASS | FAIL | UNKNOWN | NOT_APPLICABLE | ERROR | BLOCKED_DEPENDENCY | WAITING_HUMAN | INVALIDATED`
 
-Each check keeps both its `observedValue` (a fact, such as "an excursion exists") and its
-`gateStatus` (the gate's conclusion); the two are never mixed.
+Each outcome keeps `observedValue` (a fact, such as "an excursion exists") separate from `status`
+(the gate's conclusion). The semantic evaluator maps the observation to that status.
 
 ### 5.2 Rule definition
 
 ```ts
+// Selected fields; the schema in packages/rule-engine/src/rule-definition.ts is authoritative.
 type RuleDefinition = {
   ruleId: string
   version: string
-  scope: 'order' | 'cargoItem' | 'leg'
+  owner: string
+  scope: string
+  applicability?: Record<string, string[]>
   appliesWhen?: Expression
   dependsOn: string[]
-  evaluator: { kind: 'code' | 'decisionTable' | 'semantic' | 'humanGate' | 'combinator'; ref: string }
+  evaluator: { kind: 'expression' | 'code' | 'decisionTable' | 'semantic' | 'humanGate' | 'combinator'; ref: string }
   combiner?: Expression
   unknownPolicy: 'block' | 'escalateToHuman'
   inputPaths: string[]
@@ -116,6 +124,14 @@ type RuleDefinition = {
 }
 ```
 
+`RuleSet` supplies an explicit root scope and optional classifier rule/scope/dimension. Logistics
+supplies allowed scopes, identities, roles, applicability and invalidation vocabulary through
+`logisticsRuleConstraints`; the loader normalizes unchanged legacy materials in memory. Domains
+provide validated data, `factsOf`, evaluator registrations and tools to the shared runtime.
+`CaseFacts` contains root/scoped collections, expression context, entity versions and optional
+selection values. `CaseStore<T>` validates reads/writes with the receiving domain's parser.
+Legacy cargo/leg scope identifiers and SQL column names remain compatibility boundaries.
+
 Leaf evaluation:
 
 | kind | Configuration | Run by | Written by |
@@ -124,10 +140,13 @@ Leaf evaluation:
 | `semantic` | `semantic`: the question (choice / noul), `state` (FEEL values), `passWhen` (choiceIn / probabilityAtLeast / probabilityAtMost / selectChoicesAtLeast) | The agent layer, with a SemanticJudge (Jev) | The authoring agent |
 | `humanGate` | `humanGate`: steps, mode, four eyes, `evidenceRequirements`, `expiresAfterHours` | The agent layer, with the human task state machine | The authoring agent |
 | `combinator` | A `combiner` expression tree | Built into rule-engine | The authoring agent |
-| `code` / `decisionTable` | `evaluator.ref` names a registered function | Hand-written code registered in the agent layer | A person; counts towards "hand-written code" |
+| `code` | `evaluator.ref` names a registered function | Domain code registered in the agent layer | A person; counts towards hand-written implementation |
+| `decisionTable` | `mixing.categories`, `mixing.qualifications` and the pack's `mixingMatrix` | Built-in deterministic mixing evaluator; vocabulary supplied by the domain | Reviewed rule data plus the shared evaluator implementation |
 
-FEEL context: `order`, `cargoItems`, `legs`, the current member `item` or `leg`, `params` (policy
-parameters). The FEEL filter syntax `list[condition]` is not used (feelin 8.2 returns an empty
+FEEL (Friendly Enough Expression Language) evaluates deterministic business expressions. Context
+aliases are supplied by the domain: logistics supplies `order`, `cargoItems`, `legs` and current
+`item`/`leg`; the engine adds `params` without letting business data override it.
+The FEEL filter syntax `list[condition]` is not used (feelin 8.2 returns an empty
 list in these cases, which makes `every` vacuously true); write
 `every i in list satisfies (not(applies) or condition)` instead. Condition trees can use a `feel`
 leaf for a numeric or factual condition; `allOf`/`anyOf` work in any scope as long as they are not
@@ -139,8 +158,8 @@ parameters; FEEL syntax is checked at start-up validation.
 
 `Expression` is a JSON tree of `and | or | not | ifThen | allOf(scope) | anyOf(scope) | ref(ruleId)`
 told apart by `op`; `ifThen` uses `condition` / `consequence` fields (so `then` is not taken for a
-thenable). There are two more leaves: `fact(path, equals|includes)` reads an input fact (an
-`order.` prefix reads the order, otherwise the current scope member), and
+thenable). There are two more leaves: `fact(path, equals|includes)` reads an input fact (a
+declared context alias reads that context, otherwise the current scope member), and
 `observed(ruleId, equals|includes)` reads an upstream rule's observedValue (such as the branch R04
 chose); a missing value is UNKNOWN.
 
@@ -171,8 +190,8 @@ Graph evaluation (`evaluateRuleGraph`) runs in topological order, one instance p
    empty set is UNKNOWN). A rule like R33 ("only when R32 fails") puts R32 into `appliesWhen`, so
    R32's FAIL does not gate it.
 4. An evaluator that throws → ERROR; a missing evaluator → ERROR; UNKNOWN with
-   `unknownPolicy = escalateToHuman` → recorded in `escalations`, and the human task module (T1.7)
-   creates a task.
+   `unknownPolicy = escalateToHuman` → recorded in the graph's `escalations`. That output alone
+   does not create a human task; actual human work comes from configured gates and domain flow.
 
 ### 5.4 Validation
 
@@ -181,10 +200,12 @@ the policy parameters. On failure the service refuses to start a release.
 
 ### 5.5 Invalidation and incremental evaluation
 
-- Each check records `inputFingerprint = hash(values of inputPaths + entity versions + upstream
-  result ids)`.
+- Each check fingerprints its rule id/version, declared or extracted expression/semantic inputs,
+  relevant entity versions and upstream fingerprints. Human-gate parameter/applicability edits
+  require explicit rule-version discipline: the P1 stale-task observation remains a known limit.
 - An entity change → `invalidationTriggers` find the directly affected rules → propagated
-  downstream along the dependency graph → marked INVALIDATED → only these are evaluated again.
+  downstream along the dependency graph → recorded as invalidated → unchanged reusable results
+  are retained, while expressions, human gates and combinators are evaluated again.
 - A human task is bound to its target revision and `inputFingerprint`. When the fingerprint
   changes the task is cancelled and a new one, linked by `supersededBy`, is opened; when only the
   revision moves on and the rule's inputs did not change, the open task is carried to the new
@@ -196,13 +217,15 @@ the policy parameters. On failure the service refuses to start a release.
   and is started again; on invalidation the whole chain is replaced by a new one. With
   `distinctActors` one person cannot approve two steps of a chain, and two steps of the same role
   make a "two-person review". Steps may carry `appliesWhen` (a compliance reviewer added for
-  controlled goods, a second commercial manager above the second credit tier). In Pi Durable a
-  chain is a parent task waiting on its subtasks in turn. Implemented in `packages/human-tasks`:
+  controlled goods, a second commercial manager above the second credit tier). Business tasks
+  persist in CaseStore SQLite; they are not Pi Durable child tasks. Implemented in `packages/human-tasks`:
   `decideHumanTask` checks role, expiry, target revision (fingerprint), evidence fields, step order
   and four eyes before anything is final; `chainOutcome` / `stepsToOpen` / `gateStatusOf` compute
   the chain's state, which steps to open and the gate status. When a chain expires or is cancelled
   or replaced, the gate is UNKNOWN and the owning agent starts a new chain.
-- A late result whose fingerprint no longer matches is only archived.
+- A late human decision on a stale or closed task is refused; the existing task/event records
+  retain its history. Concurrent decisions re-read task state inside the per-case process-local
+  queue so a second result cannot overwrite the first accepted result.
 - Implementation: when an order is revised, CaseRuntime compares the entity versions of the old and
   new facts to find the change (such as `r2 (route, carrier, quote)`), `invalidateDependentsOf`
   finds the affected rules, a `result.invalidated` event is written, and re-evaluated results carry
@@ -211,88 +234,81 @@ the policy parameters. On failure the service refuses to start a release.
   `evaluateRuleGraph(..., { previous })` reuses code / decisionTable / semantic results whose
   fingerprint is unchanged (Jev is not called again), while human gates and combined rules are
   evaluated every time. Entity versions are order-level, so changing one leg evaluates every leg
-  under the same trigger again: conservative, never a wrong reuse.
+  under the same trigger again: conservative for that entity-change path, not a guarantee about
+  arbitrary policy edits.
 
 ## 6. Services and flow
 
 - Terms: "agent" means only a Durable Jev Agent (an A2A identity outside + Jev + Pi Durable + a rule
   pack inside). An LLM loop that chooses its own tools is the "investigation helper", an optional
   part inside an agent.
-- Collaboration (all over A2A): dispatch and aggregation (order coordination ↔ each agent, one A2A
-  Task per "order revision × capability"); peer requests (transport → commercial: extra cost
-  approval R35 for a reroute; transport → cargo: cold-chain and controlled re-check of a candidate
-  plan R28/R16/R26); change notification and invalidation (a carrier change → the cargo agent's R13
-  approval chain is invalidated and reissued); people and missing data are always
-  `input-required`. Agents share no database and call none of each other's internal code; their
-  only contract is the Agent Card and the business result contracts in `contracts`.
+- Collaboration uses interchangeable native HTTP or A2A adapters. Coordinator propagation of
+  revised facts and foreign outcomes triggers commercial/cargo work after a reroute; it is not
+  autonomous peer planning. A2A creates one terminal task per capability call; business human
+  waiting is represented by returned human tasks, not A2A `input-required`. Agents have separate
+  stores and no cross-app code imports. Native/A2A validate the same outcomes and decision shapes;
+  receiving runtimes also validate domain data before storage. Request receipts are in-memory,
+  deduplicate completed retries in-process and are cleared on reset; they are not durable state.
 - Extension: a new agent starts from the same template (service-kit + rule pack + Agent Card), the
-  order coordination agent discovers it through its Agent Card, and R40 gains one dependency;
-  existing agents change no code. Agents are split by business responsibility, approvers, release
+  launcher/coordinator endpoint configuration supplies its address, its A2A card is discovered
+  on use, and R40 gains one dependency. Logistics profiles validate its identity. Existing agent
+  business implementations are reused. Agents are split by responsibility, approvers, release
   cadence and data ownership, not by rule count.
-- Each business module is a Durable Jev Agent (spec 8): it owns its rule graph, leaf evaluation,
-  human tasks and waiting state, and recovers through Pi Durable after waiting for a person or a
-  process restart.
-- A module flow is a Pi Durable durable task (no LLM): checkpointed stages, human approval as a
-  subtask plus a decision document; see `docs/m0-findings.md` T0.8.
-- Leaf evaluators: structured rules have `evaluator.kind = code | decisionTable`, unstructured
-  rules `semantic` (Jev). One rule can have both for comparison (B7).
+- Each business module owns its rule outcomes and human waiting in project SQLite. Pi Durable
+  owns the optional investigation conversation and completed tool checkpoints. Domain transactions
+  own proposals, reservations and dispatch side effects. There are no competing owners for a
+  business transition. Module-wide Pi scheduling was demonstrated separately in the T0.8 spike;
+  it is not integrated into the current business runtime.
+- Structured leaves use FEEL expressions, the mixing decision table or registered domain code;
+  unstructured leaves use a semantic judge. Each definition has one evaluator kind. A comparison
+  can substitute an evaluator/provider experimentally, not execute two kinds from one definition.
 - The coordinator owns the order revisions and the order-level aggregation (R08, R37–R40), and gets
   the modules' results over A2A or the native interface; dependency scheduling is a deterministic
   state machine.
 - Propagation across agents: every agent loads the whole rule pack and runs only the rules it owns;
   other agents' results come from the orchestrator (unreported means UNKNOWN). Each round
   `CaseOrchestrator` hands every agent the others' latest results to evaluate in parallel, until no
-  status or fingerprint changes (the graph has no cycles, so the rounds stay within its depth; the
-  limit is 12). A human decision is routed by the rule in its task id to the owning agent, which
+  status or fingerprint changes, with a fixed limit of 12 (not an unbounded-depth guarantee).
+  A human decision is routed by the rule in its task id to the owning agent, which
   then triggers propagation. The orchestrator depends only on the `AgentClient` interface: an
   in-process implementation for the replay runner, an HTTP one at run time, and an A2A one from P5.
 - Business services expose a native HTTP task interface; `agent-transport`'s a2a/ wraps an A2A
   server around it (the B4 comparison).
-- Human tasks are owned by their module (reusing the state machine in `packages`); waiting across
-  modules is A2A `input-required`. The web gathers the modules' task queues. Role identity is
+- Human tasks are owned by their module (reusing the state machine in `packages`); the web gathers
+  the modules' task queues. Role identity is
   simulated by the `x-demo-role` header, and the server checks permissions.
-- Release: when the dispatcher confirms, the current revision is read again and R40 evaluated
-  again in one SQLite transaction; only a pass writes DISPATCHED.
+- Release: when the dispatcher confirms, the current revision and stored R40 outcome are checked
+  in one SQLite transaction after synchronization; only a valid pass writes DISPATCHED.
 
 ## 7. Runtime harness
 
-### 7.1 Interface
+### 7.1 Implemented interface
 
-```ts
-interface AgentRuntime {
-  open(sessionKey: SessionKey): Promise<AgentSession>
-}
-interface AgentSession {
-  submit(request: { requestId: string; input: InvestigationInput }): Promise<RunHandle>
-  resume(): Promise<void>
-  events(): AsyncIterable<AgentEvent>
-  close(): Promise<void>
-}
-type ToolDefinition = {
-  name: string
-  access: 'read' | 'write'
-  replayPolicy: 'replaySafe' | 'verifyByOperationId'
-  allowedCallers: ('agent' | 'system')[]
-  inputSchema: ZodType
-  execute(input, context: ToolContext): Promise<ToolResult>
-}
-```
+`DurableInvestigator<Scope>` in `packages/agent-harness/src/investigator.ts` exposes `open`,
+`begin`, `run` and `close`. `run` receives a conversation id, stable request id, task and business
+data; retrying the same request resumes its Pi checkpoint. Options supply instructions, typed
+domain tools, a scope resolver, a scripted/live model and a budget. `storage: 'memory'` uses Pi's
+MemoryStorage; a file path uses Pi SQLite storage. There are no separate AgentRuntime,
+AgentSession, ToolRegistry or RunBudgetGuard implementations.
 
-Implementations: `InMemoryAgentRuntime` (B3 group A), `PiDurableAgentRuntime` (group B).
+`InvestigationTool<Scope>` supplies name, description, parameter schema and execute function.
+Tools are read-only or idempotent result submission and registered as replay-safe. Logistics
+implements `get_case`, `search_capacity_offers`, `check_plan` and `submit_investigation_result`.
+The investigation explores replacement transport capacity, not unrestricted external research.
 
 ### 7.2 Controls
 
 | Control | Where |
 |---|---|
-| Tool allow-list and caller limits | `ToolRegistry`, per service; approvals, field actions, applying a plan and dispatch are never registered with the agent |
-| Budgets | `RunBudgetGuard`: 10 tool calls, 3 model retries, 2 rounds of automatic data requests, 30 s target, 60 s hard stop |
-| Idempotent writes | `ToolContext.operationIdFor(logicalActionId)` generated on the server; unique constraints in the business store |
-| No replayed side effects after a crash | `replayPolicy=verifyByOperationId`: on recovery check `get_operation_status` first |
-| Isolated input channels | `ContextAssembler`: policy and system instructions kept apart from document text, which is data only |
+| Tool allow-list | Only domain-supplied tools are registered; approvals, field actions, applying a plan and dispatch are absent |
+| Budgets | Pi beforeTool hook enforces 10 calls; `run` aborts after 60 seconds by default; no configured three-retry/two-request-round guarantee |
+| Idempotent writes | Business operation ids and SQLite unique constraints; proposal confirmation checks current revision |
+| Crash recovery | Pi reuses completed tool results; replay-safe tool implementations must tolerate unfinished-call retries |
+| Isolated input | `assembleInput` fences case data as reference material, separate from system instructions; not a universal prompt-injection guarantee |
 | Output has no authority | The agent can only `submit_investigation_result`; the rule engine and human gates decide |
-| Revision binding | Results carry `caseRevision` and a fingerprint, checked on submit |
-| Loops and repeated crashes | Budget guard + restart limit; beyond it, hand to a person |
-| Traceability | Every run, tool and model call emits an `observability` event |
+| Revision binding | Domain proposals carry their investigated revision; confirmation refuses a stale proposal; human tasks bind revision and fingerprint |
+| Loops and repeated crashes | Tool budget and timeout are implemented; restart count is not capped and restart resets the in-memory tool budget |
+| Traceability | Tool calls and investigation transitions emit domain events; semantic answers are recorded separately |
 
 Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
 
@@ -300,6 +316,7 @@ Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
 
 ```ts
 interface SemanticJudge {
+  readonly provider: 'jev' | 'structured-output' | 'scripted'
   ask(question: SemanticQuestion, state: SemanticState): Promise<SemanticAnswer>
 }
 ```
@@ -307,31 +324,33 @@ interface SemanticJudge {
 Implementations: `JevJudge` (official SDK, `jev-1.14.0`), `StructuredOutputJudge` (pi-ai NVIDIA
 `nemotron-3.5-lightning-30b-a3b`, forced to call the `submit_answer` tool and validated against the
 schema), `ScriptedJudge` (replays by questionId + input hash, falling back to the question's
-default entry). All three turn off their SDK's own retries; the harness retries. A
+default entry). Jev rate-limit backoff is not configured; a failure blocks as ERROR rather than
+being approved. A
 `SemanticAnswer` keeps the provider's raw fields and the business mapping.
 
 ## 9. Observability
 
 ### 9.1 Two-level graph views (console)
 
-One graph component (`@xyflow/react` 12 + `elkjs` 0.12 layered layout) serves both levels with
-the same interactions: click a node for its summary or card, open an agent's own rules, return.
+AgentOverview and RuleGraph use `@xyflow/react` 12 and `elkjs` 0.12 layered layouts. Both support
+clicking a node for its summary or card and moving from an agent to its rules.
 
 | Level | Nodes | Edges | Node card (no inner detail) |
 |---|---|---|---|
-| Overview (agents) | Each Durable Jev Agent | Collaboration: the dependencies between their rules, with live A2A task counts | Name, the business it owns, health (running / restarting / offline), rule pack version and rule counts (code / Jev share), pinned model version, cases in progress, open human tasks by role, Agent Card link |
+| Overview (agents) | Each Durable Jev Agent | Rule dependencies between agents, with A2A call counts | Name, responsibilities, availability, rule pack/version and evaluator counts, case count, open tasks by role, Agent Card link |
 | Inside an agent (rules) | Rules, human gates (approval chains included), boundary nodes for other agents' rules | `dependsOn` | Rule id and title, how it is evaluated (code / Jev / human), status in the selected case and blockedBy |
-| Node details | — | — | Rule results, Jev's raw answer and mapping, approval chain progress, evidence (the T6.3 judgement details) |
+| Node details | — | — | Rule policy text, expression/question, dependency and current result; the timeline exposes recorded semantic/investigation events. Complete call-tree/trace navigation remains T6.2/T6.3 |
 
 - With a case selected, both levels are coloured by that case: the overview shows its state in each
   agent, the inner view the rule statuses. Without a case, the overview shows the architecture and
   totals.
-- Data: Agent Cards (static), each agent's `GET /agent/summary` (from service-kit, with
-  `AgentSummary` in `contracts`), the rule pack (inner graph), the observation store (A2A tasks,
+- Data: Agent Cards (static), each agent's `GET /agent/summary` (with
+  `AgentSummary` in `agent-core`), the rule pack (inner graph), the observation store (A2A tasks,
   events).
 
 - Events go to each service's outbox table; the coordinator's collector gathers them into
   `var/data/observability.sqlite`; the console reads them through the query API by polling
   snapshots.
-- Identifiers follow PRD 15.2; `traceparent` propagates over HTTP between services.
+- Identifiers provide case/revision correlation. Cross-service `traceparent` propagation and
+  restart span linking remain T6.2; do not infer them from the separate M0 trace spike.
 - Business correctness does not depend on the observation store.

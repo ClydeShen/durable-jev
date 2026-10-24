@@ -2,8 +2,9 @@
 
 Before continuing work, read `.harness/implementation-notes.md` (current handoff),
 `.harness/spec.md` (agreed scope) and `.harness/roadmap.md` (execution order).
-The experimental baseline is frozen at annotated tag `baseline-2026-10-24` and backup branch
-`backup/baseline-2026-10-24`. See `docs/baseline.md` and its committed manifest. Start future
+The current baseline recovery is documentation revision tag `baseline-2026-10-24-r2` and backup
+branch `backup/baseline-2026-10-24-r2`, with the same application source/materials as the original
+`baseline-2026-10-24` at `25c7dbb`. See `docs/baseline.md` and its committed manifest. Start future
 experiments on a new branch from that tag and count all subsequent adaptations. Do not move
 these refs or the earlier demo recovery refs, or resume the shelved refactor automatically.
 The distinct pre-cleanup demo recovery instructions remain in `docs/demo-checkpoint.md`.

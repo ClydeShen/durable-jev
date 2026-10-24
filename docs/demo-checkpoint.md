@@ -30,11 +30,13 @@ This is a source checkpoint, not a backup of credentials, installed dependencies
 reports or the current local database. The demo initializes from the committed logistics
 materials. Protected materials and delivery-agent skills are unchanged.
 
-The experimental baseline is now separately frozen as `baseline-2026-10-24`, following the verified
-cleanup and owner acceptance; see [baseline.md](baseline.md). This older demo checkpoint is unchanged.
+The experimental baseline was separately frozen as `baseline-2026-10-24`; its documentation-aligned
+recovery revision is `baseline-2026-10-24-r2`. See [baseline.md](baseline.md). This older demo
+checkpoint is unchanged.
 Cleanup effort is not part of subsequent policy-change or cross-domain migration cost measurements.
 Logistics-to-insurance A2A cooperation remains an optional bonus.
 
-The working branch is `baseline-cleanup-plan`, created from this checkpoint. Read the current
-handoff in `.harness/implementation-notes.md` before resuming implementation. Changes to this
-document on that working branch do not change the frozen recovery tag or backup branch.
+Cleanup and documentation were maintained on `baseline-cleanup-plan`. Future experiments start
+on a new branch from the current baseline recovery tag, not from this older demo checkpoint.
+Read `.harness/implementation-notes.md` before resuming. Documentation corrections do not move
+any original recovery tag or backup branch.

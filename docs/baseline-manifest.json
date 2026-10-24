@@ -2,11 +2,17 @@
   "status": "frozen",
   "acceptedOn": "2026-10-24",
   "ownerConfirmed": true,
-  "recoveryTag": "baseline-2026-10-24",
-  "backupBranch": "backup/baseline-2026-10-24",
+  "documentationRevision": 2,
+  "recoveryTag": "baseline-2026-10-24-r2",
+  "backupBranch": "backup/baseline-2026-10-24-r2",
+  "previousArchive": {
+    "tag": "baseline-2026-10-24",
+    "branch": "backup/baseline-2026-10-24",
+    "commit": "25c7dbb425ce365c61a0db0bdab8f1dcdc7e549b"
+  },
   "acceptedImplementationCommit": "78b139e788ec11a118c2433bc2a5f1bd4c85c3ac",
   "acceptedImplementationTree": "ca96ae5c74e2ad50440116e13c34ac9f468bb878",
-  "archiveCommit": "resolve recoveryTag^{commit}; documentation-only freeze after acceptedImplementationCommit",
+  "archiveCommit": "resolve recoveryTag^{commit}; documentation-only revision with unchanged source, configuration and materials",
   "toolchain": {
     "node": "26.12.1",
     "pnpm": "12.15.0",
@@ -42,7 +48,7 @@
     "branch": "backup/demo-2026-10-24",
     "commit": "0265a05b3a8f4196133d6ee1d009c7a5ee44243f"
   },
-  "measurementBoundary": "Cleanup and quality repairs are excluded; count all subsequent experiment adaptations against recoveryTag.",
+  "measurementBoundary": "Original freeze is unchanged; this recovery-document revision includes no experiment adaptations. Count subsequent experiment effort without resetting the original cost boundary.",
   "archiveScope": "Tracked source, materials, configuration and documents; no credentials, dependencies, temporary reports or local database.",
   "limitsReference": "docs/baseline.md#freeze-record-and-limits"
 }

@@ -16,7 +16,7 @@ rule engine and decision tables, a small team writes policy text, lets the autho
 into validated rule definitions, reviews the diff, and ships data. Code is kept for what code does
 best: one rule in 150 is code (R29, booking transport capacity).
 
-The cleanup candidate shares validated case/runtime contracts across domains; logistics supplies
+The frozen baseline shares validated case/runtime contracts across domains; logistics supplies
 its facts, vocabulary, tools and policy pack. See [baseline.md](baseline.md) for the exact shared
 boundary, recovery ownership, acceptance evidence and limits. This is capability research, not
 an established enterprise cost-saving or production-readiness claim.
@@ -32,8 +32,10 @@ an established enterprise cost-saving or production-readiness claim.
 | Destination compliance *(added as the extension)* | Destination import requirements, commodity classification | 74 (48 / 25 / 0 / 1 / 0) | – |
 | **Total** | | **150 (99 / 32 / 8 / 9 / 2)** | 7 roles |
 
-Each agent is the same program (`apps/agent`) started with a different `AGENT_ID`; it executes only
-the rules it owns and receives the other agents' results ([orchestration.ts](../packages/agent-core/src/orchestration.ts)).
+The four non-coordinator services share `apps/agent` and select their logistics profile through
+`AGENT_ID`; `apps/coordinator` also hosts its own local runtime plus the gateway/orchestrator.
+Each executes only its own rules and receives foreign outcomes through
+[orchestration.ts](../packages/agent-core/src/orchestration.ts).
 The console's **Agents** view shows these five as one graph; clicking an agent opens its own rules
 with the rules it depends on in other agents drawn as dashed boundary nodes.
 
@@ -50,8 +52,9 @@ with the rules it depends on in other agents drawn as dashed boundary nodes.
                    └─ investigation helper (optional, Pi Durable): proposes, never decides
 ```
 
-- **Results are reused, not recomputed.** Every outcome carries a fingerprint of its inputs; a
-  change only re-evaluates what it touches and labels the rest with the change that invalidated it
+- **Unchanged eligible results are reused.** Every outcome carries an input fingerprint; unchanged
+  code, decision-table and semantic results can be reused. Expressions, human gates and combinators
+  are evaluated again. Affected non-reused outcomes carry the invalidating change label
   (`r2 (route, carrier, quote)` in LOG-004).
 - **Human work is part of the graph.** An approval chain of two or three roles, four-eyes,
   evidence requirements and expiry are rule configuration, not workflow code.
@@ -82,12 +85,13 @@ parameters, cycles, FEEL syntax, selection keys) and produces a diff to review; 
 --apply` merges it. Today those two appendices replay draft recordings; with `MODEL_MODE=live` the
 authoring model writes them.
 
-**Scaling to thousands of rules** relies on selection, not on evaluating everything. Each
+**The scaling hypothesis** relies on selection, not on evaluating everything. Each
 extension rule declares where it applies (destination, customer, commodity group); the engine
 indexes them and filters non-matching rules before any evaluation. The commodity group comes from
 a Jev classification (R42) that selects every plausible group, so uncertainty widens the selection
 instead of missing a rule. Each demo order evaluates 4 to 11 of the 108 extension rules; the 26
-screening samples have no missed rule (`pnpm screening`).
+screening samples have no missed rule in scripted mode (`pnpm screening`). This is development
+evidence, not a demonstrated thousands-rule capacity or a blind accuracy result.
 
 **Adding an agent** is configuration. The destination-compliance agent needed:
 
@@ -105,6 +109,12 @@ rule edit, re-validated on load. Expression input paths participate in fingerpri
 to human-gate applicability/parameters need an explicit rule-version bump to retire stale tasks.
 That can conservatively require another approval; policy-change experiments measure the outcome
 and work under both existing-case strategies rather than assume all changes are automatic.
+
+The formal next step is logistics policy-change specification and cost measurement, separately
+for keeping old cases on old policy and re-evaluating unshipped cases under new policy. Reviewed
+direct-edit/authoring comparisons and independent blind evaluation precede claims about savings.
+Motor-insurance claims follow; logistics vehicle-insurance A2A collaboration is optional. See
+[evaluation-plan.md](evaluation-plan.md). No such experiment was started by freezing the baseline.
 
 ## Reliability
 
