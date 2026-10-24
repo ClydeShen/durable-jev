@@ -26,6 +26,22 @@ export interface PolicyObservation {
   priorTaskDecision?: string
 }
 
+/** Owner-approved strict threshold; labels for the wider demo remain draft. */
+export function policyBoundaryProblems(observations: readonly PolicyObservation[]): string[] {
+  return observations
+    .filter((item) => item.activation === 'new-order')
+    .flatMap((item) => {
+      const threshold = item.policyPack === 'baseline' ? 50_000 : 75_000
+      const needsApproval = item.extraCostCents > threshold
+      const expected = needsApproval ? 'WAITING_HUMAN' : 'NOT_APPLICABLE'
+      return item.after.status === expected && item.after.openApprovals === Number(needsApproval)
+        ? []
+        : [
+            `${item.policyPack} at ${item.extraCostCents} cents: expected ${expected} with ${Number(needsApproval)} open approvals`,
+          ]
+    })
+}
+
 function snapshot(view: CaseView): RuleSnapshot {
   const outcome = view.outcomes.find((item) => item.ruleId === targetRule)
   if (!outcome) throw new Error(`no outcome for ${targetRule}`)

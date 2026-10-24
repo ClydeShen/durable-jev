@@ -29,6 +29,8 @@ jobs:
         run: pnpm replay
       - name: Fault scenarios
         run: pnpm faults
+      - name: Policy change continuity and restart controls
+        run: pnpm eval:policy-change
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
@@ -54,3 +56,4 @@ jobs:
       - run: pnpm test
       - run: pnpm replay
       - run: pnpm faults
+      - run: pnpm eval:policy-change

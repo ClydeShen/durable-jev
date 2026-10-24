@@ -35,6 +35,7 @@
         "src/replay-main.ts",
         "src/screening-main.ts",
         "src/policy-change-main.ts",
+        "src/policy-workflow-child.ts",
         "src/faults-main.ts",
         "src/faults/crash-child.ts"
       ],

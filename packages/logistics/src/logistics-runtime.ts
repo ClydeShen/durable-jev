@@ -81,6 +81,8 @@ export interface LocalLogisticsAgents {
   rulePack: RulePack
   /** The case as all agents see it: the coordinator's record with every agent's outcomes and tasks. */
   view(caseId: string): Promise<CaseView<Shipment>>
+  /** Call after outstanding work and investigation helpers have settled. */
+  close(): void
 }
 
 export interface LocalLogisticsOptions extends Omit<LogisticsRuntimeOptions, 'agentId' | 'store'> {
@@ -129,6 +131,9 @@ export function createLocalLogisticsAgents(options: LocalLogisticsOptions): Loca
     view: async (caseId) => {
       const { outcomes, tasks } = await orchestrator.state(caseId)
       return { record: coordination.runtime.view(caseId).record, outcomes, tasks }
+    },
+    close: () => {
+      for (const agent of agents) agent.store.db.close()
     },
   }
 }
