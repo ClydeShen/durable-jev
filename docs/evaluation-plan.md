@@ -329,6 +329,29 @@ the durable arm resumes. Both use Pi, so this is not Pi versus a non-Pi framewor
 development comparison. The first-valid/check-all difference is deterministic strategy behavior,
 not evidence of an LLM advantage. T7.2's reviewed live comparison and independent custody remain open.
 
+## Owner-approved live Jev allowance (2026-10-24)
+
+The owner permits real Jev probes at suitably prepared checkpoints in the four next steps:
+
+| Step | Jev request-attempt ceiling | Purpose and boundary |
+|---|---|---|
+| Rule-authoring and review costs | 5 | Check selected semantic judgments in candidate rules; Jev does not replace NVIDIA policy generation |
+| Agent versus fixed workflow | 5 | Check selected semantic tool results; both comparison arms share this ceiling, and NVIDIA planning needs separate approval |
+| Independent blind evaluation | 5 | Evaluate a small frozen, independently held sample; not a statistically meaningful accuracy claim |
+| Motor-insurance adaptation | 5 | Probe selected insurance semantic rules after scripted adaptation checks; not whole-domain validation |
+
+Total ceiling: 20 actual outbound Jev request attempts from this approval, not 20 complete
+replays. Usage when authorized: zero in every step. Failed/timed-out attempts and retries count;
+unused allowance is not transferred between steps. Persist/reserve allowance before requests
+and enforce both limits across restarts before enabling live evaluation. The SDK already has
+automatic retries disabled, but cross-run budget enforcement remains to be implemented.
+
+Do not use unrestricted `MODEL_MODE=live pnpm replay` or `models:live-check` under this allowance:
+a replay can consume many requests, and the latter also invokes another provider. Continue
+scripted development, freeze selected inputs and acceptance criteria, and report all outcomes.
+NVIDIA authoring/investigation generation is not authorized by this Jev-only allowance. Human
+review, independent blind custody and protected-material consent remain separate requirements.
+
 ## Deliverables and decision boundary
 
 1. A source-hashed coupling baseline and reviewed logistics mutation specifications.

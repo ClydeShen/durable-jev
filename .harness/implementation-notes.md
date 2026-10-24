@@ -52,12 +52,21 @@ shape/order and business observations match the clean `d520c01` run. No producti
 packages were added; two tests in one test file protect the scenario table and mutation mapping.
 Recovery is `workflow-readability-2026-10-24` with a matching `backup/` branch. Preserve the
 original P2/P3 recovery refs. This is readability work, not new business capability or a cost reset.
-The owner approved refactoring only; the proposed live-generation budget is still unapproved.
+The owner approved refactoring; NVIDIA live generation/planning remains unapproved.
 
-Next agree bounded live authoring/investigation comparisons and independent human review/cost
-recording. T8.5 and T7.2 remain open; finish that evidence before insurance.
+The owner subsequently authorized a new Jev-only allowance: at most five actual API attempts
+per next step (authoring/review evaluation, agent/fixed-workflow comparison, blind evaluation,
+insurance adaptation), at most 20 total. Current usage under this approval: 0/5 in each step,
+0/20 total; no live request was made when recording this decision. See spec section 17 and
+`docs/evaluation-plan.md`. Persist and enforce the allowance at the request boundary before any
+live use, including failures/retries; do not run unrestricted live replay or spend unused calls
+in another step. The budget guard has not yet been implemented. NVIDIA needs separate approval.
+
+Next prepare bounded evaluation and independent human review/cost recording, then use Jev only
+when the scripted checks and frozen inputs are ready. T8.5 and T7.2 remain open; finish that
+evidence before insurance.
 Do not interpret W2's expected-loss checks as successful memory recovery or claim savings from
-the two authored strategies. No live model call or protected-material edit has been authorized.
+the two authored strategies. No protected-material edit is authorized by the new live allowance.
 
 The frozen-baseline handoff below records the starting point. Its instruction to create an
 experiment branch is now complete; do not switch back to the maintenance or backup branches.

@@ -260,3 +260,22 @@ documentation-only recovery revision. This is not an instruction to restart the 
 - Every stage archive must include synchronized handoff/evidence documents and
   `docs/demo-guide.md`. Distinguish current browser actions, reproducible report demonstrations
   and future capabilities; do not advertise scripted behavior as a live model decision.
+
+## 17. Bounded live Jev authorization (2026-10-24)
+
+- The owner authorizes up to five real Jev API request attempts in each of four next steps:
+  rule-authoring/review cost evaluation, agent versus fixed-workflow comparison, independent
+  blind evaluation, and motor-insurance adaptation. Total ceiling: 20 attempts from this approval.
+- Use the allowance only at suitably prepared checkpoints, after scripted checks and input/
+  acceptance criteria are frozen. It is a ceiling, not a requirement to spend all calls.
+- Count actual outbound Jev request attempts, not whole runs or calls to a wrapper function.
+  Retries and failed/timed-out requests consume allowance once attempted. Do not transfer unused
+  allowance across steps, reset it after restart, or start an unrestricted live replay.
+- Before the first request, enforce and persist the per-step/total allowance at the request
+  boundary. The existing SDK disables its own retries, but that is not a cross-run budget guard.
+  These are authorization rules; recording them does not itself implement that guard.
+- This approval is for Jev only. NVIDIA generation/planning calls require separate approval;
+  there is no implicit authorization from enabling MODEL_MODE=live or possessing API keys.
+- Five calls per step support bounded probes, not statistical accuracy, savings or scale claims.
+  Blind inputs/answers require independent custody; all existing protected-material restrictions
+  remain. Earlier historical calls are outside this newly granted allowance.
