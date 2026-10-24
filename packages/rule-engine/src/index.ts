@@ -4,6 +4,7 @@ export {
   type LeafEvaluator,
   type LeafInput,
   type RuleOutcome,
+  ruleOutcomeSchema,
 } from './evaluate-rule-graph.js'
 export { type CaseFacts, type Facts, scopeKey } from './facts.js'
 export { feelContext, type PolicyParameters, semanticState } from './feel.js'

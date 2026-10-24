@@ -137,11 +137,15 @@ export class CaseRuntime<T extends BusinessCase = BusinessCase> {
       })
     }
     return this.serialized(task.caseId, async () => {
+      const current = this.options.store.task(humanTaskId)
+      if (!current) {
+        return { ok: false, reason: 'NOT_FOUND', message: `task ${humanTaskId} does not exist` }
+      }
       const view = this.view(task.caseId)
-      const decision = decideHumanTask(task, action, {
+      const decision = decideHumanTask(current, action, {
         now: this.options.now(),
-        currentTarget: this.currentTarget(view, task),
-        chainTasks: view.tasks.filter((other) => chainIdOf(other) === chainIdOf(task)),
+        currentTarget: this.currentTarget(view, current),
+        chainTasks: view.tasks.filter((other) => chainIdOf(other) === chainIdOf(current)),
       })
       if (!decision.ok) return decision
       const { store } = this.options

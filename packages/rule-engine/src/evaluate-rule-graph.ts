@@ -1,10 +1,14 @@
 import {
   type CheckScope,
   type CheckStatus,
+  checkScopeSchema,
+  checkStatusSchema,
   isPendingCheckStatus,
   type RuleEngineKind,
   type RuleId,
+  ruleIdSchema,
 } from '@durable-jev/contracts'
+import { z } from 'zod'
 import { combineAllOf, type Outcome, outcome } from './combinators.js'
 import { type ExpressionContext, evaluateExpression } from './evaluate-expression.js'
 import { type CollectionScope, type Expression, referencedRules } from './expression.js'
@@ -48,19 +52,20 @@ export interface LeafInput {
 
 export type LeafEvaluator = (input: LeafInput) => LeafEvaluation | Promise<LeafEvaluation>
 
-export interface RuleOutcome {
-  ruleId: RuleId
-  scope: CheckScope
-  status: CheckStatus
-  observedValue?: unknown
-  blockedBy: RuleId[]
-  inputFingerprint: string
-  reused?: boolean
-  invalidatedBy?: string
-  error?: string
+export const ruleOutcomeSchema = z.object({
+  ruleId: ruleIdSchema,
+  scope: checkScopeSchema,
+  status: checkStatusSchema,
+  observedValue: z.unknown().optional(),
+  blockedBy: z.array(ruleIdSchema),
+  inputFingerprint: z.string().min(1),
+  reused: z.boolean().optional(),
+  invalidatedBy: z.string().optional(),
+  error: z.string().optional(),
   /** Set when rule selection filtered this extension rule out without evaluating it. */
-  filtered?: true
-}
+  filtered: z.literal(true).optional(),
+})
+export type RuleOutcome = z.infer<typeof ruleOutcomeSchema>
 
 export interface EvaluationEnvironment {
   evaluators: ReadonlyMap<string, LeafEvaluator>

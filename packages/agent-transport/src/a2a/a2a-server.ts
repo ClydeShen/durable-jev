@@ -9,11 +9,11 @@ import {
 import { agentCardHandler, jsonRpcHandler, UserBuilder } from '@a2a-js/sdk/server/express'
 import type { AgentClient } from '@durable-jev/agent-core'
 import { businessCaseSchema } from '@durable-jev/contracts'
-import type { HumanAction } from '@durable-jev/human-tasks'
-import type { RuleOutcome } from '@durable-jev/rule-engine'
+import { ruleOutcomeSchema } from '@durable-jev/rule-engine'
 import { Router } from 'express'
 import { z } from 'zod'
 import { requestCache } from '../request-cache.js'
+import { actionSchema } from '../request-schemas.js'
 import {
   type CaseSkill,
   caseSkills,
@@ -77,15 +77,17 @@ function skillHandlers(
   return {
     'submit-case': (input) => client.submit(businessCaseSchema.parse(input)),
     'evaluate-case': (input) => {
-      const { caseId, foreign } = caseIdInput.extend({ foreign: z.array(z.unknown()) }).parse(input)
-      return client.evaluate(caseId, foreign as RuleOutcome[])
+      const { caseId, foreign } = caseIdInput
+        .extend({ foreign: z.array(ruleOutcomeSchema) })
+        .parse(input)
+      return client.evaluate(caseId, foreign)
     },
     'case-state': (input) => client.state(caseIdInput.parse(input).caseId),
     'decide-task': (input) => {
       const { humanTaskId, action } = z
-        .object({ humanTaskId: z.string().min(1), action: z.record(z.string(), z.unknown()) })
+        .object({ humanTaskId: z.string().min(1), action: actionSchema })
         .parse(input)
-      return client.decide(humanTaskId, action as unknown as HumanAction)
+      return client.decide(humanTaskId, action)
     },
     'open-tasks': () => client.openTasks(),
   }

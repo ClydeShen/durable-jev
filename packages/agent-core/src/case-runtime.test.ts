@@ -105,6 +105,30 @@ const statusOf = (view: { outcomes: { ruleId: string; status: string }[] }, rule
   view.outcomes.find((outcome) => outcome.ruleId === ruleId)?.status
 
 describe('CaseRuntime', () => {
+  it('accepts one concurrent completion without overwriting its evidence', async () => {
+    const { runtime: agent, store } = runtime()
+    try {
+      const [task] = (await agent.submit(shipment)).tasks
+      const decisions = await Promise.all(
+        ['FIRST', 'SECOND'].map((loadScanId) =>
+          agent.decide(task?.humanTaskId ?? '', {
+            type: 'complete',
+            actor: warehouse,
+            fields: { loadScanId },
+            evidenceRefs: [],
+          }),
+        ),
+      )
+      expect(decisions[0]).toMatchObject({ ok: true })
+      expect(decisions[1]).toMatchObject({ ok: false, reason: 'NOT_OPEN' })
+      expect(store.task(task?.humanTaskId ?? '')?.actionEvidence?.fields).toEqual({
+        loadScanId: 'FIRST',
+      })
+    } finally {
+      store.db.close()
+    }
+  })
+
   it('opens the loading task, then releases once the warehouse completes it', async () => {
     const { runtime: agent } = runtime()
     const submitted = await agent.submit(shipment)

@@ -10,9 +10,15 @@ import {
   type RulePack,
 } from '@durable-jev/agent-core'
 import { businessCaseSchema } from '@durable-jev/contracts'
-import { type RuleDefinition, type RuleSet, validateRuleSet } from '@durable-jev/rule-engine'
+import type { HumanAction } from '@durable-jev/human-tasks'
+import {
+  type RuleDefinition,
+  type RuleOutcome,
+  type RuleSet,
+  validateRuleSet,
+} from '@durable-jev/rule-engine'
 import express, { type ErrorRequestHandler } from 'express'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { z } from 'zod'
 import { A2aAgentClient } from './a2a/a2a-agent-client.js'
 import { a2aRoutes, agentCard } from './a2a/a2a-server.js'
@@ -129,6 +135,22 @@ afterEach(() => {
 })
 
 describe('domain agent contract (synthetic record fixture, not an insurance experiment)', () => {
+  it('does not let a concurrent rejection overwrite an accepted approval', async () => {
+    const agent = open()
+    const [task] = (await agent.runtime.submit(data)).tasks
+    const decisions = await Promise.all(
+      (['approve', 'reject'] as const).map((type) =>
+        agent.runtime.decide(task?.humanTaskId ?? '', {
+          type,
+          actor: { id: 'reviewer', role: 'recordReviewer' },
+        }),
+      ),
+    )
+    expect(decisions[0]).toMatchObject({ ok: true })
+    expect(decisions[1]).toMatchObject({ ok: false, reason: 'NOT_OPEN' })
+    expect(agent.store.task(task?.humanTaskId ?? '')?.status).toBe('APPROVED')
+  })
+
   it('validates new identities, roles and scopes without logistics vocabulary', () => {
     expect(
       validateRuleSet(ruleSet, {
@@ -214,6 +236,32 @@ describe('domain agent contract (synthetic record fixture, not an insurance expe
         expect(state.tasks[0]?.requiredRole).toBe('recordReviewer')
         const task = state.tasks[0]
         if (!task) throw new Error('missing review task')
+        const decide = vi.spyOn(agent.client, 'decide')
+        const evaluate = vi.spyOn(agent.client, 'evaluate')
+        const invalidActions = [
+          { type: 'approve' },
+          { type: 'approve', actor: { id: '', role: 'recordReviewer' } },
+          { type: 'complete', actor: { id: 'reviewer', role: 'recordReviewer' } },
+          {
+            type: 'complete',
+            actor: { id: 'reviewer', role: 'recordReviewer' },
+            fields: {},
+            evidenceRefs: 'invalid',
+          },
+          { type: 'supersede' },
+          { type: 'unknown' },
+          { type: 'carryForward', target: task.target },
+        ]
+        for (const action of invalidActions) {
+          // Deliberately send invalid wire data through the typed client.
+          await expect(client.decide(task.humanTaskId, action as HumanAction)).rejects.toThrow()
+        }
+        for (const foreign of [[null], [{ ...state.outcomes[0], status: 'INVALID' }]]) {
+          await expect(client.evaluate(data.caseId, foreign as RuleOutcome[])).rejects.toThrow()
+        }
+        expect(decide).not.toHaveBeenCalled()
+        expect(evaluate).not.toHaveBeenCalled()
+        expect(agent.store.task(task.humanTaskId)?.status).toBe('OPEN')
         expect(
           await client.decide(task.humanTaskId, {
             type: 'approve',

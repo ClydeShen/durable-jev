@@ -1,16 +1,10 @@
 import type { AgentClient, AgentSummary } from '@durable-jev/agent-core'
-import { businessCaseSchema, roleSchema } from '@durable-jev/contracts'
-import type { RuleOutcome } from '@durable-jev/rule-engine'
+import { businessCaseSchema } from '@durable-jev/contracts'
+import { ruleOutcomeSchema } from '@durable-jev/rule-engine'
 import { Router } from 'express'
 import { z } from 'zod'
 import { forgetRequests } from '../request-cache.js'
-
-const actionSchema = z
-  .object({
-    type: z.enum(['approve', 'reject', 'complete', 'expire', 'cancel', 'supersede']),
-    actor: z.object({ id: z.string().min(1), role: roleSchema }).optional(),
-  })
-  .passthrough()
+import { actionSchema } from '../request-schemas.js'
 
 export function agentRouter(client: AgentClient, summary: () => AgentSummary): Router {
   const router = Router()
@@ -21,7 +15,7 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
     response.json(await client.submit(businessCaseSchema.parse(request.body)))
   })
   router.post('/cases/:caseId/evaluate', async (request, response) => {
-    const foreign = z.array(z.unknown()).parse(request.body.foreign) as RuleOutcome[]
+    const foreign = z.array(ruleOutcomeSchema).parse(request.body.foreign)
     response.json(await client.evaluate(request.params.caseId, foreign))
   })
   router.get('/cases/:caseId', async (request, response) => {
@@ -32,9 +26,7 @@ export function agentRouter(client: AgentClient, summary: () => AgentSummary): R
   })
   router.post('/tasks/:taskId/decision', async (request, response) => {
     const action = actionSchema.parse(request.body)
-    response.json(
-      await client.decide(request.params.taskId, action as Parameters<AgentClient['decide']>[1]),
-    )
+    response.json(await client.decide(request.params.taskId, action))
   })
   router.get('/events', async (_request, response) => {
     response.json(await client.events())
