@@ -7,7 +7,8 @@ Accepted implementation: `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`.
 Both current refs include documentation aligned with the actual runtime and handoff, plus
 [baseline-manifest.json](baseline-manifest.json). Application source, engineering configuration,
 dependencies and materials are identical to the original freeze. The original baseline tag
-`baseline-2026-10-24` and branch `backup/baseline-2026-10-24` remain unchanged at
+`baseline-2026-10-24` remains unchanged (its redundant backup branch was retired under the
+[branch strategy](branch-strategy.md)) at
 `25c7dbb425ce365c61a0db0bdab8f1dcdc7e549b`. This is a recovery-document revision, not a new
 implementation baseline or a reset of experiment costs.
 The earlier runnable-demo backup remains `backup/demo-2026-10-24` /

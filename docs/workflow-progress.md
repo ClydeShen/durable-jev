@@ -1,9 +1,9 @@
 # Durable domain-agent workflow: post-baseline progress
 
 The owner authorized implementation after verifying the baseline, with a remote recovery point
-at each demonstrated stage. Work starts from `baseline-2026-10-24-r2`
+at completed milestones under the revised [branch strategy](branch-strategy.md). Work starts from `baseline-2026-10-24-r2`
 (`57373a8f261a0ded9e4b8a24cebbed481fc8b972`) on `feat/durable-policy-workflow`.
-The original demo and both baseline archives remain unchanged. The baseline manifest describes
+The original demo and both baseline tags remain unchanged. The baseline manifest describes
 the frozen reference, not the evolving candidate. All work below is post-baseline effort.
 
 ## Stages and evidence
@@ -16,8 +16,9 @@ the frozen reference, not the evolving candidate. All work below is post-baselin
 | W4: synthesis and optional A2A | Compare reviewed authoring and held-out outcomes; optionally delegate vehicle insurance from logistics | Comparison protocol, independent custody, transport interchangeability | Measured change effort, suitability and limits; no enterprise price extrapolation |
 
 W1 precedes insurance. W2 deepens T3.2a/T7.2 without requiring a new framework or moving every
-business transition into Pi. Each stage ends with checks, an evidence record, a small commit and
-an immutable annotated recovery tag plus backup branch. Do not move earlier refs. No PR or merge
+business transition into Pi. Small steps end with checks, evidence and commits; only a fully
+accepted milestone gets a numbered archive branch. Retired backup branches retain their tags.
+Do not move earlier tags. No PR or merge
 is implied. Keep the current UI layout and existing package/folder boundaries.
 
 ## W1 mutation specification (owner-approved, 2026-10-24)

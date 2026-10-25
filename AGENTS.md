@@ -1,5 +1,11 @@
 # Project handoff
 
+Current branch/archive policy: `docs/branch-strategy.md` (owner-approved 2026-10-25).
+Use only `feat/durable-policy-workflow` for ongoing experiments. Small steps get commits, not
+backup branches or tags. Create `milestone/01`–`04` named archives only after full milestone
+acceptance. Historical matching `backup/workflow-*` references below/in older docs are retired;
+their tags remain. Do not recreate them or switch to old milestone numbering.
+
 Before continuing work, read `.harness/implementation-notes.md` (current handoff),
 `.harness/spec.md` (agreed scope) and `.harness/roadmap.md` (execution order).
 The current baseline recovery is documentation revision tag `baseline-2026-10-24-r2` and backup

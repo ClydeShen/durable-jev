@@ -1,5 +1,14 @@
 # Spec: the agreed scope
 
+## Branch policy amendment (owner-approved 2026-10-25)
+
+`docs/branch-strategy.md` defines one active work branch, two historical reference branches and
+at most four completed-milestone archive branches with numbered prefixes. This supersedes
+earlier per-stage backup/tag instructions. Retire redundant backup branches only after verifying
+their retained remote tags. Do not move existing recovery tags or rewrite history. Milestone
+archives require complete agreed evidence, checks, updated docs/demo script and owner acceptance;
+small steps use commits. Other historical branches require separate review before removal.
+
 The baseline is `prd.md` (v0.3). This file records the decisions agreed with the user; it wins on
 any conflict.
 

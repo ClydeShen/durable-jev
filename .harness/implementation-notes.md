@@ -5,6 +5,15 @@ should know.
 
 ## Current handoff: post-baseline workflow implementation (2026-10-24)
 
+Branch policy update (2026-10-25): see `docs/branch-strategy.md`. The owner approved retiring
+eight redundant local/remote branches while retaining their exact remote tags. Only
+`feat/durable-policy-workflow` is active. Keep the original demo and official r2 baseline branches;
+create at most four numbered milestone archives, only after complete milestone acceptance.
+Earlier per-slice backup instructions below are historical and superseded. No milestone is
+complete yet. Jev/durable verification is the priority; NVIDIA authoring is deferred, not a blocker.
+The latest prior evidence checkpoint `99c5273` passed Linux/Windows CI on the working branch,
+tag and backup. This consolidation changes branch management and docs, not runtime or quota.
+
 The owner authorized continuing on a new branch, emphasizing migration-friendly structure and
 separate technical/non-technical CEO evidence, with remote recovery at each validated stage.
 Active branch: `feat/durable-policy-workflow`, starting at verified `baseline-2026-10-24-r2`

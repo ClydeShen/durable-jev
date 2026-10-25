@@ -12,6 +12,10 @@ pnpm start       # start every service; the browser opens http://localhost:4100
 
 ## Documents
 
+Active work: **`feat/durable-policy-workflow`**. The official baseline is
+`backup/baseline-2026-10-24-r2`. See [branch and milestone strategy](docs/branch-strategy.md)
+for the four numbered milestone archives; none is complete or created yet.
+
 | To | Read |
 |---|---|
 | Run it, walk through LOG-001, look up a command | [getting-started.md](docs/getting-started.md) |

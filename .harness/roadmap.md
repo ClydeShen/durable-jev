@@ -7,6 +7,12 @@ Every phase ends with something to demonstrate. The end of P2 gives an end-to-en
 
 ## Current execution order (owner decision, 2026-10-24)
 
+2026-10-25 archive/order clarification: `docs/branch-strategy.md` is authoritative for the four
+current milestones: M1 logistics policy/cost, M2 Jev/durable comparison, M3 independent blind
+evaluation, M4 insurance migration. Earlier W labels are historical evidence slices. Work stays
+on one branch; only fully accepted milestones get numbered archive branches. No per-slice
+backup/tag creation. NVIDIA authoring is deferred; prioritize Jev and durable verification.
+
 Preserve the demo checkpoint → document the plan → tidy the shared core without breaking the
 demo → freeze the experimental baseline → measure logistics policy changes → measure motor
 insurance adaptation → optional cross-domain A2A demonstration. See P8 below and the current

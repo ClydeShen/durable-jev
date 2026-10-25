@@ -216,6 +216,10 @@
 
 若继续审视源码，打开 `eval/runner/src/gate-change-packs.ts` 的 `gateMutations`，看规则、案例和政策文字的对应；再打开 `gate-change.ts` 的 `gateCases` 六行配置，以及分开的 `probeApproval`、`probeOperation`。说明：“这是实验代码的可读性整理，24 组观测和报告内容未变，没有再建一套引擎。”编写入口 `tools/rule-authoring/src/main.ts` 中，同一份 request 同时用于生成和证据记录。此整理已单独留底于 `workflow-readability-2026-10-24`，不是新 baseline。
 
+## 留底版本的说明
+
+当前开发只看 `feat/durable-policy-workflow`。原始可运行演示看 `backup/demo-2026-10-24`，正式实验起点看 `backup/baseline-2026-10-24-r2`。小实验的历史版本使用下文同名 tag 恢复，不再找 `backup/workflow-*` 分支。四个正式里程碑完成验收后才建立 `milestone/01` 至 `04` 分类的留底分支，目前尚未创建。不要把三个真实判断或一次代码整理称为完整里程碑。
+
 ## 场景 12：三条真实 Jev 判断（报告展示，不现场调用）
 
 | # | 操作 | 会看到 | 你说 |
