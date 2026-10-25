@@ -79,6 +79,7 @@ interface ActiveViewProps {
   focusAgent?: string
   onSelectRule(ruleId: string | undefined): void
   onOpenAgent(agentId: string): void
+  onShowRules(agentId: string): void
 }
 
 /** The view picked in the tabs, drawn with the case's played-back outcomes. */
@@ -94,6 +95,7 @@ function ActiveView({
   focusAgent,
   onSelectRule,
   onOpenAgent,
+  onShowRules,
 }: ActiveViewProps) {
   return (
     <>
@@ -103,6 +105,7 @@ function ActiveView({
           rules={rules}
           outcomes={history.playback.outcomes}
           onOpenAgent={onOpenAgent}
+          onShowRules={onShowRules}
         />
       )}
       {view === 'graph' && (
@@ -180,6 +183,13 @@ export function CaseViews({
     onOpenAgent(undefined)
     setSelectedRule(ruleId)
   }
+  const showAgentRules = (agentId: string) => {
+    setSelectedRule(undefined)
+    setFocusAgent(agentId)
+    setFocusOn(true)
+    setView('graph')
+    onOpenAgent(undefined)
+  }
   return (
     <>
       <ViewTabs
@@ -194,6 +204,7 @@ export function CaseViews({
       {/* Notifications sit over the graph or timeline, never over the case header's controls. */}
       <div className="view-area">
         <ActiveView
+          onShowRules={showAgentRules}
           view={view}
           agents={agents}
           rules={rules}
@@ -235,12 +246,7 @@ export function CaseViews({
           rules={rules}
           agentNames={agentNames}
           outcomes={outcomes}
-          onShowRules={() => {
-            setFocusAgent(agentShown.agentId)
-            setFocusOn(true)
-            setView('graph')
-            onOpenAgent(undefined)
-          }}
+          onShowRules={() => showAgentRules(agentShown.agentId)}
           onClose={() => onOpenAgent(undefined)}
         />
       )}

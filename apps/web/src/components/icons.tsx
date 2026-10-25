@@ -4,6 +4,7 @@ const paths = {
   reset: 'M3 8a5 5 0 1 0 1.5-3.6M3 2.5v2.5h2.5',
   add: 'M8 3v10M3 8h10',
   skip: 'M3 3.5l6 4.5-6 4.5zM12.5 3.5v9',
+  forward: 'M3 8h10M8 3l5 5-5 5',
 } as const
 
 export type IconName = keyof typeof paths

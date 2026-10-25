@@ -5,6 +5,11 @@ should know.
 
 ## Current handoff: post-baseline workflow implementation (2026-10-24)
 
+UI follow-up (2026-10-25): the agent drawer's rule-graph action uses the shared SVG IconButton.
+Double-clicking an agent node invokes the same agent-filtered rule-graph navigation. Pointer
+single-click waits 350 ms so the drawer does not intercept the second click; keyboard activation
+remains immediate. This is a small UI commit, not a milestone archive or model experiment.
+
 Branch policy update (2026-10-25): see `docs/branch-strategy.md`. The owner approved retiring
 eight redundant local/remote branches while retaining their exact remote tags. Only
 `feat/durable-policy-workflow` is active. Keep the original demo and official r2 baseline branches;

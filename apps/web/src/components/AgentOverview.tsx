@@ -10,7 +10,7 @@ import {
   Position,
   ReactFlow,
 } from '@xyflow/react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { agentRelations } from '../agent-relations'
 import type { AgentStatus, RuleInfo } from '../api'
 import { layoutGraph, type Positions } from '../graph-layout'
@@ -80,9 +80,31 @@ interface Props {
   rules: RuleInfo[]
   outcomes?: RuleOutcome[]
   onOpenAgent(agentId: string): void
+  onShowRules(agentId: string): void
 }
 
-export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
+/** Defer pointer clicks so the details drawer cannot cover the second click of a double-click. */
+function useAgentNavigation({
+  onOpenAgent,
+  onShowRules,
+}: Pick<Props, 'onOpenAgent' | 'onShowRules'>) {
+  const pending = useRef<ReturnType<typeof setTimeout>>(undefined)
+  useEffect(() => () => clearTimeout(pending.current), [])
+  return {
+    onNodeClick: (event: React.MouseEvent, node: Node) => {
+      clearTimeout(pending.current)
+      if (event.detail === 0) onOpenAgent(node.id)
+      else pending.current = setTimeout(() => onOpenAgent(node.id), 350)
+    },
+    onNodeDoubleClick: (_event: React.MouseEvent, node: Node) => {
+      clearTimeout(pending.current)
+      onShowRules(node.id)
+    },
+  }
+}
+
+export function AgentOverview({ agents, rules, outcomes, onOpenAgent, onShowRules }: Props) {
+  const navigation = useAgentNavigation({ onOpenAgent, onShowRules })
   const relations = useMemo(() => agentRelations(rules), [rules])
   const [positions, setPositions] = useState<Positions>({})
   const layout = useSavedLayout('agents')
@@ -139,7 +161,7 @@ export function AgentOverview({ agents, rules, outcomes, onOpenAgent }: Props) {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
-        onNodeClick={(_event, node) => onOpenAgent(node.id)}
+        {...navigation}
         onNodesChange={layout.onNodesChange}
         zoomOnDoubleClick={false}
         fitView

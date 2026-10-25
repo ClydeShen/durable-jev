@@ -6,7 +6,7 @@ import type { AgentNames, AgentStatus, RuleInfo } from '../api'
 import { kindLabels, mostSevere } from '../labels'
 import { A2aCardDialog } from './A2aCardDialog'
 import { RoleChip, StatusBadge, Tag, Tags } from './chips'
-import { Drawer, Field, Fields, Section } from './ui'
+import { Drawer, Field, Fields, IconButton, Section } from './ui'
 
 /** What makes these agents durable, as the demo shows it. */
 const durableTraits: [string, string][] = [
@@ -91,11 +91,7 @@ export function AgentCard({ agent, rules, agentNames, outcomes, onShowRules, onC
         </Section>
         <Section
           title={`Its rules (${owned.length})`}
-          action={
-            <button type="button" className="link-action" onClick={onShowRules}>
-              Show its rule graph →
-            </button>
-          }
+          action={<IconButton icon="forward" label="Show its rule graph" onClick={onShowRules} />}
         >
           <div className="chips">
             {Object.entries(summary?.rulesByKind ?? {}).map(([kind, count]) => (
