@@ -5,6 +5,13 @@ should know.
 
 ## Current handoff: post-baseline workflow implementation (2026-10-24)
 
+Agent-region visual trial (2026-10-25): the owner prefers omitting regions if they add clutter.
+A local prototype grouped owners with ELK and added passive tinted bounds. All eight cases
+laid out without overlapping regions, but the side-by-side browser comparison showed a wider
+graph, smaller fitted nodes and longer cross-owner connections. The prototype was withdrawn;
+retain the existing layout and Only-agent focus. No region feature was committed or pushed.
+Revisit only with a layout approach that improves readability at the demo's actual viewport.
+
 UI follow-up (2026-10-25): the agent drawer's rule-graph action uses the shared SVG IconButton.
 Double-clicking an agent node invokes the same agent-filtered rule-graph navigation. Pointer
 single-click waits 350 ms so the drawer does not intercept the second click; keyboard activation
