@@ -5,39 +5,17 @@ implementation-notes).
 
 Every phase ends with something to demonstrate. The end of P2 gives an end-to-end slice.
 
-## Current execution order (owner decision, 2026-10-24)
+## Current execution order
 
-2026-10-25 archive/order clarification: `docs/branch-strategy.md` is authoritative for the four
-current milestones: M1 logistics policy/cost, M2 Jev/durable comparison, M3 independent blind
-evaluation, M4 insurance migration. Earlier W labels are historical evidence slices. Work stays
-on one branch; only fully accepted milestones get numbered archive branches. No per-slice
-backup/tag creation. NVIDIA authoring is deferred; prioritize Jev and durable verification.
+Use M1–M4 in [workflow-progress.md](../docs/workflow-progress.md) for milestone status and
+[branch-strategy.md](../docs/branch-strategy.md) for archive scope/policy. P0–P8 and task IDs below
+are stable delivery references; historical W labels identify evidence slices, not new milestones.
 
-Preserve the demo checkpoint → document the plan → tidy the shared core without breaking the
-demo → freeze the experimental baseline → measure logistics policy changes → measure motor
-insurance adaptation → optional cross-domain A2A demonstration. See P8 below and the current
-handoff in `implementation-notes.md`. Historical P0-P7 completion marks are retained; they are
-not blanket claims that domain independence or module-wide Pi Durable integration is complete.
-
-Post-baseline work is authorized on `feat/durable-policy-workflow`. Stage definitions, CEO-facing
-evidence, the effort ledger and recovery refs are in `docs/workflow-progress.md`.
-W1 completes the first P1 continuity slice: 44 rule observations and 48 full-flow/control runs,
-including 32 process resumptions. T8.5 stays open for authoring comparisons, other mutations and
-independent evaluation. W2 adds 32 scripted strategy/checkpoint controls: eight durable resumptions
-match controls and eight memory resumptions fail with missing conversation state. Demo script and
-handoff are synchronized. P2/P3 now add 24 gate-migration observations and two synthetic authoring
-rehearsals (`docs/gate-change-experiment.md`). Both mutations are owner-approved; independent
-authoring/cost/blind evidence is not complete. Next agree bounded live comparisons and independent
-review before insurance; no new baseline cleanup.
-The owner-approved readability follow-up keeps the same P2/P3 evidence and report contract,
-with explicit scenarios and mutation mappings. It does not complete another evaluation task,
-authorize live calls or reset post-baseline costs; see `workflow-readability-2026-10-24`.
-
-The subsequent Jev-only allowance is five requests per next step, twenty total. A persisted
-request guard and three real semantic probes now exist (`docs/jev-probe.md`): authoring/review
-3/5, all other steps 0/5, total 3/20. This hybrid development check does not complete T8.5 or
-T7.2. Independent review/cost recording and blind custody remain open; NVIDIA generation/planning
-still requires separate approval. Recovery: `workflow-live-semantic-probe-2026-10-24`.
+Baseline cleanup is complete. Continue reviewed logistics policy/cost work and bounded durable
+investigation comparisons, then independent blind evaluation and motor-insurance migration.
+Optional cross-domain A2A follows insurance. Detailed protocols and findings are linked from the
+progress index; do not infer whole-flow Pi integration or measured savings from completion marks.
+Live authorization belongs to spec section 17, consumed requests to `jev-allowance.jsonl`.
 
 ## P0 Skeleton and technical spikes (PRD M0)
 

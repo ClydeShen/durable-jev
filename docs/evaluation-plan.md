@@ -3,7 +3,7 @@
 Status: experiment design and source audit, not a performance or cost result. The owner-approved
 experimental code/material baseline is frozen at `baseline-2026-10-24`; the current recovery
 `baseline-2026-10-24-r2` adds aligned documentation only. See [baseline.md](baseline.md).
-Next measure logistics policy changes, then motor insurance adaptation. There is
+Evaluate logistics policy changes before motor insurance adaptation. There is
 no nominated incumbent engine; large real-world rule estates motivate the question, not a
 specific product comparison.
 
@@ -43,11 +43,10 @@ The frozen baseline records its accepted commit, material hashes and environment
 `docs/baseline-manifest.json`. Count all further adaptation, preparation, review and failed attempts
 required by each measured experiment. Do not move the baseline retrospectively to exclude costs.
 The documentation revision changes no implementation, materials or engineering configuration and
-does not reset that cost boundary. Start experiment branches from the revised recovery tag.
-The source audit and P1 observations below describe the pre-cleanup checkpoint and must be
-re-characterized after freeze, not relabeled as post-baseline or blind results.
-The first post-baseline re-characterization and full-flow recovery slice is recorded separately
-in [workflow-progress.md](workflow-progress.md), including the owner's P1 semantics approval.
+does not reset that cost boundary. Continue on the active branch defined in [branch-strategy.md](branch-strategy.md).
+Historical pre-cleanup probes remain distinct from post-baseline characterization and blind results.
+The post-baseline characterization and full-flow recovery protocol are recorded in
+[policy-change-experiment.md](policy-change-experiment.md).
 
 ## Questions the evidence must answer
 
@@ -76,47 +75,16 @@ Rule count and the proportion of rules using a code evaluator do not answer thes
 In particular, one code evaluator among 150 definitions is not a measurement of human effort,
 live authoring success, total implementation cost or production readiness.
 
-## Pre-cleanup boundary: retain as historical evidence
+## Baseline and source audit
 
-The following audit describes the recovery checkpoint, not a claim that every coupling remains
-unchanged. The first cleanup slice makes applicability indexing dimension-agnostic and supplies
-selection/table vocabulary from logistics constraints. Unknown applicability keys are retained by
-the shared schema and rejected when unsupported by the logistics validator, rather than stripped.
-The second slice normalizes root/scoped facts and moves FEEL aliases plus customer/destination
-selection values to logistics assembly. The frozen baseline also makes identity/scope vocabulary
-and classifier scope/dimension domain-supplied, and uses domain-validated generic runtime/transport
-payloads. Compatibility scope shapes and old SQL names remain intentionally. Current acceptance
-and limits are in [baseline.md](baseline.md); handoff details are in `.harness/implementation-notes.md`.
+[baseline.md](baseline.md) owns the accepted structure and remaining coupling. Its manifest
+records the frozen source/material boundary. The pre-cleanup audit remains in Git history;
+it is not a current implementation description.
 
 `pnpm eval:portability` records schema compatibility probes and LF-normalized source hashes in
-`var/reports/portability-baseline.json`. It does not call models, modify source materials or
-validate business correctness. Its observations describe the working tree named by the hashes,
-not an assumed clean commit. Archive the report with the commit and diff used for each experiment.
-
-| Layer | Current reuse evidence | Current domain assumption |
-|---|---|---|
-| Rule definitions | FEEL expressions, dependencies, semantic questions and human gates are data | Owners and roles use logistics enums; scopes are order, cargo item and leg |
-| Evaluation | A common graph evaluator handles all owners | Facts and expression contexts name order, cargo items and legs; the decision table implements cargo mixing |
-| Selection and invalidation | Indexed applicability and input fingerprints are reusable mechanisms | Selection dimensions are destination, customer and commodity group; invalidation dimensions are fixed to logistics |
-| Business runtime | A common runtime owns outcomes and human tasks | `CaseRuntime`, `CaseStore` and `HumanGateSession` accept `Shipment` |
-| Authoring | Policy text produces proposals with schema/graph validation and token/time records | The prompt describes shipment release, and the CLI uses the logistics rule pack, fact catalog and code evaluator R29 |
-| Recovery and transport | The investigation helper checkpoints through Pi Durable; native HTTP and A2A share an `AgentClient` contract | Service assembly, roles, business tools and release transactions still implement logistics |
-
-Relevant sources: [rule-definition.ts](../packages/rule-engine/src/rule-definition.ts),
-[facts.ts](../packages/rule-engine/src/facts.ts), [feel.ts](../packages/rule-engine/src/feel.ts),
-[rule-selection.ts](../packages/rule-engine/src/rule-selection.ts),
-[case-runtime.ts](../packages/agent-core/src/case-runtime.ts),
-[author-rules.ts](../tools/rule-authoring/src/author-rules.ts) and
-[investigator.ts](../packages/agent-harness/src/investigator.ts).
-
-The initial probe accepts a different amount expression in the existing envelope, but refuses
-a new owner, scope, role or invalidation dimension. An unknown applicability key is currently
-accepted and stripped: `riskLevels` becomes an empty applicability object. Schema acceptance
-therefore must not be counted as successful migration. Record this as an unsupported behavior;
-if a later experiment needs a fix, retain the baseline and account for the additional effort.
-
-Do not rename purchases to shipments and count that as domain independence. A future domain
-experiment must name its real concepts and report the required adapters and shared-code changes.
+`var/reports/portability-baseline.json`. A report describes its hashed working tree, not an assumed
+clean commit. Schema acceptance alone does not establish business execution or domain migration.
+Record additional adaptation after freeze in the effort ledger.
 
 ## First experiment: logistics policy changes
 
@@ -125,7 +93,7 @@ semantics is not independent review of the surrounding case labels.
 Use isolated candidate packs; leave `eval/materials/` and its lock untouched. Review each revised
 policy paragraph and its expected business behavior before generation or acceptance scoring.
 
-| ID | Proposed change | What it tests | Required observations |
+| ID | Policy change | What it tests | Required observations |
 |---|---|---|---|
 | P1 | R35 extra-cost approval threshold: NZD 500 to NZD 750 (`extraCostApprovalThresholdCents`: 50,000 to 75,000) | Parameter-only change | Boundary values below, equal to and above both limits; changes to the gate and release decision |
 | P2 | R13: require the second quality sign-off for every controlled shipment, instead of only controlled cold-chain shipments | Approval-chain change | New second step, role enforcement, distinct actors, pending and completed chains |
@@ -148,52 +116,12 @@ Before measuring, freeze the starting commit, rule pack, model/prompt versions, 
 budget and business acceptance criteria. Run P1-P3 independently from the same baseline, then
 measure a separately identified cumulative sequence; do not mix those costs.
 
-### P1 characterization command and initial observations
+### Existing logistics evidence
 
-After `pnpm check` has built the runner, run `pnpm eval:policy-change`. It creates a new directory
-under `var/reports/policy-change-*`, copies the source materials, and changes only the copies.
-Each directory contains baseline and candidate packs plus JSON and Markdown reports. No live
-model is called; the command refuses `MODEL_MODE=live`.
-
-Two candidate variants isolate parameter-only edits from an edit that also raises R35's rule
-version and the rule-set version. Each variant records 22 observations: paired new-order boundary
-cases under both packs, unchanged controls, pending approvals and previously completed approvals
-under both activation strategies. The runs are deterministic characterization, not blind samples.
-The copied policy paragraph is unchanged because R35 references the parameter by name. The
-owner approved the strict P1 threshold and both activation modes on 2026-10-24; the broader
-fixture labels and unreviewed observations remain `reviewStatus: draft`.
-
-| Observed case | Parameter only | Parameter plus rule version |
-|---|---|---|
-| New NZD 600 extra cost under the raised threshold | R35 is not applicable; no task | Same |
-| Old NZD 600 order pinned to its prior policy | Approval remains required | Same |
-| Old NZD 600 pending order re-evaluated | R35 becomes not applicable, but the old task remains open and accepts approval | Old task is cancelled and refuses the late approval |
-| Old NZD 800 approved order re-evaluated | Prior approval remains passed | A new approval opens; the old approval is superseded |
-
-The relevant source path is `GraphState.inputsOf` in
-[evaluate-rule-graph.ts](../packages/rule-engine/src/evaluate-rule-graph.ts): human-gate
-applicability expressions and parameter values are not automatically included in that rule's
-input fingerprint. R35 has empty `inputPaths`; its threshold changes eligibility without changing
-the fingerprint unless the rule version changes. This explains why simply reloading a parameter
-does not reconcile all old tasks.
-
-Raising the rule version makes the existing task machinery observe a different fingerprint.
-It also conservatively requires another approval for the NZD 800 case, although that amount is
-above both thresholds. Count that reapproval as work; do not silently assume it is free or always
-the desired migration policy.
-
-The original probe chooses packs explicitly and recreates the commercial runtime over an in-memory
-store. W1 now also records complete logistics release and process exits before/after propagation,
-using the same file-backed agent stores after restart. There is still no production policy router,
-atomic cross-service policy rollout or policy-authoring comparison. Runtime timings are local
-observations, not human effort or a latency benchmark. Human effort remains unmeasured; runner
-preparation and repairs are included qualitatively in the post-baseline ledger. Both variants
-preserve the original capability boundary rather than silently repairing the baseline.
-
-The [P2/P3 protocol and results](gate-change-experiment.md) extend logistics characterization with
-24 gate observations and two synthesized authoring-tool rehearsals. Old same-version R21 tasks
-still accept missing new evidence; versioned gates enforce it but reopen work. These are not live
-authoring, independently reviewed outcomes or cost savings. Keep these limits in the comparison.
+[P1 protocol and observations](policy-change-experiment.md),
+[P2/P3 protocol and observations](gate-change-experiment.md) and the
+[effort ledger](workflow-progress.md#effort-ledger) own experimental results and cost records.
+These are development characterizations; independent authoring/review and blind evidence remain open.
 
 ## Second domain: motor insurance claims
 
@@ -229,22 +157,13 @@ The desired demonstration is that
 changing domain or policy needs a small, understandable change; if the experiment requires more,
 show that limitation instead of hiding it. This does not require a new application feature.
 
-### Current extraction points
+### Adaptation boundary
 
-- Rule contracts currently fix logistics owners, roles, scopes, selection dimensions and change
-  dimensions. Move their business definitions behind the smallest validated domain boundary.
-- `CaseRuntime`, `CaseStore`, human gates and `AgentClient` currently accept `Shipment`. Separate
-  shared case identity/revision and task mechanics from each domain's validated business payload.
-- `DurableInvestigator` already accepts a generic scope and domain tools, but Pi Durable currently
-  checkpoints investigation rather than the entire business workflow. Specify the ownership of
-  durable transitions and replay-safe side effects before extending its responsibility; retain
-  deterministic rule evaluation and the existing recovery baseline.
-- Native/A2A adapters should carry the common agent operations without importing logistics facts.
-  Domain assembly provides agent identities, responsibilities and business validation.
-
-These are implementation boundaries to resolve incrementally, not a claim that generic types
-alone establish portability. Verify logistics parity before adding insurance, then run both
-through the same execution contracts. Record any remaining exception explicitly.
+The frozen baseline already supplies domain-owned vocabulary, facts and validation through shared
+case/runtime/transport contracts. Use [baseline.md](baseline.md) for its accepted structure and
+[design.md](../.harness/design.md) for current interfaces. The insurance experiment must measure
+remaining domain adapters, application wiring, legacy DTO assumptions and any further shared-code
+changes. Pi checkpoints investigation; business transactions retain side-effect ownership.
 
 ### Proposed scenarios
 
@@ -349,33 +268,18 @@ the durable arm resumes. Both use Pi, so this is not Pi versus a non-Pi framewor
 development comparison. The first-valid/check-all difference is deterministic strategy behavior,
 not evidence of an LLM advantage. T7.2's reviewed live comparison and independent custody remain open.
 
-## Owner-approved live Jev allowance (2026-10-24)
+## Live request procedure
 
-The owner permits real Jev probes at suitably prepared checkpoints in the four next steps:
+[Spec section 17](../.harness/spec.md#17-bounded-live-jev-authorization-2026-10-24) owns live Jev
+authorization and per-step/total ceilings. `.harness/jev-allowance.jsonl` owns consumed reservations.
+[jev-probe.md](jev-probe.md) documents the guarded entrypoint and frozen probe evidence.
 
-| Step | Jev request-attempt ceiling | Purpose and boundary |
-|---|---|---|
-| Rule-authoring and review costs | 5 | Check selected semantic judgments in candidate rules; Jev does not replace NVIDIA policy generation |
-| Agent versus fixed workflow | 5 | Check selected semantic tool results; both comparison arms share this ceiling, and NVIDIA planning needs separate approval |
-| Independent blind evaluation | 5 | Evaluate a small frozen, independently held sample; not a statistically meaningful accuracy claim |
-| Motor-insurance adaptation | 5 | Probe selected insurance semantic rules after scripted adaptation checks; not whole-domain validation |
-
-Total ceiling: 20 actual outbound Jev request attempts from this approval, not 20 complete
-replays. Usage when authorized: zero in every step. Failed/timed-out attempts and retries count;
-unused allowance is not transferred between steps. Persist/reserve allowance before requests
-and enforce both limits across restarts before enabling live evaluation. The SDK already has
-automatic retries disabled. The bounded probe now enforces both limits using the append-only
-`.harness/jev-allowance.jsonl` journal, reserved and fsynced before transport. It is a local
-entrypoint guard, not a provider-wide quota; use one authoritative checkout and never restore an
-older journal to refund consumed requests. Current usage is authoring/review 3/5, all other steps
-0/5, total 3/20. See [the live probe](jev-probe.md) and its committed raw evidence: three real
-semantic answers substituted into scripted flows, not independent authoring or blind evaluation.
-
-Do not use unrestricted `MODEL_MODE=live pnpm replay` or `models:live-check` under this allowance:
-a replay can consume many requests, and the latter also invokes another provider. Continue
-scripted development, freeze selected inputs and acceptance criteria, and report all outcomes.
-NVIDIA authoring/investigation generation is not authorized by this Jev-only allowance. Human
-review, independent blind custody and protected-material consent remain separate requirements.
+Before HTTP, reserve and fsync the request under an exclusive lock. Failed/timed-out attempts and
+retries retain their reservation. Use one authoritative checkout; do not restore an older journal
+to refund requests. The entrypoint guard is not a provider-wide quota. Freeze selected inputs and
+criteria, disable automatic retries/redirects, and retain partial outcomes. Do not invoke unrestricted
+live replay or model checks under this bounded allowance. NVIDIA generation/planning requires
+separate authorization.
 
 ## Deliverables and decision boundary
 

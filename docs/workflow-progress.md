@@ -1,95 +1,33 @@
-# Durable domain-agent workflow: post-baseline progress
+# Post-baseline progress and effort
 
-The owner authorized implementation after verifying the baseline, with a remote recovery point
-at completed milestones under the revised [branch strategy](branch-strategy.md). Work starts from `baseline-2026-10-24-r2`
-(`57373a8f261a0ded9e4b8a24cebbed481fc8b972`) on `feat/durable-policy-workflow`.
-The original demo and both baseline tags remain unchanged. The baseline manifest describes
-the frozen reference, not the evolving candidate. All work below is post-baseline effort.
+All work here is measured after the frozen [baseline](baseline.md). Branch and archive identities
+are maintained in [branch-strategy.md](branch-strategy.md); task-level acceptance is in
+[the roadmap](../.harness/roadmap.md). This file owns current milestone status and the effort ledger.
 
-## Stages and evidence
+## Milestone status
 
-| Stage | Demonstration | Technical CEO's evidence | Non-technical CEO's evidence |
-|---|---|---|---|
-| W1: logistics policy continuity | Change a surcharge threshold; retain or re-evaluate old orders; restart and finish the same order | Complete diff, input hashes, SQLite recovery, stale-task decisions, release and side-effect checks | Which approvals remain or repeat, whether work is lost, observed limitations |
-| W2: bounded agentic investigation | Vary evidence/offers; investigator selects tools and proposes an alternative; human confirms; recover after interruption | Authored orchestration versus model-selected steps, Pi checkpoints versus domain transactions, fixed-workflow control | Tasks the agent can resolve, human intervention, completion and recovery evidence |
-| W3: motor-insurance adaptation | One bounded synthetic claims policy uses the same execution path | Domain materials and special logic, wiring and shared-core diff/cost | Work needed to change industry, reusable capabilities and unsupported claims |
-| W4: synthesis and optional A2A | Compare reviewed authoring and held-out outcomes; optionally delegate vehicle insurance from logistics | Comparison protocol, independent custody, transport interchangeability | Measured change effort, suitability and limits; no enterprise price extrapolation |
-
-W1 precedes insurance. W2 deepens T3.2a/T7.2 without requiring a new framework or moving every
-business transition into Pi. Small steps end with checks, evidence and commits; only a fully
-accepted milestone gets a numbered archive branch. Retired backup branches retain their tags.
-Do not move earlier tags. No PR or merge
-is implied. Keep the current UI layout and existing package/folder boundaries.
-
-## W1 mutation specification (owner-approved, 2026-10-24)
-
-P1 changes R35's additional transportation cost approval threshold from NZD 500 to NZD 750.
-Only amounts strictly above the threshold need a commercial manager's approval. New orders use
-the candidate pack. Existing unshipped orders either retain their original pack or explicitly
-re-evaluate using the candidate pack; run and record both owner-selected activation modes.
-
-Keep the parameter-only variant to expose the baseline's stale-task behavior. Compare it with
-the existing rule-version discipline: change the threshold and increment R35's version. Under
-that discipline, an NZD 800 previously approved order may need reapproval even though it exceeds
-both limits. Report that additional work rather than hiding it as a free migration.
-
-Use copies under ignored `var/reports/`, preserving protected source materials and their lock.
-The owner approved the threshold, strict comparison and both activation modes on 2026-10-24.
-The wider LOG-005 case labels remain draft. Engineering checks establish continuity and the
-approved threshold boundary; they do not establish authoring quality, blind accuracy or savings.
-Do not call real models during development. R35's original policy paragraph names the threshold
-parameter rather than a literal amount, so the copied paragraph needs no wording change for P1.
-
-The existing P1 command now includes a complete logistics flow and separate process recovery:
-
-- Record the exact baseline/candidate pack and activation choice before starting.
-- Submit pending and already-approved NZD 600/800 orders with the original policy.
-- Interrupt before or after candidate evaluation; reopen the same agent SQLite stores.
-- Compare with an uninterrupted run, attempt the prior approval, finish required human work,
-  dispatch and retry; observe duplicate reservations or dispatch events.
-- Keep old/new policy outcomes, late decisions and repeated approvals distinct. Retain the
-  new-order boundary observations and unchanged-policy controls from the existing probe.
-
-The runner chooses a pack explicitly; it does not implement production policy deployment or
-atomic activation across service databases. Business waiting/recovery belongs to SQLite;
-P1 contains no investigation and therefore is not evidence of Pi or dynamic planning.
-
-## W1 evidence and source walkthrough
-
-Run `pnpm check`, then `pnpm eval:policy-change`. Each unique `var/reports/policy-change-*`
-directory retains the copied packs, plan/input hashes, agent SQLite databases, process logs,
-state snapshots and JSON/Markdown report. Both CI platforms run it. The report includes the
-source commit/dirty status and relevant executable hashes; reproduce from the checkpoint for
-a clean source reference. Absolute run paths are local artifact locations, not portable URLs.
-
-There are 44 rule-level observations (22 per variant), including 24 new-order boundary checks.
-Sixteen full-flow scenarios cover two variants, two activation modes, two amounts and two initial
-approval states. Each has an uninterrupted control plus exits with code 137 before and after
-policy propagation: 48 completed flows, including 32 process resumptions. Compare full outcome
-status/fingerprint and task-identity/status snapshots, not just the final release boolean.
-
-| Observation | Meaning for the technical CEO | Meaning for the non-technical CEO |
+| Milestone | Status | Remaining acceptance work |
 |---|---|---|
-| Retaining the old pack preserves pending/completed approval behavior | The same engine/runtime can execute an explicitly selected historical pack | Existing work can continue under the old threshold |
-| Parameter-only re-evaluation leaves an NZD 600 pending approval usable | Applicability parameters do not automatically change this human gate's fingerprint | A policy rollout needs more than editing a number |
-| Versioned re-evaluation refuses the old task and reopens approval at NZD 800 | Existing version-based task invalidation works; shared engine is unchanged | Extra review work must be included in the change cost |
-| Resumed flows match controls, with one booking and one dispatch event each | SQLite owns business recovery; replay-safe side effects survive these process exits | Completed work survives these interruptions without duplicate booking/dispatch |
+| M1 logistics policy and authoring cost | In progress | Independent direct-edit/authoring review, measured effort and agreed outcome acceptance |
+| M2 Jev/durable workflow comparison | In progress | Reviewed investigation cases, model/fixed-controller comparison and contribution analysis |
+| M3 independent blind evaluation | Not started | Independent custody, frozen candidate/labels and reported failures |
+| M4 insurance migration | Not started | Bounded reviewed policy, shared-path adaptation and complete migration diff/cost |
 
-Recovery checks and threshold checks fail the command on regression. Known parameter-only
-stale-task behavior remains a reported finding, not a hidden test waiver or a successful migration
-claim. This is local-agent assembly, not a new native/A2A transport benchmark. Interruptions are
-at propagation boundaries; partial cross-service rollout and arbitrary failure timing are untested.
+No milestone has been accepted for archiving. Optional cross-domain A2A follows M4.
 
-The source change is four small runner files in the existing `eval/runner/src/`: workflow assembly,
-process entry, comparison runner and evidence hashing. The existing P1 command composes them.
-The only business-package change is `LocalLogisticsAgents.close()`, which releases all five
-SQLite handles between control phases. No rule engine, runtime contract, schema, dependency,
-protected material, UI or package hierarchy changed. CI and knip register the new executable path.
+## Evidence index
 
-Implementation repair record: one inferred declaration exposed a private logistics type; an
-explicit workflow result type fixed the typecheck. One local command used the host Node version
-after a failed search and was rerun with the pinned PATH. Neither was counted as a runtime finding.
-These iterations and runner preparation remain post-baseline effort; human time is unmeasured.
+| Evidence | Owner | Boundary |
+|---|---|---|
+| P1 threshold changes and order continuity | [policy-change-experiment.md](policy-change-experiment.md) | Scripted policy/recovery characterization |
+| P2/P3 approval/evidence changes | [gate-change-experiment.md](gate-change-experiment.md) | Scripted migration and synthetic authoring rehearsals |
+| Offer investigation strategies | [investigation-experiment.md](investigation-experiment.md) | Authored strategies, Pi memory/SQLite recovery controls |
+| Selected real semantic judgments | [jev-probe.md](jev-probe.md) | Bounded development probes; no blind accuracy or authoring-cost conclusion |
+| Open-question drafts and document tools | [open-question-pilot.md](open-question-pilot.md) | Delivery-agent drafts plus separate scripted tool/process-recovery evidence |
+
+Technical review follows the source contracts, full post-baseline diff and state ownership in
+these reports. Business review follows policy effects, repeated work, manual intervention and
+measured effort. The reports state where evidence is scripted, live, draft or independently reviewed.
 
 ## Effort ledger
 
@@ -108,40 +46,9 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 | M2-prep-02 | Exercise evidence-read and validated draft submission through existing Pi tool execution | Five integration checks with test-local adapters; no core or production domain changes; persistence and model decisions untested | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
 | M2-prep-03 | Add bounded logistics document-read/draft tools and an isolated authored control | Eight focused checks: Pi integration, current citations/content, scoped access and persistent duplicate/conflict handling; report command eval:evidence-draft | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
 | M2-prep-04 | Compare direct/Pi authored controls and resume two real process exits | Before-submit and after-write cuts: completed reads reused, retried submissions deduplicated, one identical review draft; instructions/schemas/attempts recorded | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0; scripted model steps are not billing |
+| DOC-01 | Consolidate document ownership, current handoff and experiment references | Documentation-only maintenance; historical discussion retained in Git; frozen evidence unchanged | Unmeasured | Delivery-agent usage unknown; runtime model requests: 0 |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,
 active human minutes (or null), prompt/model version, tokens (or null), proposal, review edits and
 outcome. Freeze candidate and acceptance criteria before scoring. Match reviewer/tool conditions
 for direct-edit and authoring paths. No savings can be calculated from this incomplete ledger.
-
-## Recovery record
-
-Planning checkpoint: `workflow-plan-2026-10-24` / `backup/workflow-plan-2026-10-24` at `31ae95b`.
-W1 checkpoint: `workflow-policy-continuity-2026-10-24` /
-`backup/workflow-policy-continuity-2026-10-24` at `160dc02`.
-W2 checkpoint: `workflow-investigation-controls-2026-10-24` /
-`backup/workflow-investigation-controls-2026-10-24`.
-P2/P3 checkpoint: `workflow-gate-changes-2026-10-24` /
-`backup/workflow-gate-changes-2026-10-24`.
-Readability follow-up: `workflow-readability-2026-10-24` /
-`backup/workflow-readability-2026-10-24`; original P2/P3 checkpoint remains at `d520c01`.
-Resolve exact commits with `git rev-parse <tag>^{commit}`.
-
-Bounded live semantic probe: `workflow-live-semantic-probe-2026-10-24` /
-`backup/workflow-live-semantic-probe-2026-10-24`. See [the evidence and limitations](jev-probe.md).
-This adds three real judgments, not a complete live workflow or authoring comparison. Its journal
-has consumed 3/5 authoring/review slots and 3/20 total; restoring code must never refund usage.
-
-W1 completes the first engineering continuity slice. The subsequent
-[P2/P3 slice](gate-change-experiment.md) adds owner-approved approval-chain/evidence changes with
-24 observations and two synthetic authoring rehearsals. Versioning enforces new requirements but
-can require repeated work; same-version P3 still accepts incomplete evidence on old tasks.
-T8.5 remains open for independent authoring, blind evaluation and effort comparisons.
-
-W2 completes scripted investigation strategy/checkpoint controls. See
-[investigation-experiment.md](investigation-experiment.md) for the 32-run protocol, source
-walkthrough and limits. Eight durable resumptions match controls; eight memory resumptions lose
-their conversation. Both strategies are authored algorithms, so T7.2's live-model comparison is
-still open. Next agree bounded live comparisons and independent review/cost recording before
-insurance. The Chinese [demo guide](demo-guide.md) now includes all three report
-demonstrations and explicitly marks insurance as future work. Update it at every stage archive.

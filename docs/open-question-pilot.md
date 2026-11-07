@@ -1,9 +1,9 @@
-# Open-question development pilot
+# Open-question investigation evidence
 
-Three separate delivery-agent conversations assessed draft logistics cases using only their
-supplied messages. This explores useful questions and output requirements before adding domain
-tools or a rule type. It is not an execution of the POC's Jev, NVIDIA or Pi Durable runtime.
-All three cases and their synthetic policies remain draft; owner/independent business review is pending.
+This document owns the archived message-only pilot and the separate executable document-tool
+experiments. The pilot used three fresh delivery-agent conversations; the executable controls use
+authored direct/Pi strategies. All inputs are synthetic development material. Business review and
+model-driven comparison remain pending; see Evidence boundaries for each result's scope.
 
 ## Verify the evidence
 
@@ -55,55 +55,25 @@ conditional action will run at the right time. Three single attempts do not meas
 prompt-injection resistance or advantage over a deterministic controller. OQ-03 supplies an explicit
 prior record; it does not demonstrate checkpoint recovery or autonomous invalidation.
 
-## What the source audit establishes
+## Evidence boundaries
 
-The shared `DurableInvestigator` accepts domain instructions and injected typed tools. That is a
-plausible existing execution boundary for these tasks. Current logistics reroute tools cover case
-reads, offer search, candidate checking and constrained proposal submission. Document requests,
-logger-assignment lookup and quality/compliance referrals in this pilot are proposed interfaces;
-they do not exist as executable adapters here. The bounded document-read/draft adapters described
-below now exist separately; they do not request new documents or create referrals. The existing `check_plan` contract is also not
-identical to this draft's `(orderId, offerId, destination)` signature.
+| Evidence | Executed by | Establishes |
+|---|---|---|
+| Three archived OQ responses | Fresh delivery-agent conversations | Inspectable draft findings under instructional context restrictions |
+| `evidence-investigation.test.ts` in agent-harness | Scripted Pi in-memory fixture | Synthetic read-before-submit and refusal contract |
+| Logistics evidence tools and subprocess controls below | Direct authored controller and scripted Pi SQLite | Current-document binding, idempotent draft recording and bounded process recovery |
 
-No new rule kind is justified yet. The first bounded document-read/draft adapters now use the
-existing injected-tool boundary. Next freeze reviewed comparison inputs and compare model
-decisions with the authored controller on the same facts/tools. Read-only
-deterministic tools should normalize timestamps and check offer availability; reserve model
-judgment for evidence interpretation and next-step choice. Jev can verify bounded semantic
-claims within that workflow. Free-text plans alone must never execute approvals or dispatch.
-
-## Executable boundary exercise
-
-`pnpm exec vitest run packages/agent-harness/src/evidence-investigation.test.ts` runs five
-offline integration checks through the existing Pi tool execution path. Each run opens a fresh
-conversation and isolated in-memory fixture. Injected synthetic tools read documents and record
-one review draft; submission checks the revision and requires references to successfully read
-documents. Checks cover accepted submission, repeated submission, unread/fabricated references,
-stale revision and unsuccessful lookup. Tool responses and recorded drafts are asserted.
-
-These adapters exist only in the test fixture. The revision is fixed at 2, evidence is held in
-memory and each fixture handles one case/conversation. This does not establish multi-case
-isolation, concurrent updates, persistent idempotency or crash recovery. Reading a document does
-not prove that it supports the draft's claim. Although D3 contains an injected release instruction,
-the controller is scripted, so this is not a model prompt-injection test. No release tool exists.
-The exercise verifies that the existing harness can host this bounded contract without changing
-the rule engine; production logistics tools and model-driven selection remain to be evaluated.
+The OQ prompts describe proposed document requests, logger lookup and referrals; those operations
+are not implemented. Existing reroute `check_plan` also has a different signature from OQ-03.
+The separate document-read/draft adapters use the current contract in
+[design.md](../.harness/design.md#71-implemented-interface). None of these results establishes
+model-selected tool execution, prompt-injection resistance or independent blind accuracy.
 
 ## Logistics document adapters and fixed control
 
-`packages/logistics/src/evidence-tools.ts` supplies two tools to an existing investigator:
-`read_case_evidence` and `submit_evidence_draft`. The trusted caller binds case ID, case revision
-and investigation ID; these are not model arguments. Reads return the shipment's documents with
-SHA-256 fingerprints of their canonical JSON. Submission checks current case revision and every
-cited document's ID, version and fingerprint inside a SQLite transaction. Fingerprints establish
-content identity, not authorship, semantic support or proof the model read the document.
-
-The existing `runOnce` operation store atomically records one draft event per scoped investigation.
-An identical retry returns the saved result; a different request for the same operation raises a
-conflict. Current-case/citation validation precedes deduplication, so a retry after evidence changes
-is refused rather than advertised as a current draft. No new tables, migrations or packages were
-introduced. The caller must resolve trusted scope and invoke these tools only for an authorized
-investigation; the factory itself is not authentication or a public HTTP endpoint.
+The [logistics adapter contract](../.harness/design.md#71-implemented-interface) defines current
+case/document binding and draft persistence. This experiment composes those adapters without
+adding a browser route.
 
 Run `pnpm eval:evidence-draft` after building. This authored direct-tool control reads LOG-002
 from the unchanged materials, uses a separate SQLite database and writes `var/reports/evidence-draft-*/report.json`.
@@ -130,22 +100,13 @@ independent blind custody. These checks run on Linux and Windows CI via the same
 Eight tests in `packages/logistics/src/evidence-tools.test.ts` cover Pi integration, invalid
 citations, unbumped content replacement, missing/stale trusted scope and persistent idempotency
 after database reopen. The subprocess controls above add process-exit recovery evidence. These tools are composed only
-by the experiment/tests: the browser demo has no new investigation route. Next work is reviewed
-inputs, full argument-schema refusal checks, multi-case/concurrent-change controls and a separately
-authorized model comparison. No Jev/NVIDIA requests were used.
+by the experiment/tests: the browser demo has no new investigation route. No Jev/NVIDIA requests were used.
 
-## Remaining verification before runtime conclusions
+## Unverified scope
 
-1. Have an independent reviewer check the policies, ambiguous wording and response findings.
-2. Freeze executable tool schemas, initial evidence, acceptance criteria, comparison arms and
-   model settings. Enforce no access to answer keys outside the permitted tool interface.
-3. Preserve actual tool calls/results, refusals, model request receipts and output validation;
-   test fabricated citations, unavailable tools and conditional branches before execution.
-4. Compare uninterrupted execution and process-exit recovery from the same initial context.
-   Check repeated model requests, evidence reads, task creation and business side effects.
-5. Report all failed attempts and unknown cost fields. Any NVIDIA planning needs separate
-   authorization; this pilot consumes zero Jev/NVIDIA requests. Jev usage stays 3/20.
-
-This work is M2 preparation, not a completed milestone. It adds documentation, an offline archive
-checker and CI wiring in existing folders; no package, provider, core rule type, protected material
-or UI changes. Human effort and delivery-agent costs remain unknown and count as post-baseline work.
+Independent policy/label review, model-selected investigation, full argument-schema refusal
+coverage, multi-case/concurrent-change controls and independent blind custody remain open.
+The process controls do not test arbitrary failure timing, OS kill signals or power loss.
+Human effort and delivery-agent costs are unknown. Experimental method and live-call rules are
+in [evaluation-plan.md](evaluation-plan.md); status and next work are maintained in the
+[progress index](workflow-progress.md) and [roadmap](../.harness/roadmap.md).

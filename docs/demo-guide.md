@@ -12,13 +12,7 @@
 
 默认是 scripted：Jev 答案按记录回放，调查下一步由可复现的手写策略选择。开场说清楚；只有实际以 live 模式运行时，才能说本次由真实模型判断。
 
-如技术观众追问开放式调查的工具边界，在终端运行 `pnpm exec vitest run packages/agent-harness/src/evidence-investigation.test.ts`，再打开该文件和 `docs/open-question-pilot.md` 的 Executable boundary exercise。说明：五项离线测试通过 Pi 执行证据读取和草稿提交，拒绝未读取／虚构引用、旧版本和重复提交。这是测试内的模拟领域工具；真实物流接入、模型选择下一步和重启恢复仍待验证。
-
-如继续追问物流数据接入，提前构建并运行 `pnpm eval:evidence-draft`，现场打开终端 Report 路径的 JSON 和 `packages/logistics/src/evidence-tools.ts`。说明：这里读取 LOG-002 的实际物料文档，在隔离数据库中只记录待审草稿，提交时核对订单版本、文档版本和内容指纹，重复提交不多写。浏览器订单没有改变。这一段由手写控制器调用工具；八项测试另有 Pi 接入及数据库重开验证，真实模型判断尚待验证。
-
-该命令现在另有三个 Pi 子进程对照。打开报告的 `recovery`，依次展示 `control`、`before-submit` 和 `after-write`：后两项实际退出 137 后恢复，`attempts` 中读取各一次、提交各两次，但 `events` 始终只有一份待审草稿，内容与直接调用一致。说明：提交已经落库、Pi 尚未收到结果时也不会重复写草稿。这里验证了进程退出恢复和幂等性；下一步选择仍是手写策略，真实模型对照尚待执行。
-
-如展示后期证据段，提前运行 `pnpm check`、`pnpm eval:policy-change`、`pnpm eval:investigation`、`pnpm eval:gate-change`。分别按终端最后的 **Report:** 路径，在编辑器打开同目录的 `report.md` 并预览；现场直接切到这三份报告，不等待实验重跑。这些实验用独立数据，不会修改正在演示的订单。
+如展示后期证据段，先运行 `pnpm check`。再运行 `pnpm eval:policy-change`、`pnpm eval:investigation`、`pnpm eval:gate-change`，按各命令末尾 **Report:** 路径打开同目录的 `report.md` 并预览。展示草稿恢复时另运行 `pnpm eval:evidence-draft`，打开其输出的 `report.json`。现场直接切到报告，不等待实验重跑；这些实验使用独立数据，不会修改正在演示的订单。
 
 界面四块：左边是案例列表和 agent 列表；中间是当前案例，上面是案例头部，下面是 **Agents / Rule graph / Timeline** 三个视图；右边是当前角色的待办；右上角的角色标签是当前角色和操作人，点它弹出角色菜单，选一个就切换。
 
@@ -220,11 +214,11 @@
 
 技术观众可同时打开该运行目录里 `P2-new-version/policy-v1.md`、`rules.json`，定位 R13；再看 P3 的 R21。指出本轮规则核心没有修改；实验和编写工具的准备成本仍计入。不要现场把提案应用到原始物料目录。
 
-若继续审视源码，打开 `eval/runner/src/gate-change-packs.ts` 的 `gateMutations`，看规则、案例和政策文字的对应；再打开 `gate-change.ts` 的 `gateCases` 六行配置，以及分开的 `probeApproval`、`probeOperation`。说明：“这是实验代码的可读性整理，24 组观测和报告内容未变，没有再建一套引擎。”编写入口 `tools/rule-authoring/src/main.ts` 中，同一份 request 同时用于生成和证据记录。此整理已单独留底于 `workflow-readability-2026-10-24`，不是新 baseline。
+技术观众需要源码定位时，打开 `gate-change-packs.ts` 的 `gateMutations` 和 `gate-change.ts` 的 `gateCases`；完整实验说明见 `docs/gate-change-experiment.md`。
 
 ## 留底版本的说明
 
-当前开发只看 `feat/durable-policy-workflow`。原始可运行演示看 `backup/demo-2026-10-24`，正式实验起点看 `backup/baseline-2026-10-24-r2`。小实验的历史版本使用下文同名 tag 恢复，不再找 `backup/workflow-*` 分支。四个正式里程碑完成验收后才建立 `milestone/01` 至 `04` 分类的留底分支，目前尚未创建。不要把三个真实判断或一次代码整理称为完整里程碑。
+需要查看工作分支、baseline 或历史恢复点时，打开 `docs/branch-strategy.md` 的对应表；当前里程碑状态看 `docs/workflow-progress.md`。不要现场切换工作分支或恢复数据库。
 
 ## 场景 12：三条真实 Jev 判断（报告展示，不现场调用）
 
@@ -234,11 +228,18 @@
 | 2 | 打开 `docs/jev-probe-evidence.json`，展开 `report.observations` 第一项，对比 `answer` 和 `control` | 文件匹配概率为 0.88，录制答案为 0.94；规则都通过 | "我们保留真实差异，不把模拟概率当模型实测结果。" |
 | 3 | 看后两项的 `observed.tasks` | 损坏包装的任务要求 inspectionReportRef；完好包装没有该任务 | "真实语义结果能接入现有规则和人工任务，无需重写引擎；这还不能证明盲测准确率或开发成本下降。" |
 
-不要现场执行 live 批次、live replay 或 models:live-check。当前第一步已用 3／5，总计 3／20；第一步只剩两次，不能重跑三条批次。恢复旧代码也不能退回额度。本阶段已留底于 `workflow-live-semantic-probe-2026-10-24`。完整真实 agent 与固定流程的对照、独立审核计时和盲测仍待完成。
+不要现场执行 live 批次、live replay 或 models:live-check。真实调用限制与剩余额度应从授权和当前 journal 核实，不从演示脚本推断。
+
+## 场景 13：调查草稿的进程恢复（报告演示）
+
+| # | 操作 | 会看到 | 你说 |
+|---|---|---|---|
+| 1 | 打开 `pnpm eval:evidence-draft` 输出的 `report.json` | 物流文档、待审草稿及三个 Pi 对照组 | "这段使用现有模拟物流物料，下一步由手写策略选择。" |
+| 2 | 展开 `recovery`，对比 `control`、`before-submit`、`after-write` | 后两组退出 137 后恢复，读取各一次、提交各尝试两次，最终都只有一份相同草稿 | "落库后还没返回结果就退出，恢复重试也不会多写一份。" |
+| 3 | 展开各组的 `record`、`tasks`、`events` | 订单未改变、未创建审批任务、未放行；只有待审草稿事件 | "这里只记录调查草稿；判断质量和真实模型对照还没有验收。" |
+| 4 | 打开 `docs/open-question-pilot.md` 的 Provisional delivery review 和对应结果 JSON | 三个单证／事故／方案变更的调查草稿 | "这些来自独立的新会话，未在项目运行时执行工具，也未独立验收业务结论。" |
 
 ## 后续保险领域的展示位置（尚未实现，不现场操作）
-
-若观众问开放问题，打开 `docs/open-question-pilot.md` 的 Provisional delivery review，对照 `open-question-results.json`：单证冲突要补什么、事故时间是否真的冲突、目的地变化后哪些结论要重查。说明：“这是三个不继承讨论的 delivery agent 会话试跑，未调用项目的 Jev／NVIDIA，也未执行工具或验证恢复。输出是待审核的调查建议，条件不能仅写在解释里就直接执行。”可运行 `pnpm eval:open-question-pilot` 检查归档哈希、引用 ID 和动作结构；它不判定业务结论正确，也不调用模型。
 
 接在场景 9–12 后，用一句话说明下一步：“用一份小型汽车理赔政策，检查金额、资料、人工审批和恢复能复用多少；展示新增物料、领域逻辑、接线和共享核心的完整改动。”当前不展示不存在的领域切换按钮，也不报尚未测量的迁移成本。保险实验完成后，再补实际点击步骤；物流车辆保险通过 A2A 委托保险 agent 是可选收尾。
 

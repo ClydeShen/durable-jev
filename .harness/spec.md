@@ -2,12 +2,8 @@
 
 ## Branch policy amendment (owner-approved 2026-10-25)
 
-`docs/branch-strategy.md` defines one active work branch, two historical reference branches and
-at most four completed-milestone archive branches with numbered prefixes. This supersedes
-earlier per-stage backup/tag instructions. Retire redundant backup branches only after verifying
-their retained remote tags. Do not move existing recovery tags or rewrite history. Milestone
-archives require complete agreed evidence, checks, updated docs/demo script and owner acceptance;
-small steps use commits. Other historical branches require separate review before removal.
+Follow [branch-strategy.md](../docs/branch-strategy.md) for the accepted working/reference branch
+policy, archive conditions and recovery identities. It supersedes earlier per-stage backup plans.
 
 The baseline is `prd.md` (v0.3). This file records the decisions agreed with the user; it wins on
 any conflict.
@@ -200,75 +196,37 @@ logistics first, with motor insurance claims as the later cross-domain experimen
 
 ## 13. Checkpoint, cleanup and measurement order
 
-Historical cleanup sequence, completed by the freeze in section 14; section 15 records its
-documentation-only recovery revision. This is not an instruction to restart the cleanup.
-
-- Preserve remote branch `backup/demo-2026-10-24` and annotated tag
-  `demo-checkpoint-2026-10-24`, both resolving to commit
-  `0265a05b3a8f4196133d6ee1d009c7a5ee44243f`. Do not commit to, force-push or move these refs.
-  They preserve the runnable demo, not the future experimental baseline.
-- Continue on `baseline-cleanup-plan`, branched from that checkpoint. The immediate step is
-  documentation and a small-step cleanup plan, not automatic resumption of the shelved refactor.
-- First tidy the shared core within the existing folder structure, package pattern and engineering
-  rules. Keep the demo layout and behavior. Domain policies should use the same executable rule
-  shape, with domain-specific facts, identities, tools and special logic supplied at the boundary.
-- Validate each implementation slice with the relevant checks, and run `pnpm check`, `pnpm replay`
-  and `pnpm faults` before every push. Start and inspect the demo for changes that can affect it.
-  Keep source materials and skill files unchanged unless separately authorized as already specified.
-- Freeze a distinct experimental baseline only after cleanup passes the gates and the owner has
-  reviewed the preserved demo and scope. Record the commit, material hashes and environment.
-- Then measure policy changes within logistics, including both existing-order strategies; next
-  measure adaptation to motor insurance claims. Do not use pre-cleanup characterization as a
-  completed post-baseline cost or blind-test result.
-- Combining logistics vehicle-insurance work with insurance agents over A2A is an optional final
-  bonus, not a prerequisite for the baseline, domain experiments or the existing demo.
+The runnable demo was preserved before cleanup. The accepted experimental baseline excludes
+agreed pre-baseline preparation costs; all further adaptations count. Keep logistics behavior,
+folder structure and code patterns while testing policy changes, durable investigation and
+cross-domain reuse. Do not restart the completed baseline cleanup.
 
 ## 14. Owner-approved experimental baseline freeze (2026-10-24)
 
-- The owner accepted the functional and structural baseline and explicitly requested a separate
-  archived recovery checkpoint. Accepted implementation: `78b139e788ec11a118c2433bc2a5f1bd4c85c3ac`.
-- Annotated tag `baseline-2026-10-24` and backup branch `backup/baseline-2026-10-24` identify
-  the documentation-only freeze commit after that implementation. Keep both unchanged, separately
-  from the older demo recovery refs. Manifest and restore steps are in `docs/baseline.md`.
-- T8.4 is complete. Further experiment work starts on a new branch from the frozen tag; all
-  adaptations after this baseline belong to measured effort. Archiving starts no experiment
-  and authorizes no protected-material edits or live model calls.
+The owner accepted the functional and structural baseline. [baseline.md](../docs/baseline.md)
+and its manifest own the accepted implementation, hashes, evidence and restoration instructions.
+Keep frozen references unchanged; freezing grants no protected-material or live-call permission.
 
 ## 15. Baseline documentation recovery revision (2026-10-24)
 
-- The owner requested that the recovery point include documentation aligned with the actual
-  baseline. Correct stale design/ownership/interface claims and current handoff instructions;
-  preserve historical experiments and the protected PRD/materials/skills unchanged.
-- Current recovery tag: `baseline-2026-10-24-r2`; backup branch:
-  `backup/baseline-2026-10-24-r2`. Preserve the original baseline refs at `25c7dbb` and original
-  demo refs at `0265a05`, without moving or force-updating them.
-- This is a documentation-only revision of the same experimental code/material baseline, not
-  a new implementation baseline or a way to erase post-freeze adaptation costs. Later experiments
-  branch from the revised recovery tag and preserve the original measurement boundary.
+The r2 recovery revision aligns documentation with the same accepted code/material baseline.
+It does not reset costs or replace original evidence. Reference identities and retired-branch
+mappings belong to [branch-strategy.md](../docs/branch-strategy.md).
 
 ## 16. Post-baseline workflow implementation (2026-10-24)
 
-- The owner authorized verifying baseline readiness, creating a new branch and continuing the
-  durable agentic workflow POC, prioritizing understandable code structure and migration.
-- Work on `feat/durable-policy-workflow` from `baseline-2026-10-24-r2`; preserve each validated
-  stage remotely without moving prior demo/baseline refs. No automatic PR or merge.
-- Follow `docs/workflow-progress.md`: logistics policy continuity first, deeper bounded agentic
-  investigation, then motor insurance and the optional cross-domain A2A demonstration.
-- Present source/ownership/reuse evidence for a technical CEO and change effort, workflow
-  behavior and limitations for a non-technical CEO. Distinguish fixed scripted paths from actual
-  model decisions and SQLite recovery from Pi checkpoints.
-- Count all post-baseline work. Draft isolated-copy engineering experiments may proceed;
-  business labels still need owner review. Protected materials and live-model restrictions remain.
-- The owner subsequently approved P1: R35's threshold moves from NZD 500 to NZD 750 with a
-  strictly-greater comparison, testing both old-policy retention and new-policy re-evaluation.
-  This approval covers that synthetic rule, not independent review of all existing demo labels.
-- The owner also approved P2 (R13 requires compliance then a distinct quality reviewer for every
-  controlled cargo item) and P3 (R21 additionally requires `inspectionReportRef`), retaining both
-  old-policy and re-evaluation modes. Use isolated copies; this does not approve protected-source
-  edits, live model calls or all surrounding case labels.
-- Every stage archive must include synchronized handoff/evidence documents and
-  `docs/demo-guide.md`. Distinguish current browser actions, reproducible report demonstrations
-  and future capabilities; do not advertise scripted behavior as a live model decision.
+- Continue the durable agentic workflow POC on the active work branch; no automatic PR or merge.
+- Use the four milestone scopes in the branch strategy and task acceptance in the roadmap.
+- Keep a complete post-baseline diff and effort ledger. Technical review examines contracts,
+  state ownership and reuse; business review examines policy effects, effort and limitations.
+- Approved logistics mutations are P1 (threshold), P2 (second sign-off) and P3 (inspection report),
+  defined in [evaluation-plan.md](../docs/evaluation-plan.md#first-experiment-logistics-policy-changes).
+  Validate both old-policy retention and new-policy re-evaluation. Approval covers those synthetic
+  mutations, not all surrounding labels or edits to protected source materials.
+- Clean-context experimental method and custody are defined in the evaluation plan.
+- Every milestone archive includes current evidence, handoff and presenter actions. Current docs
+  record accepted scope, observable state and reproducible evidence; discussion and implementation
+  chronology remain in Git. Document ownership is defined in [README.md](README.md).
 
 ## 17. Bounded live Jev authorization (2026-10-24)
 

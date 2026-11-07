@@ -1,8 +1,7 @@
 # Design
 
-Current implementation at the frozen experimental baseline, including its documentation-only
-revision. Scope decisions are in `spec.md`; current recovery refs, evidence and limits are in
-`../docs/baseline.md`. M0 spikes are feasibility evidence, not proof that their interfaces or
+Current architecture and contracts. Scope decisions are in `spec.md`; frozen baseline acceptance
+is in `../docs/baseline.md`. Experiment protocols/results are linked from `../docs/workflow-progress.md`. M0 spikes are feasibility evidence, not proof that their interfaces or
 whole-module Pi Durable scheduling are integrated into the business runtime.
 
 ## 1. Tech stack
@@ -294,7 +293,18 @@ AgentSession, ToolRegistry or RunBudgetGuard implementations.
 `InvestigationTool<Scope>` supplies name, description, parameter schema and execute function.
 Tools are read-only or idempotent result submission and registered as replay-safe. Logistics
 implements `get_case`, `search_capacity_offers`, `check_plan` and `submit_investigation_result`.
-The investigation explores replacement transport capacity, not unrestricted external research.
+The reroute investigation explores replacement transport capacity.
+
+The experimental logistics `evidence-tools.ts` adapter registers `read_case_evidence` and
+`submit_evidence_draft`. The trusted caller supplies case ID, case revision and investigation ID;
+model arguments cannot select that scope. Reads return shipment documents with canonical-JSON
+SHA-256 fingerprints. Draft submission transactionally checks the current case revision and
+cited document IDs, versions and fingerprints before using `runOnce` to record one draft event.
+Identical retries return the saved result; conflicting replacement requests raise a conflict.
+Validation precedes deduplication, so changed evidence can invalidate a retry. Fingerprints prove
+content identity, not semantic support or proof of reading. The adapter provides no authentication,
+referral, approval, shipment mutation or release capability and has no browser/API route.
+Protocols and recovery evidence belong to `docs/open-question-pilot.md`.
 
 ### 7.2 Controls
 
@@ -312,15 +322,12 @@ The investigation explores replacement transport capacity, not unrestricted exte
 
 Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
 
-### 7.3 Post-baseline investigation controls
+### 7.3 Investigation evidence
 
-The W2 runner composes the existing logistics tools, desk and Pi runtime. It compares the authored
-first-valid strategy with an authored check-all strategy under four offer conditions, then varies
-only Pi MemoryStorage/SQLite and process interruption. Both strategies use the same rules, tool
-allow-list and human confirmation boundary. This is controlled execution/recovery evidence,
-not a live-model versus fixed-workflow result. No runtime abstraction or domain package is added.
-The script fails on continuity/control regressions while reporting expected memory checkpoint
-loss separately from successful recovery. See `docs/investigation-experiment.md`.
+[Investigation strategy controls](../docs/investigation-experiment.md) and
+[document investigation controls](../docs/open-question-pilot.md) own the protocols and findings.
+The generic harness and domain transaction boundary above are shared; experiments do not imply
+whole-business-flow Pi ownership or model reasoning.
 
 ## 8. Model adapters
 
@@ -343,7 +350,10 @@ being approved. A
 ### 9.1 Two-level graph views (console)
 
 AgentOverview and RuleGraph use `@xyflow/react` 12 and `elkjs` 0.12 layered layouts. Both support
-clicking a node for its summary or card and moving from an agent to its rules.
+clicking a node for its summary or card and moving from an agent to its rules. Double-clicking
+an agent opens its filtered rule graph through the same navigation as the drawer's icon action.
+Pointer single-click waits 350 ms to allow double-click; keyboard activation is immediate.
+The total rule graph retains its existing layout without agent-region backgrounds.
 
 | Level | Nodes | Edges | Node card (no inner detail) |
 |---|---|---|---|

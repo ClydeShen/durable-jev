@@ -1,7 +1,7 @@
 # Engineering conventions
 
-Every convention below is enforced by a tool; none relies on memory or review alone. Each concern
-has exactly one owning tool, and each check runs at the earliest stage where it is fast enough.
+Automated gates and review conventions are identified below. Each automated concern has one
+owning tool; UI and module-design conventions also require review.
 
 ## When checks run
 
@@ -9,7 +9,8 @@ has exactly one owning tool, and each check runs at the earliest stage where it 
 |---|---|---|
 | Editor | Biome (format and lint as you type), `.editorconfig` | instant |
 | Commit ([lefthook.yml](../lefthook.yml), installed by `pnpm install`) | Biome on the staged files; gitleaks on the staged changes (skipped with a notice when gitleaks is not installed); commitlint on the message | about 1 s |
-| CI ([.github/workflows/check.yml](../.github/workflows/check.yml)) and `pnpm check` | everything below, plus the scripted replay, the fault scenarios, `pnpm security` and gitleaks over the whole history; a second job builds on Windows and runs the tests, the replay and the fault scenarios there | a few minutes |
+| Local `pnpm check` | Ordered checks listed below | a few minutes |
+| CI ([.github/workflows/check.yml](../.github/workflows/check.yml)) | Project checks plus replay, faults, experiment commands, dependency audit and secret scanning; Linux and Windows jobs follow the workflow | a few minutes |
 
 `pnpm check` runs, in order:
 
@@ -100,23 +101,3 @@ Deliberately off:
   and `useSimplifiedLogicExpression` (rewrites are not clearer).
 - TypeScript `noUnusedLocals` / `noUnusedParameters` and `noPropertyAccessFromIndexSignature`:
   Biome already reports unused code, and the index-signature rule is style noise here.
-
-## Other free tools considered
-
-| Tool | What it adds | Decision |
-|---|---|---|
-| [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) | Architecture rules over the import graph | **Adopted** (`pnpm boundaries`) |
-| [jscpd](https://unpkg.com/jscpd@5.4.1/README.md) | Copy-paste detection with a threshold | **Adopted** (`pnpm duplication`) |
-| [sherif](https://github.com/QuiiBz/sherif) | Zero-config monorepo manifest lint | **Adopted** (`pnpm workspace-lint`) |
-| knip | Unused files, exports and dependencies | Already in use |
-| [Lefthook](https://recca0120.github.io/en/2026/03/08/lefthook-git-hooks/) | Git hooks with staged-file filtering in one config | **Adopted** (commit-time checks) |
-| [commitlint](https://commitlint.js.org/guides/getting-started) | Commit message convention | **Adopted** |
-| [gitleaks](https://appsecsanta.com/gitleaks) | Secret scanning | **Adopted** (commit time and CI) |
-| type-coverage | Share of identifiers typed `any` | Not adopted: does not support this TypeScript version yet; Biome `noExplicitAny` covers it |
-| Stryker | Mutation testing: shows whether tests catch injected bugs | Optional one-off on the rule engine; too slow for every check |
-| typescript-eslint | The full set of type-aware rules | Not adopted: Biome covers what this repo needs, and running both doubles configuration; revisit if a type-aware rule Biome lacks becomes necessary |
-| [Oxlint](https://oxc.rs/blog/2025-12-08-type-aware-alpha) (type-aware) | Fast type-aware rules such as `no-floating-promises` | Not yet: type-aware mode was still alpha; Biome's `noFloatingPromises` covers the common cases |
-| [SonarQube Community / SonarJS](https://www.sonarsource.com/ts) | Code smells, cognitive complexity, security hotspots, history | Optional: needs a server; Biome's cognitive-complexity rule is the same metric (it matches SonarJS) |
-| [Qlty CLI](https://docs.qlty.sh/qlty-cli) | Smells, complexity and duplication metrics across languages | Optional: overlaps Biome and jscpd here |
-| [Semgrep CE](https://semgrep.dev/docs/faq/overview) | Security and custom pattern rules | Optional: worth adding before production; Semgrep-maintained rules carry their own licence |
-| [CodeQL](https://www.infoworld.com/article/3453742/github-makes-codeql-free-for-research-and-open-source.html) | Deep security dataflow analysis | Free for open-source repositories only; needs a licence for private code |

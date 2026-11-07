@@ -31,9 +31,8 @@ Three small files in the existing `eval/runner/src/` hold the request allowance,
 observations and prepare/live entrypoint. One test file covers the allowance. No package,
 dependency, shared runtime, protected material, UI or installed delivery-agent skill changed.
 
-`.harness/jev-allowance.jsonl` is the authoritative append-only reservation journal. Usage is
-authoring/review **3/5**, agent comparison **0/5**, blind evaluation **0/5**, insurance **0/5**:
-**3/20 total**. Unused slots cannot transfer between steps. Reserve under an exclusive file lock
+`.harness/jev-allowance.jsonl` is the authoritative append-only reservation journal. Read consumed
+reservations there. Unused slots cannot transfer between steps. Reserve under an exclusive file lock
 and fsync before transport; failed, timed-out or uncertain requests retain their reservation.
 Missing, malformed, locked or exhausted journals fail closed. SDK retries and automatic HTTP
 redirects are disabled. The journal contains request-body hashes, not credentials or headers.
@@ -52,11 +51,9 @@ controls and executable hashes. CI runs preparation and fake-transport tests onl
 Live execution requires explicit live mode, the matching plan hash, the same clean source commit,
 unchanged materials/executables, an unused run directory and enough remaining allowance. It
 stops on the first error without retry and retains partial evidence and consumed reservations.
-Do not rerun the current three-request batch: only two authoring/review slots remain. Any later
-probe needs a separately prepared bounded selection within those two slots.
+Do not automatically rerun the archived batch. Prepare any later bounded selection against the
+current journal and the authorization limits in spec section 17.
 
-Recovery: `workflow-live-semantic-probe-2026-10-24` and
-`backup/workflow-live-semantic-probe-2026-10-24`. Earlier demo, baseline and experiment refs stay
-unchanged. The Chinese presenter script's scene 12 shows the committed report without network
-requests. Next work remains independent review/cost recording and controlled comparisons;
-NVIDIA generation/planning requires separate approval, and blind labels require independent custody.
+Recovery references are maintained in [branch-strategy.md](branch-strategy.md). The presenter
+script shows the committed report without network requests. Current work is tracked in
+[workflow-progress.md](workflow-progress.md); this frozen probe is not a running quota summary.

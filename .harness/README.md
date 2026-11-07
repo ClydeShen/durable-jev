@@ -1,26 +1,43 @@
-# .harness
+# Delivery documentation
 
-The shared working aid autonomously maintained by delivery agents, including Codex and Claude.
-It records agreements, design, progress, limits and handoffs; it is not application runtime code.
-User-facing documents and test materials belong in `docs/` and `eval/`. Protected files, including
-`prd.md`, retain their existing owner-consent restrictions.
+This directory supports Codex/Claude delivery and handoff. It is not application runtime code.
+The user's latest instruction takes precedence, followed by `spec.md`, `design.md` and `prd.md`.
+Protected files retain their owner-consent restrictions.
 
-| File | Purpose | When it changes |
+## Document ownership
+
+| Owner | Content | Excludes |
 |---|---|---|
-| `prd.md` | The original PRD v0.3, read-only | Replaced whole when the user gives a new version |
-| `spec.md` | Scope and cuts agreed with the user; takes precedence over `prd.md` | When the user changes the scope |
-| `design.md` | Architecture, interfaces, semantics, engineering conventions | When a design decision changes |
-| `roadmap.md` | Phases → tasks, with status | After every completed task |
-| `implementation-notes.md` | Plan changes and surprises that differ from spec, design or a task | High-level surprises only, not implementation detail |
+| `../AGENTS.md` | Agent entry instructions, verification self-check, skill handling | Progress and experiment results |
+| `prd.md` | Original protected PRD | Delivery-agent edits |
+| `spec.md` | Accepted scope, restrictions and authorizations | Implementation history and result summaries |
+| `design.md` | Current internal architecture, contracts and semantics | Experiment transcripts and task status |
+| `roadmap.md` | Task IDs, status, dependencies and acceptance conditions | Detailed protocols, reports and cost entries |
+| `implementation-notes.md` | Current continuation instructions and unresolved handoff constraints | Chronological discussion or completed-step logs |
+| `jev-allowance.jsonl` | Append-only live Jev request reservations | Inferred or reset usage |
+| `../docs/branch-strategy.md` | Branch/archive policy and historical reference mapping | Experiment results |
+| `../docs/workflow-progress.md` | Milestone evidence index and post-baseline effort ledger | Protocols and detailed observations |
+| `../docs/evaluation-plan.md` | Shared experimental method, approved mutations, measurement and custody rules | Per-run results and implementation repair history |
+| Experiment documents in `../docs/` | Reproduction, controlled factors, observed evidence and its limits | Delivery discussion and unrelated next-step plans |
+| `../docs/demo-guide.md` | Chinese presenter actions and short spoken claims | Architecture explanations and development history |
+| `../docs/getting-started.md` | Setup, everyday commands and local operation | Experiment conclusions |
+| `../docs/engineering.md` | Code/UI conventions and their enforcement | Task progress |
+| `../docs/agent-architecture.md`, `runtime-controls.md` | Source walkthrough and control-to-evidence links | Copies of experimental reports |
+| `../docs/baseline.md`, `demo-checkpoint.md` and manifests | Frozen acceptance and restore instructions | Current candidate status |
 
-## Working protocol
+`../README.md` is the navigation entry. Generated `architecture-graph.md` follows code.
+`m0-findings.md` and `tuning-log.md` are bounded historical evidence, not current instructions.
 
-1. Before a task, read `implementation-notes.md`, `spec.md`, `design.md` and the task in `roadmap.md`.
-2. One or a few small commits per task; tick it in `roadmap.md` when done.
-3. When departing from the design or a task's goal, change `design.md` / `roadmap.md` first, then
-   note the reason in one line in `implementation-notes.md`.
-4. Precedence on conflict: the user's latest instruction > `spec.md` > `design.md` > `prd.md`.
-5. Preserve frozen recovery refs. Current baseline recovery and its documentation revision are
-   recorded in `../docs/baseline.md`; later experiment adaptations must remain measurable.
-6. Before each stage archive, synchronize the handoff, roadmap, evidence and Chinese demo script.
-   Confirm that every advertised action exists and separate scripted, live and future capabilities.
+## Update protocol
+
+1. Read the current handoff, scope, relevant design and roadmap task.
+2. Update the owning document in place. Use links for supporting facts; summaries must identify
+   the evidence's status and must not introduce a second maintained specification.
+3. Write accepted decisions and observable behavior. Keep discussion, alternatives considered,
+   speculative reasoning and routine repair chronology in Git history rather than current docs.
+4. Distinguish current behavior, proposed work and frozen observations. Replace superseded
+   present-tense instructions; do not append another paragraph that contradicts them.
+5. Preserve task IDs, evidence IDs, hashes, raw results, costs, failures and recovery identities.
+   Unknown cost stays unknown. Frozen artifacts are not rewritten to match the candidate.
+6. At a milestone archive, update its evidence, roadmap status, handoff and presenter actions.
+   Routine steps update only affected owners; do not copy the same change into every file.

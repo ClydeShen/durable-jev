@@ -12,9 +12,9 @@ pnpm start       # start every service; the browser opens http://localhost:4100
 
 ## Documents
 
-Active work: **`feat/durable-policy-workflow`**. The official baseline is
-`backup/baseline-2026-10-24-r2`. See [branch and milestone strategy](docs/branch-strategy.md)
-for the four numbered milestone archives; none is complete or created yet.
+Use [branch-strategy.md](docs/branch-strategy.md) for working/recovery branches and
+[workflow-progress.md](docs/workflow-progress.md) for current milestone status.
+Document ownership and update rules are in [.harness/README.md](.harness/README.md).
 
 | To | Read |
 |---|---|
@@ -23,6 +23,8 @@ for the four numbered milestone archives; none is complete or created yet.
 | Recover the frozen runnable demo | [demo-checkpoint.md](docs/demo-checkpoint.md) |
 | Review or restore the frozen experimental baseline | [baseline.md](docs/baseline.md) |
 | Follow post-baseline workflow evidence, CEO viewpoints and recovery checkpoints | [workflow-progress.md](docs/workflow-progress.md) |
+| Inspect the shared experimental method and approved mutations | [evaluation-plan.md](docs/evaluation-plan.md) |
+| Inspect P1 threshold changes and order continuity | [policy-change-experiment.md](docs/policy-change-experiment.md) |
 | Inspect investigation strategy and checkpoint controls, including memory recovery failures | [investigation-experiment.md](docs/investigation-experiment.md) |
 | Inspect approval/evidence migration and isolated authoring rehearsal | [gate-change-experiment.md](docs/gate-change-experiment.md) |
 | Inspect three bounded real Jev judgments and remaining request allowance | [jev-probe.md](docs/jev-probe.md) |

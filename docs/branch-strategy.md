@@ -18,14 +18,15 @@ through tag `baseline-2026-10-24`; r2 is the single normal baseline entry point.
 
 ## Four numbered milestone archives
 
-| Branch to create only after acceptance | Scope | Current status / acceptance boundary |
+| Branch to create only after acceptance | Scope | Acceptance boundary |
 |---|---|---|
-| `milestone/01-logistics-policy` | Policy changes and authoring/review costs | Partial: P1/P2/P3 engineering evidence exists; reviewed effort/comparison evidence remains open |
-| `milestone/02-durable-workflow` | Jev, durable workflow and fixed-workflow comparison | Partial: scripted controls and recovery evidence exist; complete the agreed bounded comparison and separate contributions |
-| `milestone/03-blind-evaluation` | Independent blind evaluation and capability limits | Open: independently held inputs/labels, frozen candidate and reported failures are required |
-| `milestone/04-insurance-migration` | Bounded motor-insurance adaptation and migration costs | Open: show full materials/domain/wiring/core diff, measured effort and limitations |
+| `milestone/01-logistics-policy` | Policy changes and authoring/review costs | Reviewed policy-change and authoring/review effort/comparison evidence |
+| `milestone/02-durable-workflow` | Jev, durable workflow and fixed-workflow comparison | Reviewed bounded comparison with rule, model and persistence contributions identified |
+| `milestone/03-blind-evaluation` | Independent blind evaluation and capability limits | Independently held inputs/labels, frozen candidate and reported failures |
+| `milestone/04-insurance-migration` | Bounded motor-insurance adaptation and migration costs | Complete materials/domain/wiring/core diff, measured effort and limitations |
 
-No milestone archive exists yet. Completion requires the agreed evidence, passing checks,
+Current acceptance status is maintained in [workflow-progress.md](workflow-progress.md).
+Completion requires the agreed evidence, passing checks,
 synchronized handoff and demo script, and owner confirmation. Create one frozen branch per
 completed milestone from the accepted commit; never develop on or move it. Do not pre-create
 four empty branches. Optional cross-domain A2A is a bonus, not a fifth required milestone.
@@ -33,8 +34,8 @@ four empty branches. Optional cross-domain A2A is a bonus, not a fifth required 
 Small steps use commits and progress notes, not new branches or tags. All milestones share the
 working branch; the numbered names classify accepted snapshots, not parallel workstreams.
 NVIDIA generation is deferred and must not block Jev/durable work; any reduced M1 acceptance
-scope needs explicit agreement, not an unsupported cost claim. Existing Jev allowance remains
-3/20 used (authoring/review 3/5); restoring old code never refunds consumed requests.
+scope needs explicit agreement, not an unsupported cost claim. Live authorization is in spec section 17; consumed Jev reservations are in
+`.harness/jev-allowance.jsonl`. Restoring code never refunds requests.
 
 ## Consolidated historical snapshots
 

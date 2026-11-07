@@ -83,20 +83,13 @@ independent blind evaluation or an enterprise savings estimate. Jev answers and 
 remain scripted/draft. Failure timing is one boundary, not arbitrary crash coverage. The existing
 tool-budget reset and uncapped-restart limits remain. Native/A2A transport comparison is separate.
 
-Next finish the reviewed logistics mutation/authoring evidence and prepare the live investigation
-comparison before insurance (T8.5 → T8.6). A live comparison needs a reviewed task set, bounded
-model budget and explicit live-run authorization; independent blind custody is still unavailable.
+Current continuation work is tracked in [workflow-progress.md](workflow-progress.md).
 
 ## Effort and recovery
 
 All fixture preparation, the controller adapter, process/evidence runner, regression work and demo
 script corrections are post-baseline effort. Human active time and delivery-agent tokens/cost are
 unmeasured; runtime model calls are zero. No labor-saving estimate is calculated.
-The first quality run required regenerating the architecture diagram after helper extraction;
-its dependency edges were unchanged, only their generated order changed. This preparation and
-the following regression run remain part of post-baseline work.
-
-Recovery tag: `workflow-investigation-controls-2026-10-24`; backup branch:
-`backup/workflow-investigation-controls-2026-10-24`. Resolve the commit via the annotated tag.
-The archive includes code, evidence descriptions and the synchronized Chinese presenter script;
-generated databases/reports are local, reproducible artifacts. Earlier recovery refs remain fixed.
+Recovery references are maintained in [branch-strategy.md](branch-strategy.md). Generated
+databases/reports are local, reproducible artifacts; the retained snapshot contains the code,
+evidence description and presenter script.

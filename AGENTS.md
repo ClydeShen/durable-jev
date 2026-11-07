@@ -1,25 +1,19 @@
 # Project handoff
 
-Current branch/archive policy: `docs/branch-strategy.md` (owner-approved 2026-10-25).
-Use only `feat/durable-policy-workflow` for ongoing experiments. Small steps get commits, not
-backup branches or tags. Create `milestone/01`–`04` named archives only after full milestone
-acceptance. Historical matching `backup/workflow-*` references below/in older docs are retired;
-their tags remain. Do not recreate them or switch to old milestone numbering.
+Read [.harness/README.md](.harness/README.md) for document ownership, then the current
+[handoff](.harness/implementation-notes.md), [scope](.harness/spec.md), relevant
+[design](.harness/design.md) and [roadmap task](.harness/roadmap.md).
 
-Before continuing work, read `.harness/implementation-notes.md` (current handoff),
-`.harness/spec.md` (agreed scope) and `.harness/roadmap.md` (execution order).
-The current baseline recovery is documentation revision tag `baseline-2026-10-24-r2` and backup
-branch `backup/baseline-2026-10-24-r2`, with the same application source/materials as the original
-`baseline-2026-10-24` at `25c7dbb`. See `docs/baseline.md` and its committed manifest. Start future
-experiments on a new branch from that tag and count all subsequent adaptations. Do not move
-these refs or the earlier demo recovery refs, or resume the shelved refactor automatically.
-The distinct pre-cleanup demo recovery instructions remain in `docs/demo-checkpoint.md`.
+[docs/branch-strategy.md](docs/branch-strategy.md) owns working/archive branch policy and
+recovery-reference mappings. Follow it rather than older branch instructions in Git history.
+[docs/workflow-progress.md](docs/workflow-progress.md) owns milestone status and effort records.
+Frozen restoration instructions belong to [docs/baseline.md](docs/baseline.md) and
+[docs/demo-checkpoint.md](docs/demo-checkpoint.md).
 
-Post-baseline work is now on `feat/durable-policy-workflow`. Read the current handoff first and
-`docs/workflow-progress.md` for stages, cost accounting and new recovery checkpoints. Do not
-restart the baseline cleanup or switch back to its maintenance branch.
-Every stage archive includes updated handoff/evidence documents and `docs/demo-guide.md`.
-Keep the script executable and distinguish current UI actions from report-only demonstrations.
+Update documentation in its owning file; use links instead of repeating specifications or results.
+Keep current instructions free of discussion transcripts, reasoning chronology and superseded plans.
+Every accepted milestone archive includes synchronized evidence and an executable
+[docs/demo-guide.md](docs/demo-guide.md), distinguishing UI actions from report demonstrations.
 
 # Verification self-check
 
