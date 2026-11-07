@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "@durable-jev/agent-core": "workspace:*",
+    "@durable-jev/agent-harness": "workspace:*",
     "@durable-jev/agent-transport": "workspace:*",
     "@durable-jev/contracts": "workspace:*",
     "@durable-jev/human-tasks": "workspace:*",

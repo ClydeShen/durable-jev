@@ -310,6 +310,9 @@ importers:
       '@durable-jev/agent-core':
         specifier: workspace:*
         version: link:../../packages/agent-core
+      '@durable-jev/agent-harness':
+        specifier: workspace:*
+        version: link:../../packages/agent-harness
       '@durable-jev/agent-transport':
         specifier: workspace:*
         version: link:../../packages/agent-transport

@@ -9,6 +9,9 @@
   "exclude": ["src/**/*.test.ts"],
   "references": [
     {
+      "path": "../../packages/agent-harness"
+    },
+    {
       "path": "../../packages/agent-core"
     },
     {

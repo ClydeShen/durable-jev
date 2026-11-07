@@ -111,12 +111,28 @@ It checks one draft event, duplicate suppression, unchanged shipment and absence
 dispatch. The report records evidence, calls/results, source status, implementation/input hashes
 and unknown human effort. It does not interpret the documents or score correctness.
 
+The command also runs the same authored request through Pi SQLite in three separate child-process
+directories: uninterrupted, exit 137 before submission executes, and exit 137 after the business
+write commits but before the tool result returns. Each independent arm has a new conversation and
+database; interrupted arms resume their original conversation/request ID. The report requires
+one completed read attempt per arm, one submission attempt uninterrupted versus two interrupted,
+exactly one draft event, unchanged business state and identical event payloads to the direct arm.
+The second cut verifies the business idempotency boundary when Pi retries an uncheckpointed tool.
+This uses deliberate process exit, not an OS kill signal or power-loss simulation.
+
+Instructions, task, tool schemas and mechanical acceptance criteria are recorded in the report;
+`evidence-draft-control.ts` supplies the shared request construction. Attempt logs and scripted
+model-step counts remain in each arm's directory; final Pi answers include observed tool results.
+Both controllers are authored algorithms. Their agreement demonstrates this execution/recovery
+contract, not equivalent reasoning or any model advantage. Fresh runtime state does not establish
+independent blind custody. These checks run on Linux and Windows CI via the same command.
+
 Eight tests in `packages/logistics/src/evidence-tools.test.ts` cover Pi integration, invalid
 citations, unbumped content replacement, missing/stale trusted scope and persistent idempotency
-after database reopen. A reopen is not a process-kill recovery test. These tools are composed only
+after database reopen. The subprocess controls above add process-exit recovery evidence. These tools are composed only
 by the experiment/tests: the browser demo has no new investigation route. Next work is reviewed
-inputs, full argument-schema refusal checks, multi-case/concurrent-change controls, process-exit
-recovery and a separately authorized model comparison. No Jev/NVIDIA requests were used.
+inputs, full argument-schema refusal checks, multi-case/concurrent-change controls and a separately
+authorized model comparison. No Jev/NVIDIA requests were used.
 
 ## Remaining verification before runtime conclusions
 

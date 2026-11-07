@@ -40,6 +40,15 @@ There are no new tables/packages/demo routes. The authored control writes an iso
 Pi integration and database reopen are tested, but model reasoning, kill recovery, independent
 review and authentication are not established. Usage remains 3/20 Jev, zero new provider calls.
 
+M2-prep-04 extends eval:evidence-draft with Pi SQLite child-process controls. Exit 137 before
+submission and after committed business write/before tool result both recover the same request;
+completed reads execute once, submission attempts twice, and one draft matches the direct and
+uninterrupted Pi arms. Shared authored request logic and recorded instructions/task/tool schemas
+make the mechanical comparison inspectable. Logs retain tool attempts, final observed results and
+scripted model steps. No domain/core behavior changed; eval now declares its existing workspace
+agent-harness dependency. This is process-exit/idempotency evidence, not model reasoning, blind
+review or a completed M2. Live NVIDIA still requires separate approval; Jev usage remains 3/20.
+
 Agent-region visual trial (2026-10-25): the owner prefers omitting regions if they add clutter.
 A local prototype grouped owners with ELK and added passive tinted bounds. All eight cases
 laid out without overlapping regions, but the side-by-side browser comparison showed a wider

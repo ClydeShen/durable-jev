@@ -14,7 +14,9 @@
 
 如技术观众追问开放式调查的工具边界，在终端运行 `pnpm exec vitest run packages/agent-harness/src/evidence-investigation.test.ts`，再打开该文件和 `docs/open-question-pilot.md` 的 Executable boundary exercise。说明：五项离线测试通过 Pi 执行证据读取和草稿提交，拒绝未读取／虚构引用、旧版本和重复提交。这是测试内的模拟领域工具；真实物流接入、模型选择下一步和重启恢复仍待验证。
 
-如继续追问物流数据接入，提前构建并运行 `pnpm eval:evidence-draft`，现场打开终端 Report 路径的 JSON 和 `packages/logistics/src/evidence-tools.ts`。说明：这里读取 LOG-002 的实际物料文档，在隔离数据库中只记录待审草稿，提交时核对订单版本、文档版本和内容指纹，重复提交不多写。浏览器订单没有改变。这一段由手写控制器调用工具；八项测试另有 Pi 接入及数据库重开验证，尚未展示真实模型判断或进程中断恢复。
+如继续追问物流数据接入，提前构建并运行 `pnpm eval:evidence-draft`，现场打开终端 Report 路径的 JSON 和 `packages/logistics/src/evidence-tools.ts`。说明：这里读取 LOG-002 的实际物料文档，在隔离数据库中只记录待审草稿，提交时核对订单版本、文档版本和内容指纹，重复提交不多写。浏览器订单没有改变。这一段由手写控制器调用工具；八项测试另有 Pi 接入及数据库重开验证，真实模型判断尚待验证。
+
+该命令现在另有三个 Pi 子进程对照。打开报告的 `recovery`，依次展示 `control`、`before-submit` 和 `after-write`：后两项实际退出 137 后恢复，`attempts` 中读取各一次、提交各两次，但 `events` 始终只有一份待审草稿，内容与直接调用一致。说明：提交已经落库、Pi 尚未收到结果时也不会重复写草稿。这里验证了进程退出恢复和幂等性；下一步选择仍是手写策略，真实模型对照尚待执行。
 
 如展示后期证据段，提前运行 `pnpm check`、`pnpm eval:policy-change`、`pnpm eval:investigation`、`pnpm eval:gate-change`。分别按终端最后的 **Report:** 路径，在编辑器打开同目录的 `report.md` 并预览；现场直接切到这三份报告，不等待实验重跑。这些实验用独立数据，不会修改正在演示的订单。
 
