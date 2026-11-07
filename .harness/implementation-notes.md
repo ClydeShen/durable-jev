@@ -5,6 +5,11 @@ should know.
 
 ## Current handoff: post-baseline workflow implementation (2026-10-24)
 
+Owner clarification: "How do we make this change fully verifiable?" is a standing planning
+and coding self-check, not a separate experiment or an instruction to build more verification
+infrastructure. Follow the acceptance/evidence guidance in `AGENTS.md`, proportionate to risk;
+report what remains unverified without expanding the POC scope.
+
 Owner requires clean-context agents for experiments. See `docs/evaluation-plan.md`: fresh trial
 conversations, frozen permitted inputs, no inherited delivery discussion/answers/prior runs, and
 isolated run state. Delivery subagents use `fork_turns: none`; shared-file access still needs
@@ -18,6 +23,13 @@ evidence. Conditions expressed only in prose and future document references need
 execution; the OQ-03 draft also lacks explicit proposal submission. Independent review is pending.
 `pnpm eval:open-question-pilot` verifies archive integrity/structure only. No core changes or new
 rule kinds were added; Jev allowance stays 3/20. This is preparation inside M2, not its completion.
+
+M2-prep-02 adds five offline Pi integration checks in agent-harness's existing test folder:
+synthetic evidence reads and review-draft submission validate read citations/revisions and
+refuse duplicate drafts. Tools/state are test-local, one conversation per fresh fixture; no
+production adapter, persistence/recovery or model judgment is demonstrated. See the executable
+boundary section in `docs/open-question-pilot.md`. Next needs scoped domain adapters and
+reviewed comparison inputs; NVIDIA planning still requires separate authorization.
 
 Agent-region visual trial (2026-10-25): the owner prefers omitting regions if they add clutter.
 A local prototype grouped owners with ELK and added passive tinted bounds. All eight cases

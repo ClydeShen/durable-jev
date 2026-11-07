@@ -21,6 +21,20 @@ restart the baseline cleanup or switch back to its maintenance branch.
 Every stage archive includes updated handoff/evidence documents and `docs/demo-guide.md`.
 Keep the script executable and distinguish current UI actions from report-only demonstrations.
 
+# Verification self-check
+
+When planning and writing code, ask: "How do we make this change fully verifiable?"
+
+- Before implementation, define observable acceptance criteria, what must remain unchanged,
+  and the smallest checks that could expose a wrong implementation.
+- Prefer existing checks and focused regression tests. Include relevant failure paths, not
+  only successful examples; keep verification proportional to the change's risk.
+- After implementation, inspect the final diff and report reproducible checks, observed results
+  and remaining gaps. Distinguish archive integrity, scripted behavior and actual runtime/model
+  evidence; passing one does not establish the others.
+- Treat this as a standing self-check, not a demand for a new framework or exhaustive proof.
+  Do not claim full verification where evidence is missing. Existing pre-push gates still apply.
+
 # Delivery agent skills
 
 Installed skills in `.agents/skills/` and `.claude/skills/` are tools for the delivery

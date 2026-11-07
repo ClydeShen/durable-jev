@@ -12,6 +12,8 @@
 
 默认是 scripted：Jev 答案按记录回放，调查下一步由可复现的手写策略选择。开场说清楚；只有实际以 live 模式运行时，才能说本次由真实模型判断。
 
+如技术观众追问开放式调查的工具边界，在终端运行 `pnpm exec vitest run packages/agent-harness/src/evidence-investigation.test.ts`，再打开该文件和 `docs/open-question-pilot.md` 的 Executable boundary exercise。说明：五项离线测试通过 Pi 执行证据读取和草稿提交，拒绝未读取／虚构引用、旧版本和重复提交。这是测试内的模拟领域工具；真实物流接入、模型选择下一步和重启恢复仍待验证。
+
 如展示后期证据段，提前运行 `pnpm check`、`pnpm eval:policy-change`、`pnpm eval:investigation`、`pnpm eval:gate-change`。分别按终端最后的 **Report:** 路径，在编辑器打开同目录的 `report.md` 并预览；现场直接切到这三份报告，不等待实验重跑。这些实验用独立数据，不会修改正在演示的订单。
 
 界面四块：左边是案例列表和 agent 列表；中间是当前案例，上面是案例头部，下面是 **Agents / Rule graph / Timeline** 三个视图；右边是当前角色的待办；右上角的角色标签是当前角色和操作人，点它弹出角色菜单，选一个就切换。

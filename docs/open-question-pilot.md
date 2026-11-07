@@ -71,6 +71,23 @@ deterministic tools should normalize timestamps and check offer availability; re
 judgment for evidence interpretation and next-step choice. Jev can verify bounded semantic
 claims within that workflow. Free-text plans alone must never execute approvals or dispatch.
 
+## Executable boundary exercise
+
+`pnpm exec vitest run packages/agent-harness/src/evidence-investigation.test.ts` runs five
+offline integration checks through the existing Pi tool execution path. Each run opens a fresh
+conversation and isolated in-memory fixture. Injected synthetic tools read documents and record
+one review draft; submission checks the revision and requires references to successfully read
+documents. Checks cover accepted submission, repeated submission, unread/fabricated references,
+stale revision and unsuccessful lookup. Tool responses and recorded drafts are asserted.
+
+These adapters exist only in the test fixture. The revision is fixed at 2, evidence is held in
+memory and each fixture handles one case/conversation. This does not establish multi-case
+isolation, concurrent updates, persistent idempotency or crash recovery. Reading a document does
+not prove that it supports the draft's claim. Although D3 contains an injected release instruction,
+the controller is scripted, so this is not a model prompt-injection test. No release tool exists.
+The exercise verifies that the existing harness can host this bounded contract without changing
+the rule engine; production logistics tools and model-driven selection remain to be evaluated.
+
 ## Remaining verification before runtime conclusions
 
 1. Have an independent reviewer check the policies, ambiguous wording and response findings.
