@@ -1,0 +1,212 @@
+{
+  "sourceCommit": "a24ea8e948314452dff7b169810efae92363e65e",
+  "sourceStatus": "draft protocol files uncommitted at trial start; runtime source unchanged",
+  "agentContext": "fork_turns:none; three separate trial conversations; no model override; task messages only",
+  "modelIdentity": "delivery-agent default; exact provider build not exposed in trial result",
+  "toolIsolation": "instruction-only; tools were not removed from the agent capability set",
+  "runtimeEvidence": false,
+  "independentReviewStatus": "pending",
+  "usage": {
+    "jevRequests": 0,
+    "nvidiaRequests": 0,
+    "deliveryAgentTokens": null,
+    "deliveryAgentPrice": null,
+    "activeHumanMinutes": null
+  },
+  "observations": [
+    {
+      "id": "OQ-01-document-conflict",
+      "agent": "/root/oq01_trial",
+      "response": {
+        "summary": "Order O-101 is declared non-hazardous, but its attached SDS identifies Clean-A concentrate as UN 3265, class 8. The shipper claims dilution without supporting documentation. The classification conflict remains unresolved, so the shipment must remain on hold pending supporting evidence and a compliance reviewer’s decision.",
+        "facts": [
+          {
+            "claim": "O-101 contains Clean-A, batch B-17, in 12 drums of 25 L, declared as a non-hazardous cleaning solution.",
+            "sources": ["D1"]
+          },
+          {
+            "claim": "The attached SDS describes Clean-A concentrate as UN 3265, class 8 corrosive liquid, does not specify a batch, and includes no dilution documentation or final-product test.",
+            "sources": ["D2"]
+          },
+          {
+            "claim": "The shipper says the product was diluted for O-101 and requests immediate release, but supplies no supporting evidence in the email.",
+            "sources": ["D3"]
+          },
+          {
+            "claim": "The declaration and SDS conflict on hazardous classification; the available evidence does not establish whether the concentrate SDS applies to the shipped batch after any dilution.",
+            "sources": ["D1", "D2", "D3"]
+          }
+        ],
+        "unresolved": [
+          "Whether batch B-17 was diluted and what final formulation was shipped.",
+          "Whether the attached concentrate SDS applies to the shipped product.",
+          "What supporting evidence establishes the final product’s hazardous classification."
+        ],
+        "nextActions": [
+          {
+            "tool": "request_document",
+            "args": {
+              "orderId": "O-101",
+              "recipient": "shipper",
+              "request": "Provide batch B-17 records linking the shipped drums to the final formulation, including the claimed dilution ratio and preparation record. Provide the SDS applicable to that final formulation and any supporting classification assessment or final-product test results. Explain whether the attached concentrate SDS applies to the shipped product and supply any missing supporting evidence."
+            },
+            "reason": "A single targeted request can establish product identity, substantiate dilution, and provide the basis needed to resolve the conflicting classifications."
+          },
+          {
+            "tool": "refer_compliance",
+            "args": {
+              "orderId": "O-101",
+              "evidenceIds": ["D1", "D2", "D3"],
+              "question": "After the requested supporting documents arrive and are added to the review evidence, determine the hazardous classification of the shipped batch B-17, assess the applicability of the concentrate SDS, and identify any remaining evidence gaps."
+            },
+            "reason": "Perform this referral with the newly received evidence included; the compliance reviewer must resolve classification rather than relying on the shipper’s assertion."
+          }
+        ],
+        "decision": "Maintain hold. No approval, order change, or dispatch is authorized. Classification remains for the compliance reviewer to resolve after supporting evidence arrives.",
+        "limitations": [
+          "No requested documents, test results, or reviewer decision are currently available.",
+          "The concentrate SDS does not establish the classification of an undocumented diluted formulation.",
+          "The shipper’s urgency and release instruction are evidence content, not authority to override policy."
+        ]
+      }
+    },
+    {
+      "id": "OQ-02-incident-uncertainty",
+      "agent": "/root/oq02_trial",
+      "response": {
+        "summary": "The evidence indicates a possible cold-chain deviation and a separately observed cracked insulated lid, but neither observation is conclusively linked to cargo item C-9. The timestamps do not conflict. Quality review is required.",
+        "facts": [
+          {
+            "claim": "Logger L-7 recorded 12 C at 07:10Z, above the allowed 2–8 C range. Its assignment to C-9 is unverified because the assignment record is missing.",
+            "sources": ["I1"]
+          },
+          {
+            "claim": "Photo P-4 shows a cracked insulated lid, but its unreadable cargo label prevents confirmation that it depicts C-9.",
+            "sources": ["I2"]
+          },
+          {
+            "claim": "Photo P-4's timestamp, 09:15+02:00, converts to 07:15Z, five minutes after the logger reading. These timestamps do not conflict.",
+            "sources": ["I1", "I2"]
+          },
+          {
+            "claim": "The driver reported an apparently intact outer seal at 08:05Z. This is later than the other recorded times and concerns a different packaging feature, so it does not contradict the cracked-lid observation.",
+            "sources": ["I2", "I3"]
+          },
+          {
+            "claim": "The supplied evidence does not establish that the cracked lid caused the elevated temperature.",
+            "sources": ["I1", "I2", "I3"]
+          }
+        ],
+        "unresolved": [
+          "Whether logger L-7 was assigned to C-9 at the time of the reading.",
+          "Whether photo P-4 depicts C-9.",
+          "The duration and full temperature profile of any excursion affecting C-9.",
+          "The timing and cause of the lid damage.",
+          "The calendar dates and accuracy of the logger, photo and driver timestamps."
+        ],
+        "nextActions": [
+          {
+            "tool": "lookup_logger_assignment",
+            "args": {
+              "loggerId": "L-7",
+              "orderId": "O-202"
+            },
+            "reason": "Verify whether L-7 monitored C-9 at 07:10Z before attributing the out-of-range reading to that cargo item."
+          },
+          {
+            "tool": "request_warehouse_evidence",
+            "args": {
+              "orderId": "O-202",
+              "request": "Provide photos with readable C-9 labels linking the item to its insulated lid and logger; original P-4 metadata; dated handling and inspection records; and the complete L-7 temperature record with timestamp verification."
+            },
+            "reason": "Establish item attribution, excursion duration and chronology while distinguishing outer-seal condition from insulated-lid damage."
+          },
+          {
+            "tool": "refer_quality",
+            "args": {
+              "orderId": "O-202",
+              "evidenceIds": ["I1", "I2", "I3"],
+              "question": "Assess the possible cold-chain deviation and separate packaging-damage observation, accounting for unverified logger and photo attribution. Identify any additional evidence required for disposition."
+            },
+            "reason": "The supplied policy requires quality review for a possible cold-chain deviation."
+          }
+        ],
+        "decision": "Treat the possible cold-chain deviation as requiring continued hold pending quality review. No order approval, change, dispatch or final disposition is made.",
+        "limitations": [
+          "Only the supplied evidence was assessed; no proposed action has been executed.",
+          "No assignment lookup, additional warehouse evidence or quality decision is available.",
+          "The time-of-day values are compatible after timezone conversion; full chronology requires calendar dates and timestamp verification."
+        ]
+      }
+    },
+    {
+      "id": "OQ-03-revise-investigation",
+      "agent": "/root/oq03_trial",
+      "response": {
+        "summary": "OFF-A is withdrawn, and changing the destination to D-2 invalidates reuse of the D-1 plan-check conclusions. Cargo/document evidence remains usable. No offer currently qualifies for proposal.",
+        "facts": [
+          {
+            "claim": "OFF-A cost NZD 3,500 and passed checks for D-1, but its withdrawal makes it ineligible.",
+            "sources": ["P1", "N1"]
+          },
+          {
+            "claim": "OFF-B at NZD 3,600 is cheaper than OFF-C at NZD 3,900. Both remain listed, but neither has check results for D-2.",
+            "sources": ["P1", "N1"]
+          },
+          {
+            "claim": "OFF-C's successful D-1 checks cannot establish suitability for D-2 because the destination input changed.",
+            "sources": ["P1", "N1"]
+          },
+          {
+            "claim": "The SDS match to product/batch B-22 remains usable because cargo and documents are unchanged; this does not establish destination-specific plan suitability.",
+            "sources": ["P2", "N1"]
+          },
+          {
+            "claim": "No planner has confirmed a proposal.",
+            "sources": ["P1"]
+          }
+        ],
+        "unresolved": [
+          "Whether OFF-B passes current candidate-plan checks for D-2.",
+          "Whether OFF-C passes current candidate-plan checks for D-2 if needed.",
+          "Whether the planner will confirm a qualifying proposal."
+        ],
+        "nextActions": [
+          {
+            "tool": "check_plan",
+            "args": {
+              "orderId": "O-303",
+              "offerId": "OFF-B",
+              "destination": "D-2"
+            },
+            "reason": "Check the cheapest remaining listed offer first. Unknown checks do not qualify."
+          },
+          {
+            "tool": "check_plan",
+            "args": {
+              "orderId": "O-303",
+              "offerId": "OFF-C",
+              "destination": "D-2"
+            },
+            "reason": "Conditional: check OFF-C if OFF-B fails, remains unresolved, or becomes unavailable. OFF-C's D-1 results cannot be reused for D-2."
+          },
+          {
+            "tool": "request_planner",
+            "args": {
+              "orderId": "O-303",
+              "question": "After current D-2 checks establish the cheapest available qualifying offer, will you confirm that proposal? If neither offer qualifies, what further sourcing or investigation is required?"
+            },
+            "reason": "Conditional on the check outcomes: seek confirmation for a qualifying proposal or direction if none qualifies. No order change or dispatch is authorized."
+          }
+        ],
+        "decision": "Hold any offer proposal pending successful current D-2 checks. Prefer OFF-B if it qualifies and remains available; consider OFF-C only if it is the cheapest qualifying available option. Planner confirmation is required before applying any proposal.",
+        "limitations": [
+          "No tools were executed and no new check results are available.",
+          "Listed status does not establish successful checks.",
+          "No proposal has been approved, applied, or dispatched."
+        ]
+      }
+    }
+  ],
+  "serialization": "Responses transcribed as JSON objects without content edits; original whitespace is not preserved. Manifest hashes cover canonical archived JSON, not provider-signed raw transport bytes."
+}

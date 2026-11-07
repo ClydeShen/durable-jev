@@ -12,6 +12,26 @@ durable agents can reduce the effort of building and changing rule-driven workfl
 feasibility, suitability and limits; do not require a fully decoupled engine before measuring.
 Current coupling and synthetic materials bound the conclusions rather than invalidate the research.
 
+## Clean-context experimental agents (owner requirement)
+
+Start each independent trial in a fresh agent conversation and isolated run state. Supply only
+the frozen task instructions, policy, case inputs and allowed tool descriptions/results. Exclude
+delivery-chat history, design discussions, expected answers, scoring labels, prior solutions and
+other trials' transcripts. Agent and comparison arms receive the same permitted initial evidence.
+If a delivery subagent executes a trial, use no inherited conversation (`fork_turns: none`) and
+explicitly scope its accessible inputs; the flag alone does not isolate the shared filesystem.
+
+Keep answer keys and reviewer notes outside the tested agent's accessible workspace/tools. Record
+the initial prompt, input hashes, model/settings, tool access and subsequent transcript. Declare
+any context contamination and exclude that attempt from clean-context scoring, while retaining
+its cost and outcome record. Developer-authored cases remain development cases even in a fresh
+conversation; clean context is not independent blind custody.
+
+For recovery comparisons, each control/recovery arm starts from the same clean initial context.
+After interruption, the durable arm resumes its own persisted checkpoint rather than starting a
+new conversation. Keep the deliberately memory-losing control distinct. Cross-trial context is
+excluded; within-trial checkpoint continuity is the capability being tested.
+
 ## Measurement boundary
 
 The runnable checkpoint `demo-checkpoint-2026-10-24` (`0265a05`) is a recovery point, not the

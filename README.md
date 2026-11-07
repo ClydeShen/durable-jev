@@ -26,6 +26,7 @@ for the four numbered milestone archives; none is complete or created yet.
 | Inspect investigation strategy and checkpoint controls, including memory recovery failures | [investigation-experiment.md](docs/investigation-experiment.md) |
 | Inspect approval/evidence migration and isolated authoring rehearsal | [gate-change-experiment.md](docs/gate-change-experiment.md) |
 | Inspect three bounded real Jev judgments and remaining request allowance | [jev-probe.md](docs/jev-probe.md) |
+| Review clean-context open-question trials and verify their archived evidence | [open-question-pilot.md](docs/open-question-pilot.md) |
 | Take over the current direction and working-branch plan | [implementation-notes.md](.harness/implementation-notes.md) |
 | Understand how the agents are organised and whether they carry a large rule estate | [agent-architecture.md](docs/agent-architecture.md) |
 | See the investigation helper's budgets, timeouts and human checkpoints | [runtime-controls.md](docs/runtime-controls.md) |

@@ -1,0 +1,18 @@
+{
+  "planSha256": "33a0e0feb1e87755e039ae771f19a5a0117c1d74dce04e6334452a48438e6671",
+  "resultsSha256": "727eb4ae6e4da1169c3178295e5439100a500698900b6cf70c0a32e8a96bf780",
+  "trials": [
+    {
+      "id": "OQ-01-document-conflict",
+      "promptSha256": "c334b96e452ecfc5a4ab549e09435cae208699c8b6f4437a42ba36bb48656df4"
+    },
+    {
+      "id": "OQ-02-incident-uncertainty",
+      "promptSha256": "7e038842723496ecd779108e5268091decc1be0d059509a2d6c30c67cf9354c2"
+    },
+    {
+      "id": "OQ-03-revise-investigation",
+      "promptSha256": "3e12488c788506e88990c1e985487ee54085108b8170640172b5102fd0b5e4a6"
+    }
+  ]
+}

@@ -5,6 +5,20 @@ should know.
 
 ## Current handoff: post-baseline workflow implementation (2026-10-24)
 
+Owner requires clean-context agents for experiments. See `docs/evaluation-plan.md`: fresh trial
+conversations, frozen permitted inputs, no inherited delivery discussion/answers/prior runs, and
+isolated run state. Delivery subagents use `fork_turns: none`; shared-file access still needs
+scoping. Recovery resumes the same trial checkpoint. Fresh context does not establish blind
+custody. No new provider-call authorization or budget change follows from this requirement.
+
+Three message-only trials now exist in `docs/open-question-pilot.md` and its JSON artifacts.
+Each delivery subagent used `fork_turns: none` with no expected answers; no-tool access was
+instructed, not sandbox-enforced. Results are useful investigation drafts, not runtime/NVIDIA/Jev
+evidence. Conditions expressed only in prose and future document references need validation before
+execution; the OQ-03 draft also lacks explicit proposal submission. Independent review is pending.
+`pnpm eval:open-question-pilot` verifies archive integrity/structure only. No core changes or new
+rule kinds were added; Jev allowance stays 3/20. This is preparation inside M2, not its completion.
+
 Agent-region visual trial (2026-10-25): the owner prefers omitting regions if they add clutter.
 A local prototype grouped owners with ELK and added passive tinted bounds. All eight cases
 laid out without overlapping regions, but the side-by-side browser comparison showed a wider

@@ -37,6 +37,8 @@ jobs:
         run: pnpm eval:gate-change
       - name: Prepare bounded semantic probes without network calls
         run: pnpm eval:jev-probe prepare
+      - name: Verify archived open-question pilot evidence without model calls
+        run: pnpm eval:open-question-pilot
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
@@ -66,3 +68,4 @@ jobs:
       - run: pnpm eval:investigation
       - run: pnpm eval:gate-change
       - run: pnpm eval:jev-probe prepare
+      - run: pnpm eval:open-question-pilot
