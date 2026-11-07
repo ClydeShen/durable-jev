@@ -61,12 +61,13 @@ The shared `DurableInvestigator` accepts domain instructions and injected typed 
 plausible existing execution boundary for these tasks. Current logistics reroute tools cover case
 reads, offer search, candidate checking and constrained proposal submission. Document requests,
 logger-assignment lookup and quality/compliance referrals in this pilot are proposed interfaces;
-they do not exist as executable adapters here. The existing `check_plan` contract is also not
+they do not exist as executable adapters here. The bounded document-read/draft adapters described
+below now exist separately; they do not request new documents or create referrals. The existing `check_plan` contract is also not
 identical to this draft's `(orderId, offerId, destination)` signature.
 
-No new rule kind or runtime change is justified yet. Next implement one bounded evidence-read
-and draft-submission exercise using the existing injected-tool boundary, validate its output and
-dependencies, then compare with an authored controller on the same facts/tools. Read-only
+No new rule kind is justified yet. The first bounded document-read/draft adapters now use the
+existing injected-tool boundary. Next freeze reviewed comparison inputs and compare model
+decisions with the authored controller on the same facts/tools. Read-only
 deterministic tools should normalize timestamps and check offer availability; reserve model
 judgment for evidence interpretation and next-step choice. Jev can verify bounded semantic
 claims within that workflow. Free-text plans alone must never execute approvals or dispatch.
@@ -87,6 +88,35 @@ not prove that it supports the draft's claim. Although D3 contains an injected r
 the controller is scripted, so this is not a model prompt-injection test. No release tool exists.
 The exercise verifies that the existing harness can host this bounded contract without changing
 the rule engine; production logistics tools and model-driven selection remain to be evaluated.
+
+## Logistics document adapters and fixed control
+
+`packages/logistics/src/evidence-tools.ts` supplies two tools to an existing investigator:
+`read_case_evidence` and `submit_evidence_draft`. The trusted caller binds case ID, case revision
+and investigation ID; these are not model arguments. Reads return the shipment's documents with
+SHA-256 fingerprints of their canonical JSON. Submission checks current case revision and every
+cited document's ID, version and fingerprint inside a SQLite transaction. Fingerprints establish
+content identity, not authorship, semantic support or proof the model read the document.
+
+The existing `runOnce` operation store atomically records one draft event per scoped investigation.
+An identical retry returns the saved result; a different request for the same operation raises a
+conflict. Current-case/citation validation precedes deduplication, so a retry after evidence changes
+is refused rather than advertised as a current draft. No new tables, migrations or packages were
+introduced. The caller must resolve trusted scope and invoke these tools only for an authorized
+investigation; the factory itself is not authentication or a public HTTP endpoint.
+
+Run `pnpm eval:evidence-draft` after building. This authored direct-tool control reads LOG-002
+from the unchanged materials, uses a separate SQLite database and writes `var/reports/evidence-draft-*/report.json`.
+It checks one draft event, duplicate suppression, unchanged shipment and absence of new tasks or
+dispatch. The report records evidence, calls/results, source status, implementation/input hashes
+and unknown human effort. It does not interpret the documents or score correctness.
+
+Eight tests in `packages/logistics/src/evidence-tools.test.ts` cover Pi integration, invalid
+citations, unbumped content replacement, missing/stale trusted scope and persistent idempotency
+after database reopen. A reopen is not a process-kill recovery test. These tools are composed only
+by the experiment/tests: the browser demo has no new investigation route. Next work is reviewed
+inputs, full argument-schema refusal checks, multi-case/concurrent-change controls, process-exit
+recovery and a separately authorized model comparison. No Jev/NVIDIA requests were used.
 
 ## Remaining verification before runtime conclusions
 

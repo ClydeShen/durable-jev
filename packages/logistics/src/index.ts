@@ -8,6 +8,7 @@ export {
 } from './case-catalog.js'
 export { type CaseEvent, type CaseFile, caseEventKey } from './case-file.js'
 export { dispatchCase } from './dispatch.js'
+export { evidenceTools } from './evidence-tools.js'
 export {
   agentMigrations,
   createLocalLogisticsAgents,

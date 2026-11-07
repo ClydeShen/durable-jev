@@ -37,6 +37,7 @@
         "src/policy-change-main.ts",
         "src/policy-workflow-child.ts",
         "src/investigation-main.ts",
+        "src/evidence-draft-main.ts",
         "src/investigation-child.ts",
         "src/gate-change-main.ts",
         "src/jev-probe-main.ts",

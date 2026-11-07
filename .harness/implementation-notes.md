@@ -31,6 +31,15 @@ production adapter, persistence/recovery or model judgment is demonstrated. See 
 boundary section in `docs/open-question-pilot.md`. Next needs scoped domain adapters and
 reviewed comparison inputs; NVIDIA planning still requires separate authorization.
 
+M2-prep-03 adds logistics `evidence-tools.ts`, composed by `pnpm eval:evidence-draft` and eight
+targeted tests. Tools read real Shipment documents and record a review-only draft, bound to
+trusted case/revision/investigation scope and current document versions/content fingerprints.
+Existing SQLite transactions, runOnce operations and outbox events provide atomic recording and
+persistent duplicate suppression; conflicting replacement drafts raise an operation conflict.
+There are no new tables/packages/demo routes. The authored control writes an isolated report;
+Pi integration and database reopen are tested, but model reasoning, kill recovery, independent
+review and authentication are not established. Usage remains 3/20 Jev, zero new provider calls.
+
 Agent-region visual trial (2026-10-25): the owner prefers omitting regions if they add clutter.
 A local prototype grouped owners with ELK and added passive tinted bounds. All eight cases
 laid out without overlapping regions, but the side-by-side browser comparison showed a wider

@@ -39,6 +39,8 @@ jobs:
         run: pnpm eval:jev-probe prepare
       - name: Verify archived open-question pilot evidence without model calls
         run: pnpm eval:open-question-pilot
+      - name: Verify scoped logistics evidence drafts without model calls
+        run: pnpm eval:evidence-draft
       - name: Dependency vulnerabilities
         run: pnpm security
       - name: Secrets in history
@@ -69,3 +71,4 @@ jobs:
       - run: pnpm eval:gate-change
       - run: pnpm eval:jev-probe prepare
       - run: pnpm eval:open-question-pilot
+      - run: pnpm eval:evidence-draft
