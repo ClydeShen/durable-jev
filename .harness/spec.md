@@ -66,7 +66,7 @@ conclusion.
 ## 6. External dependencies and credentials
 
 The user obtains the keys for Jev and the generative model. Without a key, the related spike only
-checks the interface shape and records that honestly in `docs/m0-findings.md`.
+checks the interface shape and records that honestly in `docs/archive/m0-findings.md`.
 
 ## 7. Model choice (2026-10-19)
 

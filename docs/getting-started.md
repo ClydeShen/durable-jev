@@ -58,7 +58,7 @@ blocks it), dispatching twice.
 | `pnpm materials:lock` | Record new hashes once you approve a change to a protected file (PRD, policy, rules, test materials); run by a person only |
 | `pnpm architecture` | Regenerate [architecture-graph.md](architecture-graph.md) from the real imports |
 | `pnpm security` | Check dependencies for known vulnerabilities (needs the network) |
-| `pnpm spikes` | The M0 technical spikes; findings in [m0-findings.md](m0-findings.md) |
+| `pnpm spikes` | The M0 technical spikes; findings in [m0-findings.md](archive/m0-findings.md) |
 
 ## Model modes
 

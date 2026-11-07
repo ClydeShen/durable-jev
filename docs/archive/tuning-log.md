@@ -1,5 +1,10 @@
 # Live tuning log (T7.0)
 
+Status: archived evidence. Scope: the recorded study only.
+
+Historical development-set tuning evidence from 2026-10-22, with its recorded follow-up.
+Past live commands, recommendations and model settings are not current run authorization.
+
 Live models: Jev `jev-1.14.0` for every semantic rule and the R42 classifier; NVIDIA
 `nemotron-3.5-lightning-30b-a3b` for the transport investigation helper. Only question wording,
 option descriptions, state fields and thresholds were changed; no model was trained. Every
@@ -74,4 +79,3 @@ Simplified Chinese despite the instruction.
 
 Since 2026-10-23 the console is English throughout and the rationale is asked for in plain
 English, so this limitation no longer applies; the live rationale has not been re-checked since.
-

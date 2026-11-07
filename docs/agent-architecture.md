@@ -110,15 +110,11 @@ to human-gate applicability/parameters need an explicit rule-version bump to ret
 That can conservatively require another approval; policy-change experiments measure the outcome
 and work under both existing-case strategies rather than assume all changes are automatic.
 
-The first post-baseline slice exercises the owner-approved P1 threshold under both activation
-modes, including complete release and process recovery controls. Its 48 scripted flows preserve
-the stale-task and extra-approval findings; see [workflow-progress.md](workflow-progress.md) for
-source changes, evidence and stage recovery refs. Reviewed direct-edit/authoring comparisons,
-effort measurements and independent blind evaluation still precede claims about savings.
-W2 now adds [scripted investigation/checkpoint controls](investigation-experiment.md) without
-changing the domain runtime: first-valid/check-all strategies, changed offers and memory/durable
-restart behavior. Live decision quality and authoring/mutation costs remain open before motor
-insurance. Cross-domain vehicle-insurance A2A is optional. See [evaluation-plan.md](evaluation-plan.md).
+Policy-change protocols and results are in [policy-change-experiment.md](policy-change-experiment.md)
+and [gate-change-experiment.md](gate-change-experiment.md). Investigation controls are in
+[investigation-experiment.md](investigation-experiment.md) and
+[open-question-pilot.md](open-question-pilot.md). Current acceptance and remaining work belong to
+[workflow-progress.md](workflow-progress.md); this walkthrough does not maintain result counts.
 
 ## Reliability
 
@@ -132,7 +128,7 @@ yet (the console polls snapshots; there is no SSE).
 ## What is not proven yet
 
 - Live runs: all 8 demo cases replay with live Jev and the live investigation helper, three runs
-  in a row, and screening has no missed rule; see [tuning-log.md](tuning-log.md). These are
+  in a row, and screening has no missed rule; see [tuning-log.md](archive/tuning-log.md). These are
   development-set numbers; there is no blind set yet, and the benchmarks (Jev vs structured
   output, fixed workflow vs helper, native vs A2A, cost per rule) are still to run.
 - Draft materials: the screening samples' expected groups and the Schedule G and H recordings need a

@@ -63,6 +63,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: node scripts/materials-lock.mjs --check
+      - run: pnpm docs:check
       - run: pnpm test
       - run: pnpm replay
       - run: pnpm faults

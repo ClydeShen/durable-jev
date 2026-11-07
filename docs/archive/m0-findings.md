@@ -1,5 +1,10 @@
 # M0 spike findings
 
+Status: archived evidence. Scope: the recorded study only.
+
+Historical M0 feasibility evidence for the versions recorded below. Commands and design implications
+are observations from that study; current operation and contracts belong to the active docs.
+
 Every spike can be reproduced in this repository. The findings hold for the pinned versions only.
 
 ## Pi Durable 1.4.0

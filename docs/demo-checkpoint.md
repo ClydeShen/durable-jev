@@ -36,7 +36,5 @@ checkpoint is unchanged.
 Cleanup effort is not part of subsequent policy-change or cross-domain migration cost measurements.
 Logistics-to-insurance A2A cooperation remains an optional bonus.
 
-Cleanup and documentation were maintained on `baseline-cleanup-plan`. Future experiments start
-on a new branch from the current baseline recovery tag, not from this older demo checkpoint.
-Read `.harness/implementation-notes.md` before resuming. Documentation corrections do not move
-any original recovery tag or backup branch.
+For ongoing work, use [branch-strategy.md](branch-strategy.md) and the current delivery handoff.
+Restoring this historical demo does not change the active branch or experimental baseline.

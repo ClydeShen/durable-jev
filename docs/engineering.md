@@ -15,7 +15,7 @@ owning tool; UI and module-design conventions also require review.
 `pnpm check` runs, in order:
 
 ```
-lint → workspace-lint → typecheck → boundaries → architecture graph → protected files → knip → duplication → test
+lint → workspace-lint → typecheck → boundaries → architecture graph → protected files → docs → knip → duplication → test
 ```
 
 ## One owner per concern
@@ -34,6 +34,7 @@ lint → workspace-lint → typecheck → boundaries → architecture graph → 
 | Secrets | gitleaks | — |
 | Tool versions | [mise.toml](../mise.toml) for Node and gitleaks, used locally and in CI; `packageManager` in `package.json` for pnpm | `actions/setup-node` versions, `.nvmrc` |
 | Protected files | [eval/materials.lock.json](../eval/materials.lock.json), [.claude/settings.json](../.claude/settings.json), [CODEOWNERS](../.github/CODEOWNERS) (see below) | — |
+| Document inventory and local inline links/headings | `pnpm docs:check`; ownership and lifecycle in [.harness/README.md](../.harness/README.md) | Semantic accuracy and external URLs require review |
 | Vulnerable dependencies | `pnpm audit` (`pnpm security`) | — |
 
 Run `mise install` once to get the pinned Node and gitleaks; without gitleaks the commit-time

@@ -19,7 +19,7 @@ whole-module Pi Durable scheduling are integrated into the business runtime.
 | Lint and format | Biome |
 | Tracing | `@opentelemetry/api` + W3C traceparent verified in a P0 spike; cross-service/restart trace integration remains T6.2 |
 | Front end | Vite + React, one page holding the console and the demo controls |
-| External dependencies | `@earendil-works/pi-durable` 1.4.0, `@a2a-js/sdk` 1.3.0, `@typesafe-ai/sdk` 0.7.0 (model `jev-1.14.0`), OpenTelemetry API 1.10.0; see `docs/m0-findings.md` |
+| External dependencies | `@earendil-works/pi-durable` 1.4.0, `@a2a-js/sdk` 1.3.0, `@typesafe-ai/sdk` 0.7.0 (model `jev-1.14.0`), OpenTelemetry API 1.10.0; see `docs/archive/m0-findings.md` |
 
 ## 2. Folders
 

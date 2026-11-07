@@ -11,6 +11,8 @@ Frozen restoration instructions belong to [docs/baseline.md](docs/baseline.md) a
 [docs/demo-checkpoint.md](docs/demo-checkpoint.md).
 
 Update documentation in its owning file; use links instead of repeating specifications or results.
+Register new documents and follow lifecycle/writing rules in `.harness/README.md`.
+Run `pnpm docs:check` after document moves or link changes; it also runs in `pnpm check`.
 Keep current instructions free of discussion transcripts, reasoning chronology and superseded plans.
 Every accepted milestone archive includes synchronized evidence and an executable
 [docs/demo-guide.md](docs/demo-guide.md), distinguishing UI actions from report demonstrations.

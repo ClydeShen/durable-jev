@@ -32,10 +32,10 @@ Document ownership and update rules are in [.harness/README.md](.harness/README.
 | Take over the current direction and working-branch plan | [implementation-notes.md](.harness/implementation-notes.md) |
 | Understand how the agents are organised and whether they carry a large rule estate | [agent-architecture.md](docs/agent-architecture.md) |
 | See the investigation helper's budgets, timeouts and human checkpoints | [runtime-controls.md](docs/runtime-controls.md) |
-| Follow the tuning of the real models and its results | [tuning-log.md](docs/tuning-log.md) |
+| Inspect historical development-set tuning | [tuning-log.md](docs/archive/tuning-log.md) |
 | See the real dependencies between packages (generated) | [architecture-graph.md](docs/architecture-graph.md) |
 | Learn the engineering conventions and which tool enforces each | [engineering.md](docs/engineering.md) |
-| Review the M0 technical spike findings | [m0-findings.md](docs/m0-findings.md) |
+| Inspect historical M0 technical spike findings | [m0-findings.md](docs/archive/m0-findings.md) |
 
 ## Folders
 

@@ -28,7 +28,7 @@ Live authorization belongs to spec section 17, consumed requests to `jev-allowan
 | [x] | T0.5 | Spike Jev: settle the TS client or HTTP interface; one Choice and one Noul | Real calls with a key; the interface shape recorded without one | T0.1 |
 | [x] | T0.6 | Spike trace: traceparent propagation between two Express services | The downstream log carries the upstream traceId | T0.1 |
 | [x] | T0.8 | Spike: Pi Durable carries a module-level flow (deterministic rule evaluation + waiting for a person + recovery after a kill) without an LLM choosing the next step | Feasible or clearly not, with findings in m0-findings and the design updated | T0.3 |
-| [x] | T0.7 | `docs/m0-findings.md` + pinned versions + design updated | Per dependency: version, feasibility, limits, effect on the design | T0.3–T0.6 |
+| [x] | T0.7 | `docs/archive/m0-findings.md` + pinned versions + design updated | Per dependency: version, feasibility, limits, effect on the design | T0.3–T0.6 |
 
 ## P1 Deterministic core
 
@@ -106,7 +106,7 @@ Live authorization belongs to spec section 17, consumed requests to `jev-allowan
 
 | Status | ID | Task | Done when | Depends on |
 |---|---|---|---|---|
-| [x] | T7.0 | Switch to live tuning: once the whole chain runs scripted, tune Jev's question wording, label descriptions, thresholds and the authoring agent's prompt on the development set; record measures before and after; the blind set takes no part | A tuning record; questions and threshold versions frozen before the blind test (3 rounds, see `docs/tuning-log.md`; CUST-MEDI-5 became a human step, live replay 8/8, screening misses nothing; the blind set is not built) | T3.6, T4.3, T3.8 |
+| [x] | T7.0 | Switch to live tuning: once the whole chain runs scripted, tune Jev's question wording, label descriptions, thresholds and the authoring agent's prompt on the development set; record measures before and after; the blind set takes no part | A tuning record; questions and threshold versions frozen before the blind test (3 rounds, see `docs/archive/tuning-log.md`; CUST-MEDI-5 became a human step, live replay 8/8, screening misses nothing; the blind set is not built) | T3.6, T4.3, T3.8 |
 | [ ] | T7.1 | B1 Jev vs structured output | Report macro-F1, cost, p95 | T4.2 |
 | [~] | T7.2 | B2 fixed workflow vs investigation helper | W2 supplies scripted strategy/checkpoint controls; live-model completion/invalid-call rates and a reviewed comparison remain open | T3.6, T4.6 |
 | [x] | T7.3 | B3 in-memory vs Pi Durable | Recovery success rate, repeated side effects (F01–F03 exit for real (137) in a child process and recover from the same file; F06 does not apply, as the console polls snapshots) | T5.3 |

@@ -36,7 +36,8 @@
     "eval:open-question-pilot": "node scripts/verify-open-question-pilot.mjs",
     "eval:evidence-draft": "node eval/runner/dist/evidence-draft-main.js",
     "faults": "node eval/runner/dist/faults-main.js",
-    "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && node scripts/materials-lock.mjs --check && pnpm knip && pnpm duplication && pnpm test",
+    "docs:check": "node scripts/check-docs.mjs",
+    "check": "pnpm lint && pnpm workspace-lint && pnpm typecheck && pnpm boundaries && node scripts/architecture-graph.mjs --check && node scripts/materials-lock.mjs --check && pnpm docs:check && pnpm knip && pnpm duplication && pnpm test",
     "author": "node tools/rule-authoring/dist/main.js",
     "materials:lock": "node scripts/materials-lock.mjs"
   },

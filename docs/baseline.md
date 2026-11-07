@@ -127,7 +127,8 @@ not credentials, installed dependencies, temporary evidence or the current local
 The demo initializes from committed materials. Resolve the exact archive commit with
 `git rev-parse baseline-2026-10-24-r2^{commit}`.
 
-Future experiments start on a new branch from `baseline-2026-10-24-r2`, not on any backup branch.
+Ongoing experiments use the active branch in [branch-strategy.md](branch-strategy.md), never a
+backup branch. Separate reproduction checkouts may start from the frozen tag.
 Use that tag for migration diffs and count additional shared-core, domain, material and wiring
 work after this freeze. No policy-change or insurance experiment is initiated by archiving it.
 
@@ -136,7 +137,7 @@ work after this freeze. No policy-change or insurance experiment is initiated by
 Toolchain: Node 26.12.1, pnpm 12.15.0, TypeScript 6.0.3, ES2025. All acceptance execution is scripted;
 no live model calls are part of this cleanup. Delivery-agent skills are unchanged and not project source.
 
-SHA-256 references (current LF checkout):
+SHA-256 references at the baseline freeze (LF-normalized):
 
 - `eval/materials.lock.json`: `e2e634157a813a7b23a9a162294f6ad18227735b828062188a564b16d8ed376d`
 - `pnpm-lock.yaml`: `c0f075670191d70444917f4aba2e345366cf79c19a370605494900335b43d023`
