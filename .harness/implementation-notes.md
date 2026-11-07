@@ -12,8 +12,10 @@ Continue M2's bounded investigation comparison. The latest completed slice is pr
 recovery for logistics evidence drafts; reproduce it with `pnpm eval:evidence-draft`.
 Protocols, results and limitations belong to [open-question-pilot.md](../docs/open-question-pilot.md).
 
-Next prepare reviewed investigation cases and scoring criteria for a model/fixed-controller
-comparison. Argument-schema refusals and multi-case/concurrent-change controls remain unverified
+The draft reroute comparison protocol and `pnpm eval:investigation prepare` provide four existing
+offer conditions, a first-valid baseline and a source/input-hashed preparation manifest. Continue
+with independent protocol/label review and bounded model-run preparation; exact model and request
+cap are not authorized or frozen. Argument-schema refusals and multi-case/concurrent-change controls remain unverified
 for the new document adapters. M1 review/cost evidence, M3 blind custody and M4 insurance remain
 open; task acceptance is tracked in the roadmap.
 

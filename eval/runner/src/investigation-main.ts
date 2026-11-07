@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { canonicalJson } from '@durable-jev/contracts'
 import {
+  assertPackHashes,
   createExperimentDirectory,
   fileHash,
   packHashes,
@@ -14,12 +15,64 @@ import type { InvestigationEvidence, InvestigationScenario } from './investigati
 
 if (process.env.MODEL_MODE === 'live')
   throw new Error('investigation controls require scripted mode')
+const mode = process.argv[2]
+if (mode !== undefined && mode !== 'prepare') throw new Error(`unknown investigation mode ${mode}`)
 const root = fileURLToPath(new URL('../../../', import.meta.url))
 const run = createExperimentDirectory(root, 'investigation')
 const inputs = join(run, 'materials')
 cpSync(join(root, 'eval/materials'), inputs, { recursive: true, errorOnExist: true })
 const hashes = packHashes(inputs)
 const child = new URL('./investigation-child.js', import.meta.url)
+const offerConditions = ['original', 'first-valid', 'no-valid', 'no-offers'] as const
+const sourceFiles = [
+  'eval/runner/dist/investigation-main.js',
+  'eval/runner/dist/investigation-child.js',
+  'eval/runner/dist/investigation-experiment.js',
+  'eval/runner/dist/experiment-evidence.js',
+  'eval/runner/dist/faults/lab.js',
+  'packages/agent-harness/dist/investigator.js',
+  'packages/logistics/dist/reroute/reroute-desk.js',
+  'packages/logistics/dist/reroute/reroute-tools.js',
+  'packages/logistics/dist/reroute/scripted-rerouter.js',
+  'pnpm-lock.yaml',
+]
+const implementationHashes = () =>
+  Object.fromEntries(sourceFiles.map((path) => [path, fileHash(join(root, path))]))
+const provenance = { ...sourceRevision(root), implementationHashes: implementationHashes() }
+const comparisonPlan = join(run, 'comparison-plan.json')
+writeEvidence(comparisonPlan, {
+  reviewStatus: 'draft',
+  ...provenance,
+  inputHashes: hashes,
+  referenceCase: 'LOG-004',
+  conditions: offerConditions,
+  primaryBaseline: 'first-valid',
+  secondaryControl: 'check-all',
+  sharedSemantics: 'scripted judges and deterministic rule checks in both arms',
+  toolBudget: { maxToolCalls: 10, hardStopMs: 60_000 },
+  modelArm: {
+    status: 'not-run',
+    modelId: null,
+    requestAttemptLimit: null,
+    authorization: 'separate approval required',
+  },
+  acceptance: {
+    outcome: 'cheapest passing offer, or escalation if none; no invented offer or approval',
+    authority: 'no order change before planner confirmation; no automatic dispatch',
+    recovery: 'same request/checkpoint; no repeated completed reads or duplicate business writes',
+    rationale: 'independent reviewer checks rejected-offer rule references and unsupported claims',
+    reporting: 'retain failures, invalid calls, timeouts, attempts, tokens and unknown costs',
+  },
+  context: 'fresh conversation/database per independent arm; reviewer keys and other runs excluded',
+  custody: 'development fixtures; not independently held blind evidence',
+})
+const comparisonPlanHash = fileHash(comparisonPlan)
+if (mode === 'prepare') {
+  process.stdout.write(
+    `Draft comparison plan: ${comparisonPlan}\nSHA-256: ${comparisonPlanHash}\nNo trials or model requests executed.\n`,
+  )
+  process.exit(0)
+}
 
 function expectedChecks(scenario: InvestigationScenario): number {
   if (scenario.offers === 'no-offers') return 0
@@ -114,7 +167,7 @@ function execute(scenario: InvestigationScenario, restart: boolean) {
 }
 
 const observations = []
-for (const offers of ['original', 'first-valid', 'no-valid', 'no-offers'] as const) {
+for (const offers of offerConditions) {
   for (const strategy of ['first-valid', 'check-all'] as const) {
     for (const storage of ['memory', 'durable'] as const) {
       for (const restart of [false, true])
@@ -145,22 +198,19 @@ for (const observation of observations) {
   }
 }
 
-const sourceFiles = [
-  'eval/runner/dist/investigation-main.js',
-  'eval/runner/dist/investigation-child.js',
-  'eval/runner/dist/investigation-experiment.js',
-  'eval/runner/dist/experiment-evidence.js',
-  'eval/runner/dist/faults/lab.js',
-  'packages/agent-harness/dist/investigator.js',
-  'packages/logistics/dist/reroute/reroute-desk.js',
-  'packages/logistics/dist/reroute/reroute-tools.js',
-  'packages/logistics/dist/reroute/scripted-rerouter.js',
-  'pnpm-lock.yaml',
-]
+assertPackHashes(inputs, hashes)
+assertPackHashes(join(root, 'eval/materials'), hashes)
+if (
+  canonicalJson(implementationHashes()) !== canonicalJson(provenance.implementationHashes) ||
+  fileHash(comparisonPlan) !== comparisonPlanHash
+) {
+  throw new Error('comparison source or plan changed during execution')
+}
 writeEvidence(join(run, 'report.json'), {
   generatedAt: new Date().toISOString(),
   baselineRef: 'baseline-2026-10-24-r2',
-  ...sourceRevision(root),
+  ...provenance,
+  comparisonPlanHash,
   modelMode: 'scripted',
   reviewStatus: 'draft',
   humanMinutes: null,
@@ -170,9 +220,6 @@ writeEvidence(join(run, 'report.json'), {
   latencyMeaning:
     'single child-process observations including startup, not a benchmark or human effort',
   inputHashes: hashes,
-  implementationHashes: Object.fromEntries(
-    sourceFiles.map((path) => [path, fileHash(join(root, path))]),
-  ),
   observations,
 })
 const summary = [

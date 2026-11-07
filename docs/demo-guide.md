@@ -232,6 +232,8 @@
 
 ## 场景 13：调查草稿的进程恢复（报告演示）
 
+若观众追问真实模型对照怎么验收，打开 `docs/investigation-experiment.md` 的 Draft model comparison protocol。需要展示输入留痕时，提前运行 `pnpm eval:investigation prepare` 并打开输出的 `comparison-plan.json`：四种报价条件、首个合格即停的固定基线、验收条件和哈希都已记录，模型配置与请求上限仍待单独确认。这是准备清单，不能称为真实模型对照结果。
+
 | # | 操作 | 会看到 | 你说 |
 |---|---|---|---|
 | 1 | 打开 `pnpm eval:evidence-draft` 输出的 `report.json` | 物流文档、待审草稿及三个 Pi 对照组 | "这段使用现有模拟物流物料，下一步由手写策略选择。" |

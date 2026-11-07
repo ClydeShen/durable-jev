@@ -85,6 +85,42 @@ tool-budget reset and uncapped-restart limits remain. Native/A2A transport compa
 
 Current continuation work is tracked in [workflow-progress.md](workflow-progress.md).
 
+## Draft model comparison protocol
+
+`pnpm eval:investigation prepare` copies the existing materials into an isolated report directory
+and writes `comparison-plan.json` plus its printed SHA-256. It executes no trials or model calls.
+The normal command writes the same plan before its 32 scripted controls, includes the plan hash
+in its report, and checks the plan, compiled implementation and copied/source material hashes
+again before reporting results. Preparation from a dirty tree is identified by source status;
+a reviewed live candidate must be prepared from its frozen clean commit.
+
+The primary baseline is the existing price-ordered first-valid controller, which stops when a
+passing offer is found. Check-all is a secondary sensitivity control. The proposed model arm
+uses the same RerouteDesk, tool contracts, deterministic rule checks, scripted semantic answers
+and Pi SQLite, isolating controller decisions. This is not a comparison against a non-Pi engine.
+The request ceiling and exact model remain unset until separately authorized and frozen.
+
+| Development condition | Expected business outcome, pending independent review |
+|---|---|
+| Original offers | Propose OFF-FROST-0630 after cheaper candidates fail checks |
+| Valid offer repriced cheapest | Propose OFF-FROST-0630 without requiring checks of every more expensive offer |
+| No valid offer | Escalate; no invented replacement |
+| No offers | Escalate without checking an invented offer |
+
+Each independent arm starts with fresh conversation/business state and only permitted case/tool
+inputs. Scoring criteria, expected outcomes and other transcripts stay outside model input.
+Recovery resumes the same request rather than creating a fresh trial. Both arms use the same
+10-tool-call/60-second run budget; a future provider request cap must be enforced separately.
+Do not tune the fixed controller after seeing model outputs. Counterbalance execution order.
+
+Mechanical scoring checks outcome, current candidate checks, unchanged order before confirmation,
+role enforcement, single proposal/confirmation and no automatic dispatch. It retains invalid calls,
+timeouts and unfinished attempts as failures. A reviewer separately checks whether rationale cites
+actual rejected-offer rules and makes unsupported factual claims; word matching is not quality
+scoring. Report denominator, tool attempts, completion, tokens, latency, human review/repair and
+unknown prices separately. Four development conditions cannot establish accuracy, cost savings
+or general superiority. This protocol has no completed model arm or independent business review.
+
 ## Effort and recovery
 
 All fixture preparation, the controller adapter, process/evidence runner, regression work and demo
