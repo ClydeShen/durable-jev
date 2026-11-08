@@ -241,8 +241,17 @@ export const scenarios: FaultScenario[] = [
       const settled = await desk.settled(investigationId)
       await desk.close()
       const r13 = await lab.status('R13@ITEM-1')
+      const row = lab.agents.transport.store.db
+        .prepare<[], { payload_json: string }>(
+          "SELECT payload_json FROM outbox WHERE event_name = 'investigation.tool_called'",
+        )
+        .get()
+      const refusal = row ? JSON.parse(row.payload_json) : undefined
       return verdict(
-        r13 === 'WAITING_HUMAN' && settled?.status === 'ESCALATED',
+        r13 === 'WAITING_HUMAN' &&
+          settled?.status === 'ESCALATED' &&
+          refusal?.rejectionCode === 'tool_unavailable' &&
+          Boolean(refusal.callId),
         `R13 is still ${r13}; after the helper called an approval tool that does not exist, the result is ${settled?.status} (${settled?.escalation})`,
       )
     },

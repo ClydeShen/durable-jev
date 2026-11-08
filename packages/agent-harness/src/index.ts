@@ -6,5 +6,6 @@ export {
   type RunBudget,
   type RunOutcome,
   type ScriptedStep,
+  type ToolCallRecord,
 } from './investigator.js'
 export { defineInvestigationTool, type InvestigationTool } from './tools.js'

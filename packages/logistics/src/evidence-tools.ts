@@ -24,7 +24,7 @@ function readEvidenceTool(cases: CaseStore<Shipment>) {
   return defineInvestigationTool({
     name: 'read_case_evidence',
     description: 'Read documents from the current case revision, including citation fingerprints.',
-    parameters: Type.Object({}),
+    parameters: Type.Object({}, { additionalProperties: false }),
     execute: (_args, scope: EvidenceScope) => {
       const shipment = currentShipment(cases, scope)
       if (!shipment) return { error: 'CASE_NOT_CURRENT' }
@@ -44,18 +44,24 @@ function submitEvidenceTool(cases: CaseStore<Shipment>) {
     name: 'submit_evidence_draft',
     description:
       'Record one investigation draft for human review, citing current documents. Does not approve or release the shipment.',
-    parameters: Type.Object({
-      summary: Type.String({ minLength: 1 }),
-      unresolved: Type.Array(Type.String({ minLength: 1 })),
-      citations: Type.Array(
-        Type.Object({
-          documentId: Type.String({ minLength: 1 }),
-          version: Type.Integer({ minimum: 1 }),
-          fingerprint: Type.String({ pattern: '^[a-f0-9]{64}$' }),
-        }),
-        { minItems: 1, uniqueItems: true },
-      ),
-    }),
+    parameters: Type.Object(
+      {
+        summary: Type.String({ minLength: 1 }),
+        unresolved: Type.Array(Type.String({ minLength: 1 })),
+        citations: Type.Array(
+          Type.Object(
+            {
+              documentId: Type.String({ minLength: 1 }),
+              version: Type.Integer({ minimum: 1 }),
+              fingerprint: Type.String({ pattern: '^[a-f0-9]{64}$' }),
+            },
+            { additionalProperties: false },
+          ),
+          { minItems: 1, uniqueItems: true },
+        ),
+      },
+      { additionalProperties: false },
+    ),
     execute: (args, scope: EvidenceScope) =>
       cases.transaction(() => {
         const shipment = currentShipment(cases, scope)
@@ -69,18 +75,23 @@ function submitEvidenceTool(cases: CaseStore<Shipment>) {
           )
         })
         if (!valid) return { recorded: false, error: 'CITATION_NOT_CURRENT' }
+        const draft = {
+          summary: args.summary,
+          unresolved: args.unresolved,
+          citations: args.citations,
+        }
         const result = runOnce(
           cases.db,
           {
             operationId: canonicalJson(['evidence-draft', scope]),
             kind: 'evidence-draft',
-            request: args,
+            request: draft,
           },
           () => {
             cases.record({
               caseId: scope.caseId,
               eventName: 'investigation.evidence_draft',
-              payload: { ...scope, ...args, reviewStatus: 'draft' },
+              payload: { ...draft, ...scope, reviewStatus: 'draft' },
             })
             return { reviewStatus: 'draft' }
           },

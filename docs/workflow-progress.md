@@ -9,7 +9,7 @@ are maintained in [branch-strategy.md](branch-strategy.md); task-level acceptanc
 | Milestone | Status | Remaining acceptance work |
 |---|---|---|
 | M1 logistics policy contract | In progress | Review policy/engine boundary, existing-order behavior and known invalidation limits |
-| M2 configurable durable agents | In progress | Model substitution, A2A configuration/task semantics and bounded robustness evidence; resolve identified audit-contract defects |
+| M2 configurable durable agents | In progress | Model substitution, A2A configuration/task semantics and bounded robustness evidence |
 | M3 independent validation | Not started | Independent custody, frozen candidate/labels and bounded failure evaluation |
 | M4 insurance policy replacement | Not started | Bounded reviewed policy, shared-path execution and complete migration diff/limits |
 
@@ -50,6 +50,7 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 | M2-prep-04 | Compare direct/Pi authored controls and resume two real process exits | Before-submit and after-write cuts: completed reads reused, retried submissions deduplicated, one identical review draft; instructions/schemas/attempts recorded | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0; scripted model steps are not billing |
 | M2-prep-05 | Define fair reroute comparison and offline preparation manifest | Four existing offer conditions; first-valid primary baseline; input/source/plan hashes checked; model arm and review pending | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
 | M2-prep-06 | Verify selected Pi argument refusals and two-case evidence isolation | Malformed calls and unknown dispatch never execute; case arguments cannot redirect reads; colliding IDs preserve separate drafts | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
+| M2-contract-01 | Repair trusted draft metadata and refused-call audit coverage | Schema/storage regressions plus structured rejection callbacks and F09 outbox assertion | Unmeasured | Delivery-agent usage unknown; runtime model requests: 0 |
 | DOC-01 | Consolidate ownership, lifecycle, current handoff and experiment references | Historical studies archived; inventory/link gate added; frozen evidence unchanged | Unmeasured | Delivery-agent usage unknown; runtime model requests: 0 |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,

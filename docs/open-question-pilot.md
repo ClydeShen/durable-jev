@@ -97,7 +97,7 @@ Both controllers are authored algorithms. Their agreement demonstrates this exec
 contract, not equivalent reasoning or any model advantage. Fresh runtime state does not establish
 independent blind custody. These checks run on Linux and Windows CI via the same command.
 
-Fifteen tests in `packages/logistics/src/evidence-tools.test.ts` cover the following boundaries:
+Tests in `packages/logistics/src/evidence-tools.test.ts` cover the following boundaries:
 
 - Pi refuses empty citations, a missing summary, malformed fingerprint and nonnumeric version
   before invoking the domain executor; error results reach the scripted controller.
@@ -105,6 +105,10 @@ Fifteen tests in `packages/logistics/src/evidence-tools.test.ts` cover the follo
 - Two cases in one database can share document/investigation IDs without sharing draft operations.
   Citations from one case with different document content are refused for the other.
 - A model-supplied `caseId` cannot redirect a read away from the trusted conversation scope.
+- Extra scope/review fields are refused by Pi; direct internal calls also preserve trusted
+  audit metadata and normalize the idempotent request to declared draft fields.
+- Invalid-argument and unknown-tool refusals reach the audit callback with a call ID and
+  rejection code. F09 additionally verifies the refusal is recorded in the domain outbox.
 - Current citations, unbumped content replacement, missing/stale scope and persistent duplicate/
   conflicting submissions remain covered, including database reopen.
 

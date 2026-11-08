@@ -12,10 +12,11 @@ Primary goals are defined in spec section 9: policy/engine isolation, configurab
 A2A operation/configuration and durable stability/robustness. Code/authoring effort is secondary.
 Use the milestone acceptance boundaries in the branch strategy and tasks T8.5/T8.8/T8.9/T8.6.
 
-For already implemented work, address the two verified contract defects before relying on the
-new draft audit records: model extras can overwrite payload scope fields in evidence-tools.ts,
-and rejected schema/unknown-tool calls are absent from business-side attempt logging. This is
-an identified implementation/design mismatch; unstarted tasks are not deviations.
+Draft scope metadata is protected by strict schemas and declared-field storage. Settled Pi
+schema/unknown-tool refusals are audited with call IDs and rejection codes; F09 checks the outbox.
+Continue primary model-configuration/substitution validation using existing adapter interfaces,
+then review policy and A2A evidence against their acceptance boundaries. Unstarted work is not
+a design deviation.
 
 Review existing policy and recovery evidence against primary acceptance before expanding tests
 or benchmarks. Document tools and reroute controls have separate evidence owners in the progress

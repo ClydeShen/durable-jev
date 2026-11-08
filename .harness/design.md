@@ -304,6 +304,8 @@ Identical retries return the saved result; conflicting replacement requests rais
 Validation precedes deduplication, so changed evidence can invalidate a retry. Fingerprints prove
 content identity, not semantic support or proof of reading. The adapter provides no authentication,
 referral, approval, shipment mutation or release capability and has no browser/API route.
+Document-tool schemas reject additional properties. Draft storage selects declared fields and
+applies trusted scope separately, including for internal callers that bypass Pi validation.
 Protocols and recovery evidence belong to `docs/open-question-pilot.md`.
 
 ### 7.2 Controls
@@ -321,6 +323,11 @@ Protocols and recovery evidence belong to `docs/open-question-pilot.md`.
 | Traceability | Tool calls and investigation transitions emit domain events; semantic answers are recorded separately |
 
 Each row has an evidence test or fault scenario in `docs/runtime-controls.md`.
+Execution attempts are recorded before domain execution. After a tool round settles, the harness
+reads committed Pi diagnostics and also reports unknown-tool and invalid-argument refusals with
+their call ID and rejection code. Budget blocks keep their existing pre-execution record. These
+callbacks can replay after interruption; call IDs identify repeated audit deliveries, not a
+claim of exactly-once telemetry. The execution budget does not cap provider request attempts.
 
 ### 7.3 Investigation evidence
 

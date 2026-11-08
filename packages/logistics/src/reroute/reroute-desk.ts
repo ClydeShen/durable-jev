@@ -96,8 +96,8 @@ export class RerouteDesk {
       scopeOf: (conversationId) => investigations.byConversation(conversationId),
       model: options.model,
       budget: options.budget,
-      onToolCall: ({ scope, tool, args, blocked }) =>
-        record(scope, 'investigation.tool_called', { tool, args, blocked }),
+      onToolCall: ({ scope, tool, args, blocked, callId, rejectionCode }) =>
+        record(scope, 'investigation.tool_called', { tool, args, blocked, callId, rejectionCode }),
     })
     return new RerouteDesk(options, investigations, investigator)
   }

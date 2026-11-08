@@ -3,7 +3,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CaseStore } from '@durable-jev/agent-core'
-import { DurableInvestigator, type InvestigatorModel } from '@durable-jev/agent-harness'
+import {
+  DurableInvestigator,
+  type InvestigatorModel,
+  type ToolCallRecord,
+} from '@durable-jev/agent-harness'
 import { shipmentSchema } from '@durable-jev/contracts'
 import { unpublishedEvents } from '@durable-jev/store'
 import { expect, it } from 'vitest'
@@ -40,18 +44,22 @@ function fixture(path = ':memory:') {
 }
 
 async function runEvidence(f: ReturnType<typeof fixture>, model: InvestigatorModel) {
-  const executed: string[] = []
+  const calls: ToolCallRecord<typeof f.scope>[] = []
   const opened = await DurableInvestigator.open({
     storage: 'memory',
     tools: f.tools,
     scopeOf: () => f.scope,
     instructions: 'Read documents and submit a draft for human review.',
     model,
-    onToolCall: ({ tool }) => executed.push(tool),
+    onToolCall: (record) => calls.push(record),
   })
   try {
     const outcome = await opened.run(await opened.begin(), 'draft-run', 'Investigate packaging', {})
-    return { outcome, executed }
+    return {
+      outcome,
+      calls,
+      executed: calls.filter((call) => !call.blocked).map((call) => call.tool),
+    }
   } finally {
     await opened.close()
   }
@@ -93,7 +101,7 @@ it.each(['empty-citations', 'missing-summary', 'bad-fingerprint', 'bad-version']
       if (mutation === 'missing-summary') Reflect.deleteProperty(args, 'summary')
       if (mutation === 'bad-fingerprint') citation.fingerprint = 'not-a-hash'
       if (mutation === 'bad-version') Reflect.set(citation, 'version', 'one')
-      const { outcome, executed } = await runEvidence(f, {
+      const { outcome, executed, calls } = await runEvidence(f, {
         kind: 'scripted',
         next: (results) =>
           results.length
@@ -104,6 +112,13 @@ it.each(['empty-citations', 'missing-summary', 'bad-fingerprint', 'bad-version']
       if (outcome.status === 'finished')
         expect(outcome.answer).toMatch(/invalid|validat|argument|schema/i)
       expect(executed).toEqual([])
+      expect(calls).toHaveLength(1)
+      expect(calls[0]).toMatchObject({
+        scope: f.scope,
+        tool: 'submit_evidence_draft',
+        rejectionCode: 'invalid_arguments',
+      })
+      expect(calls[0]?.callId).toBeTruthy()
       expect(unpublishedEvents(f.cases.db)).toEqual([])
       expect(f.cases.caseRecord(f.scope.caseId)?.data).toEqual(f.shipment)
     } finally {
@@ -115,7 +130,7 @@ it.each(['empty-citations', 'missing-summary', 'bad-fingerprint', 'bad-version']
 it('Pi refuses an unregistered dispatch tool without invoking a domain executor', async () => {
   const f = fixture()
   try {
-    const { outcome, executed } = await runEvidence(f, {
+    const { outcome, executed, calls } = await runEvidence(f, {
       kind: 'scripted',
       next: (results) =>
         results.length
@@ -126,6 +141,12 @@ it('Pi refuses an unregistered dispatch tool without invoking a domain executor'
     if (outcome.status === 'finished')
       expect(outcome.answer).toMatch(/unknown|not found|not registered|not available|no tool/i)
     expect(executed).toEqual([])
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toMatchObject({
+      scope: f.scope,
+      tool: 'dispatch_order',
+      rejectionCode: 'tool_unavailable',
+    })
     expect(unpublishedEvents(f.cases.db)).toEqual([])
     expect(f.cases.caseRecord(f.scope.caseId)?.completedAt).toBeUndefined()
   } finally {
@@ -179,15 +200,42 @@ it('model arguments cannot redirect evidence reads to another stored case', asyn
           : { call: 'read_case_evidence', args: { caseId: other.caseId } },
     })
     expect(outcome.status).toBe('finished')
-    expect(executed).toEqual(['read_case_evidence'])
+    expect(executed).toEqual([])
     if (outcome.status === 'finished') {
-      const records = JSON.parse(outcome.answer) as { result: { documents: { text: string }[] } }[]
-      expect(records[0]?.result.documents.map((doc) => doc.text)).toEqual(
-        f.shipment.documents.map((doc) => doc.text),
-      )
+      expect(outcome.answer).toMatch(/invalid|argument|additional/i)
       expect(outcome.answer).not.toContain('PRIVATE-OTHER-CASE')
     }
     expect(unpublishedEvents(f.cases.db)).toEqual([])
+  } finally {
+    f.cases.db.close()
+  }
+})
+
+it('refuses model-supplied draft scope fields and preserves trusted metadata for direct callers', async () => {
+  const f = fixture()
+  const args = {
+    ...f.args,
+    caseId: 'FORGED',
+    caseRevision: 999,
+    investigationId: 'FORGED',
+    reviewStatus: 'approved',
+  }
+  try {
+    const { executed, calls } = await runEvidence(f, {
+      kind: 'scripted',
+      next: (results) =>
+        results.length
+          ? { answer: JSON.stringify(results) }
+          : { call: 'submit_evidence_draft', args },
+    })
+    expect(executed).toEqual([])
+    expect(calls[0]?.rejectionCode).toBe('invalid_arguments')
+    expect(unpublishedEvents(f.cases.db)).toEqual([])
+    expect(f.submit.execute(args, f.scope)).toMatchObject({ recorded: true })
+    const [event] = unpublishedEvents(f.cases.db)
+    expect(event?.caseId).toBe(f.scope.caseId)
+    expect(event?.payload).toEqual({ ...f.args, ...f.scope, reviewStatus: 'draft' })
+    expect(f.submit.execute(f.args, f.scope)).toMatchObject({ status: 'duplicate' })
   } finally {
     f.cases.db.close()
   }

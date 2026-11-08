@@ -12,12 +12,14 @@ import {
   createRegistry,
   defineExtension,
   defineTool,
+  GenerationTask,
   Harness,
   hook,
   type JsonObject,
   MemoryStorage,
   type ModelRef,
   type Storage,
+  ToolResultEntry,
   ToolTask,
 } from '@earendil-works/pi-durable'
 import { openNodeSqliteStorage } from '@earendil-works/pi-durable/storage/sqlite/node'
@@ -53,6 +55,8 @@ export interface ToolCallRecord<Scope> {
   tool: string
   args: unknown
   blocked?: string
+  callId?: string
+  rejectionCode?: string
 }
 
 export interface InvestigatorOptions<Scope> {
@@ -114,6 +118,50 @@ async function openStorage(storage: string): Promise<Storage> {
   return storage === 'memory' ? new MemoryStorage() : openNodeSqliteStorage(storage)
 }
 
+function modelToolCalls(messages: readonly Message[]) {
+  return messages.flatMap((message) =>
+    message.role === 'assistant' ? message.content.filter((part) => part.type === 'toolCall') : [],
+  )
+}
+
+function requireScope<Scope>(
+  options: InvestigatorOptions<Scope>,
+  conversationId: ConversationId,
+): Scope {
+  const scope = options.scopeOf(conversationId)
+  if (scope === undefined) throw new ScopeError(conversationId)
+  return scope
+}
+
+function rejectedToolAudit<Scope>(options: InvestigatorOptions<Scope>, storage: Storage) {
+  return hook(GenerationTask, {
+    afterTools: async (assistantId, resultIds, api, hookContext) => {
+      const assistant = (await storage.entry(api.conversationId, assistantId, hookContext))?.entry
+      const calls = modelToolCalls(assistant?.model ?? [])
+      for (const id of resultIds) {
+        const entry = (await storage.entry(api.conversationId, id, hookContext))?.entry
+        if (!entry || !ToolResultEntry.is(entry)) continue
+        const diagnostic = entry.data.diagnostics.find(
+          (item) => item.code === 'invalid_arguments' || item.code === 'tool_unavailable',
+        )
+        if (!diagnostic) continue
+        const result = entry.model?.find((message) => message.role === 'toolResult')
+        const call = calls.find((candidate) => candidate.id === result?.toolCallId)
+        if (!call) continue
+        const scope = requireScope(options, api.conversationId)
+        options.onToolCall?.({
+          scope,
+          tool: call.name,
+          args: call.arguments,
+          callId: call.id,
+          blocked: diagnostic.message,
+          rejectionCode: diagnostic.code,
+        })
+      }
+    },
+  })
+}
+
 /**
  * Runs the investigation helper on Pi Durable: each investigation is its own conversation, tool
  * results are checkpointed, and a run interrupted by a crash continues from its last checkpoint
@@ -131,13 +179,9 @@ export class DurableInvestigator<Scope> {
     options: InvestigatorOptions<ToolScope>,
   ): Promise<DurableInvestigator<ToolScope>> {
     const budget = { ...defaultBudget, ...options.budget }
-    // Counted in memory: a restart resets the count, and restarts are capped by the caller.
+    // Counted in memory: a restart resets the count; no cross-restart cap is enforced here.
     const toolCalls = new Map<ConversationId, number>()
-    const scopeOf = (conversationId: ConversationId) => {
-      const scope = options.scopeOf(conversationId)
-      if (scope === undefined) throw new ScopeError(conversationId)
-      return scope
-    }
+    const scopeOf = (conversationId: ConversationId) => requireScope(options, conversationId)
     const tools = options.tools.map((tool) =>
       defineTool({
         name: tool.name,
@@ -146,7 +190,7 @@ export class DurableInvestigator<Scope> {
         replay: 'safe',
         execute: async (args, api) => {
           const scope = scopeOf(api.conversationId)
-          options.onToolCall?.({ scope, tool: tool.name, args })
+          options.onToolCall?.({ scope, tool: tool.name, args, callId: api.callId })
           const result = await tool.execute(args, scope)
           return { output: [{ type: 'text', text: JSON.stringify(result) }] }
         },
@@ -165,17 +209,25 @@ export class DurableInvestigator<Scope> {
           tool: call.name,
           args: call.arguments,
           blocked,
+          callId: call.id,
         })
         return { block: blocked }
       },
     })
     const registry = createRegistry()
-    registry.install(defineExtension({ name: 'investigation', tools, hooks: [runBudget] }))
+    const storage = await openStorage(options.storage)
+    registry.install(
+      defineExtension({
+        name: 'investigation',
+        tools,
+        hooks: [runBudget, rejectedToolAudit(options, storage)],
+      }),
+    )
     const { provider, ref } = modelSource(options.model)
     const models = createModels()
     models.setProvider(provider)
     const harness = await Harness.open(
-      await openStorage(options.storage),
+      storage,
       { models, registry, settings: { toolExecution: 'sequential' } },
       context,
     )
