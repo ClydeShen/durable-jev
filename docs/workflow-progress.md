@@ -8,12 +8,14 @@ are maintained in [branch-strategy.md](branch-strategy.md); task-level acceptanc
 
 | Milestone | Status | Remaining acceptance work |
 |---|---|---|
-| M1 logistics policy and authoring cost | In progress | Independent direct-edit/authoring review, measured effort and agreed outcome acceptance |
-| M2 Jev/durable workflow comparison | In progress | Reviewed investigation cases, model/fixed-controller comparison and contribution analysis |
-| M3 independent blind evaluation | Not started | Independent custody, frozen candidate/labels and reported failures |
-| M4 insurance migration | Not started | Bounded reviewed policy, shared-path adaptation and complete migration diff/cost |
+| M1 logistics policy contract | In progress | Review policy/engine boundary, existing-order behavior and known invalidation limits |
+| M2 configurable durable agents | In progress | Model substitution, A2A configuration/task semantics and bounded robustness evidence; resolve identified audit-contract defects |
+| M3 independent validation | Not started | Independent custody, frozen candidate/labels and bounded failure evaluation |
+| M4 insurance policy replacement | Not started | Bounded reviewed policy, shared-path execution and complete migration diff/limits |
 
 No milestone has been accepted for archiving. Optional cross-domain A2A follows M4.
+Code-effort and authoring-cost comparisons are secondary measurements under spec section 9;
+their incomplete records do not alone block primary capability acceptance.
 
 ## Evidence index
 

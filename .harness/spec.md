@@ -79,22 +79,25 @@ checks the interface shape and records that honestly in `docs/archive/m0-finding
 
 ## 8. Core concept: the Durable Jev Agent (2026-10-21)
 
-The POC's starting point: when rules grow in number (tens of thousands in import and export
-regulation, thousands of scenarios in cross-border logistics), structured and unstructured rules
-interleave, and there is state and human work, the traditional "code + rule engine + decision
-tables" takes a large team years. The aim is to show that a small team with a few Durable Jev
-Agents might reach comparable results at substantially lower cost; an order-of-magnitude saving
-is a hypothesis, not an acceptance condition or an established result. The principle: let agents do as
-much as possible, leaving only the framework as hand-written code. The business scenario stays
-logistics first, with motor insurance claims as the later cross-domain experiment.
+The primary goal is a rule engine composed of durable domain agents, with policies isolated from
+shared execution through a validated, versioned policy/domain contract. Decision providers such
+as Jev are configurable through explicit interfaces. A2A standardizes agent discovery, capabilities,
+task exchange and configuration. The POC evaluates policy replacement, model substitution and
+execution robustness on synthetic logistics and bounded motor-insurance cases.
+
+Development/code-effort savings are a secondary measurement. They are recorded where observable
+but do not gate acceptance of the primary capabilities. Existing cost records, unknown values
+and the frozen baseline boundary remain valid.
+"Durable Jev Agent" remains the project's historical label; it does not restrict the provider
+interface to Jev. Current Pi/SQLite ownership is stated in section 12, not inferred from the label.
 
 - One business module = one Durable Jev Agent: a rule graph (declarative configuration:
   dependencies, applicability, state, invalidation) + leaf evaluators + human gates + Pi Durable
   persistence, exposed as an A2A agent.
-- The rule-authoring agent (a generative model) writes the rules from the policy text: the rule
+- Optional rule authoring (a generative model) writes the rules from the policy text: the rule
   graph, the expressions of structured rules, Jev's questions for unstructured rules; they take
-  effect after human review. A policy change = edit the text → generate again → replay the labelled
-  cases.
+  effect after human review. When authoring is used, the path is policy text → generation → review
+  → replay. Reviewed direct rule-data changes also satisfy policy-replacement experiments.
 - At run time: Jev answers the unstructured rules (descriptions, notes, documents, customer
   instructions); structured rules (weights, times, amounts, matrices) deterministically run the
   expressions the authoring agent generated, doing what code does best.
@@ -113,43 +116,47 @@ logistics first, with motor insurance claims as the later cross-domain experimen
   relations at a glance; the same graph form zooms in to an agent's own rule flow.
 - `docs/agent-architecture.md`, for a technical CEO: the agents and their responsibilities,
   collaboration patterns, how to extend, maintenance and operations, known limits.
-- Questions to answer (measures for the CEO): the share of hand-written code; the share of rules
+- Secondary measures for the CEO: the share of hand-written code; the share of rules
   Jev carries at run time and the share the authoring agent generated; the time one policy change
-  takes; the cost of implementing one rule; wrong releases and other outcomes in a blind test.
-  Zero wrong releases is a target, not a result to manufacture. Small-sample unit costs do not
-  establish enterprise-scale savings.
+  takes; the cost of implementing one rule. Small-sample unit costs do not establish enterprise-scale
+  savings. Wrong releases and other validation failures are primary robustness findings;
+  zero wrong releases is a target, not a result to manufacture.
 
-## 9. Evaluation priority: reuse and migration economics
+## 9. Evaluation priority: configurable policy-driven durable agents
 
-- Prioritize evidence for rule-authoring cost, blind evaluation and controlled comparisons.
-- The research question is how far durable agents can reduce rule-engine development effort and
-  form agentic workflows, under which conditions they fit, and where they need human intervention.
-  Real-project reuse and comparisons with improving or rewriting engines motivate the experiments;
-  production adoption is not this POC's acceptance criterion.
-- Evaluate policy changes within a domain separately from moving to a different domain. Record
-  reusable mechanisms, domain adapters, rule data, integration work and changes to shared code.
-- Start with policy changes in logistics, then use motor insurance claims as the second domain.
-  Keep the insurance experiment bounded by explicit synthetic policy terms and reviewed cases;
-  it is not an insurance product or a legal-compliance assessment. No particular incumbent engine
-  has been nominated, so do not invent one or present synthetic costs as an enterprise quote.
-- Validate both policy activation strategies separately: existing orders remain on their prior
-  policy, and unshipped existing orders are re-evaluated under the new policy. Keep their costs
-  and outcomes distinct.
-- Domain independence is a hypothesis to test, not an existing capability inferred from rule
-  counts or package boundaries. Record the current coupling before changing it. The agreed
-  pre-baseline cleanup is excluded from later experiment costs; additional adaptation after
-  baseline freeze belongs to the measured candidate approach.
-- Durable agents are intended to preserve common execution mechanisms as rules and domains
-  change. Separate the benefits of declarative rules and adapters from the benefits of durable
-  waiting, recovery and idempotency; neither establishes the other's benefit by itself.
-- Use the same delivery tools and business acceptance criteria in the compared approaches.
-  Synthetic baselines do not establish the migration cost of an unspecified incumbent system.
+Primary acceptance concerns:
+
+- Policy isolation: use a versioned rule graph, typed facts, parameters and registered domain
+  evaluators/tools as the engine input contract. Replace policies without embedding their terms
+  in shared execution code. Validate policy changes and both existing-order activation modes.
+- Model configuration: use a declared decision-provider contract, with Jev as the priority real
+  provider. Verify compatible substitution, output validation, uncertainty and failure behavior;
+  do not assume all providers expose identical capabilities.
+- A2A operation/configuration: verify discovery, capability/task contracts, agent identity,
+  endpoint/profile configuration and receiving-domain validation. A2A standardizes agent exchange,
+  not the policy language or all industries' fact schemas.
+- Stability and robustness: identify actual state/checkpoint owners; verify waiting, restart,
+  idempotent side effects, stale decisions, invalid inputs and bounded failures in the rule-engine
+  use case. Preserve observed limitations and distinguish scripted controls from model decisions.
+- Flexibility: change policies within logistics, then execute a bounded motor-insurance policy
+  through the same shared path. Show all materials, domain adapters, wiring and shared-code changes.
+
+Secondary measurements include code work, authoring/review/repair effort, model cost and fixed-flow
+effort comparisons. Record failures and unknowns honestly; do not manufacture savings or delay a
+primary milestone solely for an optional cost benchmark. Large model/provider performance matrices,
+automatic policy authoring comparisons and cross-domain A2A are optional extensions.
+
+The agreed pre-baseline cleanup remains outside later adaptation measurements; work after freeze
+remains attributable. No nominated incumbent engine exists. Synthetic results do not establish
+enterprise migration pricing, production readiness or a universal savings factor. Untested work is
+incomplete, not a design deviation; deviation requires implemented behavior that conflicts with an
+accepted contract.
 
 ## 10. Research scope: capability, suitability and limits
 
 - This is a capability-exploration POC, not a product delivery or a general-purpose engine build.
   Existing coupling and synthetic logistics materials are acknowledged experimental conditions.
-- Measure policy interpretation, rule generation, review and repair effort alongside runtime
+- Record observable policy interpretation, rule generation, review and repair effort alongside runtime
   investigation, tool use, collaboration, human waiting and recovery. Distinguish authored workflow
   logic from decisions the agent actually makes; an automated fixed path is not evidence of dynamic planning.
 - Record unsuccessful attempts, unsupported changes, unsafe outcomes and manual interventions as

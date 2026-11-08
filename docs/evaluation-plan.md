@@ -1,4 +1,4 @@
-# Evaluation plan: durable-agent capabilities and development cost
+# Evaluation plan: configurable durable-agent rule engine
 
 Status: experiment design and source audit, not a performance or cost result. The owner-approved
 experimental code/material baseline is frozen at `baseline-2026-10-24`; the current recovery
@@ -7,9 +7,10 @@ Evaluate logistics policy changes before motor insurance adaptation. There is
 no nominated incumbent engine; large real-world rule estates motivate the question, not a
 specific product comparison.
 
-This is a capability-exploration POC, not a product delivery. The central hypothesis is that
-durable agents can reduce the effort of building and changing rule-driven workflows. Explore
-feasibility, suitability and limits; do not require a fully decoupled engine before measuring.
+This is a capability-exploration POC, not a product delivery. Primary goals are policy/engine isolation, configurable decision models, standardized A2A
+operation/configuration and durable stability/robustness, as defined in spec section 9. Evaluate
+those capabilities through bounded policy replacement and failure cases. Code-effort savings are
+secondary observations, not mandatory success or a reason to extend every benchmark.
 Current coupling and synthetic materials bound the conclusions rather than invalidate the research.
 
 ## Clean-context experimental agents (owner requirement)
@@ -52,17 +53,23 @@ The post-baseline characterization and full-flow recovery protocol are recorded 
 
 1. When policy changes, which changes require only rule data and which require application or
    shared-engine code?
-2. What does a reviewed, correct change cost from interpreting the policy to accepting the
-   updated system, including failed generation attempts and regression work?
+2. Can a compatible decision provider be configured without embedding provider-specific behavior
+   in policy execution, including invalid output, uncertainty and failure handling?
 3. Which workflow decisions can agents make, which remain authored logic, and when is human
    intervention needed?
-4. What does durable execution contribute beyond declarative rules alone?
+4. Do A2A discovery, profile/endpoint configuration and task semantics work through the same
+   validated engine operations?
+5. Does durable execution preserve waiting and outcomes across interruptions without repeated
+   side effects or stale decisions?
+
+Secondary measurement: record actual code changes, review/repair work and observable runtime costs.
+Unknown historical effort stays unknown; a cost-saving claim needs its own measured comparison.
 
 ## Capability map
 
 | Capability | Evidence sought | Limits to record |
 |---|---|---|
-| Rule authoring | Policy interpretation, validated proposals and reviewed changes | Incorrect or unsupported rules, repair effort and business questions |
+| Optional rule authoring | Policy interpretation, validated proposals and reviewed changes | Incorrect or unsupported rules, repair effort and business questions |
 | Agentic investigation | Tool choice and changed paths when evidence or constraints change | Fixed scripted paths, invalid calls, exhausted budgets and manual fallback |
 | Collaboration | Useful handoffs, parallel progress and human gates | Hard-coded coordination, role mistakes and unresolved dependencies |
 | Durable continuity | Waiting and restart recovery without repeated side effects | Lost context, duplicate work and recovery effort |
@@ -193,7 +200,7 @@ settlement are outside this experiment's claims.
 
 ## Comparisons and cost accounting
 
-Use two implementation paths initially:
+For an optional authoring-cost comparison, use two implementation paths:
 
 - **Reviewed direct edit:** a delivery agent/engineer changes the rule data against the approved
   policy, then an independent business reviewer and the same acceptance suite assess it.
@@ -283,14 +290,16 @@ separate authorization.
 
 ## Deliverables and decision boundary
 
-1. A source-hashed coupling baseline and reviewed logistics mutation specifications.
-2. An experiment manifest, timing/token ledger, immutable proposals and reviewed acceptance data.
-3. Per-mutation reports for direct edit versus authoring, plus unchanged-control regressions.
-4. An independently held evaluation report and a capability map including failures and human fallback.
-5. A CEO-facing summary separating demonstrated capabilities, observed development/change cost,
-   suitability conditions and unproven claims. Benchmark infrastructure is not a completed result.
+1. A validated policy/engine contract with reviewed logistics policy-replacement observations.
+2. Decision-provider configuration and compatible substitution evidence, with invalid-output,
+   uncertainty and provider-failure behavior made explicit.
+3. A2A discovery, capability/task semantics and agent/profile/endpoint configuration evidence.
+4. Durable waiting, restart and side-effect controls plus bounded independently reviewed failure
+   cases; actual Pi/domain transaction ownership is identified.
+5. A bounded motor-insurance policy executing through the shared path, with a complete materials,
+   domain-adapter, wiring and shared-core diff and its limitations.
 
-The outcome is a research judgment: where this approach appears useful, how much work it saved
-in the measured tasks, and where its limits remain. Negative or mixed findings are valid outcomes.
-Neither productionizing the POC nor removing every coupling is required. Evidence from synthetic
-logistics tasks does not establish enterprise-scale savings or a universal migration price.
+Code/authoring effort, review time and optional comparison reports are secondary measurements.
+Retain observed values and unknowns; publish a saving only when its own evidence supports it.
+Primary conclusions concern capability, flexibility and robustness under the tested conditions.
+Synthetic results do not establish enterprise-scale safety, universal migration pricing or savings.

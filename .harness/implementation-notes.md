@@ -8,17 +8,20 @@ history remain in Git.
 ## Continue here
 
 Use the active work branch defined in [branch-strategy.md](../docs/branch-strategy.md).
-Continue M2's bounded investigation comparison. The latest completed slice is process-exit
-recovery for logistics evidence drafts; reproduce it with `pnpm eval:evidence-draft`.
-Protocols, results and limitations belong to [open-question-pilot.md](../docs/open-question-pilot.md).
+Primary goals are defined in spec section 9: policy/engine isolation, configurable decision models,
+A2A operation/configuration and durable stability/robustness. Code/authoring effort is secondary.
+Use the milestone acceptance boundaries in the branch strategy and tasks T8.5/T8.8/T8.9/T8.6.
 
-The draft reroute comparison protocol and `pnpm eval:investigation prepare` provide four existing
-offer conditions, a first-valid baseline and a source/input-hashed preparation manifest. Continue
-with independent protocol/label review and bounded model-run preparation; exact model and request
-cap are not authorized or frozen. Selected Pi schema refusals, unregistered-tool refusal and
-two-case document isolation are verified in the evidence-tool tests; concurrent changes remain
-unverified. M1 review/cost evidence, M3 blind custody and M4 insurance remain
-open; task acceptance is tracked in the roadmap.
+For already implemented work, address the two verified contract defects before relying on the
+new draft audit records: model extras can overwrite payload scope fields in evidence-tools.ts,
+and rejected schema/unknown-tool calls are absent from business-side attempt logging. This is
+an identified implementation/design mismatch; unstarted tasks are not deviations.
+
+Review existing policy and recovery evidence against primary acceptance before expanding tests
+or benchmarks. Document tools and reroute controls have separate evidence owners in the progress
+index. A future live run still needs frozen inputs and the applicable authorization; changing
+priorities does not grant new provider calls. M3/M4 remain unstarted; detailed status is in the
+progress index.
 
 ## Execution constraints
 

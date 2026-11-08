@@ -4,6 +4,8 @@
 
 ---
 
+开场定位：这套 POC 验证由 durable agents 组成的规则引擎，能否通过明确契约替换 policy、配置 Jev 等决策模型、以 A2A 标准协作，并在等待、重启和失败时保持正确行为。代码工作量减少多少是附带测量，尚未测量的收益不作结论。
+
 ## 开场前 1 分钟
 
 1. 终端运行 `pnpm start`，等日志出现 "✔ Durable Jev demo is ready"，浏览器自动打开 <http://localhost:4100>。
