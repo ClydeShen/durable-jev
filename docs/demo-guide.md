@@ -243,6 +243,7 @@
 | 3 | 展开各组的 `record`、`tasks`、`events` | 订单未改变、未创建审批任务、未放行；只有待审草稿事件 | "这里只记录调查草稿；判断质量和真实模型对照还没有验收。" |
 | 4 | 打开 `docs/open-question-pilot.md` 的 Provisional delivery review 和对应结果 JSON | 三个单证／事故／方案变更的调查草稿 | "这些来自独立的新会话，未在项目运行时执行工具，也未独立验收业务结论。" |
 | 5 | 技术观众需要边界验证时，运行 `pnpm exec vitest run packages/logistics/src/evidence-tools.test.ts` | 离线测试通过，包含参数拒绝、未注册工具和同库双订单隔离 | "这里核查宿主如何拒绝无效调用，不代表模型已经通过判断质量评估。" |
+| 6 | 需要核查模型接口时，打开 `packages/agent-core/src/semantic-evaluator.test.ts` 的 provider substitution 分组，运行该文件的测试 | 相同规则／事实替换适配器后结果一致；越界概率和失败响应成为 ERROR | "这里用假传输验证 Jev 接口兼容和宿主校验，还不是不同真实模型的质量比较。" |
 
 ## 后续保险领域的展示位置（尚未实现，不现场操作）
 

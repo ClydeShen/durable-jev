@@ -351,6 +351,10 @@ schema), `ScriptedJudge` (replays by questionId + input hash, falling back to th
 default entry). Jev rate-limit backoff is not configured; a failure blocks as ERROR rather than
 being approved. A
 `SemanticAnswer` keeps the provider's raw fields and the business mapping.
+The shared semantic evaluator validates the judgement kind, declared choice labels and finite
+probabilities/confidence in [0, 1] before mapping an answer to a gate. Invalid output raises a
+provider error and graph evaluation records ERROR. Choice distributions/confidence remain
+optional; a provider without distributions is not equivalent for multi-label classification.
 
 ## 9. Observability
 

@@ -1,9 +1,10 @@
 import type { CheckStatus } from '@durable-jev/contracts'
-import type {
-  SemanticJudge,
-  SemanticJudgement,
-  SemanticQuestion,
-  SemanticState,
+import {
+  type SemanticJudge,
+  SemanticJudgeError,
+  type SemanticJudgement,
+  type SemanticQuestion,
+  type SemanticState,
 } from '@durable-jev/model-providers'
 import {
   feelContext,
@@ -70,6 +71,23 @@ function observedValueOf(
   return judgement.kind === 'choice' ? judgement.choice : judgement.probability
 }
 
+function isProbability(value: number): boolean {
+  return Number.isFinite(value) && value >= 0 && value <= 1
+}
+
+function validJudgement(question: SemanticQuestion, judgement: SemanticJudgement): boolean {
+  if (question.kind === 'noul' && judgement.kind === 'noul')
+    return isProbability(judgement.probability)
+  if (question.kind !== 'choice' || judgement.kind !== 'choice') return false
+  return (
+    Object.hasOwn(question.options, judgement.choice) &&
+    (judgement.confidence === undefined || isProbability(judgement.confidence)) &&
+    Object.entries(judgement.probabilities ?? {}).every(
+      ([label, value]) => Object.hasOwn(question.options, label) && isProbability(value),
+    )
+  )
+}
+
 export function semanticEvaluator(judge: SemanticJudge): LeafEvaluator {
   return async ({ rule, scope, facts, parameters }) => {
     const semantic = rule.semantic
@@ -78,7 +96,15 @@ export function semanticEvaluator(judge: SemanticJudge): LeafEvaluator {
       semantic.state,
       feelContext(facts, scope, parameters),
     ) as SemanticState
-    const answer = await judge.ask(questionFor(rule.ruleId, semantic), state)
+    const question = questionFor(rule.ruleId, semantic)
+    const answer = await judge.ask(question, state)
+    if (!validJudgement(question, answer.judgement)) {
+      throw new SemanticJudgeError(
+        judge.provider,
+        question.questionId,
+        'invalid judgement or unsupported label',
+      )
+    }
     return {
       status: gateStatusOf(semantic.passWhen, answer.judgement, parameters),
       observedValue: observedValueOf(semantic.passWhen, answer.judgement, parameters),

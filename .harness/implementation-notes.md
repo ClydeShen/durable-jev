@@ -14,9 +14,11 @@ Use the milestone acceptance boundaries in the branch strategy and tasks T8.5/T8
 
 Draft scope metadata is protected by strict schemas and declared-field storage. Settled Pi
 schema/unknown-tool refusals are audited with call IDs and rejection codes; F09 checks the outbox.
-Continue primary model-configuration/substitution validation using existing adapter interfaces,
-then review policy and A2A evidence against their acceptance boundaries. Unstarted work is not
-a design deviation.
+Fresh-graph offline provider substitution is verified for scripted/recorded-transport Jev, with
+shared rejection of invalid judgements. Continue application-level provider configuration and
+capability compatibility validation, then policy/A2A acceptance review. Cache behavior on provider
+change and live decision quality are not established by these tests. Unstarted work is not a
+design deviation.
 
 Review existing policy and recovery evidence against primary acceptance before expanding tests
 or benchmarks. Document tools and reroute controls have separate evidence owners in the progress

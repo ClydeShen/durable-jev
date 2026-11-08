@@ -28,6 +28,7 @@ confirmation boundaries. These are scripted controls, not live-model quality cla
 | Wire data is validated before business calls | Native/A2A share complete decision validation and the outcome schema; a receiving runtime also applies its domain parser. Carry-forward is internal reconciliation, not a remotely submitted decision. | Invalid payload and role/scope/domain coverage in `domain-agent.test.ts` |
 | Release re-check | The dispatcher's confirmation re-reads the revision and R40 in the same transaction ([dispatch.ts](../packages/logistics/src/dispatch.ts)). | F17, F18 |
 | Model failures never pass | A Jev error or timeout makes the rule `ERROR`, which blocks release. | F05 |
+| Compatible provider output | Shared evaluation rejects wrong judgement kinds, unknown labels and invalid probabilities/confidence before threshold mapping. | Offline provider-substitution and malformed-output cases in [semantic-evaluator.test.ts](../packages/agent-core/src/semantic-evaluator.test.ts) |
 | Traceability | Executed calls, budget blocks and settled Pi schema/unknown-tool refusals produce investigation call records; refusals include call IDs and rejection codes. Semantic answers are separate events. | Evidence-tool regressions and F09 outbox assertion; LOG-004 timeline |
 
 ## Known gaps

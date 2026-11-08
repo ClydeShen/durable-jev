@@ -127,6 +127,13 @@ yet (the console polls snapshots; there is no SSE).
 
 ## What is not proven yet
 
+Offline contract tests inject scripted and recorded-transport Jev adapters into the same fresh
+rule graph/facts. Choice, probability thresholds and multi-label selection preserve outcomes;
+HTTP errors and invalid judgements become ERROR. This validates the evaluation boundary, not
+live model quality, application-level provider configuration or cache invalidation on a provider
+change. Providers without probability distributions do not supply Jev-equivalent multi-label
+behavior; compatible capabilities must be checked when wiring a configurable provider.
+
 - Live runs: all 8 demo cases replay with live Jev and the live investigation helper, three runs
   in a row, and screening has no missed rule; see [tuning-log.md](archive/tuning-log.md). These are
   development-set numbers; there is no blind set yet, and the benchmarks (Jev vs structured

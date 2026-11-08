@@ -51,6 +51,7 @@ time is not active human labor. Keep setup, runtime latency, owner review and mo
 | M2-prep-05 | Define fair reroute comparison and offline preparation manifest | Four existing offer conditions; first-valid primary baseline; input/source/plan hashes checked; model arm and review pending | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
 | M2-prep-06 | Verify selected Pi argument refusals and two-case evidence isolation | Malformed calls and unknown dispatch never execute; case arguments cannot redirect reads; colliding IDs preserve separate drafts | Unmeasured | Delivery-agent usage unknown; runtime Jev/NVIDIA requests: 0 |
 | M2-contract-01 | Repair trusted draft metadata and refused-call audit coverage | Schema/storage regressions plus structured rejection callbacks and F09 outbox assertion | Unmeasured | Delivery-agent usage unknown; runtime model requests: 0 |
+| M2-contract-02 | Verify provider substitution at the rule-evaluation boundary | Same fresh graph/facts for scripted and fake-transport Jev; shared guard rejects out-of-range and incompatible judgements; application configuration pending | Unmeasured | Delivery-agent usage unknown; real model requests: 0 |
 | DOC-01 | Consolidate ownership, lifecycle, current handoff and experiment references | Historical studies archived; inventory/link gate added; frozen evidence unchanged | Unmeasured | Delivery-agent usage unknown; runtime model requests: 0 |
 
 Later authoring comparisons append one entry per attempt: role, task, activation mode, start/end,
