@@ -15,8 +15,9 @@ Protocols, results and limitations belong to [open-question-pilot.md](../docs/op
 The draft reroute comparison protocol and `pnpm eval:investigation prepare` provide four existing
 offer conditions, a first-valid baseline and a source/input-hashed preparation manifest. Continue
 with independent protocol/label review and bounded model-run preparation; exact model and request
-cap are not authorized or frozen. Argument-schema refusals and multi-case/concurrent-change controls remain unverified
-for the new document adapters. M1 review/cost evidence, M3 blind custody and M4 insurance remain
+cap are not authorized or frozen. Selected Pi schema refusals, unregistered-tool refusal and
+two-case document isolation are verified in the evidence-tool tests; concurrent changes remain
+unverified. M1 review/cost evidence, M3 blind custody and M4 insurance remain
 open; task acceptance is tracked in the roadmap.
 
 ## Execution constraints

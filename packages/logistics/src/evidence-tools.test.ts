@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { CaseStore } from '@durable-jev/agent-core'
-import { DurableInvestigator } from '@durable-jev/agent-harness'
+import { DurableInvestigator, type InvestigatorModel } from '@durable-jev/agent-harness'
 import { shipmentSchema } from '@durable-jev/contracts'
 import { unpublishedEvents } from '@durable-jev/store'
 import { expect, it } from 'vitest'
@@ -39,24 +39,35 @@ function fixture(path = ':memory:') {
   return { cases, shipment, scope, tools, read, submit, args }
 }
 
-it('runs logistics evidence tools through Pi without changing the shipment or human tasks', async () => {
-  const f = fixture()
+async function runEvidence(f: ReturnType<typeof fixture>, model: InvestigatorModel) {
+  const executed: string[] = []
   const opened = await DurableInvestigator.open({
     storage: 'memory',
     tools: f.tools,
     scopeOf: () => f.scope,
     instructions: 'Read documents and submit a draft for human review.',
-    model: {
+    model,
+    onToolCall: ({ tool }) => executed.push(tool),
+  })
+  try {
+    const outcome = await opened.run(await opened.begin(), 'draft-run', 'Investigate packaging', {})
+    return { outcome, executed }
+  } finally {
+    await opened.close()
+  }
+}
+
+it('runs logistics evidence tools through Pi without changing the shipment or human tasks', async () => {
+  const f = fixture()
+  try {
+    const { outcome: result } = await runEvidence(f, {
       kind: 'scripted',
       next: (results) => {
         if (!results.length) return { call: 'read_case_evidence', args: {} }
         if (results.length === 1) return { call: 'submit_evidence_draft', args: f.args }
         return { answer: JSON.stringify(results.at(-1)?.result) }
       },
-    },
-  })
-  try {
-    const result = await opened.run(await opened.begin(), 'draft-run', 'Investigate packaging', {})
+    })
     expect(result.status).toBe('finished')
     if (result.status === 'finished') expect(JSON.parse(result.answer).status).toBe('applied')
     expect(f.cases.caseRecord(f.scope.caseId)?.data).toEqual(f.shipment)
@@ -66,7 +77,118 @@ it('runs logistics evidence tools through Pi without changing the shipment or hu
       'investigation.evidence_draft',
     ])
   } finally {
-    await opened.close()
+    f.cases.db.close()
+  }
+})
+
+it.each(['empty-citations', 'missing-summary', 'bad-fingerprint', 'bad-version'])(
+  'Pi rejects %s before executing the draft tool',
+  async (mutation) => {
+    const f = fixture()
+    try {
+      const args = structuredClone(f.args)
+      const citation = args.citations[0]
+      if (!citation) throw new Error('missing citation')
+      if (mutation === 'empty-citations') args.citations = []
+      if (mutation === 'missing-summary') Reflect.deleteProperty(args, 'summary')
+      if (mutation === 'bad-fingerprint') citation.fingerprint = 'not-a-hash'
+      if (mutation === 'bad-version') Reflect.set(citation, 'version', 'one')
+      const { outcome, executed } = await runEvidence(f, {
+        kind: 'scripted',
+        next: (results) =>
+          results.length
+            ? { answer: JSON.stringify(results) }
+            : { call: 'submit_evidence_draft', args },
+      })
+      expect(outcome.status).toBe('finished')
+      if (outcome.status === 'finished')
+        expect(outcome.answer).toMatch(/invalid|validat|argument|schema/i)
+      expect(executed).toEqual([])
+      expect(unpublishedEvents(f.cases.db)).toEqual([])
+      expect(f.cases.caseRecord(f.scope.caseId)?.data).toEqual(f.shipment)
+    } finally {
+      f.cases.db.close()
+    }
+  },
+)
+
+it('Pi refuses an unregistered dispatch tool without invoking a domain executor', async () => {
+  const f = fixture()
+  try {
+    const { outcome, executed } = await runEvidence(f, {
+      kind: 'scripted',
+      next: (results) =>
+        results.length
+          ? { answer: JSON.stringify(results) }
+          : { call: 'dispatch_order', args: { caseId: f.scope.caseId } },
+    })
+    expect(outcome.status).toBe('finished')
+    if (outcome.status === 'finished')
+      expect(outcome.answer).toMatch(/unknown|not found|not registered|not available|no tool/i)
+    expect(executed).toEqual([])
+    expect(unpublishedEvents(f.cases.db)).toEqual([])
+    expect(f.cases.caseRecord(f.scope.caseId)?.completedAt).toBeUndefined()
+  } finally {
+    f.cases.db.close()
+  }
+})
+
+it('isolates citations and idempotency for two cases sharing document and investigation IDs', () => {
+  const f = fixture()
+  try {
+    const other = structuredClone(f.shipment)
+    other.caseId = 'LOG-OTHER'
+    for (const doc of other.documents) doc.text = `Other case: ${doc.text}`
+    f.cases.putCase(other, '2026-10-24T00:00:00Z')
+    const scope = { ...f.scope, caseId: other.caseId }
+    expect(f.submit.execute(f.args, scope)).toEqual({
+      recorded: false,
+      error: 'CITATION_NOT_CURRENT',
+    })
+    const evidence = f.read.execute({}, scope) as { documents: typeof f.args.citations }
+    const citations = evidence.documents.map(({ documentId, version, fingerprint }) => ({
+      documentId,
+      version,
+      fingerprint,
+    }))
+    expect(f.submit.execute(f.args, f.scope)).toMatchObject({ recorded: true })
+    expect(f.submit.execute({ ...f.args, citations }, scope)).toMatchObject({ recorded: true })
+    expect(unpublishedEvents(f.cases.db).map((event) => event.caseId)).toEqual([
+      f.scope.caseId,
+      other.caseId,
+    ])
+    expect(f.cases.caseRecord(other.caseId)?.data).toEqual(other)
+    expect(f.cases.caseRecord(f.scope.caseId)?.data).toEqual(f.shipment)
+  } finally {
+    f.cases.db.close()
+  }
+})
+
+it('model arguments cannot redirect evidence reads to another stored case', async () => {
+  const f = fixture()
+  try {
+    const other = structuredClone(f.shipment)
+    other.caseId = 'LOG-OTHER'
+    for (const doc of other.documents) doc.text = 'PRIVATE-OTHER-CASE'
+    f.cases.putCase(other, '2026-10-24T00:00:00Z')
+    const { outcome, executed } = await runEvidence(f, {
+      kind: 'scripted',
+      next: (results) =>
+        results.length
+          ? { answer: JSON.stringify(results) }
+          : { call: 'read_case_evidence', args: { caseId: other.caseId } },
+    })
+    expect(outcome.status).toBe('finished')
+    expect(executed).toEqual(['read_case_evidence'])
+    if (outcome.status === 'finished') {
+      const records = JSON.parse(outcome.answer) as { result: { documents: { text: string }[] } }[]
+      expect(records[0]?.result.documents.map((doc) => doc.text)).toEqual(
+        f.shipment.documents.map((doc) => doc.text),
+      )
+      expect(outcome.answer).not.toContain('PRIVATE-OTHER-CASE')
+    }
+    expect(unpublishedEvents(f.cases.db)).toEqual([])
+  } finally {
     f.cases.db.close()
   }
 })

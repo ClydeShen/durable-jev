@@ -97,15 +97,26 @@ Both controllers are authored algorithms. Their agreement demonstrates this exec
 contract, not equivalent reasoning or any model advantage. Fresh runtime state does not establish
 independent blind custody. These checks run on Linux and Windows CI via the same command.
 
-Eight tests in `packages/logistics/src/evidence-tools.test.ts` cover Pi integration, invalid
-citations, unbumped content replacement, missing/stale trusted scope and persistent idempotency
-after database reopen. The subprocess controls above add process-exit recovery evidence. These tools are composed only
-by the experiment/tests: the browser demo has no new investigation route. No Jev/NVIDIA requests were used.
+Fifteen tests in `packages/logistics/src/evidence-tools.test.ts` cover the following boundaries:
+
+- Pi refuses empty citations, a missing summary, malformed fingerprint and nonnumeric version
+  before invoking the domain executor; error results reach the scripted controller.
+- An unregistered dispatch tool is refused without domain execution or a business write.
+- Two cases in one database can share document/investigation IDs without sharing draft operations.
+  Citations from one case with different document content are refused for the other.
+- A model-supplied `caseId` cannot redirect a read away from the trusted conversation scope.
+- Current citations, unbumped content replacement, missing/stale scope and persistent duplicate/
+  conflicting submissions remain covered, including database reopen.
+
+The subprocess controls above add process-exit recovery evidence. Tools are composed only by
+the experiment/tests; the browser demo has no new investigation route. These scripted checks
+do not measure model judgment or general prompt-injection resistance. No Jev/NVIDIA requests were used.
 
 ## Unverified scope
 
-Independent policy/label review, model-selected investigation, full argument-schema refusal
-coverage, multi-case/concurrent-change controls and independent blind custody remain open.
+Independent policy/label review, model-selected investigation, concurrent-change controls and
+independent blind custody remain open. The selected schema and two-case checks above do not
+establish exhaustive parameter coverage or multi-tenant authentication.
 The process controls do not test arbitrary failure timing, OS kill signals or power loss.
 Human effort and delivery-agent costs are unknown. Experimental method and live-call rules are
 in [evaluation-plan.md](evaluation-plan.md); status and next work are maintained in the
